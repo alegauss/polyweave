@@ -60,19 +60,18 @@ def test_the_canonical_task_reaches_a_passing_verdict_in_three_calls(tmp_path, c
     calls = [
         ["describe", "geometry.build", "--json"],
         ["geometry.build", "--source", "crate.toml", "--preview", "true", *root],
-        [
-            "accept.check",
-            "--spec",
-            "crate.accept.toml",
-            "--subject",
-            "crate.voxels.png",
-            *root,
-        ],
     ]
     said = []
     for argv in calls:
         assert cli.main([*argv, "--json"] if "--json" not in argv else argv) == 0
         said.append(capsys.readouterr().out)
+    # The sheet is where the build's answer says it went, which is what an agent reads.
+    (sheet,) = [one for one in json.loads(said[-1])["outputs"]
+                if one.endswith("crate.voxels.png")]
+    check = ["accept.check", "--spec", "crate.accept.toml", "--subject", sheet, *root]
+    calls.append(check)
+    assert cli.main([*check, "--json"]) == 0
+    said.append(capsys.readouterr().out)
     assert len(calls) == CALLS
     verdict = json.loads(said[-1])
     assert verdict["passed"] is True

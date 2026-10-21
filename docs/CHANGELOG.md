@@ -123,6 +123,7 @@
 - ✅ **PW570** **A built mesh imports with its glTF materials, so the game swaps in the judged ones by hand** — In a Godot project a build writes the mesh's .glb.import naming each written .tres, so Godot imports the piece wearing the judged materials (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW571** **Each finished material writes its own copy of one shader** — A folder's finished materials share one finish.gdshader, rewritten only when its text changes, so a kit compiles one shader where it compiled fifty (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW574** **A finished piece cannot also give when struck, since vfx's struck give is a shader of its own** — [finish] struck puts vfx's struck give in the opened finish and writes finish_strikes.gd, so a judged piece also squashes where a strike lands (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW583** **geometry.build with no out writes the mesh beside its declaration, where Godot imports it into the export** — A build with no out lands under [paths] work, mirroring its folder, and project.check names one left beside its declaration as adopt.build-beside (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

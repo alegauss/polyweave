@@ -31,8 +31,10 @@ size = 3
 def test_every_text_a_build_writes_has_no_carriage_return(tmp_path):
     (tmp_path / "box.toml").write_text(VOXEL, encoding="utf-8")
     built = cli.build_one("box.toml", root=str(tmp_path))
-    written = [tmp_path / "box.voxels.json", tmp_path / "box.voxels.json.prov.json",
-               tmp_path / "box.build.json"]
+    # A build with no `out` lands in the work area (§PW583).
+    landed = tmp_path / ".polyweave" / "geometry"
+    written = [landed / "box.voxels.json", landed / "box.voxels.json.prov.json",
+               landed / "box.build.json"]
     assert built["status"] == "built"
     for one in written:
         assert b"\r" not in one.read_bytes(), one.name
@@ -47,7 +49,7 @@ def test_the_atomic_writer_writes_lf(tmp_path):
 def test_a_build_still_verifies_after_a_checkout_normalises_to_lf(tmp_path):
     (tmp_path / "box.toml").write_text(VOXEL, encoding="utf-8")
     cli.build_one("box.toml", root=str(tmp_path))
-    cells = tmp_path / "box.voxels.json"
+    cells = tmp_path / ".polyweave" / "geometry" / "box.voxels.json"
     cells.write_bytes(cells.read_bytes().replace(b"\r\n", b"\n"))  # what git hands back
     assert provenance.verify(str(tmp_path))["changed"] == []
 

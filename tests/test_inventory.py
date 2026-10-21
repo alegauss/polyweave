@@ -74,6 +74,19 @@ def by_id(answer):
     return {row["id"]: row for row in answer["items"]}
 
 
+def test_a_build_in_the_work_area_is_an_item_and_its_declaration_built(tree):
+    """§PW583: a build with no `out` lands under [paths] work, which the walk skips."""
+    record(tree, "mesh", ".polyweave/geometry/shapes/crate.glb",
+           inputs=[("declaration", "shapes/crate.toml")])
+    record(tree, "render", ".polyweave/cache/x.png")
+    rows = by_id(project.inventory(str(tree)))
+    assert rows[".polyweave/geometry/shapes/crate.glb"]["declaration"] == (
+        "shapes/crate.toml")
+    assert "shapes/crate.toml" not in rows
+    # The rest of the work area is still the cache's, and no item.
+    assert ".polyweave/cache/x.png" not in rows
+
+
 def test_one_read_lists_every_item_by_kind(tree):
     found = project.inventory(str(tree))
     rows = by_id(found)

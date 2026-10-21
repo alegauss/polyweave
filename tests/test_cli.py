@@ -33,6 +33,11 @@ def declared(tmp_path, body=VOXEL, name="box.toml"):
     return name
 
 
+def landed(root, folder=""):
+    """Where a build with no `out` lands: the work area, mirroring it (§PW583)."""
+    return root / ".polyweave" / "geometry" / folder
+
+
 def run(tmp_path, *argv, capsys):
     status = cli.main(["build", *argv, "--root", str(tmp_path)])
     return status, capsys.readouterr()
@@ -63,7 +68,7 @@ def test_a_setting_reaches_a_field_of_the_declaration_and_is_echoed(tmp_path, ca
     said = json.loads(printed.out)
     assert said["says"].startswith("a voxel model 8 by 8 by 8")
     assert said["set"] == {"voxels.cell": {"was": 1, "now": 0.5}}
-    cells = json.loads((tmp_path / "box.voxels.json").read_text("utf-8"))
+    cells = json.loads((landed(tmp_path) / "box.voxels.json").read_text("utf-8"))
     assert cells["cell"] == 0.5
 
 
@@ -75,7 +80,7 @@ def test_a_setting_that_names_nothing_is_refused_with_what_it_takes(tmp_path):
     refusal = found["refusal"]
     assert refusal["code"] == "op.bad-setting"
     assert "size" in refusal["allowed"] and "voxels.cell" in refusal["allowed"]
-    assert not (tmp_path / "box.voxels.json").exists()
+    assert not (landed(tmp_path) / "box.voxels.json").exists()
 
 
 def test_a_setting_of_the_wrong_kind_is_refused(tmp_path):
@@ -173,7 +178,8 @@ def test_every_output_carries_the_record_the_stamp_is_the_key_of(tmp_path, capsy
     declared(tmp_path / "art")
     _, printed = run(tmp_path, "--all", "art", "--json", capsys=capsys)
     (built,) = json.loads(printed.out)
-    stamped = json.loads((tmp_path / "art" / "box.build.json").read_text("utf-8"))
+    stamp = landed(tmp_path, "art") / "box.build.json"
+    stamped = json.loads(stamp.read_text("utf-8"))
     for output in built["outputs"]:
         record = provenance.read(output, root=str(tmp_path))
         assert provenance.cache_key(record) == stamped["stamp"]
@@ -188,7 +194,7 @@ def test_a_voxel_declaration_can_ask_for_its_cells_alone(tmp_path, capsys):
     built = json.loads(printed.out)
     assert status == 0
     assert [Path(one).name for one in built["outputs"]] == ["box.voxels.json"]
-    assert not (tmp_path / "box.glb").exists()
+    assert not (landed(tmp_path) / "box.glb").exists()
 
 
 def test_no_mesh_on_the_call_writes_the_cells_alone_and_takes_back_an_old_mesh(
@@ -200,9 +206,9 @@ def test_no_mesh_on_the_call_writes_the_cells_alone_and_takes_back_an_old_mesh(
         pytest.skip("renderer absent: the mesh needs Blender to write")
     again = cli.build_one(source, root=str(tmp_path), mesh=False)
     assert [Path(one).name for one in again["outputs"]] == ["box.voxels.json"]
-    assert not (tmp_path / "box.glb").exists()
-    assert not (tmp_path / "box.glb.prov.json").exists()
-    stamped = json.loads((tmp_path / "box.build.json").read_text("utf-8"))
+    assert not (landed(tmp_path) / "box.glb").exists()
+    assert not (landed(tmp_path) / "box.glb.prov.json").exists()
+    stamped = json.loads((landed(tmp_path) / "box.build.json").read_text("utf-8"))
     assert [Path(one).name for one in stamped["outputs"]] == ["box.voxels.json"]
 
 
@@ -240,18 +246,18 @@ def test_two_checkouts_write_the_same_stamp_bytes(tmp_path):
         (root / "art").mkdir(parents=True)
         declared(root / "art", VOXEL.replace("cell = 1\n", "cell = 1\nmesh = false\n"))
         cli.build_one("art/box.toml", root=str(root))
-        stamps.append((root / "art" / "box.build.json").read_bytes())
+        stamps.append((landed(root, "art") / "box.build.json").read_bytes())
     assert stamps[0] == stamps[1]
     said = json.loads(stamps[0])
     assert said["source"] == "art/box.toml"
-    assert said["outputs"] == ["art/box.voxels.json"]
+    assert said["outputs"] == [".polyweave/geometry/art/box.voxels.json"]
     assert b"\r\n" not in stamps[0]
 
 
 def test_a_stamp_written_with_absolute_paths_still_reads_as_cached(tmp_path):
     source = declared(tmp_path)
     cli.build_one(source, root=str(tmp_path))
-    mark = tmp_path / "box.build.json"
+    mark = landed(tmp_path) / "box.build.json"
     said = json.loads(mark.read_text("utf-8"))
     said["outputs"] = [str((tmp_path / one).resolve()) for one in said["outputs"]]
     mark.write_text(json.dumps(said), encoding="utf-8")
@@ -269,7 +275,8 @@ def test_declarations_with_no_cell_build_on_the_projects(tmp_path):
         found = cli.build_one(name, root=str(tmp_path))
         assert found["status"] == "built"
         assert "cell 0.5, the project's" in found["reads"]
-        cells = json.loads((tmp_path / f"{name[:-5]}.voxels.json").read_text("utf-8"))
+        cells = landed(tmp_path) / f"{name[:-5]}.voxels.json"
+        cells = json.loads(cells.read_text("utf-8"))
         assert cells["cell"] == 0.5
         assert "cell_from" not in cells
 
@@ -341,7 +348,8 @@ def test_a_mesh_declaration_writes_its_mesh_and_a_silhouette(tmp_path, capsys):
     )
     outputs = json.loads(printed.out)["outputs"]
     assert status == 0
-    assert (tmp_path / "box.glb").is_file()
+    assert (landed(tmp_path) / "box.glb").is_file()
+    assert not (tmp_path / "box.glb").exists()
     assert any(one.endswith("box.preview.png") for one in outputs)
 
 

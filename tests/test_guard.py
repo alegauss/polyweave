@@ -87,7 +87,8 @@ def test_a_recorded_artefact_is_denied_too(tmp_path):
 
 def test_a_shell_command_naming_a_derived_file_is_asked_about(tmp_path):
     output = built(tmp_path)
-    command = f"sed -i s/a/b/ {output.name}"
+    named = output.resolve().relative_to(tmp_path.resolve()).as_posix()
+    command = f"sed -i s/a/b/ {named}"
     said = hook(
         "pre",
         {"tool_name": "Bash", "tool_input": {"command": command}, "cwd": str(tmp_path)},

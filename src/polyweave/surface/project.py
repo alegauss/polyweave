@@ -586,9 +586,42 @@ def check(root: Annotated[str, Param("the adopted project")] = ".") -> dict:
                 "remove them from git (git rm --cached) and keep them in the work area",
             )
         )
+    _beside(here, said)
     _godot(here, said)
     _own(here, said)
     return _checked(found)
+
+
+def _beside(here: Path, said) -> None:
+    """Each geometry build left beside the declaration it was built from (§PW583).
+
+    A build with no `out` now lands in the work area, so one found here was built
+    before that or named the declaration's own folder. Godot imports that folder into
+    the export, so in a Godot project it is an error; elsewhere it is only said.
+    """
+    import json
+
+    from polyweave.layers.geometry.make import STAMP as BUILT
+
+    severity = "error" if (here / "project.godot").is_file() else "warning"
+    for stamp in _walk(here, f"*{BUILT}"):
+        try:
+            source = json.loads(read_text_retrying(stamp) or "{}").get("source")
+        except ValueError:
+            continue  # not a stamp this build wrote
+        if not isinstance(source, str) or (here / source).parent != stamp.parent:
+            continue
+        named = stamp.relative_to(here).as_posix()
+        said(
+            PolyweaveError(
+                "adopt.build-beside",
+                f"{named} and what it built sit beside {source}, where an engine "
+                "importing that folder takes them in",
+                "delete them and build again, which writes under [paths] work, or "
+                "give the build an out where the engine should read it",
+            ),
+            severity,
+        )
 
 
 def _own(here: Path, said) -> None:
@@ -816,12 +849,16 @@ def inventory(
 def _items(here: Path) -> list[dict]:
     """Every row, sorted by kind and then by id."""
     from polyweave.kernel import provenance
+    from polyweave.kernel.config import load
+    from polyweave.layers.geometry.make import BUILDS
 
     rows: dict[str, dict] = {}
     outdated = {o["artefact"] for o in provenance.outdated(str(here))["outdated"]}
     waiting = _waiting(here)
+    # A build with no `out` lands in the work area (§PW583), and is the project's item.
+    builds = load(here).path("paths.work") / BUILDS
     for found in sorted(here.rglob(f"*{provenance.SUFFIX}")):
-        if _hidden(found, here):
+        if _hidden(found, here) and not found.is_relative_to(builds):
             continue  # the cache's own records, which are not the project's items
         try:
             record = provenance.read(found, here)

@@ -644,7 +644,7 @@ export interface GameWaitArgs {
 export interface GeometryBuildArgs {
   /** the declaration, as a path under the project */
   source: string
-  /** where to write; its own folder if unset */
+  /** where to write; in [paths] work if unset */
   out?: string
   /** the project the paths resolve against; default "." */
   root?: string
@@ -662,7 +662,7 @@ export interface GeometryBuildArgs {
 export interface GeometryBuildAllArgs {
   /** the folder whose declarations are built */
   folder: string
-  /** where to write; each one's folder if unset */
+  /** where to write; in [paths] work if unset */
   out?: string
   /** the project the paths resolve against; default "." */
   root?: string

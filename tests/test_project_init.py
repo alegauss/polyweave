@@ -271,6 +271,29 @@ def test_a_server_declared_twice_or_not_at_all_is_an_error(tree, monkeypatch):
     assert ("adopt.no-server", "error") in _codes(project.check(str(tree)))
 
 
+def test_a_build_left_beside_its_declaration_is_named_in_a_godot_project(
+    tree, monkeypatch
+):
+    """§PW583: Godot imports the declaration's folder, so a build there ships."""
+    _godot(tree, monkeypatch)
+    project.init(str(tree), write=True, agent=True)
+    stamp = {"stamp": "k", "source": "docs/art/tray.toml", "outputs": []}
+    (tree / "docs" / "art" / "tray.build.json").write_text(json.dumps(stamp), "utf-8")
+    landed = tree / ".polyweave" / "geometry" / "docs" / "art"
+    landed.mkdir(parents=True)
+    (landed / "tray.build.json").write_text(json.dumps(stamp), "utf-8")
+    (tree / "assets" / "models" / "kept.build.json").write_text(
+        json.dumps({**stamp, "source": "docs/art/kept.toml"}), "utf-8"
+    )
+    found = project.check(str(tree))
+    assert _codes(found) == [("adopt.build-beside", "error")]
+    (finding,) = found["findings"]
+    assert "docs/art/tray.build.json" in finding["message"]
+    assert "[paths] work" in finding["remedy"]
+    (tree / "project.godot").unlink()
+    assert _codes(project.check(str(tree))) == [("adopt.build-beside", "warning")]
+
+
 def test_a_tree_never_adopted_is_told_how(tree):
     assert _codes(project.check(str(tree))) == [("adopt.not-adopted", "error")]
 

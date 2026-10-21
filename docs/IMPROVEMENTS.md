@@ -53,25 +53,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW583 A build with no out lands in the work area
-
-Found closing PW82 in Cottony on 2026-10-20. Cottony's `check_export` failed on the
-owner's machine with `FAIL imported from outside art/ and audio/: board_tray.glb,
-booster_tray.glb`. Those are files polyweave's geometry build wrote on 2026-10-14: a
-`<name>.glb`, its `.build.json` and its `.prov.json`, next to the declaration in
-`tools/art/`. `build_one` writes to the declaration's own folder where no `out` is
-given. In a Godot project that folder is imported like any other, so a trial build lands
-in the export, and a gate that keeps assets to `art/` and `audio/` goes red. The files
-are gitignored, so a clean checkout passes and only the machine that built them fails,
-which is the hardest red to read.
-
-What to build: where no `out` is given, write a build under `[paths] work` (the
-`.polyweave/` area Godot never imports), mirroring the declaration's path, and say where
-in the answer. A project that wants builds beside the declaration names `out` or sets it
-in `[geometry]`. `project.check` should also name any built mesh it finds outside the
-paths the project declares for assets, with the remedy of moving it or giving it an
-`out`.
-
 ### §PW588 placing a declaration's model inside another
 
 Where it happened: spinhold RK250 asks for each world on the Rind map to be a voxel

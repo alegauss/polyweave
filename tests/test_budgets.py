@@ -290,7 +290,9 @@ DESCRIBE = 156_600
 #: 169,422 with music.from_midi and its two codes (§PW559).
 #: 170,734 with music.from_audio and music.nothing-heard (§PW559).
 #: 172,202 with geometry.kit and geom.bad-kit (§PW568).
-CAPABILITIES = 172_500
+#: 172,517 with adopt.build-beside, project.check's name for a build Godot would
+#: import into the export (§PW583).
+CAPABILITIES = 172_800
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

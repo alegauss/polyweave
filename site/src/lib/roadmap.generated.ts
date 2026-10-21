@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 2 },
+  { block: "G", title: "Geometry as a declaration", open: 1 },
   { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW583",
-    block: "G",
-    symptom: "geometry.build with no out writes the mesh beside its declaration, where Godot imports it into the export",
-    why: "Cottony's export check went red on the one machine that had built a tray, from gitignored files nobody else has.",
-    deps: [],
-  },
   {
     id: "PW588",
     block: "G",

@@ -93,9 +93,10 @@ def test_a_build_writes_every_member_and_reads_them_side_by_side(tmp_path, capsy
         one["says"].split(" by ")[0].rsplit(" ", 1)[1] for one in answer["members"]
     ]
     assert spans == ["4", "8", "2"]
+    landed = tmp_path / ".polyweave" / "geometry"  # no `out`: the work area (§PW583)
     for name in ("ship", "ship_boss", "ship_scout"):
-        assert (tmp_path / f"{name}.voxels.json").is_file()
-    boss = json.loads((tmp_path / "ship_boss.voxels.json").read_text(encoding="utf-8"))
+        assert (landed / f"{name}.voxels.json").is_file()
+    boss = json.loads((landed / "ship_boss.voxels.json").read_text(encoding="utf-8"))
     assert boss["palette"][0]["colour"] == "#C03030"
 
 

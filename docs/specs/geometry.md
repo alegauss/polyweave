@@ -581,10 +581,16 @@ what `--set` does take, where it used to be dropped without a word (§PW317). Un
 `--all` the same keys go to every declaration, so one a declaration does not take is
 named on its answer as `not_set` instead.
 
-**The stamp is committed beside its declaration** (§PW227). The edit guard reads it from
-a fresh clone to name the declaration an output came from, and a clone that finds it
-also skips what has not changed, so it belongs with the tree rather than in
-`.polyweave/`. It names the source and every output relative to the project root (a path
+**A build with no `out` lands in the work area** (§PW583), under `[paths] work` in
+`geometry/`, mirroring the declaration's folder, and the answer's `outputs` say where.
+It never lands beside the declaration: in a game that folder is inside the engine's
+import tree, so a trial build went into the export and a gate keeping assets to `art/`
+went red on the one machine that had built it. A project that wants a build in the tree
+names `out`, and `project.check` names a stamp still found beside its declaration as
+`adopt.build-beside`.
+
+**The stamp sits beside the outputs** (§PW227), so where `out` names a tracked folder it
+is committed with them, and a fresh clone skips what has not changed. It names the source and every output relative to the project root (a path
 outside the tree stays absolute) and ends its lines in `\n` on every platform, so two
 checkouts building one declaration write the same bytes. A stamp from before, with
 absolute paths, still reads. Blender is needed only

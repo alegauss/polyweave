@@ -14,7 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 🛠 **PW583** (deps: —) **geometry.build with no out writes the mesh beside its declaration, where Godot imports it into the export** — Cottony's export check went red on the one machine that had built a tray, from gitignored files nobody else has. → §PW583
 - 📋 **PW588** (deps: —) **a voxel declaration cannot place another declaration's model, so a diorama cannot reuse kit pieces with their materials** — A scene of pieces means copying every piece's nodes into it or arranging them in game code, outside any declaration or check. → §PW588
 
 ## Block H — Proof on a real game

@@ -535,6 +535,7 @@ on it:
 | `adopt.key-unset` | error | a service's `key_env` not set, checked by name and never read |
 | `adopt.budget-lapsed` | error once expired, warning where none is written | a service that can spend nothing |
 | `adopt.unrecorded` | error | produced files with no provenance record |
+| `adopt.build-beside` | error in a Godot project, warning elsewhere | a geometry build's `.build.json` beside the declaration it was built from, which an engine importing that folder takes in; a build with no `out` lands under `[paths] work` |
 | `adopt.own-surface` | error | a file of the project's own that starts Godot, drives Blender, calls a generative service or holds a picture to a statistic and exits on it, not named under `[adoption] own` |
 
 **What the project still does itself is a read of its own** (§PW59). `project.adoption`

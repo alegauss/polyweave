@@ -811,6 +811,13 @@ KERNEL_CODES: dict[str, Code] = {
         when="an artefact made outside polyweave, or a record deleted",
         doors=("produce it again through polyweave", "list it under handmade"),
     ),
+    "adopt.build-beside": Code(
+        means="a geometry build sits beside the declaration it was built from",
+        when="it was built before a build with no out went to the work area, or its "
+             "out named the declaration's own folder, which an engine may import",
+        doors=("delete it and build again, which writes under [paths] work",
+               "give the build an out where the engine should read it"),
+    ),
     "adopt.internal-tracked": Code(
         means="git tracks a file derived from a reference kept internal",
         when="frames of another game's video, or something made from them, committed "

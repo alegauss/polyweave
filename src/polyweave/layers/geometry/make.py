@@ -133,7 +133,7 @@ _MESH = Param("write the .glb beside a voxel build's cells; false for the cells 
 def build_one(
     source: Annotated[str, Param("the declaration, as a path under the project")],
     *,
-    out: Annotated[str, Param("where to write; its own folder if unset")] = None,
+    out: Annotated[str, Param("where to write; in [paths] work if unset")] = None,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
     given: Annotated[dict, Param("params by name, or fields as voxels.cell")] = None,
     preview: Annotated[bool, Param("also write a cheap look: a silhouette")] = False,
@@ -214,6 +214,25 @@ def _alike(was, now) -> bool:
     return number(was) and number(now) or type(was) is type(now)
 
 
+#: Where a build with no `out` lands, under `[paths] work`.
+BUILDS = "geometry"
+
+
+def _work_for(where: Path, here: Path) -> Path:
+    """Where a build with no `out` goes: `[paths] work`, mirroring the declaration.
+
+    Never beside the declaration (§PW583). In a game that folder sits inside the
+    engine's import tree, so a trial build was imported into the export, and a gate
+    keeping assets to `art/` went red on the one machine that had built it, from files
+    no one else had because they were ignored.
+    """
+    from polyweave.kernel.config import load
+
+    work = load(here).path("paths.work") / BUILDS
+    folder = where.parent.resolve()
+    return work / folder.relative_to(here) if folder.is_relative_to(here) else work
+
+
 def _built(source, out, root, given, preview, force, mesh, *, strict: bool) -> dict:
     from polyweave.layers import geometry as G
 
@@ -229,7 +248,7 @@ def _built(source, out, root, given, preview, force, mesh, *, strict: bool) -> d
             answer["set"] = said
         if ignored:
             answer["not_set"] = ignored
-        folder = Path(out) if out else where.parent
+        folder = Path(out) if out else _work_for(where, here)
         folder = folder if folder.is_absolute() else here / folder
         folder.mkdir(parents=True, exist_ok=True)
         mark = folder / f"{document['name']}{STAMP}"
@@ -266,7 +285,7 @@ def _built(source, out, root, given, preview, force, mesh, *, strict: bool) -> d
         }
         # One set of bytes on every machine (§PW227): paths relative to the root and a
         # line ending that Windows' text mode does not turn into CRLF, so the stamp can
-        # be committed beside the declaration it describes.
+        # be committed with the outputs where `out` names a tracked folder.
         mark.write_text(
             json.dumps(stamped, indent=1) + "\n", encoding="utf-8", newline="\n"
         )
@@ -455,7 +474,7 @@ def is_declaration(source: Path) -> bool:
 def build_all(
     folder: Annotated[str, Param("the folder whose declarations are built")],
     *,
-    out: Annotated[str, Param("where to write; each one's folder if unset")] = None,
+    out: Annotated[str, Param("where to write; in [paths] work if unset")] = None,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
     given: Annotated[dict, Param("params or fields, for every declaration")] = None,
     preview: Annotated[bool, Param("also write a cheap look for each")] = False,
