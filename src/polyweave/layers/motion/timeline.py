@@ -30,6 +30,14 @@ A value is a number, a bool, two to four numbers (a Vector2, a Vector3, a Color)
 AnimationPlayer holding the one Animation, which the game plays or seeks by time with
 the node it is a child of as the root its paths start from, and which emits mark(name)
 at each mark, so the game plays a sound or a hit where the timeline says.
+
+A move the game also plays the other way is declared once (§PW592): `[mirror]` names a
+second animation and the tracks whose values it negates, a number's sign or, by `axes`,
+chosen components of a vector, and both land in the one player:
+
+    [mirror]
+    name = "bank_left"
+    negate = ["Tender/Bank:rotation", { target = "Tender:position", axes = ["x"] }]
 """
 
 from __future__ import annotations
@@ -50,10 +58,15 @@ EASINGS: dict[str, float] = {
     "linear": 1.0, "in": 2.0, "out": 0.5, "in_out": -2.0, "step": 0.0,
 }
 
-TIMELINE_KEYS = ("name", "easing", "length", "track", "mark")
+TIMELINE_KEYS = ("name", "easing", "length", "track", "mark", "mirror")
 TRACK_KEYS = ("target", "keys", "easing")
 KEY_KEYS = ("at", "value", "ease")
 MARK_KEYS = ("at", "name")
+MIRROR_KEYS = ("name", "negate")
+NEGATE_KEYS = ("target", "axes")
+
+#: Which component of a vector each axis names.
+AXES = {"x": 0, "y": 1, "z": 2}
 
 
 def _bad(where: str, what: str, remedy: str, **extra: Any) -> PolyweaveError:
@@ -173,15 +186,83 @@ def _checked(table: Any, source: str) -> dict:
     if not _number(length) or length < ends or length <= 0:
         raise _bad(source, f"lasts {length!r}",
                    f"write length as seconds from {ends:g}, its last key or mark, on")
-    return {"name": name, "length": float(length), "tracks": built,
+    line = {"name": name, "length": float(length), "tracks": built,
             "marks": sorted(marks, key=lambda one: one["at"])}
+    if "mirror" in table:
+        line["mirror"] = _mirror(table["mirror"], line)
+    return line
+
+
+def _mirror(table: Any, line: dict) -> dict:
+    """The mirror's name and, per track it negates, the components it negates."""
+    where = "mirror"
+    _only(where, table, MIRROR_KEYS, "[mirror] with a name and negate")
+    name = table.get("name")
+    if not isinstance(name, str) or not name.isidentifier() or name == line["name"]:
+        raise _bad(where, f"is named {name!r}",
+                   "name it as a word of letters, digits and underscores, other than "
+                   "the timeline's own; it is the second animation's name")
+    kinds = {track["target"]: track["kind"] for track in line["tracks"]}
+    negate = table.get("negate")
+    if not isinstance(negate, list) or not negate:
+        raise _bad(where, "negates nothing",
+                   "list in negate the tracks whose sign the mirror flips")
+    flips: dict[str, list[int] | None] = {}
+    for one in negate:
+        said = {"target": one} if isinstance(one, str) else _only(
+            where, one, NEGATE_KEYS, "a target, or { target, axes = [\"x\"] }")
+        target = said.get("target")
+        if target not in kinds:
+            raise _bad(where, f"negates {target!r}, which no track targets",
+                       "name a track's target exactly as it is written",
+                       given=str(target), allowed=list(kinds))
+        kind = kinds[target]
+        if kind in ("bool", "color"):
+            raise _bad(where, f"negates {target}, a {kind}, which has no sign",
+                       "negate a number or a vector's components")
+        axes = said.get("axes")
+        if axes is None:
+            flips[target] = None
+            continue
+        width = {"vector2": 2, "vector3": 3}.get(kind, 0)
+        named = [AXES.get(axis) for axis in axes] if isinstance(axes, list) else [None]
+        if not width or not named or any(i is None or i >= width for i in named):
+            raise _bad(where, f"negates {target} on axes {axes!r}",
+                       "name axes of its vector, as [\"x\"] or [\"x\", \"z\"]; a "
+                       "number is negated whole")
+        flips[target] = sorted(set(named))
+    return {"name": name, "negate": flips}
+
+
+def _mirrored(line: dict) -> dict:
+    """The timeline with the mirror's tracks negated, as its own animation."""
+    flips = line["mirror"]["negate"]
+
+    def flipped(track: dict, value: Any) -> Any:
+        # Taken from 0.0, so a zero stays 0 and is never written -0.
+        axes = flips[track["target"]]
+        if track["kind"] == "float":
+            return 0.0 - value
+        return [0.0 - v if axes is None or i in axes else v
+                for i, v in enumerate(value)]
+
+    tracks = [
+        {**track, "keys": [{**key, "value": flipped(track, key["value"])}
+                           for key in track["keys"]]}
+        if track["target"] in flips else track
+        for track in line["tracks"]
+    ]
+    return {**line, "name": line["mirror"]["name"], "tracks": tracks}
 
 
 def _godot(kind: str, value: Any) -> str:
     if kind == "bool":
         return "true" if value else "false"
     if kind == "float":
-        return f"{value:.9g}"
+        # Always with a point: a bare `0` is an int to Godot, and a track mixing an int
+        # key with a float one never moves, as a bank keyed 0, 0.32, 0 did not.
+        said = f"{value:.9g}"
+        return said if any(c in said for c in ".en") else f"{said}.0"
     numbers = ", ".join(f"{v:.9g}" for v in value)
     return {"vector2": "Vector2", "vector3": "Vector3", "color": "Color"}[kind] + \
         f"({numbers})"
@@ -209,10 +290,36 @@ func _mark(name: String) -> void:
 
 
 def _scene(line: dict) -> str:
-    """The timeline as a Godot 4 scene: an AnimationPlayer holding its one Animation."""
+    """The timeline as a Godot 4 scene: an AnimationPlayer holding its Animation, and
+    its mirror's beside it in the one library where it declares one (§PW592)."""
+    name = line["name"]
+    played = [("timeline", line)]
+    if line.get("mirror"):
+        played.append(("mirror", _mirrored(line)))
+    animations = "\n\n".join(_animation(at, one, name) for at, one in played)
+    library = ",\n".join(f'&{_text(one["name"])}: SubResource("{at}")'
+                         for at, one in played)
+    source = _PLAYS.replace("\\", "\\\\").replace('"', '\\"')
+    return (
+        f"[gd_scene load_steps={len(played) + 3} format=3]\n\n"
+        '[sub_resource type="GDScript" id="plays"]\n'
+        f'script/source = "{source}"\n\n'
+        + animations + "\n\n"
+        '[sub_resource type="AnimationLibrary" id="library"]\n'
+        f"_data = {{\n{library}\n}}\n\n"
+        f'[node name="{name}" type="AnimationPlayer"]\n'
+        # A mark is said as the play reaches it, not deferred to the frame's end.
+        "callback_mode_method = 1\n"
+        'script = SubResource("plays")\n'
+        'libraries = {\n&"": SubResource("library")\n}\n'
+    )
+
+
+def _animation(at: str, line: dict, player: str) -> str:
+    """One Animation sub-resource: its value tracks, and its marks on the player."""
     name = line["name"]
     lines = [
-        '[sub_resource type="Animation" id="timeline"]',
+        f'[sub_resource type="Animation" id="{at}"]',
         f"resource_name = {_text(name)}",
         f"length = {line['length']:.9g}",
     ]
@@ -242,7 +349,8 @@ def _scene(line: dict) -> str:
             f'tracks/{index}/type = "method"',
             f"tracks/{index}/imported = false",
             f"tracks/{index}/enabled = true",
-            f'tracks/{index}/path = NodePath({_text(name)})',
+            # The marks are said by the player, whichever animation it plays.
+            f'tracks/{index}/path = NodePath({_text(player)})',
             f"tracks/{index}/interp = 1",
             f"tracks/{index}/loop_wrap = true",
             f"tracks/{index}/keys = {{",
@@ -251,20 +359,7 @@ def _scene(line: dict) -> str:
             f'"values": [{calls}]',
             "}",
         ]
-    source = _PLAYS.replace("\\", "\\\\").replace('"', '\\"')
-    return (
-        "[gd_scene load_steps=4 format=3]\n\n"
-        '[sub_resource type="GDScript" id="plays"]\n'
-        f'script/source = "{source}"\n\n'
-        + "\n".join(lines) + "\n\n"
-        '[sub_resource type="AnimationLibrary" id="library"]\n'
-        f'_data = {{\n&{_text(name)}: SubResource("timeline")\n}}\n\n'
-        f'[node name="{name}" type="AnimationPlayer"]\n'
-        # A mark is said as the play reaches it, not deferred to the frame's end.
-        "callback_mode_method = 1\n"
-        'script = SubResource("plays")\n'
-        'libraries = {\n&"": SubResource("library")\n}\n'
-    )
+    return "\n".join(lines)
 
 
 def _source(source: str, config) -> tuple[Path, dict]:
@@ -294,8 +389,9 @@ def build(
 ) -> dict:
     """Build keyed tracks of a scene's own properties into a scene the game plays.
 
-    It lands as <name>.tscn: an AnimationPlayer whose one animation keys each target's
-    property, emitting mark(name) at each mark (§PW554).
+    It lands as <name>.tscn: an AnimationPlayer whose animation keys each target's
+    property, emitting mark(name) at each mark (§PW554). A [mirror] adds a second
+    animation with the tracks it names negated, played by its own name (§PW592).
     """
     from polyweave.layers.vfx.vfx import shipped_folder
 
@@ -311,11 +407,15 @@ def build(
     provenance.write(provenance.build(
         "timeline", target, engine={"name": "clip.timeline"},
         inputs=[provenance.source("timeline", where, config.root)],
-        params={"timeline": line["name"]}, measurements=numbers, root=config.root,
+        params={"timeline": line["name"],
+                **({"mirror": line["mirror"]["name"]} if line.get("mirror") else {})},
+        measurements=numbers, root=config.root,
     ), config.root)
     return {
         "source": provenance.relative(where, config.root),
         "file": provenance.relative(target, config.root),
+        "animations": [line["name"]]
+        + ([line["mirror"]["name"]] if line.get("mirror") else []),
         "targets": [track["target"] for track in line["tracks"]],
         "marks": [mark["name"] for mark in line["marks"]],
         **numbers,

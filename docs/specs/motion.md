@@ -277,7 +277,19 @@ AnimationPlayer holding the one Animation, with the node it is a child of as the
 its tracks' paths start from; it emits `mark(name)` as the play reaches each mark,
 called at once rather than deferred. A bool track is discrete. The record is of kind
 `timeline`, and the answer says the duration and how many tracks, keys and marks. Anything
-no Animation can play is `clip.bad-timeline`, a missing file `clip.no-timeline`.
+no Animation can play is `clip.bad-timeline`, a missing file `clip.no-timeline`. A
+number is always written with a point, since a bare `0` is an int to Godot and a track
+mixing an int key with a float one never moved.
+
+**A move played the other way is declared once** (§PW592). Spinhold's tender banks into
+the turn one way and the other, and was declared as two files differing by one sign.
+`[mirror]` takes a `name`, the second animation's, and `negate`, the tracks whose values
+it flips: a target written as a track writes it negates a number, or every component of
+a vector, and `{ target, axes = ["x"] }` only the components named. Both animations go
+into the one player's library, the game playing either by name, and the marks are said
+through the player in both. The record's params name the mirror. A mirror named as the
+timeline, negating nothing, a target no track has, a colour or a bool, or an axis its
+vector lacks is `clip.bad-timeline`.
 
 **Both are baked by name** (§PW160). Every step between a clip and what a game plays took a
 mesh and a fitted rig as objects in memory, which a JSON call cannot carry, so a GDScript

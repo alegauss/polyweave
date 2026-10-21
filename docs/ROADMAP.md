@@ -16,8 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW592** (deps: —) **a clip.timeline cannot be played mirrored, so a roll left and right is declared as two files differing by one sign** — Two copies of one motion are tuned twice and drift apart, where the game only wanted the same move the other way. → §PW592
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

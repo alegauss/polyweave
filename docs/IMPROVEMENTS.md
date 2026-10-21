@@ -100,28 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW592 a timeline and its mirror
-
-Where it happened: spinhold RK255 banks the player's tender toward the world in focus on
-the Rind map: a roll into the turn and back, one way when the focus moves right and the
-other way when it moves left.
-
-What polyweave has: `clip.timeline` builds one `*.timeline.toml` into one
-AnimationPlayer scene, and a value is played as keyed. Playing backwards reverses the
-time, not the sign, so there is no way to play the same roll mirrored. Spinhold declares
-the bank twice, art/cinema/map_tender_bank_left.timeline.toml and
-map_tender_bank_right.timeline.toml, identical but for the sign of one number, and
-builds both. Any tuning has to be made in both files and they can drift apart.
-
-What it should do: a timeline declares its mirror once, e.g. `[mirror] name =
-"map_tender_bank_left"` with `negate = ["Tender/Bank:rotation.x"]` (or `axis = "x"` for
-a position track), and `clip.timeline` writes both animations into the one player's
-library, so the game plays either by name. Or a track key may take `value = "-roll"`
-against a declared `[params] roll = 0.32` with `variants = { left = { roll = -0.32 } }`,
-the same idea as a declaration's params. The provenance names the shared source.
-
-Workaround in spinhold: the two files above, both built by clip.timeline.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
