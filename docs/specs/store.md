@@ -118,3 +118,30 @@ hold still, and the layers stack back into the whole. A selector naming no eleme
 `compose.no-layer`, and its `allowed` lists the places and ids there are. An SVG that
 does not parse, or states neither a pixel width nor a viewBox, is `compose.no-vector`.
 Each layer is a picture like any other, so a spec can hold its alpha edge.
+
+## A site's copies of the art
+
+**A resized copy is declared, and its record says what it was cut from** (§PW585). A
+promo site ships its own copies of the art, because a page cannot carry the originals.
+Cottony cut 28 of them with a script whose check re-cut each in memory and called it
+stale past a mean of 0.75 levels and a 99th percentile of 12, floors tuned by hand after
+twelve copies showed older art than the game for weeks. A `*.copies.toml` declares them:
+
+    into = "site/assets"         # where each `out` is written; the project if unset
+    quality = 88                 # WebP and JPEG, unless a row says; 90 if unset
+
+    [[copy]]
+    source = "docs/design/promo3.jpg"
+    out = "hero.webp"            # .webp, .jpg or .png picks the format
+    side = 820                   # the largest side in px; the size kept if unset
+    box = [30, 402, 850, 1024]   # left, top, right, bottom, cropped before the resize
+
+`picture.copies(source)` crops each row by `box`, fits it within `side` by Lanczos and
+encodes it by its extension, a WebP at method 6. Every copy's record names the source
+(`picture`) and the table (`table`) as inputs with the side, box and quality as params,
+so `provenance.outdated` names a copy once its source or its table moves, and a newer
+Pillow encoding a level differently changes nothing. A source that is not there is
+`copies.missing-source`, naming every one, before anything is written. A key the table
+does not take, a row with no source or out, an extension no format is picked by, or a
+side, box or quality that is not a whole number in range is `copies.bad-table`. A JPEG
+of a source with transparent pixels is `copies.no-alpha`, never filled.

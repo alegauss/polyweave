@@ -159,7 +159,9 @@ from polyweave.surface.capabilities import capabilities
 #: project otherwise ran a transcriber per stem for in a scratch environment (§PW559).
 #: 156,328 with geometry.kit, a kit built, rendered, specced and sat in one call, which
 #: a project otherwise ran as a shell loop of five calls a piece (§PW568).
-DESCRIBE = 156_600
+#: 156,982 with picture.copies, a site's resized copies recorded against their source,
+#: which Cottony held to a hand-tuned percentile in a script of its own (§PW585).
+DESCRIBE = 157_300
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -292,7 +294,8 @@ DESCRIBE = 156_600
 #: 172,202 with geometry.kit and geom.bad-kit (§PW568).
 #: 172,517 with adopt.build-beside, project.check's name for a build Godot would
 #: import into the export (§PW583).
-CAPABILITIES = 172_800
+#: 173,111 with picture.copies and its three codes (§PW585).
+CAPABILITIES = 173_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -360,7 +363,8 @@ HELP_VERB = 4_900
 #: 32,212 with sound.stems (§PW558).
 #: 32,372 with music.from_midi (§PW559).
 #: 32,532 with music.from_audio (§PW559).
-HELP_TOP = 32_700
+#: 32,841 with picture.copies (§PW585).
+HELP_TOP = 33_000
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

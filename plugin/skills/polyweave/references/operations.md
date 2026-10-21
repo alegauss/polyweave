@@ -12,7 +12,7 @@
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest`, `measure.contrast`, `measure.pressure`, `measure.level`, `measure.flashes` |
 | Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `reference.concept`, `cost.read`, `sound.measure`, `sound.speech`, `sound.declared` (what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
-| See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector` |
+| See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector`, `picture.copies` |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
 | Carry a person's verdict (an accept needs the page's `code`) | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`, `verdict.answer`, `verdict.move`, `verdict.place`; `review` shows one, `verdict.answers` resumes |
 | The decision screen | `review.state`, `review.words`, `review.canon`, `review.compare`, `review.answer` |

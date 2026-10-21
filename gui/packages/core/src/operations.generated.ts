@@ -1268,6 +1268,14 @@ export interface PictureCollectArgs {
   root?: string
 }
 
+/** Cut every copy a table declares, each recorded with its source and the table. */
+export interface PictureCopiesArgs {
+  /** the *.copies.toml, as a path under the project */
+  source: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Turn an approved picture into the structured prompt 4.0 draws it from (§PW165). */
 export interface PictureDescribeArgs {
   /** an approved picture, under the project */
@@ -2684,6 +2692,7 @@ export interface Operations {
   "picture.against_parent": PictureAgainstParentArgs
   "picture.buy": PictureBuyArgs
   "picture.collect": PictureCollectArgs
+  "picture.copies": PictureCopiesArgs
   "picture.describe": PictureDescribeArgs
   "picture.fit": PictureFitArgs
   "picture.gate": PictureGateArgs
@@ -2898,6 +2907,7 @@ export const OPERATIONS = [
   "picture.against_parent",
   "picture.buy",
   "picture.collect",
+  "picture.copies",
   "picture.describe",
   "picture.fit",
   "picture.gate",

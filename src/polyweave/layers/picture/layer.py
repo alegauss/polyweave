@@ -7,6 +7,7 @@ LAYER = Layer(
     uses=("engine", "geometry", "reference", "words",),
     summary="Pictures bought, fitted, varied and drawn, held to the project's style.",
     modules=(
+        "polyweave.layers.picture.copies",
         "polyweave.layers.picture.fitting",
         "polyweave.layers.picture.panel",
         "polyweave.layers.picture.picture",

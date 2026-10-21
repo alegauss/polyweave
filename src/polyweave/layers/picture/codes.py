@@ -11,9 +11,27 @@ from polyweave.kernel.codes import Code
 #: What each of this layer's areas is about.
 AREAS: dict[str, str] = {
     "style": "what a project's pictures look like, and the canon a person grows",
+    "copies": "a picture's derived copies, cut from a declared table",
 }
 
 CODES: dict[str, Code] = {
+    # -- copies: a site's or a store's resized copies of the art (§PW585) ------
+    "copies.bad-table": Code(
+        means="a copies table is not one picture.copies can cut from",
+        when="a key it does not take, a row with no source or out, an out whose "
+        "extension picks no format, or a side, box or quality that is no number of px",
+        doors=("fix the row the message names; allowed lists what it takes",),
+    ),
+    "copies.missing-source": Code(
+        means="a source a copies table names is not there, so nothing was cut",
+        when="art renamed or moved after the table was written",
+        doors=("restore it", "point the row at where it moved"),
+    ),
+    "copies.no-alpha": Code(
+        means="a JPEG copy was asked of a source with transparent pixels",
+        when="a sprite or icon with alpha cut to .jpg, which would fill them",
+        doors=("write it as .webp or .png", "crop to where the source is opaque"),
+    ),
     "style.references-need-3": Code(
         means="a family with style references was asked for on a model that takes none",
         when="[style.<family>] names references and the call asked 4.0",

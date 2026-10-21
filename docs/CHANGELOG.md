@@ -259,6 +259,7 @@
 - ✅ **PW577** **game.export_smoke cannot export or launch a macOS build: it knows no darwin host and looks for a .exe** — On a Mac the macOS preset exports to a zip, its .app binary launches with modes kept, its pack runs the flow, and release_check reads a bundle's pack (design recorded in `docs/specs/driving.md`).
 - ✅ **PW578** **game.export_smoke keeps no picture of the exported build's first screen, so a draw that fails headless passes** — With shot, export_smoke draws the pack's main scene in a window, keeps first.png, and answers a frame of one colour as broken (design recorded in `docs/specs/driving.md`).
 - ✅ **PW82** **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Cottony's bake_model.py is gone (016d743) and nothing imports it; every family renders on polyweave, and the mesh prep still run by hand is PW582.
+- ✅ **PW585** **a site's resized copy of the art records nothing it came from, so Cottony checks staleness with its own percentile** — picture.copies cuts a *.copies.toml and records each copy against its source and table, so provenance.outdated says when one is stale (design recorded in `docs/specs/store.md`).
 
 ## Block I — Voxel models from a declaration
 

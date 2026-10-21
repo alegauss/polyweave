@@ -94,6 +94,12 @@ one does, and the pieces that are better left alone stay where they are. What th
 delivers is the adoption plus a written list of everything that had to be configured,
 which is the plugin's real interface, discovered rather than designed.
 
+Site copies, left by PW585 on 2026-10-21: `picture.copies` cuts a `*.copies.toml`, and a
+trial on Cottony's hero and favicon came out pixel for pixel equal to `site/assets/`.
+Cottony moves IMAGES into `site/assets.copies.toml` (`into`, `quality = 88`, and
+`quality = 86` on `og.jpg`), runs it once, deletes `tools/site_assets.py`, and lets CI's
+`provenance.outdated` replace `--check`.
+
 ### §PW57 One floor of five is a target now, and one more is a floor
 
 A threshold inside a gate can only answer after the render is spent. The same number in
@@ -117,32 +123,6 @@ apart. None of the three is a measure in `docs/specs/measurements.md`. The ring 
 a property of a set of marks, which the script argues at length, and porting it is
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
-
-### §PW585 Derived copies of a picture, recorded
-
-Found on 2026-10-20 closing PW82. `project.adoption` on Cottony is red on one file,
-`tools/site_assets.py`, under the measure surface. The script cuts 28 copies of the art
-for the promo site (a crop box, a largest side, WebP, JPEG or PNG at a fixed quality)
-and `--check` re-cuts each one in memory and calls it stale past a mean of 0.75 or a
-99th percentile of 12 levels. Those floors were tuned by hand on the twelve copies that
-went stale for weeks (Cottony RK166) because nothing recorded what each copy was made
-from.
-
-That is provenance's job, not a statistic's. A copy whose record names its source by
-digest is outdated the moment the source moves, and `provenance.outdated` already says
-so. Encoder drift between Pillow versions stops mattering, because the source's digest
-is compared and the copy's pixels are not.
-
-What to build: a declared table of derived copies, `*.copies.toml`, each row a source,
-an output path, and optional `side`, `box` and `quality`. The format follows the
-output's extension. `picture.copies --source <toml>` writes every row through one
-cut-and-encode path, records each output with the source and the table as inputs, and
-answers what it wrote with sizes. A missing source is refused before anything is
-written, as the script does. The check is `provenance.outdated`, which a CI step already
-runs, and the script's own staleness floors go.
-
-On ship: Cottony moves its IMAGES table into `site/assets.copies.toml`, deletes
-`tools/site_assets.py`, and `project.adoption` reads clean on the measure surface.
 
 ### §PW586 A transform's material reaches its voxels
 
