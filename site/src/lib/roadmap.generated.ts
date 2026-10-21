@@ -27,7 +27,7 @@ export interface GeneratedNonGoal {
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
-  { block: "C", title: "The asset compiler", open: 1 },
+  { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
@@ -53,13 +53,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW582",
-    block: "C",
-    symptom: "a mesh cannot be prepared before it is rendered, so Cottony keeps prep.py and three exporters outside the record",
-    why: "Cottony still runs prep.py and three exporters; cloth.dress needs its frame camera as a custom step before they can go.",
-    deps: [],
-  },
-  {
     id: "PW583",
     block: "G",
     symptom: "geometry.build with no out writes the mesh beside its declaration, where Godot imports it into the export",
@@ -71,7 +64,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family renders on polyweave and the rig is gone; Cottony still prepares meshes and cuts its site's copies itself.",
-    deps: ["PW582", "PW585"],
+    deps: ["PW585"],
   },
   {
     id: "PW585",
@@ -167,4 +160,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW495", "PW57", "PW449", "PW450", "PW201", "PW480", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW582", "PW495", "PW57", "PW449", "PW450", "PW201", "PW480", "PW311", "PW368"];

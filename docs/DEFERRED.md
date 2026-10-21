@@ -6,6 +6,8 @@
 
 ## Block C — The asset compiler
 
+- ⏸ **PW582** (deps: —) **a mesh cannot be prepared before it is rendered, so Cottony keeps prep.py and three exporters outside the record** — set aside (Each re-rendered Cottony family needs the owner's look again.): Cottony still runs prep.py and its three exporters. → §PW582
+
 ## Block D — Fetching from a paid service without surprise
 
 ## Block E — One world with the engine
