@@ -18,7 +18,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW586** (deps: —) **a voxel build ignores a material stated on a transform node, so its cells take the default** — An icon declared with a white-hot centre has drawn all one colour since it was made, and only a later check said so. → §PW586
 - 📋 **PW587** (deps: —) **geometry.build refuses a bare --preview that build --all takes, so the same word works in one command and not the other** — A trial build sent to a log fails unseen and leaves the old model looking freshly built. → §PW587
 - 📋 **PW589** (deps: PW336 ✅) **game.text_fit reads a label inside a SubViewport in that viewport's coordinates and compares it with the screen's labels** — A label drawn on a 3D card or any viewport texture fails the fit with false overlaps, so the real answer is read by hand. → §PW589
 - 📋 **PW590** (deps: —) **the game driver quit as idle for 600 s seconds after a game.step had answered, so the next call found the session gone** — An agent cannot tell a timeout from a crash, and loses the held state of the game mid-check. → §PW590

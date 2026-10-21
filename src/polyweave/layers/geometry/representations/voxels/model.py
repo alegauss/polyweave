@@ -638,7 +638,9 @@ def voxelize(
     centres = origin + (index + 0.5) * size
     made["checks"]["findings"] += _unpainted(model, document, centres, size)
     made["checks"]["findings"] += _straddled(model, document, centres, size)
-    made["checks"]["findings"] += _unworn(document, palette_names)
+    made["checks"]["findings"] += _unworn(
+        document, palette_names, model, centres[inside], names, owners
+    )
     stated = (document.get("voxels") or {}).get("fracture")
     if stated:
         from ...fracture import plan
@@ -785,19 +787,41 @@ def _once(found: list) -> list:
     return kept
 
 
-def _unworn(document: dict, worn: list[str]) -> list:
-    """Each material the declaration names that no cell ended up wearing (§PW252)."""
-    return [
-        {
-            "check": "material",
-            "says": f"no cell wears {name}, which the declaration names",
-            "cells": [],
-            "count": 0,
-            "material": name,
-        }
-        for name in document.get("materials") or {}
-        if name not in worn
-    ]
+def _unworn(document: dict, worn: list[str], model: _Model, filled: np.ndarray,
+            names: list[str], owners: np.ndarray) -> list:
+    """Each material the declaration names that no cell ended up wearing (§PW252).
+
+    Where a node carrying it does fill cells, every one of them was painted by a node
+    declared after it, and the finding names which (§PW586): Spinhold's sun disc read
+    as a material the build ignored, when the rays written below it covered it on that
+    grid.
+    """
+    found = []
+    for name in document.get("materials") or {}:
+        if name in worn:
+            continue
+        said = {"check": "material",
+                "says": f"no cell wears {name}, which the declaration names",
+                "cells": [], "count": 0, "material": name}
+        for node in document["nodes"]:
+            if node.get("material") != name or node["op"] == "paint":
+                continue
+            covered = model.inside(node["id"], filled).inside if len(filled) else []
+            if not np.any(covered):
+                continue
+            over = sorted({names[one] for one in owners[covered]},
+                          key=names.index)
+            # Said whole in one sentence, because the build's answer keeps only `says`.
+            said["says"] = (
+                f"no cell wears {name}: {node['id']} fills {int(np.sum(covered))} "
+                f"cells and {', '.join(over)}, declared after it, paints every one; "
+                f"declare {node['id']} after {over[-1]} to paint over it, or set a "
+                "finer cell if it should show only where it stands out"
+            )
+            said["node"], said["over"] = node["id"], over
+            break
+        found.append(said)
+    return found
 
 
 def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict:

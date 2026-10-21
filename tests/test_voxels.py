@@ -266,6 +266,29 @@ def test_a_material_no_cell_wears_is_named():
     assert unworn == ["blush", "glow"]
 
 
+def test_a_material_painted_over_names_the_node_that_covered_it():
+    """§PW586: Spinhold's sun disc read as a material a transform ignored, when the rays
+    declared after it painted every one of its cells."""
+    ball = {"id": "ball", "op": "primitive", "kind": "sphere", "size": 2.0}
+    disc = {"id": "disc", "op": "transform", "of": "ball", "material": "hot"}
+    rays = {"id": "rays", "op": "primitive", "kind": "cube", "size": 4.0,
+            "material": "main"}
+    both = {"id": "sun", "op": "union", "of": ["rays", "disc"]}
+    materials = {"hot": {}, "main": {}}
+    made = V.voxelize(shape(ball, disc, rays, both, voxels={"cell": 1.0},
+                            materials=materials))
+    (finding,) = [f for f in made["checks"]["findings"] if f["check"] == "material"]
+    assert finding["material"] == "hot"
+    assert finding["node"] == "disc" and finding["over"] == ["rays"]
+    assert "declare disc after rays" in finding["says"]
+    # Declared after the rays, as the finding says, the disc wears its own.
+    made = V.voxelize(shape(ball, rays, disc, both, voxels={"cell": 1.0},
+                            materials=materials))
+    assert [f for f in made["checks"]["findings"] if f["check"] == "material"] == []
+    worn = {one["name"] for one in made["palette"]}
+    assert worn == {"hot", "main"}
+
+
 def test_a_paint_that_does_not_say_where_is_refused():
     paint = {"id": "seam", "op": "paint", "on": "body", "material": "glow"}
     with pytest.raises(PolyweaveError) as refused:

@@ -124,37 +124,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW586 A transform's material reaches its voxels
-
-Found in spinhold rebuilding `art/voxels/icon_afterglow.toml` (a crew icon: a sun, a hot
-disc with rays round it). The disc is a `transform` node of a sphere carrying its own
-`material = "hot"`; the rays are a `transform` of a cube with `material = "main"`, and
-the model is their union:
-
-```
-[[nodes]]
-id       = "disc"
-op       = "transform"
-of       = "ball"
-scale    = [0.4, 0.4, 0.15]
-material = "hot"
-```
-
-`geometry.build` with the PW576 fix in place still gives 363 cells all in `main` and the
-finding "no cell wears hot, which the declaration names". So the voxel build ignores a
-material stated on a transform node: the disc's cells take the default, and the icon has
-drawn all-yellow since RK125 while its declaration says it has a white-hot centre. The
-mesh path carries a join's groups since PW576; the voxel path does not read the field at
-all.
-
-Expected: a transform's `material` paints the cells it moves, as a primitive's does, or
-the build refuses the field on a transform with a remedy (put the material on the
-primitive it moves).
-
-Workaround in spinhold: `hot` was dropped from the declaration so the icon stays as a
-person accepted it, with a comment naming this line, so the hot centre can come back (as
-a look change, through a sitting) once it is carried.
-
 ### §PW587 One spelling for a boolean across the CLI
 
 Found in spinhold while trying a declaration change on `art/voxels/kit_base.toml`.

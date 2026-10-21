@@ -908,6 +908,11 @@ its input through.
 **A later node paints.** A cell wears the material of the last node **in the document** that
 covers it and carries one. Document order rather than build order, because build order breaks
 ties by name, and a canopy written after the hull should win whatever the two are called.
+So a node every cell of which a later node also covers wears nothing of its own, and the
+`material` finding says so by name (§PW586): `no cell wears hot: disc fills 99 cells and
+rays, declared after it, paints every one`, with the two ways out, declaring it after
+them or a finer cell. Spinhold's sun disc read as a material a transform ignored, when
+on its grid the rays written below it covered the whole disc.
 
 `build.write(document, "ship.glb")` on such a document writes `ship.voxels.json` beside the
 mesh, and the mesh is the same cells as cubes with only their exposed faces, grouped by
