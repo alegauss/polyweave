@@ -251,6 +251,18 @@ display and `args`, the game's own flags that open it where the clip plays; it w
 until the camera's node exists, frames the shots and closes the game, and a camera that
 never comes is `clip.camera-absent`, the game closed. So a world's cutscene is one call.
 
+**A clip the game is not playing is stood up** (§PW591). Spinhold builds a world's camera
+only while its cutscene plays, which only a dive from the map starts, so framing each
+world meant driving the menus first. Given `clip`, the built `.tscn` (`res://` or under
+the project), in place of `camera`, the driver instances it in the game as it stands,
+under the scene playing, finds each anchor the shots name as the Node3D of that name, or
+at the path `anchors` maps it to, makes it the current camera and seeks it to each
+moment itself, since nothing in the game seeks a camera it did not make. A game whose
+world is not Cartesian passes `place`, `Path:method`, which becomes the camera's `place`
+and stands in for the anchors. Anchors nothing answers are `clip.anchor-absent`, naming
+them, before any camera is made; neither or both of `camera` and `clip` is
+`clip.camera-absent`.
+
 **A scene's own properties are keyed in a timeline** (§PW554). Spinhold's title logo
 reveal, a halo rising out of the dark and a light wiping the letters on, was to be
 declared as the cutscenes are, and neither a joint clip nor a camera clip keys a

@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 2 },
+  { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW591",
-    block: "H",
-    symptom: "clip.shots frames a camera clip only once the game is playing it, so a cutscene reached through menus cannot be framed",
-    why: "Every world's cutscene plays only after a map choice, so framing one means driving the game through the menus first.",
-    deps: [],
-  },
   {
     id: "PW592",
     block: "H",

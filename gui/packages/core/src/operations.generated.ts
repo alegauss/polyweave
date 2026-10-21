@@ -188,10 +188,16 @@ export interface ClipSetKeyArgs {
 export interface ClipShotsArgs {
   /** the *.camera.toml the game's camera was built from */
   source: string
-  /** the built camera's node in the running game */
-  camera: string
   /** the folder the shots and the sitting are written to */
   out: string
+  /** the built camera's node in the running game; or give clip */
+  camera?: string
+  /** the built clip's .tscn, stood up when the game is not playing it */
+  clip?: string
+  /** with clip: anchor to node path, where the node is not so named */
+  anchors?: Record<string, unknown>
+  /** with clip: Path:method placing a point, for a world not Cartesian */
+  place?: string
   /** a game.open session, opened with display */
   session?: string
   /** the game's own flags */

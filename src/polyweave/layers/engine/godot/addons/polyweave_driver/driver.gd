@@ -308,6 +308,8 @@ func _command(asked: Dictionary) -> Dictionary:
 			return _wait(asked)
 		"call":
 			return _call(asked)
+		"clip_camera":
+			return _clip_camera(asked)
 		"shot":
 			return _shot(asked)
 		"expect":
@@ -721,6 +723,45 @@ func _set_property(asked: Dictionary) -> Dictionary:
 		value = int(value)
 	nodes[0].set_indexed(NodePath(named), value)
 	return {"result": {"was": _plain(before), "now": _plain(nodes[0].get_indexed(NodePath(named)))}}
+
+
+## A camera clip's scene stood up in the running game, its anchors found by name or by
+## the path given, so clip.shots frames a clip the game is not playing (§PW591). The
+## anchors nothing answers come back as `missing`, and then no camera is made.
+func _clip_camera(asked: Dictionary) -> Dictionary:
+	var packed := load(str(asked.get("scene", ""))) as PackedScene
+	if packed == null:
+		return _refused("driver.no-node", "there is no scene at %s" % asked.get("scene"))
+	var under: Node = current_scene if current_scene else root
+	var anchors := {}
+	var missing := []
+	var given: Dictionary = asked.get("anchors", {})
+	for named in asked.get("names", []):
+		var path := str(given.get(named, ""))
+		var node: Node = null
+		if path != "":
+			node = root.get_node_or_null(path) if path.begins_with("/") else under.get_node_or_null(path)
+		else:
+			node = under.find_child(str(named), true, false)
+		if node is Node3D:
+			anchors[str(named)] = node
+		else:
+			missing.append(str(named))
+	if not missing.is_empty():
+		return {"result": {"missing": missing}}
+	var camera: Node = packed.instantiate()
+	under.add_child(camera)
+	camera.set("anchors", anchors)
+	var place := str(asked.get("place", ""))
+	if place != "":
+		var owner_node: Node = under.get_node_or_null(place.get_slice(":", 0))
+		var method := place.get_slice(":", 1)
+		if owner_node == null or not owner_node.has_method(method):
+			camera.queue_free()
+			return _refused("driver.no-method", "nothing answers %s" % place)
+		camera.set("place", Callable(owner_node, method))
+	(camera as Camera3D).make_current()
+	return {"result": {"path": str(camera.get_path())}}
 
 
 func _call(asked: Dictionary) -> Dictionary:

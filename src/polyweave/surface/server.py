@@ -62,7 +62,9 @@ CORE_TOOLS = 39_000
 #: 135,350 with music.from_audio (§PW559), whose sound layer's figure rose by 1,100.
 #: 136,539 with geometry.kit (§PW568), whose geometry layer's figure rose by 1,200.
 #: 137,117 with picture.copies (§PW585), inside the picture layer's own figure.
-SESSION_BUDGET = 137_400
+#: 137,507 with clip.shots's clip, anchors and place (§PW591), whose motion layer's
+#: figure rose by 600 for them.
+SESSION_BUDGET = 137_800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

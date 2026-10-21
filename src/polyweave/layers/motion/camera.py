@@ -440,8 +440,19 @@ OPEN_FRAMES = 600
 def shots(
     source: Annotated[str, Param("the *.camera.toml the game's camera was built from")],
     *,
-    camera: Annotated[str, Param("the built camera's node in the running game")],
     out: Annotated[str, Param("the folder the shots and the sitting are written to")],
+    camera: Annotated[
+        str, Param("the built camera's node in the running game; or give clip")
+    ] = "",
+    clip: Annotated[
+        str, Param("the built clip's .tscn, stood up when the game is not playing it")
+    ] = "",
+    anchors: Annotated[
+        dict, Param("with clip: anchor to node path, where the node is not so named")
+    ] = None,
+    place: Annotated[
+        str, Param("with clip: Path:method placing a point, for a world not Cartesian")
+    ] = "",
     session: Annotated[str, Param("a game.open session, opened with display")] = "",
     args: Annotated[list, Param("the game's own flags")] = None,
     into: Annotated[
@@ -457,36 +468,48 @@ def shots(
     whatever the game seeks, a frame is let pass and the screen is saved. The pin is
     let go after. The shots are one family in one sitting, answered on the review page.
     With no `session` the game is opened here with `args`, and closed after (§PW553).
+    Given `clip` instead of `camera`, the camera is stood up in the game as it stands,
+    each anchor found by name or by `anchors`, so a cutscene reached through menus is
+    framed with no driving to it (§PW591).
     """
     from polyweave.layers.engine import driving
     from polyweave.loop import verdict
 
     config = load(root)
-    _, clip = _source(source, config)
+    _, declared = _source(source, config)
+    if bool(camera) == bool(clip):
+        raise PolyweaveError(
+            "clip.camera-absent",
+            "clip.shots frames the camera the game plays, or a clip it stands up "
+            "itself, and was given " + ("both" if camera else "neither"),
+            "pass camera, the playing camera's node, or clip, the built clip's .tscn",
+        )
     folder = Path(out) if Path(out).is_absolute() else config.root / out
     own = not session
     if own:
         session = driving.opened(root, display=True, args=args)["session"]
-        found = driving.waited(session, node=camera, frames=OPEN_FRAMES, root=root)
-        if not found.get("met"):
+    try:
+        if clip:
+            camera = _stood_up(session, declared, clip, anchors, place, root)
+        elif own:
+            _awaited(session, camera, args, root)
+    except PolyweaveError:
+        if own:
             driving.closed(session, root=root)
-            raise PolyweaveError(
-                "clip.camera-absent",
-                f"the game opened with {args or 'no arguments'} made no {camera} in "
-                f"{OPEN_FRAMES} frames",
-                "pass the args that open the game where the clip plays, or drive it "
-                "there yourself and pass session",
-                given=camera,
-            )
+        raise
     taken = []
     try:
-        for index, when in enumerate(moments(clip, into)):
+        for index, when in enumerate(moments(declared, into)):
             driving.set_value(session, path=camera, prop="pinned", value=str(when),
                               root=root)
+            if clip:
+                # Nothing in the game seeks a camera it did not make, so it is placed.
+                driving.called(session, path=camera, method="seek", args=[when],
+                               root=root)
             driving.stepped(session, frames=2, root=root)
-            picture = folder / f"{clip['name']}-{index + 1}.png"
+            picture = folder / f"{declared['name']}-{index + 1}.png"
             driving.shot(session, out=str(picture), root=root)
-            mark = clip["shots"][index]["mark"]
+            mark = declared["shots"][index]["mark"]
             taken.append({"shot": index + 1, "at": round(when, 3), "mark": mark,
                           "picture": provenance.relative(picture, config.root)})
     finally:
@@ -497,11 +520,54 @@ def shots(
                                                    else ""),
                 "new": one["picture"]} for one in taken]
     laid = verdict.sitting(
-        {clip["name"]: members}, out=str(folder), root=str(config.root),
+        {declared["name"]: members}, out=str(folder), root=str(config.root),
         about=f"Each shot of {source}, framed in the running game "
               f"{into:.0%} of the way through its hold.",
     )
     return {"source": source, "shots": taken, "sitting": laid["manifest"],
             "page": laid["page"],
-            "says": f"{len(taken)} shot(s) of {clip['name']} to judge at "
+            "says": f"{len(taken)} shot(s) of {declared['name']} to judge at "
                     f"{laid['page']}"}
+
+
+def _awaited(session: str, camera: str, args: list | None, root: str) -> None:
+    """The playing camera, waited for in a game clip.shots opened itself (§PW553)."""
+    from polyweave.layers.engine import driving
+
+    found = driving.waited(session, node=camera, frames=OPEN_FRAMES, root=root)
+    if not found.get("met"):
+        raise PolyweaveError(
+            "clip.camera-absent",
+            f"the game opened with {args or 'no arguments'} made no {camera} in "
+            f"{OPEN_FRAMES} frames",
+            "pass the args that open the game where the clip plays, or drive it "
+            "there yourself and pass session; or pass clip to stand it up here",
+            given=camera,
+        )
+
+
+def _stood_up(session: str, declared: dict, clip: str, anchors: dict | None,
+              place: str, root: str) -> str:
+    """The built clip stood up in the game as it stands, its anchors found (§PW591).
+
+    Spinhold builds a world's camera only while its cutscene plays, which only a dive
+    from the map starts, so framing one meant driving the menus for every world.
+    """
+    from polyweave.layers.engine import driving
+
+    scene = clip if clip.startswith("res://") else "res://" + clip.lstrip("/")
+    names = sorted({shot["anchor"] for shot in declared["shots"] if shot["anchor"]})
+    # A game that places points itself needs no anchor nodes found.
+    said = driving.send(session, "clip_camera", root=root, scene=scene, place=place,
+                        names=[] if place else names, anchors=dict(anchors or {}))
+    missing = (said.get("result") or {}).get("missing")
+    if missing:
+        raise PolyweaveError(
+            "clip.anchor-absent",
+            f"{scene} places its shots in {', '.join(missing)}, and nothing in the "
+            "game as it stands answers " + ("that name" if len(missing) == 1 else
+                                            "those names"),
+            "pass anchors naming each one's node path, or the args that build them",
+            allowed=missing,
+        )
+    return said["result"]["path"]

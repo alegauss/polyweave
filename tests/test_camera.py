@@ -251,6 +251,118 @@ def test_the_pin_is_let_go_when_a_shot_fails(tmp_path, monkeypatch):
     assert sent == ["0.5", "-1"]
 
 
+def test_a_clip_the_game_is_not_playing_is_stood_up_and_framed(tmp_path, monkeypatch):
+    """§PW591: Spinhold builds a world's camera only in a cutscene a map dive starts."""
+    from PIL import Image
+
+    from polyweave.layers.engine import driving
+
+    sent = []
+
+    def send(session, cmd, *, root, **fields):
+        sent.append((cmd, fields["scene"], fields["names"], fields["anchors"]))
+        return {"result": {"path": "/root/Main/opening"}}
+
+    monkeypatch.setattr(driving, "opened", lambda root, **said: {"session": "g9"})
+    monkeypatch.setattr(driving, "send", send)
+    monkeypatch.setattr(driving, "set_value", lambda session, **said: None)
+    monkeypatch.setattr(driving, "called", lambda session, **said: sent.append(
+        ("seek", said["path"], said["args"])))
+    monkeypatch.setattr(driving, "stepped", lambda session, **said: None)
+    monkeypatch.setattr(driving, "closed", lambda session, **said: sent.append(
+        ("close", session)))
+
+    def shot(session, *, out, root):
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (32, 18), (40, 40, 60)).save(out)
+
+    monkeypatch.setattr(driving, "shot", shot)
+    said = camera.shots(clip_file(tmp_path), clip="cinema/opening.tscn",
+                        anchors={"ship": "World/Ship"}, args=["--world=waist"],
+                        out="art/review/waist", root=str(tmp_path))
+    assert len(said["shots"]) == 2
+    assert sent == [
+        ("clip_camera", "res://cinema/opening.tscn", ["ship"], {"ship": "World/Ship"}),
+        ("seek", "/root/Main/opening", [0.5]), ("seek", "/root/Main/opening", [1.25]),
+        ("close", "g9"),
+    ]
+
+
+def test_a_stood_up_clip_whose_anchors_are_absent_names_them(tmp_path, monkeypatch):
+    from polyweave.layers.engine import driving
+
+    closed = []
+    monkeypatch.setattr(driving, "opened", lambda root, **said: {"session": "g9"})
+    monkeypatch.setattr(driving, "send", lambda session, cmd, **said: {
+        "result": {"missing": ["ship"]}})
+    monkeypatch.setattr(driving, "closed",
+                        lambda session, **said: closed.append(session))
+    with pytest.raises(PolyweaveError) as refused:
+        camera.shots(clip_file(tmp_path), clip="cinema/opening.tscn", out="o",
+                     root=str(tmp_path))
+    assert refused.value.code == "clip.anchor-absent"
+    assert "ship" in refused.value.message
+    assert closed == ["g9"]
+
+
+@pytest.mark.parametrize("given", [{}, {"camera": "Camera", "clip": "c.tscn"}])
+def test_neither_or_both_of_camera_and_clip_is_refused(tmp_path, given):
+    with pytest.raises(PolyweaveError) as refused:
+        camera.shots(clip_file(tmp_path), session="g1", out="o", root=str(tmp_path),
+                     **given)
+    assert refused.value.code == "clip.camera-absent"
+
+
+WORLD = """extends Node3D
+
+func _ready() -> void:
+\tvar ship := Node3D.new()
+\tship.name = "ship"
+\tship.position = Vector3(100, 0, 0)
+\tadd_child(ship)
+"""
+
+
+def test_the_driver_stands_a_clip_up_where_its_anchor_is(tmp_path):
+    """§PW591, in the engine: the camera made, its anchor found by name, and seeking
+    it frames the shot in that anchor's frame."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    from polyweave.layers.engine import driving, godot
+
+    camera.build(clip_file(tmp_path), root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="camera"\n'
+        'run/main_scene="res://main.tscn"\n', encoding="utf-8")
+    (tmp_path / "main.gd").write_text(WORLD, encoding="utf-8")
+    (tmp_path / "main.tscn").write_text(
+        '[gd_scene load_steps=2 format=3]\n\n'
+        '[ext_resource type="Script" path="res://main.gd" id="1"]\n\n'
+        '[node name="Main" type="Node3D"]\nscript = ExtResource("1")\n',
+        encoding="utf-8")
+    godot.install(tmp_path, addon="polyweave_driver")
+    root = str(tmp_path)
+    session = driving.opened(root)["session"]
+    try:
+        driving.stepped(session, frames=2, root=root)
+        absent = driving.send(session, "clip_camera", root=root,
+                              scene="res://cinema/opening.tscn", names=["ghost"],
+                              anchors={}, place="")
+        assert absent["result"] == {"missing": ["ghost"]}
+        made = driving.send(session, "clip_camera", root=root,
+                            scene="res://cinema/opening.tscn", names=["ship"],
+                            anchors={}, place="")["result"]["path"]
+        driving.called(session, path=made, method="seek", args=[0.0], root=root)
+        (found,) = driving.queried(session, path=made,
+                                   properties=["global_position", "current"],
+                                   root=root)["result"]
+        # The first shot starts at [0, 2, 10] in the ship's frame, 100 along x.
+        assert found["properties"]["current"] is True
+        assert "100" in str(found["properties"]["global_position"])
+    finally:
+        driving.closed(session, root=root)
+
+
 PLAYS = """extends SceneTree
 
 var ship := Node3D.new()

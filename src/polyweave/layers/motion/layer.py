@@ -20,7 +20,8 @@ LAYER = Layer(
     config="polyweave.layers.motion.settings",
     # 7,104 with clip.shots, each camera shot framed in the running game (§PW372).
     # Raised with clip.timeline, a scene's own properties keyed and built (§PW554).
-    tools=7_800,
+    # 8,088 once clip.shots stands up a clip the game is not playing (§PW591).
+    tools=8_400,
     census={
         "polyweave.layers.motion.camera:checked": (
             "internal", "a camera clip's table, with defaults"),

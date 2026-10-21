@@ -100,30 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW591 framing a clip the game is not playing
-
-Where it happened: spinhold RK254 wants a picture of each world's ring for the map's
-panel, taken in game from the world's own camera clip (`art/cinema/<world>.camera.toml`,
-built by `clip.camera` into `game/ui/<world>_camera.tscn`).
-
-The call: `game.open --scene res://game/main.tscn --args ["--world=waist"] --display`,
-then `clip.shots --source art/cinema/waist.camera.toml --camera
-/root/Main/Opening/Camera`. It refused `driver.no-node`: nothing answers that path. The
-game builds the clip's camera only while the world's cutscene plays, and a cutscene
-plays only after the player dives into the world from the map. So to frame a clip, an
-agent first has to drive the game through the map for each world (clear a phase, move
-the focus, press accept, wait for the dive), and for a third-tier world through two such
-choices.
-
-What it should do: `clip.shots` can frame a clip without the game playing it. Given the
-built clip scene (`--clip res://game/ui/waist_camera.tscn`) and a scene or flags that
-stand the world up (`--args ["--world=waist"]`), it instances the clip's camera itself
-in the running game, places it as the clip's anchors say, seeks each shot and frames it,
-with the same sitting it writes today. A clip whose anchors name nodes the scene lacks
-is refused with the names.
-
-Workaround in spinhold: none; RK254's pictures wait on this line.
-
 ### §PW592 a timeline and its mirror
 
 Where it happened: spinhold RK255 banks the player's tender toward the world in focus on

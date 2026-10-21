@@ -29,6 +29,13 @@ CODES: dict[str, Code] = {
         doors=("pass the args that open the game where the clip plays",
                "open the game with game.open, drive it there, and pass session"),
     ),
+    "clip.anchor-absent": Code(
+        means="a clip stood up by clip.shots names anchors the game has no node for",
+        when="clip.shots given clip, with the game where none of the shots' anchors "
+        "is a Node3D by that name or by the path anchors gives (§PW591)",
+        doors=("pass anchors mapping each name to its node's path",
+               "pass the args that build the world the anchors are in"),
+    ),
     "clip.no-timeline": Code(
         means="the timeline named is not there, or is not TOML",
         when="clip.timeline on a path with no *.timeline.toml, or one that does not "

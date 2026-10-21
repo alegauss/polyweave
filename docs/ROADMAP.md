@@ -16,7 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW591** (deps: —) **clip.shots frames a camera clip only once the game is playing it, so a cutscene reached through menus cannot be framed** — Every world's cutscene plays only after a map choice, so framing one means driving the game through the menus first. → §PW591
 - 📋 **PW592** (deps: —) **a clip.timeline cannot be played mirrored, so a roll left and right is declared as two files differing by one sign** — Two copies of one motion are tuned twice and drift apart, where the game only wanted the same move the other way. → §PW592
 
 ## Block I — Voxel models from a declaration
