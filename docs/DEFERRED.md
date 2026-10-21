@@ -21,6 +21,7 @@
 ## Block H — Proof on a real game
 
 - ⏸ **PW57** (deps: PW53 ✅) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — set aside (The owner decides: new measures, or a kept test.): check_pieces.py's rings and silhouette gaps have no measure a search could aim at. → §PW57
+- ⏸ **PW36** (deps: PW5 ✅, PW82 ✅, PW582 ✅, PW585 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — set aside (Needs the owner's look (PW582)): Every family renders on polyweave and the rig is gone; Cottony still prepares meshes and cuts its site's copies itself. → §PW36
 
 ## Block I — Voxel models from a declaration
 

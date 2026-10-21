@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
-  { block: "H", title: "Proof on a real game", open: 7 },
+  { block: "H", title: "Proof on a real game", open: 6 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -57,13 +57,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "G",
     symptom: "a voxel declaration cannot place another declaration's model, so a diorama cannot reuse kit pieces with their materials",
     why: "A scene of pieces means copying every piece's nodes into it or arranging them in game code, outside any declaration or check.",
-    deps: [],
-  },
-  {
-    id: "PW36",
-    block: "H",
-    symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
-    why: "Every family renders on polyweave and the rig is gone; Cottony still prepares meshes and cuts its site's copies itself.",
     deps: [],
   },
   {
@@ -195,4 +188,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW582", "PW495", "PW57", "PW449", "PW450", "PW201", "PW480", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW582", "PW495", "PW57", "PW36", "PW449", "PW450", "PW201", "PW480", "PW311", "PW368"];
