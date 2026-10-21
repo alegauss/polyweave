@@ -72,6 +72,30 @@ in `[geometry]`. `project.check` should also name any built mesh it finds outsid
 paths the project declares for assets, with the remedy of moving it or giving it an
 `out`.
 
+### §PW588 placing a declaration's model inside another
+
+Where it happened: spinhold RK250 asks for each world on the Rind map to be a voxel
+diorama, `art/voxels/<world>_diorama.toml`, "reusing the kit pieces the ring already has
+(`kit_*`)": cottages, bobbins, lolly trees, street lamps, tower shafts. Each piece is
+already its own declaration, built and accepted.
+
+What polyweave has: of the geometry ops, only `mesh` reads another file, and it reads a
+triangle mesh. A kit piece's `.glb` brings none of its named materials, so its cells
+come out in quantised texture colours or one material, and its glows and finishes are
+lost. Reusing a piece today means copying its nodes into the diorama, which forks every
+piece, or placing the pieces in game code, which takes the arrangement out of any
+declaration and every check.
+
+What it should do: a node that places another declaration's model, e.g. `op = "model"`,
+`path = "art/voxels/kit_quilt_cottage.toml"` (or its built `.voxels.json`), taking
+`transform`'s `scale`, `at`, `turn` and `repeat`. Its cells keep their materials, named
+under the piece (`kit_quilt_cottage.roof`) unless the palette declares that name. A
+piece's rebuild re-stamps the diorama (provenance names it as a source), and
+`geometry.describe` lists the pieces placed. A different cell size is resampled, or
+refused with the size that fits.
+
+Workaround in spinhold: none written; RK250 waits on this line.
+
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork
@@ -138,6 +162,149 @@ runs, and the script's own staleness floors go.
 
 On ship: Cottony moves its IMAGES table into `site/assets.copies.toml`, deletes
 `tools/site_assets.py`, and `project.adoption` reads clean on the measure surface.
+
+### §PW586 A transform's material reaches its voxels
+
+Found in spinhold rebuilding `art/voxels/icon_afterglow.toml` (a crew icon: a sun, a hot
+disc with rays round it). The disc is a `transform` node of a sphere carrying its own
+`material = "hot"`; the rays are a `transform` of a cube with `material = "main"`, and
+the model is their union:
+
+```
+[[nodes]]
+id       = "disc"
+op       = "transform"
+of       = "ball"
+scale    = [0.4, 0.4, 0.15]
+material = "hot"
+```
+
+`geometry.build` with the PW576 fix in place still gives 363 cells all in `main` and the
+finding "no cell wears hot, which the declaration names". So the voxel build ignores a
+material stated on a transform node: the disc's cells take the default, and the icon has
+drawn all-yellow since RK125 while its declaration says it has a white-hot centre. The
+mesh path carries a join's groups since PW576; the voxel path does not read the field at
+all.
+
+Expected: a transform's `material` paints the cells it moves, as a primitive's does, or
+the build refuses the field on a transform with a remedy (put the material on the
+primitive it moves).
+
+Workaround in spinhold: `hot` was dropped from the declaration so the icon stays as a
+person accepted it, with a comment naming this line, so the hot centre can come back (as
+a look change, through a sitting) once it is carried.
+
+### §PW587 One spelling for a boolean across the CLI
+
+Found in spinhold while trying a declaration change on `art/voxels/kit_base.toml`.
+`run.cmd`'s asset step builds with `python -m polyweave build --all art/voxels --out
+assets/voxels --root . --preview`, where `--preview` is a bare flag. The same word on
+one declaration, `python -m polyweave geometry.build --source art/voxels/kit_base.toml
+--out assets/voxels --preview`, is refused by argparse with "argument --preview:
+expected one argument", because `geometry.build` declares it as a BOOL that takes a
+value.
+
+The refusal itself is clear, but a caller who sends output to a log (or reads only the
+model it expected to be rewritten) learns nothing: the earlier model stays on disk and
+looks built. Here three trial variants were measured against the stale model before the
+usage line was noticed.
+
+Expected: one spelling for one parameter across the CLI. A BOOL parameter should accept
+the bare flag as true (`--preview`, `--preview true`, `--preview false` all valid), as
+`build` already does, and `describe` should say which form a parameter takes.
+
+### §PW589 text fit inside a SubViewport
+
+Where it happened: spinhold RK252 puts a tag over each world on the Rind map. Each tag's
+face is a small SubViewport (640x180) holding a HoloPanel and two Labels, drawn as the
+texture of a tilted quad in the map's own 3D SubViewport. The design asks for
+`game.text_fit` in both languages.
+
+The call: `game.open --scene res://game/main.tscn --args ["--route"] --locale pt_BR`,
+then `game.text_fit`. It answered `passed: false`, "12 text node(s), 9 that do not fit".
+Every finding was an overlap between labels in different viewports: each tag's name
+label (box 196,12,426,69 in its own viewport) "lies over" every other tag's, the HUD's
+score at 32,16 on the screen and the screen's heading at 0,24. The boxes are read in
+each label's own viewport coordinates and then compared as if they shared the screen.
+The real fit answer (`lines == visible_lines` on every tag label) was right, but buried
+under false overlaps.
+
+What it should do: compare overlaps only between labels drawn in the same viewport. A
+label inside a SubViewport that the screen shows as a texture (on a TextureRect, a
+SubViewportContainer or a 3D material) is checked for fit within its own viewport and
+named with that viewport's path, never placed in screen space. Where it can map the box
+to the screen (a container with `stretch`), it may report the screen box as well.
+
+Workaround in spinhold: none. The findings were read by hand for `lines` against
+`visible_lines`.
+
+### §PW590 the driver's idle clock
+
+Where it happened: spinhold RK252, checking text fit on the Rind map (2026-10-21).
+
+The calls, back to back from one agent turn: `game.open --args ["--route"]` (session
+g838655f5), then `game.step --frames 120`, which answered at frame 120 with no errors,
+then `game.text_fit`. The last was refused `game.gone`: "session g838655f5 no longer
+answers: [WinError 10061] ... actively refused", with the detail "polyweave_driver: idle
+for 600 s, quitting". Only seconds had passed between the calls, not 600.
+
+A second open (g614b7099) with no step in between answered at once, and so did a third.
+So the idle clock seems to count something other than wall time between requests: the
+held frames, or the time since open rather than since the last request. Or a step's
+frames are counted as idle.
+
+What it should do: the driver's idle timeout counts real seconds since the last request
+it answered, and a step resets it. The refusal says how long it had really been idle by
+the caller's clock and since which request, so an agent can tell a timeout from a crash.
+`game.gone`'s remedy names the log line.
+
+Workaround in spinhold: none; the session was opened again.
+
+### §PW591 framing a clip the game is not playing
+
+Where it happened: spinhold RK254 wants a picture of each world's ring for the map's
+panel, taken in game from the world's own camera clip (`art/cinema/<world>.camera.toml`,
+built by `clip.camera` into `game/ui/<world>_camera.tscn`).
+
+The call: `game.open --scene res://game/main.tscn --args ["--world=waist"] --display`,
+then `clip.shots --source art/cinema/waist.camera.toml --camera
+/root/Main/Opening/Camera`. It refused `driver.no-node`: nothing answers that path. The
+game builds the clip's camera only while the world's cutscene plays, and a cutscene
+plays only after the player dives into the world from the map. So to frame a clip, an
+agent first has to drive the game through the map for each world (clear a phase, move
+the focus, press accept, wait for the dive), and for a third-tier world through two such
+choices.
+
+What it should do: `clip.shots` can frame a clip without the game playing it. Given the
+built clip scene (`--clip res://game/ui/waist_camera.tscn`) and a scene or flags that
+stand the world up (`--args ["--world=waist"]`), it instances the clip's camera itself
+in the running game, places it as the clip's anchors say, seeks each shot and frames it,
+with the same sitting it writes today. A clip whose anchors name nodes the scene lacks
+is refused with the names.
+
+Workaround in spinhold: none; RK254's pictures wait on this line.
+
+### §PW592 a timeline and its mirror
+
+Where it happened: spinhold RK255 banks the player's tender toward the world in focus on
+the Rind map: a roll into the turn and back, one way when the focus moves right and the
+other way when it moves left.
+
+What polyweave has: `clip.timeline` builds one `*.timeline.toml` into one
+AnimationPlayer scene, and a value is played as keyed. Playing backwards reverses the
+time, not the sign, so there is no way to play the same roll mirrored. Spinhold declares
+the bank twice, art/cinema/map_tender_bank_left.timeline.toml and
+map_tender_bank_right.timeline.toml, identical but for the sign of one number, and
+builds both. Any tuning has to be made in both files and they can drift apart.
+
+What it should do: a timeline declares its mirror once, e.g. `[mirror] name =
+"map_tender_bank_left"` with `negate = ["Tender/Bank:rotation.x"]` (or `axis = "x"` for
+a position track), and `clip.timeline` writes both animations into the one player's
+library, so the game plays either by name. Or a track key may take `value = "-roll"`
+against a declared `[params] roll = 0.32` with `variants = { left = { roll = -0.32 } }`,
+the same idea as a declaration's params. The provenance names the shared source.
+
+Workaround in spinhold: the two files above, both built by clip.timeline.
 
 ## Block I — Voxel models from a declaration
 

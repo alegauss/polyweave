@@ -14,12 +14,19 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW583** (deps: —) **geometry.build with no out writes the mesh beside its declaration, where Godot imports it into the export** — Cottony's export check went red on the one machine that had built a tray, from gitignored files nobody else has. → §PW583
+- 🛠 **PW583** (deps: —) **geometry.build with no out writes the mesh beside its declaration, where Godot imports it into the export** — Cottony's export check went red on the one machine that had built a tray, from gitignored files nobody else has. → §PW583
+- 📋 **PW588** (deps: —) **a voxel declaration cannot place another declaration's model, so a diorama cannot reuse kit pieces with their materials** — A scene of pieces means copying every piece's nodes into it or arranging them in game code, outside any declaration or check. → §PW588
 
 ## Block H — Proof on a real game
 
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ✅, PW582 ✅, PW585) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family renders on polyweave and the rig is gone; Cottony still prepares meshes and cuts its site's copies itself. → §PW36
 - 📋 **PW585** (deps: —) **a site's resized copy of the art records nothing it came from, so Cottony checks staleness with its own percentile** — site_assets.py is the one file project.adoption still reads red on Cottony, and its floors were tuned by hand after twelve copies went stale unseen. → §PW585
+- 📋 **PW586** (deps: —) **a voxel build ignores a material stated on a transform node, so its cells take the default** — An icon declared with a white-hot centre has drawn all one colour since it was made, and only a later check said so. → §PW586
+- 📋 **PW587** (deps: —) **geometry.build refuses a bare --preview that build --all takes, so the same word works in one command and not the other** — A trial build sent to a log fails unseen and leaves the old model looking freshly built. → §PW587
+- 📋 **PW589** (deps: PW336 ✅) **game.text_fit reads a label inside a SubViewport in that viewport's coordinates and compares it with the screen's labels** — A label drawn on a 3D card or any viewport texture fails the fit with false overlaps, so the real answer is read by hand. → §PW589
+- 📋 **PW590** (deps: —) **the game driver quit as idle for 600 s seconds after a game.step had answered, so the next call found the session gone** — An agent cannot tell a timeout from a crash, and loses the held state of the game mid-check. → §PW590
+- 📋 **PW591** (deps: —) **clip.shots frames a camera clip only once the game is playing it, so a cutscene reached through menus cannot be framed** — Every world's cutscene plays only after a map choice, so framing one means driving the game through the menus first. → §PW591
+- 📋 **PW592** (deps: —) **a clip.timeline cannot be played mirrored, so a roll left and right is declared as two files differing by one sign** — Two copies of one motion are tuned twice and drift apart, where the game only wanted the same move the other way. → §PW592
 
 ## Block I — Voxel models from a declaration
 
