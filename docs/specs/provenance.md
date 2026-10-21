@@ -291,6 +291,15 @@ read every time and never remembered: NTFS stamps a write to the nearest tick, s
 same-size rewrite inside one would otherwise read as unchanged. One inventory scan of
 Spinhold went from about 13 s to about 7 s.
 
+**The walk enters only folders that can hold a record, once a scan** (§PW593). It never
+enters a `.git` or a `.godot`, nor the `<session>.user` folder each driven session is
+given under `driving`: Spinhold's held 5,207 folders of the engine's caches and no
+record. Inside `provenance.scan()` the walk and the records read are kept for everything
+asked, so the inventory, `outdated` and `unrecorded` share one; a change made during a
+scan is seen by the next. Telling a geometry declaration from other TOML is remembered
+by size, mtime and inode as a digest is. A warm scan of Spinhold went from about 7 s to
+under 2 s, with every row the same.
+
 **Only the project's own records are read** (§PW376). A folder below the root that holds a
 `.git` is another checkout, such as the worktree of an older commit `engine.cost` keeps in
 the work area, and its records describe that commit's files: read against this project's,

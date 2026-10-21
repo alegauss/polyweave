@@ -22,6 +22,8 @@ import json
 import os
 import time
 from collections.abc import Sequence
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import UTC, datetime
 from fnmatch import fnmatch
 from pathlib import Path, PurePath, PurePosixPath
@@ -792,8 +794,9 @@ def _own(where: Path) -> tuple[list[Path], list[str]]:
     an older commit `engine.cost` keeps under the work area: its records describe that
     commit's files, and read against this project's they report drift that is not.
     """
-    import os
-
+    kept = _scanned(("own", where))
+    if kept is not None:
+        return kept
     found: list[Path] = []
     trees: list[str] = []
     for folder, dirs, files in os.walk(where):
@@ -802,20 +805,78 @@ def _own(where: Path) -> tuple[list[Path], list[str]]:
             trees.append(relative(here, where))
             dirs[:] = []
             continue
-        dirs.sort()
+        dirs[:] = sorted(one for one in dirs if not _unrecorded_folder(here, one))
         found.extend(here / name for name in files if name.endswith(SUFFIX))
-    return sorted(found), sorted(trees)
+    return _scanned(("own", where), (sorted(found), sorted(trees)))
+
+
+#: Folders that never hold a record, wherever they are: a repository's own objects and
+#: Godot's import and shader cache.
+_NO_RECORDS = (".git", ".godot")
+
+
+def _unrecorded_folder(parent: Path, name: str) -> bool:
+    """Whether a folder is one the walk need not enter (§PW593).
+
+    Besides `_NO_RECORDS`, the `user://` each driven session is given (§PW217), a
+    `<session>.user` under `driving`: Spinhold's held 5,207 folders of the engine's own
+    caches and not one record, and were most of an inventory scan.
+    """
+    return name in _NO_RECORDS or (name.endswith(".user") and parent.name == "driving")
+
+
+def own_records(where: Path) -> list[tuple[Path, dict]]:
+    """Every readable record of the project's own, by the file it was read from, with
+    the artefact it names; read once in a scan however many readers ask (§PW593)."""
+    kept = _scanned(("records", where))
+    if kept is not None:
+        return kept
+    found = []
+    for one in _own(where)[0]:
+        try:
+            record = read(one, where)
+        except PolyweaveError:
+            continue
+        if (record.get("artefact") or {}).get("path"):
+            found.append((one, record))
+    return _scanned(("records", where), found)
 
 
 def _records(where: Path):
     """Every readable record of the project's own, with the artefact it names."""
-    for found in _own(where)[0]:
-        try:
-            record = read(found, where)
-        except PolyweaveError:
-            continue
-        if (record.get("artefact") or {}).get("path"):
-            yield record
+    for _, record in own_records(where):
+        yield record
+
+
+#: What one scan has read, by what was asked, while `scan()` holds it open.
+_SCAN: ContextVar[dict | None] = ContextVar("provenance_scan", default=None)
+
+
+@contextmanager
+def scan():
+    """Read the tree's records once for everything asked inside it (§PW593).
+
+    An inventory asks for the records in its own walk, in `outdated` and in
+    `unrecorded`, and each walked the project and parsed every record again. Inside a
+    scan the walk and the records are kept, so a change made during it is not seen:
+    a scan is one answer, and the next one reads afresh.
+    """
+    token = _SCAN.set({}) if _SCAN.get() is None else None
+    try:
+        yield
+    finally:
+        if token is not None:
+            _SCAN.reset(token)
+
+
+def _scanned(key: tuple, value: Any = None) -> Any:
+    """What the open scan holds for `key`, or `value` kept under it and returned."""
+    held = _SCAN.get()
+    if value is None:
+        return None if held is None else held.get(key)
+    if held is not None:
+        held[key] = value
+    return value
 
 
 def _made_by(record: dict) -> str:

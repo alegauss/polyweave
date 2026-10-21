@@ -16,6 +16,8 @@
 
 ## Block H — Proof on a real game
 
+- 📋 **PW594** (deps: —) **a game session leaves its own user:// folder in the work area once it ends, so engine caches pile up** — Spinhold's work area held 5,207 folders of Godot caches from closed sessions, which no reader needs once the game has ended. → §PW594
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -48,8 +50,6 @@
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs
-
-- 📋 **PW593** (deps: —) **one inventory scan walks the project three times and parses every record twice, so Spinhold still takes about 7 s** — With digests remembered no file is hashed again, and what is left is stat calls and walks the readers each make for themselves. → §PW593
 
 ## Block V — Parts every game repeats, installed already proved
 

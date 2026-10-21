@@ -87,6 +87,30 @@ def test_a_build_in_the_work_area_is_an_item_and_its_declaration_built(tree):
     assert ".polyweave/cache/x.png" not in rows
 
 
+def test_a_settled_declaration_is_told_from_memory_and_a_fresh_one_read(tmp_path,
+                                                                        monkeypatch):
+    """§PW593: telling a declaration from other TOML parsed every file, every scan."""
+    import os
+    import time
+
+    from polyweave.surface import cli
+
+    shape = tmp_path / "crate.toml"
+    shape.write_text('name = "crate"\n', encoding="utf-8")
+    then = time.time() - 60
+    os.utime(shape, (then, then))
+    asked = []
+    monkeypatch.setattr(cli, "is_declaration", lambda one: asked.append(one) or True)
+    assert project._declares(shape) is True
+    assert project._declares(shape) is True
+    assert len(asked) == 1
+    other = tmp_path / "notes.toml"
+    other.write_text("a = 1\n", encoding="utf-8")  # written just now: never kept
+    project._declares(other)
+    project._declares(other)
+    assert len(asked) == 3
+
+
 def test_one_read_lists_every_item_by_kind(tree):
     found = project.inventory(str(tree))
     rows = by_id(found)

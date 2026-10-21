@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 0 },
+  { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -45,13 +45,20 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 1 },
+  { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
   { block: "X", title: "The site on the shared design system", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
+  {
+    id: "PW594",
+    block: "H",
+    symptom: "a game session leaves its own user:// folder in the work area once it ends, so engine caches pile up",
+    why: "Spinhold's work area held 5,207 folders of Godot caches from closed sessions, which no reader needs once the game has ended.",
+    deps: [],
+  },
   {
     id: "PW202",
     block: "R",
@@ -93,13 +100,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
-  },
-  {
-    id: "PW593",
-    block: "U",
-    symptom: "one inventory scan walks the project three times and parses every record twice, so Spinhold still takes about 7 s",
-    why: "With digests remembered no file is hashed again, and what is left is stat calls and walks the readers each make for themselves.",
-    deps: [],
   },
 ];
 

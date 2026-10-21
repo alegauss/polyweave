@@ -100,6 +100,26 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
+### §PW594 A session's user folder goes with it
+
+Found by PW593 on 2026-10-21. Every `game.open` gives the game a fresh `user://` of its
+own, `.polyweave/driving/<session>.user`, set as APPDATA and XDG_DATA_HOME (PW217), so a
+session never reads the person's saves. Nothing removes it: `game.close` forgets the
+session's record and leaves the folder, and so does a session that quits idle or
+crashes. Godot fills each with its own shader and import caches, and Spinhold's work
+area held 5,207 such folders with no record in any, most of what an inventory scan
+walked until PW593 taught the walk to step over them. They also cost disk.
+
+Nothing reads them after the game ends: `game.crash_read` reads the person's own
+`user://`, `_user_dir`, never a session's, and a replay or a flow makes its own folder.
+
+What to build: `game.close` removes `<session>.user` once the process has ended, beside
+forgetting the record, and says so in its answer. `game.open` first removes every
+`*.user` under `driving` whose session has no record left and whose process is not
+alive, which covers a session that quit idle or crashed. The session's `.log` stays,
+since `game.gone`'s remedy names it. A test opens and closes a session and finds no
+folder left, and a stale folder from a dead session is gone after the next open.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -376,26 +396,6 @@ before handing the window over, and every friction filed as its own line in this
 It is not a test run. A change of plan that the owner asks for mid-way ("undo, try the
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
-
-### §PW593 One walk per inventory scan
-
-Left by PW584 on 2026-10-21. With every digest remembered, one inventory scan of
-Spinhold still takes about 7 s, and none of it is hashing any more. Measured warm, in
-one process: `provenance.outdated` 3.8 s, the `rglob` for records in `_items` 1.2 s,
-`_shapes` 1.8 s and `_lines` 0.3 s. A warm profile of `outdated` spends its time in
-16,097 `stat` calls, 6,132 `os.walk` steps in `_own`, `resolve()` and TOML parsing, not
-in reading files.
-
-So the tree is walked three times for one answer: once for `.prov.json`, once for
-declarations, once inside `outdated` for the records again. Every record is also parsed
-twice, by `_items` and by `outdated`.
-
-What to build: one walk of the project per scan that yields every path the readers ask
-for by suffix, skipping hidden, dependency and other-checkout folders once, and handed
-to `_items`, `_shapes` and `outdated` as a list rather than each calling `rglob`.
-Records are read once into a map by path and the same map is passed to `outdated`.
-Measure the split again before and after: the target is under 2 s on Spinhold warm, and
-a cold scan should cost the walk plus the hashing and nothing else.
 
 ## Block V — Parts every game repeats, installed already proved
 

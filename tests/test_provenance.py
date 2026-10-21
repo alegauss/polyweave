@@ -75,6 +75,33 @@ def test_a_file_just_written_is_read_every_time(tmp_path):
     assert P.sha256_of(path)[0] != first[0]
 
 
+def test_the_walk_leaves_out_folders_that_never_hold_a_record(tmp_path):
+    """§PW593: Spinhold's driven sessions left 5,207 folders of the engine's caches."""
+    for folder in ("art", ".git/objects", ".godot/imported",
+                   ".polyweave/driving/g1.user/Godot", ".polyweave/cache"):
+        (tmp_path / folder).mkdir(parents=True)
+        (tmp_path / folder / "x.png.prov.json").write_text("{}", encoding="utf-8")
+    found, _ = P._own(tmp_path)
+    assert [one.relative_to(tmp_path).as_posix() for one in found] == [
+        ".polyweave/cache/x.png.prov.json", "art/x.png.prov.json"]
+
+
+def test_a_scan_walks_and_reads_once_and_the_next_reads_afresh(tmp_path, monkeypatch):
+    a_record(tmp_path)
+    P.write(a_record(tmp_path), root=tmp_path)
+    walks = []
+    real = P.os.walk
+    monkeypatch.setattr(P.os, "walk", lambda *a, **k: walks.append(1) or real(*a, **k))
+    with P.scan():
+        first = P.own_records(tmp_path)
+        assert P.own_records(tmp_path) is first
+        list(P._records(tmp_path))
+        P._own(tmp_path)
+    assert len(walks) == 1
+    P.own_records(tmp_path)
+    assert len(walks) == 2
+
+
 # -- the record ------------------------------------------------------------------
 
 

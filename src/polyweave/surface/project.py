@@ -847,7 +847,18 @@ def inventory(
 
 
 def _items(here: Path) -> list[dict]:
-    """Every row, sorted by kind and then by id."""
+    """Every row, sorted by kind and then by id.
+
+    One scan: the tree is walked and every record read once, for the rows and for
+    `outdated` alike (§PW593).
+    """
+    from polyweave.kernel import provenance
+
+    with provenance.scan():
+        return _scanned_items(here)
+
+
+def _scanned_items(here: Path) -> list[dict]:
     from polyweave.kernel import provenance
     from polyweave.kernel.config import load
     from polyweave.layers.geometry.make import BUILDS
@@ -857,16 +868,10 @@ def _items(here: Path) -> list[dict]:
     waiting = _waiting(here)
     # A build with no `out` lands in the work area (§PW583), and is the project's item.
     builds = load(here).path("paths.work") / BUILDS
-    for found in sorted(here.rglob(f"*{provenance.SUFFIX}")):
+    for found, record in provenance.own_records(here):
         if _hidden(found, here) and not found.is_relative_to(builds):
             continue  # the cache's own records, which are not the project's items
-        try:
-            record = provenance.read(found, here)
-        except PolyweaveError:
-            continue
-        artefact = (record.get("artefact") or {}).get("path")
-        if not artefact:
-            continue
+        artefact = record["artefact"]["path"]
         recorded = record["artefact"].get("sha256")
         on_disk = here / artefact
         if not on_disk.is_file():
@@ -964,19 +969,50 @@ def _waiting(here: Path) -> set[str]:
 
 
 def _shapes(here: Path) -> list[str]:
-    """Every geometry declaration under the project, readable or not."""
+    """Every geometry declaration under the project, readable or not.
+
+    Walked without entering a hidden folder, which `rglob` did before filtering, and
+    each file's answer kept while it has not moved, since telling a declaration from
+    any other TOML parses it (§PW593).
+    """
+    import os
+
     from polyweave.kernel.provenance import relative
+
+    found = []
+    for folder, dirs, files in os.walk(here):
+        dirs[:] = [one for one in dirs if not one.startswith(".")]
+        found += [Path(folder) / name for name in files if name.endswith(".toml")
+                  and not name.endswith(".accept.toml") and name != FILENAME]
+    return [relative(source, here) for source in sorted(found) if _declares(source)]
+
+
+#: Whether a TOML file is a geometry declaration, by path, with the size, mtime and
+#: inode it was read at (§PW593).
+_DECLARES: dict[str, tuple[int, int, int, bool]] = {}
+
+
+def _declares(source: Path) -> bool:
+    """`is_declaration`, answered from memory while the file has not moved.
+
+    A file written in the last two seconds is read every time, as a digest is
+    (§PW584), so a same-size rewrite inside one mtime tick is never read stale.
+    """
+    import os
+    import time
 
     from .cli import is_declaration
 
-    return [
-        relative(source, here)
-        for source in sorted(here.rglob("*.toml"))
-        if not _hidden(source, here)
-        and not source.name.endswith(".accept.toml")
-        and source.name != FILENAME
-        and is_declaration(source)
-    ]
+    key = str(source)
+    stat = os.stat(key)
+    stamp = (stat.st_size, stat.st_mtime_ns, stat.st_ino)
+    kept = _DECLARES.get(key)
+    if kept and kept[:3] == stamp:
+        return kept[3]
+    said = bool(is_declaration(source))
+    if time.time_ns() - stat.st_mtime_ns > 2_000_000_000:
+        _DECLARES[key] = (*stamp, said)
+    return said
 
 
 def _lines(here: Path) -> list[dict]:
