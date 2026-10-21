@@ -124,25 +124,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW587 One spelling for a boolean across the CLI
-
-Found in spinhold while trying a declaration change on `art/voxels/kit_base.toml`.
-`run.cmd`'s asset step builds with `python -m polyweave build --all art/voxels --out
-assets/voxels --root . --preview`, where `--preview` is a bare flag. The same word on
-one declaration, `python -m polyweave geometry.build --source art/voxels/kit_base.toml
---out assets/voxels --preview`, is refused by argparse with "argument --preview:
-expected one argument", because `geometry.build` declares it as a BOOL that takes a
-value.
-
-The refusal itself is clear, but a caller who sends output to a log (or reads only the
-model it expected to be rewritten) learns nothing: the earlier model stays on disk and
-looks built. Here three trial variants were measured against the stale model before the
-usage line was noticed.
-
-Expected: one spelling for one parameter across the CLI. A BOOL parameter should accept
-the bare flag as true (`--preview`, `--preview true`, `--preview false` all valid), as
-`build` already does, and `describe` should say which form a parameter takes.
-
 ### §PW589 text fit inside a SubViewport
 
 Where it happened: spinhold RK252 puts a tag over each world on the Rind map. Each tag's

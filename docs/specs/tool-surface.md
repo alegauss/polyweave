@@ -289,7 +289,9 @@ both answers.
   with one `--<param>` flag per declared parameter and the sentence, unit and choices as
   its help. A flag's value is read by its declared type: a number, flag, list or table as
   JSON, a string as the text given, and `any` as JSON where it reads as JSON and text
-  where it does not. **A list survives any shell** (§PW247): Windows PowerShell 5.1
+  where it does not. **A bool flag alone is true** (§PW587), as `build --all --preview`
+  always took it: `--preview`, `--preview true` and `--preview false` all read, and help
+  shows the value as optional, `--preview [BOOL]`. **A list survives any shell** (§PW247): Windows PowerShell 5.1
   strips the inner quotes of a single-quoted argument it hands a native program, so a
   JSON list never arrives, and a list flag may also take its items after it
   (`--keys HOLD GO`, §PW414), be given once per item

@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
-  { block: "H", title: "Proof on a real game", open: 5 },
+  { block: "H", title: "Proof on a real game", open: 4 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -57,13 +57,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "G",
     symptom: "a voxel declaration cannot place another declaration's model, so a diorama cannot reuse kit pieces with their materials",
     why: "A scene of pieces means copying every piece's nodes into it or arranging them in game code, outside any declaration or check.",
-    deps: [],
-  },
-  {
-    id: "PW587",
-    block: "H",
-    symptom: "geometry.build refuses a bare --preview that build --all takes, so the same word works in one command and not the other",
-    why: "A trial build sent to a log fails unseen and leaves the old model looking freshly built.",
     deps: [],
   },
   {

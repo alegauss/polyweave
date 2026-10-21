@@ -193,14 +193,19 @@ def add_operations(commands: Any) -> None:
             listed = p["type"] == "list"
             if listed:
                 about += "; or once per item, or @file"
+            # `--keys A B C` was refused as unrecognised arguments (§PW414), and a bare
+            # `--preview` here while `build --all` took it (§PW587): a flag alone is
+            # true, and help shows the value as optional, `--preview [BOOL]`.
+            shape = {"nargs": "+"} if listed else {}
+            if p["type"] == "bool":
+                shape = {"nargs": "?", "const": "true"}
             sub.add_argument(
                 f"--{p['name']}",
                 dest=p["name"],
                 required=p["required"],
                 default=argparse.SUPPRESS,
                 action="append" if listed else "store",
-                # `--keys A B C` was refused as unrecognised arguments (§PW414).
-                **({"nargs": "+"} if listed else {}),
+                **shape,
                 metavar=p["type"].upper(),
                 help=about,
             )

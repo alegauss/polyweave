@@ -228,6 +228,21 @@ def test_a_list_flag_takes_the_items_after_it():
         "HOLD", "GO", "START"]
 
 
+def test_a_bare_bool_flag_is_true_as_build_all_takes_it():
+    """§PW587: `geometry.build --preview` was refused; `build --all --preview` ran."""
+    import argparse
+
+    commands_ = argparse.ArgumentParser().add_subparsers(dest="command")
+    commands.add_operations(commands_)
+    build = commands_.choices["geometry.build"]
+    flag = {"name": "preview", "type": "bool"}
+    for argv, said in ((["--preview"], True), (["--preview", "true"], True),
+                       (["--preview", "false"], False)):
+        given = build.parse_args(["--source", "a.toml", *argv]).preview
+        assert commands.parsed(given, flag) is said
+    assert "--preview [BOOL]" in build.format_help()
+
+
 def test_a_repeated_flag_reaches_the_operation_through_the_parser():
     """What argparse hands over when the shell passes --args=… twice."""
     import argparse

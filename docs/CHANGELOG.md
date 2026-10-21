@@ -261,6 +261,7 @@
 - ✅ **PW82** **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Cottony's bake_model.py is gone (016d743) and nothing imports it; every family renders on polyweave, and the mesh prep still run by hand is PW582.
 - ✅ **PW585** **a site's resized copy of the art records nothing it came from, so Cottony checks staleness with its own percentile** — picture.copies cuts a *.copies.toml and records each copy against its source and table, so provenance.outdated says when one is stale (design recorded in `docs/specs/store.md`).
 - ✅ **PW586** **a voxel build ignores a material stated on a transform node, so its cells take the default** — A material no cell wears names the later node that painted over it, and how to show it (design superseded: later rays covered the disc) (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW587** **geometry.build refuses a bare --preview that build --all takes, so the same word works in one command and not the other** — Every operation's bool flag takes the bare form as true, so geometry.build --preview runs as build --all does; help shows [BOOL] (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block I — Voxel models from a declaration
 
