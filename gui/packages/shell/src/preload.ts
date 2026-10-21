@@ -36,8 +36,6 @@ const bridge: Bridge = {
     ipcRenderer.on(CHANNELS.sessionLine, heard)
     return () => ipcRenderer.removeListener(CHANNELS.sessionLine, heard)
   },
-  smoke: () => ipcRenderer.invoke(CHANNELS.smoke),
-  rendered: (report) => ipcRenderer.invoke(CHANNELS.rendered, report),
 }
 
 contextBridge.exposeInMainWorld(BRIDGE_KEY, Object.freeze(bridge))

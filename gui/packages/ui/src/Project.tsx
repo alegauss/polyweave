@@ -6,7 +6,7 @@ import { Button } from '@viglet/viglet-design-system'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { KINDS, type Board, type Bridge, type Desk, type Item, type Opened, type Smoke, type State } from '@pw/core'
+import { KINDS, type Bridge, type Desk, type Item, type Opened } from '@pw/core'
 
 import { Decide } from './Decide'
 import { ItemView } from './ItemView'
@@ -30,7 +30,6 @@ export function Project({
   opened,
   items,
   moved = [],
-  smoke,
   back,
 }: {
   bridge: Bridge
@@ -38,15 +37,11 @@ export function Project({
   items: Item[]
   /** Ids whose digest moved since the window drew them (§PW310). */
   moved?: string[]
-  smoke: Smoke | null
   back: () => void
 }) {
   const { t } = useTranslation()
   const [filter, setFilter] = useState<Filter>('all')
-  const [chosen, setChosen] = useState<Item | null>(
-    items.find((i) => i.id === smoke?.item) ?? null,
-  )
-  const [drawn, setDrawn] = useState(false)
+  const [chosen, setChosen] = useState<Item | null>(null)
   // The digest of the item as the person was last shown it: a change to it is marked,
   // never swapped in silently, and the new one is shown when they ask (§PW310).
   const chosenDigest = chosen ? (items.find((i) => i.id === chosen.id)?.digest ?? null) : null
@@ -55,16 +50,14 @@ export function Project({
   useEffect(() => {
     void bridge.revisions(opened.project).then(setRevised, () => setRevised([]))
   }, [bridge, opened.project])
-  const [talked, setTalked] = useState(false)
   // The project's verdicts are the decision screen, the same one the review page serves
   // in a browser (§PW403); "where it is judged" opens it on the item's card.
-  const [deciding, setDeciding] = useState(Boolean(smoke?.decide))
+  const [deciding, setDeciding] = useState(false)
   const [member, setMember] = useState<string | null>(null)
   const judge = (on?: string | null) => {
     setMember(on ?? null)
     setDeciding(true)
   }
-  const [decided, setDecided] = useState<State | null>(null)
   const desk = useMemo<Desk>(
     () => ({
       state: () => bridge.reviewState(opened.project),
@@ -76,79 +69,10 @@ export function Project({
     }),
     [bridge, opened.project],
   )
-  const scripted = typeof smoke?.decide === 'object' ? smoke.decide : undefined
-  const [boards, setBoards] = useState<Board[] | null>(null)
   const shown = kept(items, filter, revised ?? [])
   const byKind = KINDS.map((kind) => [kind, shown.filter((i) => i.kind === kind)] as const).filter(
     ([, rows]) => rows.length > 0,
   )
-
-  // A smoke run reports once the list, and the item it asked for, are on the page.
-  useEffect(() => {
-    if (!smoke || revised === null || (chosen && !drawn)) return
-    if (smoke.review && !deciding) return judge(chosen?.artefact)
-    if ((smoke.review || smoke.decide) && !decided) return
-    // A scripted answer is reported once the screen has read it back from the files.
-    if (scripted && !decided?.answers.some((one) => one.family === scripted.family)) return
-    if (smoke.canon && !boards) return
-    if (smoke.promote && !decided?.answers.some((one) => one.sitting.startsWith('gate:'))) return
-    if (smoke.ask && !talked) return
-    if (smoke.follow && !(chosen && moved.includes(chosen.id))) return
-    // Pictures come across the bridge after the screen is drawn: a picture of the window
-    // is taken once they are in, or after five seconds of waiting for them.
-    const settle = (tries: number) => {
-      if (document.querySelector('[data-loading]') && tries < 100) {
-        setTimeout(() => settle(tries + 1), 50)
-        return
-      }
-      report()
-    }
-    settle(0)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smoke, chosen, drawn, revised, deciding, talked, moved, bridge, opened, decided, boards])
-
-  const report = () => {
-    if (!smoke || revised === null) return
-    // A question waiting on the person is what a smoke run's picture is of.
-    document.querySelector('[data-ask]')?.scrollIntoView({ block: 'center' })
-    requestAnimationFrame(() => {
-      void bridge.rendered({
-        project: opened.project,
-        server: opened.server.name,
-        engine: opened.engine.from,
-        heading: document.querySelector('h1')?.textContent ?? '',
-        count: document.querySelector('[data-count]')?.textContent ?? '',
-        groups: [...document.querySelectorAll('[data-kind]')].map((g) => g.getAttribute('data-kind')),
-        rows: document.querySelectorAll('[data-item]').length,
-        viewer: document.querySelector('[data-viewer]')?.getAttribute('data-viewer') ?? null,
-        bar: document.querySelectorAll('[data-predicate]').length,
-        dependents: document.querySelectorAll('[data-dependent]').length,
-        lanes: document.querySelectorAll('[data-lane] li').length,
-        looped: document.querySelector('audio')?.loop ?? null,
-        revised: revised.length,
-        said: document.querySelector('[data-said]')?.textContent ?? null,
-        focused: document.querySelector('[data-focused]')?.getAttribute('data-card') ?? null,
-        framed: document.querySelector('iframe') !== null,
-        turns: [...document.querySelectorAll('[data-turn]')].map((one) => one.textContent),
-        asked: [...document.querySelectorAll('[data-ask]')].map((one) => one.getAttribute('data-ask')),
-        price: document.querySelector('[data-price]')?.getAttribute('data-price') ?? null,
-        changed: document.querySelector('[data-changed]') !== null,
-        decide: document.querySelector('[data-decide]')?.getAttribute('lang') ?? null,
-        sittings: [...document.querySelectorAll('[data-sitting] h2')].map((one) => one.textContent),
-        cards: [...document.querySelectorAll('[data-card]')].map((one) => one.getAttribute('data-card')),
-        badges: [...document.querySelectorAll('[data-badge]')].map((one) => one.textContent),
-        how: [...document.querySelectorAll('[data-how] strong')].map((one) => one.textContent?.trim()),
-        modes: [...document.querySelectorAll('[data-compare] [data-mode]')].map((one) => one.textContent),
-        markers: document.querySelectorAll('[data-marker]').length,
-        gates: document.querySelectorAll('[data-gate]').length,
-        kept: document.querySelectorAll('[data-lane="kept"] [data-candidate]').length,
-        refused: document.querySelectorAll('[data-lane="refused"] [data-candidate]').length,
-        turntables: [...document.querySelectorAll('[data-turntable]')].map((one) => one.getAttribute('data-turntable')),
-        boards: [...document.querySelectorAll('[data-board]')].map((one) => one.getAttribute('data-board')),
-        pending: document.querySelectorAll('[data-pending] tbody tr').length,
-      })
-    })
-  }
 
   return (
     <section className="flex flex-col gap-4">
@@ -181,11 +105,6 @@ export function Project({
         <Decide
           desk={desk}
           member={member}
-          scripted={scripted}
-          promote={smoke?.promote}
-          canon={smoke?.canon}
-          onDrawn={setDecided}
-          onBoards={setBoards}
         />
       ) : (
         <>
@@ -219,10 +138,7 @@ export function Project({
                       type="button"
                       data-item={item.id}
                       aria-current={chosen?.id === item.id}
-                      onClick={() => {
-                        setDrawn(false)
-                        setChosen(item)
-                      }}
+                      onClick={() => setChosen(item)}
                       className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 p-2 text-left text-sm hover:bg-muted aria-[current=true]:bg-muted"
                     >
                       <span className="min-w-32 flex-1 truncate font-mono">{item.id}</span>
@@ -256,10 +172,7 @@ export function Project({
               bridge={bridge}
               project={opened.project}
               item={chosen}
-              onDrawn={() => setDrawn(true)}
               onJudge={() => judge(chosen.artefact)}
-              ask={smoke?.ask}
-              onTalked={() => setTalked(true)}
             />
           ) : (
             <p className="text-muted-foreground">{t('item.choose')}</p>

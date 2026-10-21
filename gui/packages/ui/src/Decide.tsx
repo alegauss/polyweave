@@ -18,7 +18,6 @@ import {
   last,
   listed,
   measuredOf,
-  ordered,
   progress,
   say,
   sittingOf,
@@ -28,7 +27,6 @@ import {
   unanswered,
   unready,
   visual,
-  type Board,
   type Box,
   type Desk,
   type Difference,
@@ -41,17 +39,7 @@ import {
   type Words,
 } from '@pw/core'
 
-import { Advanced, type Promoted } from './Advanced'
-
-/** An answer a smoke run gives on the screen, as a person would. */
-export interface Scripted {
-  family: string
-  choice: string
-  why: string
-  marks?: Mark[]
-  /** The alternative picked, for a family of alternatives (§PW547). */
-  member?: string
-}
+import { Advanced } from './Advanced'
 
 /** Where a file will show once it has come across the desk. */
 export const Loading = () => <div data-loading className="h-24 w-48 animate-pulse rounded bg-muted" />
@@ -424,7 +412,6 @@ function Card({
   sitting,
   name,
   state,
-  scripted,
   onAnswered,
   onHold,
   focused,
@@ -434,7 +421,6 @@ function Card({
   sitting: Sitting
   name: string
   state: State
-  scripted?: Scripted
   onAnswered: () => void
   /** Says whether a decision is being made here, which no redraw may run over. */
   onHold: (card: string, held: boolean) => void
@@ -495,13 +481,6 @@ function Card({
       setSending(false)
     }
   }
-
-  // A smoke run answers its family once, the way a person would: a choice, then words.
-  useEffect(() => {
-    if (scripted?.family === name && !before)
-      void send(scripted.choice, scripted.why, scripted.marks ?? [], scripted.member ?? null)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scripted, name])
 
   const answeredAs = before ? offered.find(([word]) => word === before.choice)?.[1] : undefined
   const sounds = (laid.members ?? []).filter((one) => one.sound && one.new)
@@ -740,7 +719,6 @@ function SittingView(props: {
   words: Words
   sitting: Sitting
   state: State
-  scripted?: Scripted
   onAnswered: () => void
   onHold: (card: string, held: boolean) => void
   focused?: string | null
@@ -835,11 +813,6 @@ function Row({ words, one, onOpen }: { words: Words; one: Listed; onOpen: (manif
 
 export function Decide({
   desk,
-  scripted,
-  promote,
-  canon,
-  onDrawn,
-  onBoards,
   member,
   sitting,
   onSitting,
@@ -851,15 +824,6 @@ export function Decide({
   sitting?: string | null
   /** Told which sitting was opened, or null for the index, so a browser keeps it in the URL. */
   onSitting?: (manifest: string | null) => void
-  /** An answer a smoke run gives here, once its card is drawn. */
-  scripted?: Scripted
-  /** A gate's refused picture a smoke run promotes (§PW402). */
-  promote?: Promoted
-  /** Load the canon boards at once, as a smoke run asks. */
-  canon?: boolean
-  /** Called after each read is drawn, with whether the scripted answer is in. */
-  onDrawn?: (state: State) => void
-  onBoards?: (boards: Board[]) => void
 }) {
   const [words, setWords] = useState<Words | null>(null)
   const [state, setState] = useState<State | null>(null)
@@ -892,24 +856,15 @@ export function Decide({
     return () => clearInterval(every)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [desk])
-  useEffect(() => {
-    if (state && words) onDrawn?.(state)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, words])
 
   if (failed) return <p className="text-rose-700">{failed}</p>
   if (!words || !state) return <div className="h-40 w-full animate-pulse rounded bg-muted" />
   const along = progress(state)
   const focused = member ? holding(state, member) : null
-  const shared = { desk, words, state, scripted, onAnswered: () => void read(), onHold, focused }
-  // A file asked for opens the sitting that judges it, and a smoke run's answer the newest
-  // sitting with its family, open first and still after the answer finishes it, so
-  // neither waits on a person choosing from the index.
-  const sorted = ordered(state)
-  const scriptedIn = scripted
-    ? [...sorted.open, ...sorted.done].find((one) => scripted.family in one.families)?.manifest
-    : undefined
-  const showing = chosen ?? focused?.split('#')[0] ?? scriptedIn ?? null
+  const shared = { desk, words, state, onAnswered: () => void read(), onHold, focused }
+  // A file asked for opens the sitting that judges it, so it never waits on a person
+  // choosing from the index.
+  const showing = chosen ?? focused?.split('#')[0] ?? null
   const stale = state.stale && (
     // A server older than the package cannot record an answer, and says so above all.
     <p data-stale role="alert" className="rounded-md bg-rose-100 p-3 text-sm text-rose-900">
@@ -971,10 +926,7 @@ export function Decide({
         desk={desk}
         words={words}
         state={state}
-        promote={promote}
-        canon={canon}
         onWritten={() => void read()}
-        onBoards={onBoards}
       />
     </div>
   )

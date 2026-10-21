@@ -413,31 +413,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW581 Screen flows driven through the DOM, not the desktop
-
-Found while winwright drove the window (`gui/`) through UI Automation on 2026-10-20.
-Chromium publishes its tree to UIA, so the drive worked, but every cost of it came from
-reading a web page through the desktop's accessibility layer: a screen change had
-nothing to wait on but a guessed timeout, a capture photographed whatever lay over the
-window, and `ELECTRON_RUN_AS_NODE` had to be stripped outside the case. winwright's own
-review (its WW565 and WW566, retired) concluded that an Electron window's screens belong
-to a driver that reads the DOM.
-
-The window already carries a home-made version of that driver: `window-live.test.ts`
-runs a smoke mode in which main prints what the page drew. It answers one fixed path and
-grows a field per screen.
-
-What to build: screen flows driven by Playwright's `_electron.launch()` from the vitest
-suite already in `gui/`, with `playwright` as a devDependency of `@pw/shell` only.
-Locate by role and name as a person reads the screen, wait on the DOM state a screen
-change produces (PW580's busy state is the natural thing to wait on), and take evidence
-with `page.screenshot()`, which renders the window itself whatever covers it. Component
-logic stays in vitest against `@pw/ui`. The smoke mode is deleted once the flows it
-answers are covered, which is the evidence that this landed.
-
-Left to winwright: the native Open and Save dialogs, focus and the foreground, DPI and
-anything the shell owns, none of which a DOM driver reaches.
-
 ### §PW584 An inventory scan that hashes only what moved
 
 Left by PW579 on 2026-10-20. Once the pages of one read shared one scan, opening

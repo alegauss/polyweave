@@ -5,7 +5,7 @@ import { Button, Input } from '@viglet/viglet-design-system'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { merged, type Bridge, type Item, type Opened, type Smoke } from '@pw/core'
+import { merged, type Bridge, type Item, type Opened } from '@pw/core'
 
 import { Project } from './Project'
 
@@ -23,10 +23,10 @@ interface Opening {
   total: number | null
 }
 
-export function App({ bridge, smoke }: { bridge: Bridge; smoke: Smoke | null }) {
+export function App({ bridge }: { bridge: Bridge }) {
   const { t, i18n } = useTranslation()
-  const [root, setRoot] = useState(smoke?.root ?? '')
-  const [depth, setDepth] = useState(smoke?.depth ?? 2)
+  const [root, setRoot] = useState('')
+  const [depth, setDepth] = useState(2)
   const [found, setFound] = useState<string[] | null>(null)
   const [shown, setShown] = useState<Shown | null>(null)
   const [failed, setFailed] = useState<string | null>(null)
@@ -87,16 +87,6 @@ export function App({ bridge, smoke }: { bridge: Bridge; smoke: Smoke | null }) 
     [bridge],
   )
 
-  // A smoke run drives itself: find under the root it was given, and open the first.
-  useEffect(() => {
-    if (!smoke) return
-    void bridge.find(smoke.root, smoke.depth).then((projects) => {
-      setFound(projects)
-      if (projects[0]) void open(projects[0])
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-6 p-8">
       {failed && (
@@ -110,7 +100,6 @@ export function App({ bridge, smoke }: { bridge: Bridge; smoke: Smoke | null }) 
           opened={shown.opened}
           items={shown.items}
           moved={shown.moved}
-          smoke={smoke}
           back={() => setShown(null)}
         />
       ) : (

@@ -17,13 +17,11 @@ export function Conversation({
   bridge,
   revision,
   first,
-  onResult,
   onCheck,
 }: {
   bridge: Bridge
   revision: string
   first: string
-  onResult?: () => void
   /** Called on each check the window ran after a change, to show old beside new. */
   onCheck?: () => void
 }) {
@@ -39,8 +37,6 @@ export function Conversation({
         if (which !== revision) return
         const read = said(line)
         setHeard((before) => [...before, { line, read }])
-        // Where the session now waits on the person: a question, or the end of a turn.
-        if (read.kind === 'result' || read.kind === 'ask') onResult?.()
         if (read.kind === 'check') onCheck?.()
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

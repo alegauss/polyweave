@@ -19,7 +19,7 @@ const RENDERER = path.join(import.meta.dirname, '..', '..', 'ui', 'dist', 'index
 /** The preload, bundled to CommonJS: a sandboxed preload has Electron's `require` only. */
 const PRELOAD = path.join(import.meta.dirname, 'preload.cjs')
 
-export function createWindow(show: boolean): BrowserWindow {
+export function createWindow(): BrowserWindow {
   const window = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -38,7 +38,7 @@ export function createWindow(show: boolean): BrowserWindow {
     if (/^https?:\/\//.test(url)) void shell.openExternal(url)
     return { action: 'deny' }
   })
-  if (show) window.once('ready-to-show', () => window.show())
+  window.once('ready-to-show', () => window.show())
   void window.loadURL(home)
   return window
 }

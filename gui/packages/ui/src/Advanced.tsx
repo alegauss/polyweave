@@ -5,7 +5,7 @@
 // stands. Every write is `review.answer`'s gate, admit or withdraw body, as the page's.
 
 import { Button, Textarea } from '@viglet/viglet-design-system'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   figures,
@@ -25,12 +25,6 @@ import {
 
 import { Compare, Shown, when } from './Decide'
 
-/** A promotion a smoke run makes, as a person would. */
-export interface Promoted {
-  picture: string
-  why: string
-}
-
 /** One sentence and one button, as the canon and the gates use. */
 function Sentence({
   words,
@@ -38,15 +32,12 @@ function Sentence({
   label,
   done,
   send,
-  scripted,
 }: {
   words: Words
   placeholder: string
   label: string
   done: string
   send: (why: string) => Promise<unknown>
-  /** Words a smoke run sends here at once. */
-  scripted?: string
 }) {
   const [why, setWhy] = useState('')
   const [said, setSaid] = useState<{ text: string; bad: boolean } | null>(null)
@@ -63,10 +54,6 @@ function Sentence({
       setSaid({ text: (refused as Error).message, bad: true })
     }
   }
-  useEffect(() => {
-    if (scripted) void submit(scripted)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scripted])
   return (
     <form
       className="flex flex-col gap-1"
@@ -95,14 +82,12 @@ function CandidateView({
   words,
   run,
   one,
-  promote,
   onWritten,
 }: {
   desk: Desk
   words: Words
   run: Gate
   one: Candidate
-  promote?: Promoted
   onWritten: () => void
 }) {
   const write = (body: Overrule) => desk.answer(body).then(onWritten)
@@ -139,7 +124,6 @@ function CandidateView({
           placeholder={say(words, 'why_promote')}
           label={say(words, 'promote')}
           done={say(words, 'promoted')}
-          scripted={promote?.picture === one.picture ? promote.why : undefined}
           send={(why) => write({ gate: run.id, picture: one.picture, choice: 'accept', why })}
         />
       )}
@@ -148,7 +132,7 @@ function CandidateView({
 }
 
 /** The refused beside the kept (§PW175). */
-function GateRun(props: { desk: Desk; words: Words; run: Gate; promote?: Promoted; onWritten: () => void }) {
+function GateRun(props: { desk: Desk; words: Words; run: Gate; onWritten: () => void }) {
   const { words, run } = props
   const { kept, refused } = lanes(run)
   return (
@@ -166,7 +150,7 @@ function GateRun(props: { desk: Desk; words: Words; run: Gate; promote?: Promote
           ))}
         </div>
       </section>
-      <details data-lane="refused" open={Boolean(props.promote)}>
+      <details data-lane="refused">
         <summary className="cursor-pointer font-medium">{say(words, 'refused', { n: refused.length })}</summary>
         <div className="grid gap-3 pt-2 md:grid-cols-2">
           {refused.map((one) => (
@@ -290,43 +274,24 @@ export function Advanced({
   desk,
   words,
   state,
-  promote,
-  canon = false,
   onWritten,
-  onBoards,
 }: {
   desk: Desk
   words: Words
   state: State
-  /** A smoke run's promotion, made once its candidate is drawn. */
-  promote?: Promoted
-  /** Load the canon boards at once, as a smoke run asks. */
-  canon?: boolean
   onWritten: () => void
-  /** Called with the boards once they are read. */
-  onBoards?: (boards: Board[]) => void
 }) {
   // The canon is loaded only when asked: it measures every picture on every board.
   const [boards, setBoards] = useState<Board[] | string | null>(null)
   const [loading, setLoading] = useState(false)
   const load = () => {
     setLoading(true)
-    void desk.canon().then(
-      (found) => {
-        setBoards(found)
-        onBoards?.(found)
-      },
-      (refused: Error) => setBoards(refused.message),
-    )
+    void desk.canon().then(setBoards, (refused: Error) => setBoards(refused.message))
   }
-  useEffect(() => {
-    if (canon) load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canon])
   const gates = (state.gates ?? []).slice().reverse()
   const meshes = turned(state.turntables ?? [])
   return (
-    <details data-advanced open={Boolean(promote || canon)} className="flex flex-col gap-4">
+    <details data-advanced className="flex flex-col gap-4">
       <summary className="cursor-pointer text-sm font-medium">{say(words, 'advanced')}</summary>
       <div className="flex flex-col gap-4 pt-2">
         {state.codes?.page && (
@@ -334,8 +299,8 @@ export function Advanced({
             {say(words, 'lanes_code', { code: state.codes.page })}
           </p>
         )}
-        {gates.map((run, at) => (
-          <GateRun key={run.id} desk={desk} words={words} run={run} promote={at === 0 ? promote : undefined} onWritten={onWritten} />
+        {gates.map((run) => (
+          <GateRun key={run.id} desk={desk} words={words} run={run} onWritten={onWritten} />
         ))}
         {meshes.map(([asset, turns]) => (
           <Mesh key={asset} desk={desk} words={words} asset={asset} turns={turns} />

@@ -2,9 +2,7 @@
 // Every call the renderer can make is one IPC channel `core` names, answered here with
 // what a held `polyweave serve` says.
 
-import { writeFile } from 'node:fs/promises'
-
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 
 import {
   call,
@@ -18,7 +16,6 @@ import {
   type Opened,
   type Overrule,
   type Revision,
-  type Smoke,
 } from '@pw/core'
 
 import { agent } from './agent'
@@ -29,7 +26,6 @@ import { Held } from './held'
 import { Holding } from './holding'
 import { Strays, type Stray } from './outside'
 import { start, type Session } from './sessions'
-import { SMOKE_VAR } from './smoke'
 import { Watching } from './watch'
 import { createWindow } from './window'
 
@@ -59,9 +55,6 @@ function kept(revision: string, text: string, by: 'person' | 'session'): void {
   writing.add(write)
   void write.finally(() => writing.delete(write))
 }
-const smoke: Smoke | null = process.env[SMOKE_VAR]
-  ? (JSON.parse(process.env[SMOKE_VAR]) as Smoke)
-  : null
 
 ipcMain.handle(CHANNELS.find, (_event, root: string, depth: number) =>
   find(disk, root, depth),
@@ -223,20 +216,14 @@ ipcMain.handle(CHANNELS.sessionStop, (_event, revision: string) => {
   sessions.get(revision)?.stop()
   sessions.delete(revision)
 })
-ipcMain.handle(CHANNELS.smoke, () => smoke)
-ipcMain.handle(CHANNELS.rendered, async (event, report: Record<string, unknown>) => {
-  if (!smoke) return
-  const window = BrowserWindow.fromWebContents(event.sender)
-  if (smoke.shot && window) {
-    await writeFile(smoke.shot, (await window.webContents.capturePage()).toPNG())
-  }
-  // A turn still being written is kept before the run ends.
-  await Promise.all(writing)
-  process.stdout.write(`rendered: ${JSON.stringify(report)}\n`)
-  app.quit()
-})
 
-app.on('before-quit', () => {
+app.on('before-quit', (event) => {
+  // A turn still being written is kept before the window goes.
+  if (writing.size > 0) {
+    event.preventDefault()
+    void Promise.all(writing).finally(() => app.quit())
+    return
+  }
   watching.stopAll()
   for (const session of sessions.values()) session.stop()
   void held.closeAll()
@@ -244,6 +231,5 @@ app.on('before-quit', () => {
 app.on('window-all-closed', () => app.quit())
 
 void app.whenReady().then(() => {
-  // A hidden window is not composited, so a smoke run asked for a picture is shown.
-  createWindow(!smoke || Boolean(smoke.shot))
+  createWindow()
 })

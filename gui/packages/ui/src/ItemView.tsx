@@ -42,21 +42,13 @@ export function ItemView({
   bridge,
   project,
   item,
-  onDrawn,
   onJudge,
-  ask,
-  onTalked,
 }: {
   bridge: Bridge
   project: string
   item: Item
-  onDrawn: () => void
   /** Open the verdicts on the sitting that holds this item. */
   onJudge?: () => void
-  /** A change to ask for at once, as the smoke run does. */
-  ask?: string
-  /** Called once the session has ended a turn. */
-  onTalked?: () => void
 }) {
   const { t } = useTranslation()
   const [brief, setBrief] = useState<Brief | null>(null)
@@ -65,7 +57,7 @@ export function ItemView({
   const [failed, setFailed] = useState<string | null>(null)
   const [before, setBefore] = useState<Shown | null>(null)
   const seen = viewer(item)
-  const [words, setWords] = useState(ask ?? '')
+  const [words, setWords] = useState('')
   const [talking, setTalking] = useState<{ revision: string; first: string; waiting: string | null } | null>(
     null,
   )
@@ -82,10 +74,6 @@ export function ItemView({
       setFailed(error instanceof Error ? error.message : String(error))
     }
   }
-  useEffect(() => {
-    if (ask) void request(ask)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   useEffect(() => {
     let live = true
@@ -105,7 +93,6 @@ export function ItemView({
     }
     Promise.all(loads)
       .catch((error: unknown) => live && setFailed(error instanceof Error ? error.message : String(error)))
-      .finally(() => live && onDrawn())
     return () => {
       live = false
     }
@@ -247,7 +234,6 @@ export function ItemView({
             bridge={bridge}
             revision={talking.revision}
             first={talking.first}
-            onResult={onTalked}
             onCheck={reread}
           />
         </>

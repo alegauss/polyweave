@@ -158,13 +158,16 @@ silently, and they open the new one when they choose.
 `shell/src/window-flows-live.test.ts` drives the built window the way a person does
 (§PW581). Playwright's `_electron.launch()` starts the shell in the language asked
 (`--lang`), finds what a person reads by role and name, and waits on what the page draws,
-never on a guessed timeout. `page.screenshot()` renders the window itself, whatever lies
-over it on the desk. Playwright is a devDependency of `@pw/shell` alone, and launching
-Electron needs no browser download. A screen flow is written here.
+never on a guessed timeout. Each flow does what a person would: it types the folder,
+opens the project, picks a choice, writes the why, drags a box over a picture. It then
+reads the result back from the screen and from the files the window wrote. The window
+has no test mode of its own: nothing in `main` or the renderer knows a test is running.
 
-`shell/src/window-live.test.ts` is what is left of the older way, and its cases move to
-the flows one at a time. It starts Electron in smoke mode (`POLYWEAVE_GUI_SMOKE`).
-The renderer finds and opens a project under the root it is given, draws its inventory
-in the language it is given, and main prints what the page drew, read back off the page.
-Smoke mode can also save a picture of the window (`shot`), which is how a change to a
-screen is looked at before it is handed over.
+`page.screenshot()` renders the window itself, whatever lies over it on the desk, and is
+how a change to a screen is looked at before it is handed over. `npm start` is proved
+the same way, over the DevTools protocol, since `launch.mjs` starts Electron itself.
+Playwright is a devDependency of `@pw/shell` alone, and launching Electron needs no
+browser download. Component logic stays in vitest against `@pw/ui`.
+
+What a DOM driver cannot reach stays with winwright: the native Open and Save dialogs,
+focus and the foreground, DPI, and anything else the shell owns.

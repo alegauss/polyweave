@@ -56,7 +56,6 @@
 
 ## Block U — A window on everything a project governs
 
-- ⏳ **PW581** (deps: PW580 ✅) **the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page** — Deciding, sessions, paid calls, following changes and launch.mjs still run in smoke mode, deleted once they move to the flows. → §PW581
 - 📋 **PW584** (deps: —) **one inventory scan hashes every artefact and input again, so opening Spinhold still takes about 7 s** — A file whose size and mtime have not moved is read whole on every scan, and a shared input is read once per record. → §PW584
 
 ## Block V — Parts every game repeats, installed already proved
@@ -117,12 +116,6 @@
 - **Resogun's phase 1 counts its pods, not its city** On Spinhold's resogun_p1 frames
   the count per frame follows the pods by eye on the sheets, with silhouette or warp-in
   where motion alone is not enough.
-
-## Done when — PW581
-
-- **The window has no smoke mode left** window-live.test.ts is gone, POLYWEAVE_GUI_SMOKE
-  appears nowhere under gui/, and every case it held (deciding, sessions, a paid call,
-  following a change, launch.mjs) is a flow in window-flows-live.test.ts.
 
 ## Non-goals
 

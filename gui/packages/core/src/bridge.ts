@@ -3,7 +3,7 @@
 // every path and every process stays on the shell's side of it.
 
 import type { Server } from './client'
-import type { AnswerBody, Board, Difference, Mark, Overrule, State, Words } from './desk'
+import type { AnswerBody, Board, Difference, Overrule, State, Words } from './desk'
 import type { Engine } from './engine'
 import type { Kind, Page } from './inventory'
 
@@ -31,8 +31,6 @@ export const CHANNELS = {
   sessionStop: 'pw:session-stop',
   sessionLine: 'pw:session-line',
   changed: 'pw:changed',
-  smoke: 'pw:smoke',
-  rendered: 'pw:rendered',
 } as const
 
 /** A file of the project, carried across as bytes the page can show (§PW304). */
@@ -47,28 +45,6 @@ export interface Opened {
   project: string
   server: Server
   engine: Engine
-}
-
-/** A run that drives itself and reports what it drew, for the gate's live test. */
-export interface Smoke {
-  root: string
-  depth: number
-  language: string
-  /** The item to open once the project is drawn, by its inventory id. */
-  item?: string
-  /** Where to save a picture of the window once it has drawn, when asked. */
-  shot?: string
-  /** Open the decision screen, on the card of the item named (§PW403). */
-  review?: boolean
-  /** Open the window's own decision screen, and answer this there when given (§PW400). */
-  decide?: boolean | { family: string; choice: string; why: string; marks?: Mark[] }
-  /** On the decision screen, load the canon boards, and promote this gate's picture (§PW402). */
-  canon?: boolean
-  promote?: { picture: string; why: string }
-  /** Report only once the chosen item has changed on disk and been redrawn (§PW310). */
-  follow?: boolean
-  /** Ask for this change on the item and open a session on it (§PW306). */
-  ask?: string
 }
 
 export interface Bridge {
@@ -107,6 +83,4 @@ export interface Bridge {
   onSessionLine(listener: (revision: string, line: string) => void): () => void
   /** Called once per burst of changes under an open project (§PW310). */
   onChanged(listener: (project: string) => void): () => void
-  smoke(): Promise<Smoke | null>
-  rendered(report: Record<string, unknown>): Promise<void>
 }
