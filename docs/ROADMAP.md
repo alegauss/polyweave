@@ -20,8 +20,7 @@
 
 ## Block H — Proof on a real game
 
-- 🛠 **PW36** (deps: PW5 ✅, PW82 🛠) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 🛠 **PW82** (deps: PW81 ✅) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
+- 🛠 **PW36** (deps: PW5 ✅, PW82 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
 
 ## Block I — Voxel models from a declaration
 

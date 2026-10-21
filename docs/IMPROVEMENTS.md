@@ -114,28 +114,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW82 The rig has to actually go
-
-This is the task PW53's objection was about. Setting it aside said that one asset moving
-leaves bake_model.py standing for the rest, so the rig the plugin exists to remove is
-still the thing that runs — and that stays true of two families, or five. It stops being
-true only when the file is gone.
-
-So the sequence needs an end that is checkable rather than assumed. After PW76 through
-PW81 there should be no `tools/art/bake_model.py`, nothing importing it, and every
-sprite under docs/design/art/ produced by the plugin. Until then Cottony has two routes
-to the same picture, and the older one keeps working, which is exactly how a replaced
-rig survives its replacement.
-
-It is filed separately rather than folded into the last family because the failure it
-guards against is not any one port going wrong. It is six ports going right and the file
-remaining, with a handful of constants nobody moved and no reason left to look at them.
-
-If a family turns out not to port — the friends and the mascot are the candidates — then
-this is where that is recorded honestly: what still runs by hand, and why the rig shrank
-instead of disappearing. An outcome worth having, stated, beats the same outcome
-unstated.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
