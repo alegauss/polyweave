@@ -20,7 +20,8 @@
 
 ## Block H — Proof on a real game
 
-- 🛠 **PW36** (deps: PW5 ✅, PW82 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
+- 🛠 **PW36** (deps: PW5 ✅, PW82 ✅, PW582, PW585) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family renders on polyweave and the rig is gone; Cottony still prepares meshes and cuts its site's copies itself. → §PW36
+- 📋 **PW585** (deps: —) **a site's resized copy of the art records nothing it came from, so Cottony checks staleness with its own percentile** — site_assets.py is the one file project.adoption still reads red on Cottony, and its floors were tuned by hand after twelve copies went stale unseen. → §PW585
 
 ## Block I — Voxel models from a declaration
 
