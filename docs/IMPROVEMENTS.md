@@ -53,30 +53,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW588 placing a declaration's model inside another
-
-Where it happened: spinhold RK250 asks for each world on the Rind map to be a voxel
-diorama, `art/voxels/<world>_diorama.toml`, "reusing the kit pieces the ring already has
-(`kit_*`)": cottages, bobbins, lolly trees, street lamps, tower shafts. Each piece is
-already its own declaration, built and accepted.
-
-What polyweave has: of the geometry ops, only `mesh` reads another file, and it reads a
-triangle mesh. A kit piece's `.glb` brings none of its named materials, so its cells
-come out in quantised texture colours or one material, and its glows and finishes are
-lost. Reusing a piece today means copying its nodes into the diorama, which forks every
-piece, or placing the pieces in game code, which takes the arrangement out of any
-declaration and every check.
-
-What it should do: a node that places another declaration's model, e.g. `op = "model"`,
-`path = "art/voxels/kit_quilt_cottage.toml"` (or its built `.voxels.json`), taking
-`transform`'s `scale`, `at`, `turn` and `repeat`. Its cells keep their materials, named
-under the piece (`kit_quilt_cottage.roof`) unless the palette declares that name. A
-piece's rebuild re-stamps the diorama (provenance names it as a source), and
-`geometry.describe` lists the pieces placed. A different cell size is resampled, or
-refused with the size that fits.
-
-Workaround in spinhold: none written; RK250 waits on this line.
-
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork

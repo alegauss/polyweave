@@ -64,5 +64,6 @@ ORDER = (
     "cells",
     "mirror",
     "mesh",
+    "model",
     "paint",
 )

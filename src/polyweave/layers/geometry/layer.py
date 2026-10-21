@@ -88,6 +88,8 @@ LAYER = Layer(
             "internal", "the mirror op, read by build, voxels and review"),
         "polyweave.layers.geometry.ops.mesh": (
             "internal", "the mesh op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.model": (
+            "internal", "the model op, read by build, voxels and review"),
         "polyweave.layers.geometry.ops.paint": (
             "internal", "the paint op, read by build, voxels and review"),
         "polyweave.layers.geometry.units": (

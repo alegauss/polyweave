@@ -185,6 +185,7 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 | `transform` | Translate, rotate and scale an existing node |
 | `mirror` | An existing node and its reflection across the plane `axis = plane`, joined |
 | `mesh` | A mesh file under the project (`path`, a `.glb` or `.blend`), in the project's axes |
+| `model` | Another declaration's model (`path`, its `.toml`), moved as `transform` moves a node, keeping its materials; cells only — see "A piece placed in another" |
 | `cells` | Cells drawn by hand as text — see "Cells instead of triangles" |
 | `paint` | The cells of `on`, repainted in its `material` where `where` (a node or a list) covers them; cells only |
 | `custom` | A project function — see below |
@@ -260,6 +261,20 @@ the slot of the sample nearest it. The slots are materials named `<node>.<n>` wi
 `colour`, so a later node still paints over them. Cottony's fetched hammer comes out 23 by
 24 by 11, 2004 cells in its six colours, in about two seconds, most of it Blender reading
 the file. A path with no file is `geom.bad-solid`.
+
+**A piece placed in another** (§PW588). Spinhold's worlds are each a voxel diorama of kit
+pieces that are their own declarations, and a piece's `.glb` brings none of its named
+materials. `op = "model"` names the piece's `.toml` by `path` and moves it by `scale`
+and `rotate`, scaled then turned, with the `at` and `repeat` every node has. Its cells
+are the piece's own model asked at the diorama's grid, so a piece declared at another
+cell is resampled. Each cell keeps what it wears in the piece, named `<piece>.<material>`
+(`cottage.roof`) with the piece's table, unless the diorama's `[materials]` declares the
+bare name, which then wins; a `material` on the node paints the whole piece. The piece's
+declaration is a `named` input of the build, so a piece rebuilt outdates the diorama,
+and `geometry.describe` reads the node as `the model in kit/cottage.toml — 2 of them`.
+No file there, a path that is not a `.toml`, or a piece that places itself is
+`geom.bad-solid`, and so is a `model` node in a declaration with no `[voxels]`, whose
+mesh's groups could not reach the piece's materials.
 
 **A symmetric shape is declared once** (§PW96). `mirror` takes `of`, an `axis` written as
 the letter `x`, `y` or `z` (never an expression, so it cannot resolve to a parameter

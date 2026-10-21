@@ -138,8 +138,13 @@ class _Model:
         self._traced_by: dict[int, dict] = {}
         self._coloured: dict[int, dict] = {}
         #: Materials the model found rather than the document declared: a textured
-        #: mesh's quantised colours, one per palette slot.
+        #: mesh's quantised colours, one per palette slot, and a placed piece's own
+        #: under its name (§PW588).
         self.found_materials: dict[str, dict] = {}
+        #: Each piece a `model` node places, by its declaration's path, and the
+        #: declarations being placed above this one, so none can contain itself.
+        self.pieces: dict[Path, _Model] = {}
+        self.placing: tuple[Path, ...] = ()
 
     # -- where a node is ---------------------------------------------------------------
 

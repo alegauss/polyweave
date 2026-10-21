@@ -124,6 +124,7 @@
 - ✅ **PW571** **Each finished material writes its own copy of one shader** — A folder's finished materials share one finish.gdshader, rewritten only when its text changes, so a kit compiles one shader where it compiled fifty (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW574** **A finished piece cannot also give when struck, since vfx's struck give is a shader of its own** — [finish] struck puts vfx's struck give in the opened finish and writes finish_strikes.gd, so a judged piece also squashes where a strike lands (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW583** **geometry.build with no out writes the mesh beside its declaration, where Godot imports it into the export** — A build with no out lands under [paths] work, mirroring its folder, and project.check names one left beside its declaration as adopt.build-beside (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW588** **a voxel declaration cannot place another declaration's model, so a diorama cannot reuse kit pieces with their materials** — A model node places another declaration's voxel model, moved and repeated, its cells keeping their materials under the piece's name (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

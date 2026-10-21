@@ -14,8 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW588** (deps: —) **a voxel declaration cannot place another declaration's model, so a diorama cannot reuse kit pieces with their materials** — A scene of pieces means copying every piece's nodes into it or arranging them in game code, outside any declaration or check. → §PW588
-
 ## Block H — Proof on a real game
 
 - 📋 **PW589** (deps: PW336 ✅) **game.text_fit reads a label inside a SubViewport in that viewport's coordinates and compares it with the screen's labels** — A label drawn on a 3D card or any viewport texture fails the fit with false overlaps, so the real answer is read by hand. → §PW589
