@@ -221,6 +221,86 @@ def merge_close(obj: Any, distance: float = 1e-5) -> int:
     return before - len(mesh.vertices)
 
 
+def dedust(obj: Any, below: float) -> dict:
+    """Drop each loose piece under `below` of the largest's vertices (§PW582).
+
+    A service's mesh arrives with crumbs: a few stray triangles beside the body, which a
+    render frames as part of the subject and a silhouette measures as a gap. A piece is
+    what shares an edge or a position: a glTF splits a vertex at every seam of its
+    texture and its normals, and a sphere read by edges alone came back as 518 pieces.
+    """
+    import bmesh
+
+    mesh = obj.data
+    held = bmesh.new()
+    held.from_mesh(mesh)
+    held.verts.ensure_lookup_table()
+    parent = list(range(len(held.verts)))
+
+    def root(at: int) -> int:
+        while parent[at] != at:
+            parent[at] = parent[parent[at]]
+            at = parent[at]
+        return at
+
+    def joined(a: int, b: int) -> None:
+        parent[root(a)] = root(b)
+
+    for edge in held.edges:
+        joined(edge.verts[0].index, edge.verts[1].index)
+    where: dict[tuple, int] = {}
+    for vert in held.verts:
+        spot = tuple(round(c, 6) for c in vert.co)
+        if spot in where:
+            joined(vert.index, where[spot])
+        else:
+            where[spot] = vert.index
+    grouped: dict[int, list] = {}
+    for vert in held.verts:
+        grouped.setdefault(root(vert.index), []).append(vert)
+    pieces = list(grouped.values())
+    largest = max((len(one) for one in pieces), default=0)
+    crumbs = [one for one in pieces if len(one) < below * largest]
+    gone = [vert for one in crumbs for vert in one]
+    if gone:
+        bmesh.ops.delete(held, geom=gone, context="VERTS")
+        held.to_mesh(mesh)
+        mesh.update()
+    held.free()
+    return {"pieces": len(pieces), "dropped": len(crumbs), "vertices": len(gone)}
+
+
+def settle(obj: Any, squash: float) -> dict:
+    """Squash the subject onto its base, keeping its volume, so a plush sits (§PW582).
+
+    Height is multiplied by `squash` and each side by its inverse square root, about the
+    middle of the base, which is where the subject touches the ground.
+    """
+    from mathutils import Matrix
+
+    if not 0.0 < squash <= 1.0:
+        raise PolyweaveError(
+            "render.bad-prepare",
+            f"settle squashes the height by a fraction of one, and {squash!r} is not",
+            "pass a squash above 0 and at most 1, such as 0.93",
+        )
+    world = [obj.matrix_world @ v.co for v in obj.data.vertices]
+    if not world:
+        return {"squash": squash}
+    base = (
+        (min(v.x for v in world) + max(v.x for v in world)) / 2,
+        (min(v.y for v in world) + max(v.y for v in world)) / 2,
+        min(v.z for v in world),
+    )
+    side = 1.0 / math.sqrt(squash)
+    about = Matrix.Translation(base)
+    obj.matrix_world = (
+        about @ Matrix.Diagonal((side, side, squash, 1.0)) @ about.inverted()
+        @ obj.matrix_world
+    )
+    return {"squash": squash}
+
+
 def triangles(obj: Any) -> int:
     """How many triangles the subject was drawn with, after any decimation (§PW141)."""
     return sum(len(polygon.vertices) - 2 for polygon in obj.data.polygons)

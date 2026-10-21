@@ -198,7 +198,7 @@ def bake(
     ] = True,
     cached: Annotated[
         bool,
-        Param("return an identical render already paid for rather than repeat it"),
+        Param("serve an identical render already paid for"),
     ] = True,
     azimuth: Annotated[
         float,
@@ -234,12 +234,16 @@ def bake(
     ] = 0.0,
     transparent: Annotated[bool, Param("leave the background empty")] = True,
     allow_uniform: Annotated[
-        bool, Param("a render of one flat colour is what was wanted, not a failure")
+        bool, Param("one flat colour is what was wanted, not a failure")
     ] = False,
     scrub: Annotated[
         bool,
         Param("take the shading a service painted into the mesh's texture back out"),
     ] = False,
+    prepare: Annotated[
+        list,
+        Param("steps on the mesh first: dedust, settle or custom"),
+    ] = (),
     after: Annotated[
         list,
         Param("the project's passes over the picture: file.py:fn or {pass, args}"),
@@ -253,21 +257,21 @@ def bake(
     ] = (),
     pixels_per_unit: Annotated[
         float,
-        Param("the scale it is baked at; the project's own where this is left out"),
+        Param("the scale it is baked at; the project's if unset"),
     ] = 0.0,
     on_grid: Annotated[
         bool,
         Param("false for a logo or HUD piece, at its own pixels_per_unit"),
     ] = True,
     seed: Annotated[
-        int, Param("the path tracer's seed; the project's where this is negative")
+        int, Param("the path tracer's seed; the project's if negative")
     ] = -1,
     samples: Annotated[
-        int, Param("samples per pixel; the rung's where this is zero", lo=0)
+        int, Param("samples per pixel; the rung's if zero", lo=0)
     ] = 0,
     size: Annotated[
         int,
-        Param("the square's side; the rung's where this is zero", lo=0, unit="px"),
+        Param("the square's side; the rung's if zero", lo=0, unit="px"),
     ] = 0,
     root: Annotated[str, Param("the project to resolve settings against")] = ".",
 ) -> dict:
@@ -281,7 +285,12 @@ def bake(
     fitted the noise, not the asset.
 
     `spec` renders the build its `subject` names, at its rung (§PW298).
+
+    `prepare` runs steps on the loaded mesh, each in the key and the record (§PW582).
     """
+    # What a project did to a mesh in its own Blender code before handing it over: a
+    # custom step is recorded with its source's digest, and what each step did comes
+    # back as `prepared`. The mesh is one object by then, joined as it loads.
     from . import blender
 
     if spec:
@@ -349,6 +358,10 @@ def bake(
     passes = _passes(after, where=Path(root).resolve())
     if passes:
         params["after"] = [one["said"] for one in passes]
+    # The same for a mesh's preparation: a different crumb floor is a different subject.
+    steps = _steps(prepare, where=Path(root).resolve())
+    if steps:
+        params["prepare"] = [one["said"] for one in steps]
     scale = None
     # The size the picture comes out at: the rung's square, unless a world rectangle was
     # declared, in which case the declaration decides both axes (§PW47). Before this, a
@@ -462,6 +475,7 @@ def bake(
             return served
 
     scrubbed: dict = {}
+    prepared: list[dict] = []
     if chosen["subject"] == "primitive":
         subject = blender.primitive("sphere")
     else:
@@ -480,6 +494,10 @@ def bake(
         subject = blender.load_mesh(
             where / model if not Path(model).is_absolute() else model
         )
+        # Before the decimation, which would count a crumb's faces as the body's.
+        for one in steps:
+            subject, did = _prepared(one, subject)
+            prepared.append({"step": one["said"]["step"], **did})
         subject = blender.decimate(subject, chosen["decimate"])
         if scrub:
             # Opt-in, and Cottony's own pass was per model for the same reason: a dark
@@ -597,6 +615,8 @@ def bake(
         # What the threshold came out at and how much it caught, so a scrub that took
         # a tenth of the texture is visible as that rather than as a darker render.
         answer["scrubbed"] = scrubbed
+    if prepared:
+        answer["prepared"] = prepared
     if inline:
         answer["image"] = measure.inline_image(out_path)
     _counted(answer)
@@ -610,49 +630,128 @@ def _passes(after, *, where: Path) -> list[dict]:
     it is a file under the project and a function in it, called with the written
     picture's path and its arguments.
     """
-    import hashlib
-    import importlib.util
-
     resolved = []
     for index, given in enumerate(after or ()):
         named = given if isinstance(given, str) else (given or {}).get("pass", "")
         arguments = {} if isinstance(given, str) else {
             k: v for k, v in given.items() if k != "pass"}
-        file, _, function = str(named).rpartition(":")
-        source = (where / file).resolve() if file else None
-        if source is None or not source.is_relative_to(where) or not source.is_file():
-            raise PolyweaveError(
-                "render.no-pass",
-                f"after[{index}] names {named!r}, which is not a file under the "
-                "project and a function in it",
-                "name it as path/to/file.py:function, under the project",
-                given=str(named),
-            )
-        loaded = importlib.util.spec_from_file_location(
-            f"polyweave_pass_{hashlib.sha256(str(source).encode()).hexdigest()[:12]}",
-            source,
+        fn, name, digest = _project_fn(
+            named, where=where, at=f"after[{index}]", code="render.no-pass",
+            failed=_pass_failed,
         )
-        module = importlib.util.module_from_spec(loaded)
-        try:
-            loaded.loader.exec_module(module)
-        except Exception as broken:  # noqa: BLE001 - the project's code, said as its own
-            raise _pass_failed(named, broken) from broken
-        fn = getattr(module, function, None)
-        if not callable(fn):
-            raise PolyweaveError(
-                "render.no-pass",
-                f"after[{index}]: {file} has no function {function!r}",
-                "name a function the file defines, as path/to/file.py:function",
-                given=str(named),
-            )
-        digest = hashlib.sha256(source.read_bytes()).hexdigest()
         resolved.append({
             "fn": fn,
             "arguments": arguments,
-            "said": {"pass": f"{source.relative_to(where).as_posix()}:{function}",
-                     "sha256": digest, **arguments},
+            "said": {"pass": name, "sha256": digest, **arguments},
         })
     return resolved
+
+
+def _project_fn(named, *, where: Path, at: str, code: str, failed) -> tuple:
+    """A `path/to/file.py:function` under the project: the function, its name as the
+    record spells it, and its source's digest, so a changed function renders again."""
+    import hashlib
+    import importlib.util
+
+    file, _, function = str(named).rpartition(":")
+    source = (where / file).resolve() if file else None
+    if source is None or not source.is_relative_to(where) or not source.is_file():
+        raise PolyweaveError(
+            code,
+            f"{at} names {named!r}, which is not a file under the project and a "
+            "function in it",
+            "name it as path/to/file.py:function, under the project",
+            given=str(named),
+        )
+    loaded = importlib.util.spec_from_file_location(
+        f"polyweave_pass_{hashlib.sha256(str(source).encode()).hexdigest()[:12]}",
+        source,
+    )
+    module = importlib.util.module_from_spec(loaded)
+    try:
+        loaded.loader.exec_module(module)
+    except Exception as broken:  # noqa: BLE001 - the project's code, said as its own
+        raise failed(named, broken) from broken
+    fn = getattr(module, function, None)
+    if not callable(fn):
+        raise PolyweaveError(
+            code,
+            f"{at}: {file} has no function {function!r}",
+            "name a function the file defines, as path/to/file.py:function",
+            given=str(named),
+        )
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    return fn, f"{source.relative_to(where).as_posix()}:{function}", digest
+
+
+#: The preparation steps `render.bake` knows, each with the arguments it takes.
+STEPS = {"dedust": ("below",), "settle": ("squash",), "custom": None}
+
+
+def _steps(prepare, *, where: Path) -> list[dict]:
+    """Each step `prepare` names, checked before anything is built (§PW582)."""
+    resolved = []
+    for index, given in enumerate(prepare or ()):
+        step = (given or {}).get("step") if isinstance(given, dict) else None
+        if step not in STEPS:
+            raise PolyweaveError(
+                "render.bad-prepare",
+                f"prepare[{index}] is {given!r}, and a step is one of "
+                f"{', '.join(STEPS)}",
+                "give each step as {step = dedust, below = 0.01}, {step = settle, "
+                "squash = 0.93} or {step = custom, fn = \"file.py:fn\"}",
+                given=str(given),
+            )
+        arguments = {k: v for k, v in given.items() if k not in ("step", "fn")}
+        if step == "custom":
+            fn, name, digest = _project_fn(
+                given.get("fn", ""), where=where, at=f"prepare[{index}]",
+                code="render.bad-prepare", failed=_step_failed,
+            )
+            resolved.append({"fn": fn, "arguments": arguments, "said": {
+                "step": step, "fn": name, "sha256": digest, **arguments}})
+            continue
+        wanted = STEPS[step]
+        if sorted(arguments) != sorted(wanted):
+            raise PolyweaveError(
+                "render.bad-prepare",
+                f"prepare[{index}], {step}, takes {', '.join(wanted)} and was given "
+                f"{', '.join(sorted(arguments)) or 'nothing'}",
+                f"give {step} exactly {', '.join(wanted)}",
+                given=str(given),
+            )
+        resolved.append({"fn": None, "arguments": arguments,
+                         "said": {"step": step, **arguments}})
+    return resolved
+
+
+def _prepared(one: dict, subject):
+    """Run one step on the loaded mesh; the subject after it, and what it did."""
+    from . import blender
+
+    step = one["said"]["step"]
+    if step == "dedust":
+        return subject, blender.dedust(subject, float(one["arguments"]["below"]))
+    if step == "settle":
+        return subject, blender.settle(subject, float(one["arguments"]["squash"]))
+    try:
+        given = one["fn"](subject, **one["arguments"])
+    except Exception as broken:  # noqa: BLE001 - the project's code, said as its own
+        raise _step_failed(one["said"]["fn"], broken) from broken
+    # A custom step may hand back a new object, or change the one it was given.
+    return (subject if given is None else given), {"fn": one["said"]["fn"]}
+
+
+def _step_failed(named, broken: BaseException) -> PolyweaveError:
+    import traceback
+
+    where = traceback.extract_tb(broken.__traceback__)[-1]
+    return PolyweaveError(
+        "render.prepare-failed",
+        f"the step {named} raised {type(broken).__name__}: {broken}",
+        "fix the step, or drop it from prepare to see the render without it",
+        detail=f"{Path(where.filename).name}:{where.lineno} in {where.name}",
+    )
 
 
 def _painted(one: dict, out_path: Path) -> None:

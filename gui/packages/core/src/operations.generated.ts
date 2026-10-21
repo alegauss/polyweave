@@ -1784,7 +1784,7 @@ export interface RenderBakeArgs {
   region?: string
   /** carry the picture back with the numbers, base64 encoded; default true */
   inline?: boolean
-  /** return an identical render already paid for rather than repeat it; default true */
+  /** serve an identical render already paid for; default true */
   cached?: boolean
   /** where the camera sits around the subject; from -360 to 360; in deg; default 35.0 */
   azimuth?: number
@@ -1810,23 +1810,25 @@ export interface RenderBakeArgs {
   exposure?: number
   /** leave the background empty; default true */
   transparent?: boolean
-  /** a render of one flat colour is what was wanted, not a failure; default false */
+  /** one flat colour is what was wanted, not a failure; default false */
   allow_uniform?: boolean
   /** take the shading a service painted into the mesh's texture back out; default false */
   scrub?: boolean
+  /** steps on the mesh first: dedust, settle or custom; default [] */
+  prepare?: unknown[]
   /** the project's passes over the picture: file.py:fn or {pass, args}; default [] */
   after?: unknown[]
   /** the world rectangle this picture stands for: [width, height] centred on the subject, or [x0, y0, x1, y1] where it stands, seen from the front; default [] */
   covers?: unknown[]
-  /** the scale it is baked at; the project's own where this is left out; default 0.0 */
+  /** the scale it is baked at; the project's if unset; default 0.0 */
   pixels_per_unit?: number
   /** false for a logo or HUD piece, at its own pixels_per_unit; default true */
   on_grid?: boolean
-  /** the path tracer's seed; the project's where this is negative; default -1 */
+  /** the path tracer's seed; the project's if negative; default -1 */
   seed?: number
-  /** samples per pixel; the rung's where this is zero; from 0 to …; default 0 */
+  /** samples per pixel; the rung's if zero; from 0 to …; default 0 */
   samples?: number
-  /** the square's side; the rung's where this is zero; from 0 to …; in px; default 0 */
+  /** the square's side; the rung's if zero; from 0 to …; in px; default 0 */
   size?: number
   /** the project to resolve settings against; default "." */
   root?: string

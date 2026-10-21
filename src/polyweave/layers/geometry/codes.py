@@ -110,6 +110,18 @@ CODES: dict[str, Code] = {
         doors=("read the detail for where it raised, and fix the pass",
                "drop it from after to see the render without it"),
     ),
+    "render.bad-prepare": Code(
+        means="a step in `prepare` is not one render.bake knows, or not given so",
+        when="the step is misspelt, its arguments are wrong, or a custom step's "
+             "file.py:fn is not a function in a file under the project",
+        doors=("give dedust its below, settle its squash, or custom its fn",),
+    ),
+    "render.prepare-failed": Code(
+        means="a project's own preparation step raised while working on the mesh",
+        when="the step's code assumed an object, an argument or a module it lacks",
+        doors=("read the detail for where it raised, and fix the step",
+               "drop it from prepare to see the render without it"),
+    ),
     "render.unknown-format": Code(
         means="the mesh file is not in a format this reads",
         when="an .obj or another format where a .blend, glTF or FBX was expected",

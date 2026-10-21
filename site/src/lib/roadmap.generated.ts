@@ -56,7 +56,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW582",
     block: "C",
     symptom: "a mesh cannot be prepared before it is rendered, so Cottony keeps prep.py and three exporters outside the record",
-    why: "Dropping fragments, settling a plush on its base, joining and filling the frame still run in project code before port.run, and nothing records them.",
+    why: "Cottony still runs prep.py and three exporters; cloth.dress needs its frame camera as a custom step before they can go.",
     deps: [],
   },
   {

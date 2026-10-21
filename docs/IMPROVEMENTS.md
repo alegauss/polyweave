@@ -9,25 +9,24 @@
 ### §PW582 A mesh prepared by declared steps
 
 Found closing PW82 in Cottony on 2026-10-20. `tools/art/bake_model.py` is gone, but its
-preparation half survives as `tools/art/prep.py`. Three exporters drive Blender before
-`port.run`, because no family file can say how a fetched or built mesh has to be
-prepared before it is rendered:
+preparation half survives as `tools/art/prep.py`, driven by three exporters
+(`export_props.py`, `export_boosters.py`, `export_friends.py`) before `port.run`.
 
-- `dedust`: drop the small fragments a service's mesh carries;
-- `settle`: squash the body onto its base so a plush sits rather than floats;
-- `cloth.dress`: project drawn cloth onto the mesh from an orthographic camera;
-- joining the parts into one mesh, and scaling it to the frame's fill.
+Landed: `render.bake` takes `prepare`, a list of steps run on the mesh after it loads
+and before it is decimated or placed. `dedust { below }` drops every piece under that
+share of the largest's vertices, where a piece shares an edge or a position (a glTF
+splits vertices at seams). `settle { squash }` keeps volume about the base. `custom { fn
+= "file.py:fn", ...args }` calls a project function with the object. Each step is in the
+key and the record, a custom one with its source's digest, and the answer says what each
+did. A family sets them through `fixes`, which already reaches `render.bake`. Joining
+needs no step: `load_mesh` joins every part a file holds.
 
-`normalise.ingest` covers orientation and size only. So the prep stays project code
-(`export_props.py`, `export_boosters.py`, `export_friends.py`), kept by name in
-Cottony's `polyweave.toml`, and every re-export happens outside the provenance chain.
-
-What to build: a `prepare` table on a family, or on a `mesh.buy` and `normalise.ingest`
-answer, listing ordered steps from a small vocabulary (`dedust { below }`, `settle {
-squash }`, `join`, `fill`), each recorded in the mesh's record. Cloth projected from a
-camera is Cottony's own, and stays a `custom` step naming a project function, the way
-geometry's escape hatch is a node and not a mode. The evidence that it landed is that
-`prep.py` and the three exporters go, as `bake_model.py` did.
+Left, in Cottony: each exporter's work as prepare steps, then the exporters and
+`prep.py` deleted. Two pieces need care. `cloth.dress` projects drawn cloth from the
+orthographic camera `prep.frame` builds, so it becomes a custom step that builds its own
+camera from the object's bounds. The exporters also scale each mesh to a fill of its
+frame (`FILLS`), which the bake's `margin` or `covers` should express; compare a render
+before and after for each family, as PW76 to PW81 did, before deleting anything.
 
 ## Block D — Fetching from a paid service without surprise
 

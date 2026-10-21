@@ -22,6 +22,12 @@ states only what differs, and `port` runs the skeleton:
     out   = ".polyweave/stars/star_dim.png"
     bake  = "sprites/star_dim.png"
 
+`fixes` is any `render.bake` argument the search leaves alone. A fetched mesh's crumbs
+and a plush's sit are among them, as `prepare` (§PW582):
+
+    fixes = { prepare = [{ step = "dedust", below = 0.01 },
+                         { step = "settle", squash = 0.93 }] }
+
 A member given as a `declaration` is built into `[paths] work/<family>/`, or into the
 folder its `mesh` names, and never beside the declaration, which in a game sits inside
 the engine's import tree (§PW458).

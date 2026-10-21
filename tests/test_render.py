@@ -336,6 +336,100 @@ def test_a_pass_that_is_not_there_or_raises_is_said_as_the_projects(project):
     assert "ValueError" in refused.value.message
 
 
+@pytest.fixture
+def dusty(project):
+    """A ball with a crumb beside it, as a service's mesh arrives."""
+    import bpy
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=1.0)
+    bpy.ops.mesh.primitive_cube_add(size=0.1, location=(3.0, 0.0, 0.0))
+    out = project / "assets" / "dusty.glb"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    bpy.ops.export_scene.gltf(filepath=str(out), export_format="GLB")
+    return "assets/dusty.glb"
+
+
+def _drawn_box(path):
+    """The picture's subject as (width, height) in pixels, off its alpha."""
+    from PIL import Image
+
+    with Image.open(path) as drawn:
+        alpha = np.asarray(drawn.convert("RGBA"))[..., 3] > 128
+    rows, cols = np.flatnonzero(alpha.any(axis=1)), np.flatnonzero(alpha.any(axis=0))
+    return cols[-1] - cols[0] + 1, rows[-1] - rows[0] + 1
+
+
+def test_a_crumb_is_dusted_off_before_the_render_and_recorded(project, dusty):
+    """§PW582: Cottony dropped a service's crumbs in its own Blender code."""
+    front = {"azimuth": 0.0, "elevation": 0.0, "rung": "final", "model": dusty}
+    plain = render.bake(Reported(), out="plain.png", root=project, **front)
+    clean = render.bake(Reported(), out="clean.png", root=project, **front,
+                        prepare=[{"step": "dedust", "below": 0.05}])
+    # The crumb is one cube, whose eight corners a glTF splits into 24 vertices.
+    assert clean["prepared"] == [
+        {"step": "dedust", "pieces": 2, "dropped": 1, "vertices": 24}]
+    assert "prepared" not in plain
+    # With the crumb gone the ball fills the frame it used to share with it.
+    assert _drawn_box(project / "clean.png")[0] > _drawn_box(project / "plain.png")[0]
+    said = provenance.read("clean.png", root=project)["params"]["prepare"]
+    assert said == [{"step": "dedust", "below": 0.05}]
+    assert clean["cache_key"] != plain["cache_key"]
+
+
+def test_a_settled_mesh_sits_lower_and_wider(project, mesh):
+    front = {"azimuth": 0.0, "elevation": 0.0, "rung": "final", "model": mesh}
+    render.bake(Reported(), out="tall.png", root=project, **front)
+    render.bake(Reported(), out="sat.png", root=project, **front,
+                prepare=[{"step": "settle", "squash": 0.5}])
+    wide, tall = _drawn_box(project / "tall.png")
+    sat_wide, sat_tall = _drawn_box(project / "sat.png")
+    assert sat_tall / sat_wide < 0.6 * (tall / wide)
+
+
+STEP = '''
+def shrink(obj, by=0.5):
+    """Scale the subject's own vertices, as a project's cloth or rig step would."""
+    for vertex in obj.data.vertices:
+        vertex.co *= by
+
+
+def broken(obj):
+    raise ValueError("no mesh today")
+'''
+
+
+def test_a_projects_own_step_runs_on_the_mesh_and_is_in_its_record(project, mesh):
+    (project / "steps.py").write_text(STEP, encoding="utf-8")
+    shrink = {"step": "custom", "fn": "steps.py:shrink", "by": 0.5}
+    done = render.bake(Reported(), out="s.png", rung="preview", model=mesh,
+                       root=project, prepare=[shrink])
+    assert done["prepared"] == [{"step": "custom", "fn": "steps.py:shrink"}]
+    said = provenance.read("s.png", root=project)["params"]["prepare"][0]
+    assert said["fn"] == "steps.py:shrink" and said["by"] == 0.5
+    assert len(said["sha256"]) == 64
+    with pytest.raises(PolyweaveError) as refused:
+        render.bake(Reported(), out="x.png", rung="preview", model=mesh, root=project,
+                    prepare=[{"step": "custom", "fn": "steps.py:broken"}])
+    assert refused.value.code == "render.prepare-failed"
+    assert "ValueError" in refused.value.message
+
+
+@pytest.mark.parametrize("step", [
+    {"step": "sand"},
+    {"step": "dedust"},
+    {"step": "settle", "squash": 0.9, "twice": True},
+    {"step": "custom", "fn": "nowhere.py:shrink"},
+    "dedust",
+])
+def test_a_step_it_does_not_know_is_refused_before_building(project, mesh, step):
+    with pytest.raises(PolyweaveError) as refused:
+        render.bake(Reported(), out="x.png", rung="preview", model=mesh, root=project,
+                    prepare=[step])
+    assert refused.value.code == "render.bad-prepare"
+    assert not (project / "x.png").exists()
+
+
 def test_a_warm_world_lights_the_subject_warm(project):
     """§PW441: Cottony's props are lit by a warm world, which had no colour here."""
     from PIL import Image
