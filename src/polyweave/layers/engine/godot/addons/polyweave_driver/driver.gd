@@ -346,6 +346,10 @@ func _text_fit() -> Dictionary:
 		var entry := {"path": str(node.get_path()), "class": node.get_class(), "key": node.text,
 			"text": shown, "box": [box.position.x, box.position.y, box.size.x, box.size.y],
 			"findings": []}
+		# A label inside a SubViewport is drawn as a texture, so its box is in that
+		# viewport's coordinates and never the screen's (§PW589): it is named with it.
+		if node.get_viewport() != get_root():
+			entry["viewport"] = str(node.get_viewport().get_path())
 		if node is Label:
 			var label := node as Label
 			var lines := label.get_line_count()
@@ -370,6 +374,10 @@ func _text_fit() -> Dictionary:
 			var a: Control = texts[i]
 			var b: Control = texts[j]
 			if a.is_ancestor_of(b) or b.is_ancestor_of(a):
+				continue
+			# Two boxes in two viewports share no coordinates, so neither lies over the
+			# other: Spinhold's map tags each overlapped every other tag and the HUD.
+			if a.get_viewport() != b.get_viewport():
 				continue
 			if _screen_rect(a).grow(-0.5).intersects(_screen_rect(b).grow(-0.5)):
 				found[i]["overlaps"].append(found[j]["path"])

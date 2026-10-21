@@ -438,7 +438,8 @@ def text_fit(
 
     Per node: its key and the text shown, its box, the lines it took against those it
     shows, and `findings`: text wider than its box, lines it cannot show, a box out of
-    its container, and text it lies over. `locale` switches the game's language first,
+    its container, and text it lies over in the same viewport; one inside a SubViewport
+    names it as `viewport` (§PW589). `locale` switches the game's language first,
     so a project sweeps each screen in each language and a finding names the key.
     """
     if locale:

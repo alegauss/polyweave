@@ -189,7 +189,11 @@ between connections.
   its box on screen, a Label's lines against those it shows, and `findings`: text wider
   than its box (a label that clips or ellipsizes), lines it cannot show, a box leaving
   its parent Control (an unwrapped label grows to its text, so a line too long for its
-  menu shows here), and text it lies over, a node's own children aside. `locale`
+  menu shows here), and text it lies over, a node's own children aside. **A label in a
+  SubViewport is held to its own viewport** (§PW589): drawn as a texture on a quad or a
+  rect, its box is in that viewport's coordinates, so it names the viewport under
+  `viewport` and is checked for overlap only against text in the same one. Spinhold's
+  map tags had each lain over every other tag and the HUD's score. `locale`
   switches the game's TranslationServer first and lets two frames pass, so a project
   sweeps each screen in each language and a finding names the key; the driver's
   commands are `locale` and `text_fit`. `unfit` lists the nodes with findings, and

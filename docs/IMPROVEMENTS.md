@@ -100,31 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW589 text fit inside a SubViewport
-
-Where it happened: spinhold RK252 puts a tag over each world on the Rind map. Each tag's
-face is a small SubViewport (640x180) holding a HoloPanel and two Labels, drawn as the
-texture of a tilted quad in the map's own 3D SubViewport. The design asks for
-`game.text_fit` in both languages.
-
-The call: `game.open --scene res://game/main.tscn --args ["--route"] --locale pt_BR`,
-then `game.text_fit`. It answered `passed: false`, "12 text node(s), 9 that do not fit".
-Every finding was an overlap between labels in different viewports: each tag's name
-label (box 196,12,426,69 in its own viewport) "lies over" every other tag's, the HUD's
-score at 32,16 on the screen and the screen's heading at 0,24. The boxes are read in
-each label's own viewport coordinates and then compared as if they shared the screen.
-The real fit answer (`lines == visible_lines` on every tag label) was right, but buried
-under false overlaps.
-
-What it should do: compare overlaps only between labels drawn in the same viewport. A
-label inside a SubViewport that the screen shows as a texture (on a TextureRect, a
-SubViewportContainer or a 3D material) is checked for fit within its own viewport and
-named with that viewport's path, never placed in screen space. Where it can map the box
-to the screen (a container with `stretch`), it may report the screen box as well.
-
-Workaround in spinhold: none. The findings were read by hand for `lines` against
-`visible_lines`.
-
 ### §PW590 the driver's idle clock
 
 Where it happened: spinhold RK252, checking text fit on the Rind map (2026-10-21).

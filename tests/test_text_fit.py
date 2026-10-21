@@ -39,6 +39,12 @@ func _ready() -> void:
 \tmenu.add_child(_label("Left", "OPTIONS", Vector2(10, 120), Vector2(100, 30)))
 \tmenu.add_child(_label("Right", "HELP", Vector2(80, 125), Vector2(100, 30)))
 \tmenu.add_child(_label("Out", "BACK", Vector2(200, 280), Vector2(100, 30)))
+\t# A tag drawn as a texture: in its own viewport it sits where Start sits on screen.
+\tvar card := SubViewport.new()
+\tcard.name = "Card"
+\tcard.size = Vector2i(320, 120)
+\tadd_child(card)
+\tcard.add_child(_label("Tag", "NORTH", Vector2(30, 30), Vector2(160, 30)))
 
 func _label(named: String, said: String, at: Vector2, size: Vector2,
 \t\tclip := false) -> Label:
@@ -92,6 +98,18 @@ def test_each_text_that_does_not_fit_is_named_with_why(screen):
     assert any("lies over" in one and "Right" in one for one in bad["Left"])
     assert any("leaves its container" in one for one in bad["Out"])
     assert found["passed"] is False
+
+
+def test_a_label_in_a_subviewport_is_held_to_its_own_viewport(screen):
+    """§PW589: a map tag's label read as lying over the screen's, in other units."""
+    session, root = screen
+    found = driving.text_fit(session, root=root)
+    tag = next(one for one in found["nodes"] if one["path"].endswith("Tag"))
+    assert tag["viewport"].endswith("Card")
+    assert "Tag" not in unfit(found)
+    assert not any("Tag" in one for one in unfit(found).get("Start", ()))
+    start = next(one for one in found["nodes"] if one["path"].endswith("Start"))
+    assert "viewport" not in start
 
 
 def test_a_longer_translation_is_caught_in_its_own_language(screen):
