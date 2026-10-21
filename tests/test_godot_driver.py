@@ -513,6 +513,30 @@ def test_a_step_resets_the_idle_clock_and_a_timeout_says_it_was_one(tmp_path):
     assert "since it answered step at frame 90" in gone.value.detail
 
 
+def test_a_sweep_drops_only_the_user_folders_of_sessions_gone(tmp_path):
+    """§PW594: Spinhold's driving folder held 5,207 folders of ended sessions."""
+    folder = tmp_path / "driving"
+    for name in ("g0000aaaa.user/Godot", "g1111bbbb.user", "replay.user"):
+        (folder / name).mkdir(parents=True)
+    (folder / "g1111bbbb.json").write_text("{}", encoding="utf-8")  # still open
+    driving._sweep_users(folder)
+    assert sorted(one.name for one in folder.iterdir()) == [
+        "g1111bbbb.json", "g1111bbbb.user", "replay.user"]
+
+
+def test_a_closed_session_takes_its_user_folder_with_it(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    session = driving.opened(str(root))["session"]
+    folder = root / ".polyweave" / "driving"
+    assert (folder / f"{session}.user").is_dir()
+    said = driving.closed(session, root=str(root))
+    assert said["user_removed"] is True
+    assert not (folder / f"{session}.user").exists()
+    assert (folder / f"{session}.log").is_file()
+
+
 def test_a_session_kept_as_a_flow_replays_with_no_agent(tmp_path):
     """§PW214: what a session proved becomes a file the runner replays alone."""
     if not os.environ.get("GODOT"):

@@ -16,8 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW594** (deps: —) **a game session leaves its own user:// folder in the work area once it ends, so engine caches pile up** — Spinhold's work area held 5,207 folders of Godot caches from closed sessions, which no reader needs once the game has ended. → §PW594
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

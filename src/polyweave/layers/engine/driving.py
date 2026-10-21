@@ -100,6 +100,32 @@ def _folder(root: str | Path) -> Path:
     return load(root).root / ".polyweave" / "driving"
 
 
+#: A session's own user:// folder, by the name game.open gives it.
+_SESSION_USER = re.compile(r"^g[0-9a-f]{8}\.user$")
+
+
+def _drop_user(folder: Path, session: str) -> bool:
+    """Remove a session's own user:// once its game has ended (§PW594)."""
+    import shutil
+
+    where = folder / f"{session}.user"
+    if not where.is_dir():
+        return False
+    shutil.rmtree(where, ignore_errors=True)
+    return not where.exists()
+
+
+def _sweep_users(folder: Path) -> None:
+    """The user:// of every session whose record is gone, as one that quit idle or
+    crashed leaves it; another run's folder, such as a replay's, is not a session's."""
+    if not folder.is_dir():
+        return
+    for one in folder.iterdir():
+        session = one.name.removesuffix(".user")
+        if _SESSION_USER.match(one.name) and not (folder / f"{session}.json").exists():
+            _drop_user(folder, session)
+
+
 def _session(session: str, root: str | Path) -> dict:
     where = _folder(root) / f"{session}.json"
     if not where.is_file():
@@ -188,6 +214,7 @@ def opened(
     after += own_args
     folder = _folder(here)
     folder.mkdir(parents=True, exist_ok=True)
+    _sweep_users(folder)
     session = "g" + secrets.token_hex(4)
     log = folder / f"{session}.log"
     command = [*through, engine.find(here), *args, "--script", script, "--", *after]
@@ -1603,21 +1630,30 @@ def closed(
     *,
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
-    """End the game, and say whether it ended when asked."""
+    """End the game, and say whether it ended when asked.
+
+    Its own user:// goes with it once the process has ended (§PW594), and the answer
+    says so; its log stays, for game.gone's remedy names it.
+    """
     record = _session(session, root)
+    folder = _folder(root)
     try:
         answer = send(session, "close", root=root)
     except PolyweaveError as ended:
-        return {"session": session, "closed": True, "why": ended.message}
+        gone = not _alive(record["pid"]) and _drop_user(folder, session)
+        return {"session": session, "closed": True, "why": ended.message,
+                "user_removed": gone}
     deadline = time.monotonic() + 30
     while _alive(record["pid"]) and time.monotonic() < deadline:
         time.sleep(0.2)
     _forget(record, root)
+    ended = not _alive(record["pid"])
     return {
         "session": session,
-        "closed": not _alive(record["pid"]),
+        "closed": ended,
         "frame": answer["frame"],
         "errors": answer["errors"],
+        "user_removed": ended and _drop_user(folder, session),
     }
 
 

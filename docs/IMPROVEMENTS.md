@@ -100,26 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW594 A session's user folder goes with it
-
-Found by PW593 on 2026-10-21. Every `game.open` gives the game a fresh `user://` of its
-own, `.polyweave/driving/<session>.user`, set as APPDATA and XDG_DATA_HOME (PW217), so a
-session never reads the person's saves. Nothing removes it: `game.close` forgets the
-session's record and leaves the folder, and so does a session that quits idle or
-crashes. Godot fills each with its own shader and import caches, and Spinhold's work
-area held 5,207 such folders with no record in any, most of what an inventory scan
-walked until PW593 taught the walk to step over them. They also cost disk.
-
-Nothing reads them after the game ends: `game.crash_read` reads the person's own
-`user://`, `_user_dir`, never a session's, and a replay or a flow makes its own folder.
-
-What to build: `game.close` removes `<session>.user` once the process has ended, beside
-forgetting the record, and says so in its answer. `game.open` first removes every
-`*.user` under `driving` whose session has no record left and whose process is not
-alive, which covers a session that quit idle or crashed. The session's `.log` stays,
-since `game.gone`'s remedy names it. A test opens and closes a session and finds no
-folder left, and a stale folder from a dead session is gone after the next open.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 1 },
+  { block: "H", title: "Proof on a real game", open: 0 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW594",
-    block: "H",
-    symptom: "a game session leaves its own user:// folder in the work area once it ends, so engine caches pile up",
-    why: "Spinhold's work area held 5,207 folders of Godot caches from closed sessions, which no reader needs once the game has ended.",
-    deps: [],
-  },
   {
     id: "PW202",
     block: "R",

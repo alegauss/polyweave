@@ -267,6 +267,7 @@
 - ✅ **PW590** **the game driver quit as idle for 600 s seconds after a game.step had answered, so the next call found the session gone** — game.gone says how long ago and to what a session last answered, and tells idle from a crash (design superseded: the clock was right) (design recorded in `docs/specs/driving.md`).
 - ✅ **PW591** **clip.shots frames a camera clip only once the game is playing it, so a cutscene reached through menus cannot be framed** — clip.shots given clip stands the built camera up in the game, anchors found by name, so a cutscene is framed without driving the menus (design recorded in `docs/specs/motion.md`).
 - ✅ **PW592** **a clip.timeline cannot be played mirrored, so a roll left and right is declared as two files differing by one sign** — A timeline's [mirror] names a second animation with chosen tracks negated, both in one player, so a bank left and right is one file (design recorded in `docs/specs/motion.md`).
+- ✅ **PW594** **a game session leaves its own user:// folder in the work area once it ends, so engine caches pile up** — game.close removes a session's own user:// once its game has ended, and game.open sweeps those left by sessions that quit idle or crashed (design recorded in `docs/specs/driving.md`).
 
 ## Block I — Voxel models from a declaration
 

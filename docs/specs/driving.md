@@ -212,6 +212,11 @@ really waited and what it last answered (`idle for 612 s since it answered step 
 to what the session last answered, and its remedy tells a timeout, which that line
 marks, from a game that ended another way. Spinhold read a timeout after a step as the
 clock miscounting, because nothing said how long it had been.
+**A session's own `user://` goes with it** (§PW594). `game.close` removes
+`<session>.user` once the process has ended and answers `user_removed`; its log stays.
+`game.open` first removes every session's folder whose record is gone, as one that quit
+idle or crashed leaves it; a replay's or a flow's folder is not a session's and is left.
+Spinhold's driving folder had held 5,207 folders of the engine's caches.
 
     python -m polyweave game.open --root . --seed 7
     python -m polyweave game.input --session g1a2b3c4d --click UI/Play
