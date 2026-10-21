@@ -283,6 +283,14 @@ broken record must not hide the next. Four outcomes per record: sound, the artef
 **missing**, the artefact **changed** — with both digests, so the difference is attributable
 — or the record itself is **unreadable**.
 
+**A file is read whole only once it moves** (§PW584). Every digest is remembered by path
+with the size, the mtime and the inode it was read at, and a file whose three still match
+answers from memory, so a held server's second scan reads only what changed and an input
+shared by a hundred records is read once. A file whose mtime is under two seconds old is
+read every time and never remembered: NTFS stamps a write to the nearest tick, so a
+same-size rewrite inside one would otherwise read as unchanged. One inventory scan of
+Spinhold went from about 13 s to about 7 s.
+
 **Only the project's own records are read** (§PW376). A folder below the root that holds a
 `.git` is another checkout, such as the worktree of an older commit `engine.cost` keeps in
 the work area, and its records describe that commit's files: read against this project's,

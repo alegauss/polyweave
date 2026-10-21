@@ -158,10 +158,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW205"],
   },
   {
-    id: "PW584",
+    id: "PW593",
     block: "U",
-    symptom: "one inventory scan hashes every artefact and input again, so opening Spinhold still takes about 7 s",
-    why: "A file whose size and mtime have not moved is read whole on every scan, and a shared input is read once per record.",
+    symptom: "one inventory scan walks the project three times and parses every record twice, so Spinhold still takes about 7 s",
+    why: "With digests remembered no file is hashed again, and what is left is stat calls and walks the readers each make for themselves.",
     deps: [],
   },
 ];

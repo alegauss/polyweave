@@ -545,6 +545,7 @@
 - ✅ **PW580** **the window shows nothing while a project opens, so a slow open reads as a dead button and each click adds a read** — While a project opens, every Open is disabled, the list is aria-busy and the row says Opening with the inventory read so far, so a slow open reads as busy.
 - ✅ **PW581** **the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page** — Every window screen is a Playwright flow driven by role and name, npm start included, and the smoke mode is gone from main and the renderer (design recorded in `gui/README.md`).
 - ✅ **PW579** **project.inventory rescans the whole project for every page, so opening Spinhold in the window takes 50 s** — The pages of one inventory read share one scan: an offset past 0 reuses the rows the last read at 0 found, so Spinhold opens in about 7 s, not 50 (design recorded in `docs/specs/inventory.md`).
+- ✅ **PW584** **one inventory scan hashes every artefact and input again, so opening Spinhold still takes about 7 s** — sha256_of remembers a settled file's digest by size, mtime and inode, so a shared input is read once and a Spinhold scan fell from about 13 s to 7 s (design recorded in `docs/specs/provenance.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

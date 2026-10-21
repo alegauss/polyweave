@@ -564,28 +564,25 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW584 An inventory scan that hashes only what moved
+### §PW593 One walk per inventory scan
 
-Left by PW579 on 2026-10-20. Once the pages of one read shared one scan, opening
-Spinhold in the window still took about 7 s, which is that one scan.
+Left by PW584 on 2026-10-21. With every digest remembered, one inventory scan of
+Spinhold still takes about 7 s, and none of it is hashing any more. Measured warm, in
+one process: `provenance.outdated` 3.8 s, the `rglob` for records in `_items` 1.2 s,
+`_shapes` 1.8 s and `_lines` 0.3 s. A warm profile of `outdated` spends its time in
+16,097 `stat` calls, 6,132 `os.walk` steps in `_own`, `resolve()` and TOML parsing, not
+in reading files.
 
-`_items` in `surface/project.py` reads every artefact whole, because the record state is
-`provenance.sha256_of(on_disk) != recorded`. An unrecorded file is hashed again for its
-`digest`. `provenance.outdated` does the same for the inputs of every record, so an
-input shared by many records is read once for each of them. Nothing remembers a file it
-read a moment ago whose size and mtime have not moved since.
+So the tree is walked three times for one answer: once for `.prov.json`, once for
+declarations, once inside `outdated` for the records again. Every record is also parsed
+twice, by `_items` and by `outdated`.
 
-Measure before building: time `_items` on Spinhold split three ways (record walk,
-artefact hashing, `outdated`) and file what dominates. The guess is hashing.
-
-What to build if it is: one digest cache in `kernel/provenance.py`, keyed by resolved
-path and holding `(size, mtime_ns, sha256)`. `sha256_of` answers from it when `stat()`
-still matches and reads the file otherwise. It lives in the serving process, as the
-inventory snapshot does, so a CLI call pays the full price once and a held server pays
-it once per changed file. Every caller of `sha256_of` gets the saving, `outdated` and
-`verify` included. A file rewritten in place within one mtime tick at the same size is
-the case it would miss. The project's own writes go through the record, which hashes
-fresh, so only a hand edit inside that tick would be read stale.
+What to build: one walk of the project per scan that yields every path the readers ask
+for by suffix, skipping hidden, dependency and other-checkout folders once, and handed
+to `_items`, `_shapes` and `outdated` as a list rather than each calling `rglob`.
+Records are read once into a map by path and the same map is passed to `outdated`.
+Measure the split again before and after: the target is under 2 s on Spinhold warm, and
+a cold scan should cost the walk plus the hashing and nothing else.
 
 ## Block V — Parts every game repeats, installed already proved
 

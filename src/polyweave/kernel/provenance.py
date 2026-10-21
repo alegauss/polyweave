@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import time
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from fnmatch import fnmatch
@@ -96,15 +98,46 @@ _CHUNK = 1 << 20
 # -- the record ------------------------------------------------------------------
 
 
+#: A file's digest as last read, by absolute path: `(size, mtime_ns, inode, digest)`
+#: (§PW584). An inventory scan of Spinhold read 4,982 files whole, every one of which
+#: had not moved since the scan before it.
+_DIGESTS: dict[str, tuple[int, int, int, str]] = {}
+
+#: How long a file's mtime has to be behind the clock before its digest is kept. NTFS
+#: stamps a write to the nearest tick, so a file rewritten at the same size inside one
+#: would read as unchanged; one this old cannot still be inside the tick it was read in.
+_SETTLED_NS = 2_000_000_000
+
+#: Past this many entries the cache starts over, so a held server cannot grow it.
+_DIGESTS_MAX = 100_000
+
+
 def sha256_of(path: Path) -> tuple[str, int]:
-    """The digest and the byte length of a file, read once."""
+    """The digest and the byte length of a file, read once while it has not moved.
+
+    A file whose size, mtime and inode match the last read answers from memory, so a
+    scan pays only for what changed. One written in the last two seconds is always
+    read, which keeps a same-size rewrite inside one mtime tick from going stale.
+    """
+    key = os.path.abspath(path)
+    stat = os.stat(key)
+    kept = _DIGESTS.get(key)
+    if kept and kept[:3] == (stat.st_size, stat.st_mtime_ns, stat.st_ino):
+        return kept[3], stat.st_size
     hasher = hashlib.sha256()
     length = 0
-    with open(path, "rb") as fh:
+    with open(key, "rb") as fh:
         while chunk := fh.read(_CHUNK):
             hasher.update(chunk)
             length += len(chunk)
-    return hasher.hexdigest(), length
+    digest = hasher.hexdigest()
+    if length == stat.st_size and time.time_ns() - stat.st_mtime_ns > _SETTLED_NS:
+        if len(_DIGESTS) >= _DIGESTS_MAX:
+            _DIGESTS.clear()
+        _DIGESTS[key] = (stat.st_size, stat.st_mtime_ns, stat.st_ino, digest)
+    else:
+        _DIGESTS.pop(key, None)
+    return digest, length
 
 
 def relative(path: str | Path, root: Path) -> str:

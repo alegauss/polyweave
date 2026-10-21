@@ -36,6 +36,45 @@ def a_record(tmp_path, *, body=b"\x89PNG-pretend", **over):
     return P.build("render", "mascot.png", **fields)
 
 
+# -- the digest, read once while the file has not moved (§PW584) -----------------
+
+
+def _settled(path, ago=60):
+    """Date a file's mtime back, as one that has sat since the last scan has it."""
+    import os
+    import time
+
+    then = time.time() - ago
+    os.utime(path, (then, then))
+
+
+def test_a_settled_file_is_answered_from_memory_until_it_moves(tmp_path, monkeypatch):
+    path = artefact(tmp_path, body=b"one")
+    _settled(path)
+    first = P.sha256_of(path)
+    opened = []
+    real = open
+    monkeypatch.setattr(
+        "builtins.open", lambda *a, **k: opened.append(a) or real(*a, **k)
+    )
+    assert P.sha256_of(path) == first and opened == []
+    path.write_bytes(b"two")  # the same size, and a new mtime
+    _settled(path, ago=30)
+    assert P.sha256_of(path)[0] != first[0] and len(opened) == 1
+
+
+def test_a_file_just_written_is_read_every_time(tmp_path):
+    """Inside one mtime tick a same-size rewrite keeps its stamp, so none is kept."""
+    path = artefact(tmp_path, body=b"one")
+    first = P.sha256_of(path)
+    mtime = path.stat().st_mtime_ns
+    path.write_bytes(b"two")
+    import os
+
+    os.utime(path, ns=(mtime, mtime))  # the rewrite NTFS stamped in the same tick
+    assert P.sha256_of(path)[0] != first[0]
+
+
 # -- the record ------------------------------------------------------------------
 
 
