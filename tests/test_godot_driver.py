@@ -489,6 +489,30 @@ def test_a_session_nobody_calls_ends_on_its_own(tmp_path):
     assert gone.value.code == "game.gone"
 
 
+def test_a_step_resets_the_idle_clock_and_a_timeout_says_it_was_one(tmp_path):
+    """§PW590: a session quit as idle seconds after a step, and the refusal could not
+    say whether it had timed out or crashed, nor how long it had been."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    (root / "polyweave.toml").write_text("[driving]\nidle = 3\n", encoding="utf-8")
+    session = driving.opened(str(root))["session"]
+    for _ in range(3):
+        time.sleep(1.5)  # under the idle seconds each time, past them in all
+        driving.stepped(session, frames=30, root=str(root))
+    record = json.loads(
+        (root / ".polyweave" / "driving" / f"{session}.json").read_text()
+    )
+    deadline = time.monotonic() + 30
+    while driving._alive(record["pid"]) and time.monotonic() < deadline:
+        time.sleep(0.5)
+    with pytest.raises(PolyweaveError) as gone:
+        driving.stepped(session, root=str(root))
+    assert "its last answer, to step at frame 90" in gone.value.message
+    assert "[driving] idle" in gone.value.remedy
+    assert "since it answered step at frame 90" in gone.value.detail
+
+
 def test_a_session_kept_as_a_flow_replays_with_no_agent(tmp_path):
     """§PW214: what a session proved becomes a file the runner replays alone."""
     if not os.environ.get("GODOT"):

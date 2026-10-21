@@ -28,6 +28,8 @@ var flow_step: Dictionary = {}
 var failed := false
 ## Seconds with no request before the driver quits; 0 waits for ever.
 var idle := 0
+## The command answered last, which the idle line names.
+var last_cmd := "nothing"
 ## Frames let pass since start; every answer carries it.
 var frame := 0
 ## Frames still to pass before holding again, for a `step` or a `wait` in progress.
@@ -222,7 +224,10 @@ func _next_request():
 	var since := Time.get_ticks_msec()
 	while true:
 		if idle > 0 and Time.get_ticks_msec() - since > idle * 1000:
-			print("polyweave_driver: idle for %d s, quitting" % idle)
+			# The seconds it really waited and what it last answered, so a caller tells
+			# a timeout from a crash (§PW590).
+			print("polyweave_driver: idle for %d s since it answered %s at frame %d, quitting"
+				% [(Time.get_ticks_msec() - since) / 1000, last_cmd, frame])
 			return null
 		if peer == null or peer.get_status() != StreamPeerTCP.STATUS_CONNECTED:
 			peer = null
@@ -279,6 +284,7 @@ func _judge(answer: Dictionary) -> void:
 
 
 func _answer(request: Dictionary, result) -> void:
+	last_cmd = str(request.get("cmd", "?"))
 	_send({"id": request.get("id"), "ok": true, "frame": frame, "result": _plain(result)})
 
 

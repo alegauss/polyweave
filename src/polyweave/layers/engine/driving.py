@@ -276,11 +276,12 @@ def send(
             reply = link.makefile("r", encoding="utf-8").readline()
     except OSError as failed:
         _forget(record, root)
+        printed = _printed(record, root)["text"]
         raise PolyweaveError(
             "game.gone",
-            f"session {session} no longer answers: {failed}",
-            "open the game again with game.open; read the log for why it ended",
-            detail=_printed(record, root)["text"] or None,
+            f"session {session} no longer answers: {failed}; {_last_said(record)}",
+            _gone_remedy(printed),
+            detail=printed or None,
         ) from None
     if not reply:
         _forget(record, root)
@@ -290,6 +291,9 @@ def send(
             f"read {record['log']}, which holds everything the game printed",
         )
     answer = json.loads(reply)
+    # By the caller's clock, so a session that went away says how long it had been
+    # since anything was asked of it (§PW590).
+    record["answered"] = {"cmd": cmd, "frame": answer.get("frame"), "at": time.time()}
     printed = _printed(record, root)
     if not answer.get("ok"):
         code = answer.get("error")
@@ -369,6 +373,28 @@ def _printed(record: dict, root: str | Path) -> dict:
         folder.write_text(json.dumps(record), encoding="utf-8")
     errors = [line.strip() for line in new.splitlines() if engine.ERRORS.search(line)]
     return {"text": new.strip(), "errors": errors}
+
+
+#: What the driver prints when no call came for `[driving] idle` seconds.
+IDLE_QUIT = "polyweave_driver: idle for"
+
+
+def _last_said(record: dict) -> str:
+    """How long ago, by this machine's clock, the session last answered, and what."""
+    said = record.get("answered")
+    if not said:
+        return "it had answered nothing since it opened"
+    ago = max(0.0, time.time() - float(said["at"]))
+    return (f"its last answer, to {said['cmd']} at frame {said['frame']}, was "
+            f"{ago:.0f} s ago")
+
+
+def _gone_remedy(printed: str) -> str:
+    """A timeout told from a crash by the line the driver prints before it quits."""
+    if IDLE_QUIT in printed:
+        return ("it quit after [driving] idle seconds with no call; open it again with "
+                "game.open, and raise [driving] idle if the calls need longer between")
+    return "it ended without quitting idle; read the log for why, then game.open again"
 
 
 def _forget(record: dict, root: str | Path) -> None:

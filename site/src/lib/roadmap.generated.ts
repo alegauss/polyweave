@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 3 },
+  { block: "H", title: "Proof on a real game", open: 2 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW590",
-    block: "H",
-    symptom: "the game driver quit as idle for 600 s seconds after a game.step had answered, so the next call found the session gone",
-    why: "An agent cannot tell a timeout from a crash, and loses the held state of the game mid-check.",
-    deps: [],
-  },
   {
     id: "PW591",
     block: "H",

@@ -264,6 +264,7 @@
 - ✅ **PW586** **a voxel build ignores a material stated on a transform node, so its cells take the default** — A material no cell wears names the later node that painted over it, and how to show it (design superseded: later rays covered the disc) (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW587** **geometry.build refuses a bare --preview that build --all takes, so the same word works in one command and not the other** — Every operation's bool flag takes the bare form as true, so geometry.build --preview runs as build --all does; help shows [BOOL] (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW589** **game.text_fit reads a label inside a SubViewport in that viewport's coordinates and compares it with the screen's labels** — game.text_fit compares overlaps within one viewport and names a SubViewport label's viewport, so a card's tag stops lying on the HUD (design recorded in `docs/specs/driving.md`).
+- ✅ **PW590** **the game driver quit as idle for 600 s seconds after a game.step had answered, so the next call found the session gone** — game.gone says how long ago and to what a session last answered, and tells idle from a crash (design superseded: the clock was right) (design recorded in `docs/specs/driving.md`).
 
 ## Block I — Voxel models from a declaration
 

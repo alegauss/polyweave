@@ -100,28 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW590 the driver's idle clock
-
-Where it happened: spinhold RK252, checking text fit on the Rind map (2026-10-21).
-
-The calls, back to back from one agent turn: `game.open --args ["--route"]` (session
-g838655f5), then `game.step --frames 120`, which answered at frame 120 with no errors,
-then `game.text_fit`. The last was refused `game.gone`: "session g838655f5 no longer
-answers: [WinError 10061] ... actively refused", with the detail "polyweave_driver: idle
-for 600 s, quitting". Only seconds had passed between the calls, not 600.
-
-A second open (g614b7099) with no step in between answered at once, and so did a third.
-So the idle clock seems to count something other than wall time between requests: the
-held frames, or the time since open rather than since the last request. Or a step's
-frames are counted as idle.
-
-What it should do: the driver's idle timeout counts real seconds since the last request
-it answered, and a step resets it. The refusal says how long it had really been idle by
-the caller's clock and since which request, so an agent can tell a timeout from a crash.
-`game.gone`'s remedy names the log line.
-
-Workaround in spinhold: none; the session was opened again.
-
 ### §PW591 framing a clip the game is not playing
 
 Where it happened: spinhold RK254 wants a picture of each world's ring for the map's

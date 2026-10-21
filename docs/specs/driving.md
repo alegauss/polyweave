@@ -205,6 +205,13 @@ call that match the runner's error pattern, so a script error mid-flow is report
 call that caused it. A driver refusal is raised under its own `driver.*` code. The game
 quits by itself after `[driving] idle` seconds with no call (600 by default), so a session
 an agent forgot never outlives the conversation; a call to it after that is `game.gone`.
+**A session that went away says how and when** (§PW590). The clock counts from the last
+answered request, a `step` included, and the driver's last line names the seconds it
+really waited and what it last answered (`idle for 612 s since it answered step at frame
+120, quitting`). `game.gone`'s message says, by the caller's own clock, how long ago and
+to what the session last answered, and its remedy tells a timeout, which that line
+marks, from a game that ended another way. Spinhold read a timeout after a step as the
+clock miscounting, because nothing said how long it had been.
 
     python -m polyweave game.open --root . --seed 7
     python -m polyweave game.input --session g1a2b3c4d --click UI/Play
