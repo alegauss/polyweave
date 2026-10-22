@@ -395,6 +395,29 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
+### §PW595 kit.update keeps the engine's sidecars
+
+Met in Spinhold (RK149) on 2026-10-22, running `python -m polyweave kit.update --name
+prompts`, then `remap` and `players`. Each answered `ok: true` with its proof held, and
+the tree then held 138 deleted files under `addons/polyweave/`: every `.png.import`
+beside the kit's icons and pad pictures, and every `.gd.uid` beside its scripts. The
+core is "replaced whole", so the files Godot writes beside each one went with it.
+
+The result: `dev/check.gd` then failed with "No loader found for resource" for every
+icon, since the imports were gone, and the `.uid` files that scenes and other scripts
+name by `uid://` would have been written again by the editor with new ids, breaking
+those references. The proof held only because it loads the PNGs straight from disk.
+
+Workaround in Spinhold: `git checkout --` of every deleted `.import` and `.uid` file, by
+hand, after each update.
+
+What polyweave should do: an install or update keeps every engine sidecar of a core file
+that is still there (`<file>.import`, `<file>.uid`), and removes one only with the file
+it belongs to; a sidecar of a file the new version adds is left to the engine. Or it
+runs the engine's import once the core lands, so the proof and the game read the same
+imported resources, and says so in its answer. The kit's own `edited` hash check stays
+on the core files alone, never on the sidecars.
+
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system
