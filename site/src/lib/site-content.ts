@@ -536,15 +536,19 @@ export const install = {
   eyebrow: "Get started",
   heading: "Three lines, then just ask.",
   intro: [
-    "Add the plugin from inside Claude Code. It brings the MCP server, the skill that teaches Claude Code to drive it, and the hooks that keep it safe.",
+    "Install the package from PyPI in your shell, then add the plugin from inside Claude Code. The plugin brings the MCP server, the skill that teaches Claude Code to drive it, and the hooks that keep it safe.",
   ] as Rich,
-  commands: `pip install git+https://github.com/alegauss/polyweave
+  // `polyweave` on PyPI is an unrelated project, so the distribution is named apart; the
+  // import, the command and the plugin keep the short name.
+  commands: `pip install polyweave-gamekit
 /plugin marketplace add alegauss/polyweave
 /plugin install polyweave@polyweave`,
   tryHeading: "Then try",
   prompt: "Set up polyweave in this project, and make me a mascot from docs/sketch.png.",
   needs: [
-    "Python 3.11 or newer. Blender and Godot are optional: polyweave says which tools it found, and what each missing one would unlock.",
+    "Python 3.11 or newer. Blender and Godot are optional: polyweave says which tools it found, and what each missing one would unlock. Rendering music is an extra: ",
+    { code: "pip install polyweave-gamekit[audio]" },
+    ".",
   ] as Rich,
 };
 

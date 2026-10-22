@@ -20,10 +20,15 @@ twins and their byte sizes are in
 ## Install
 
 ```
-pip install git+https://github.com/alegauss/polyweave
+pip install polyweave-gamekit
 /plugin marketplace add alegauss/polyweave
 /plugin install polyweave@polyweave
 ```
+
+The first line runs in a shell, the other two inside Claude Code. On PyPI the
+distribution is `polyweave-gamekit`, because `polyweave` there is an unrelated project;
+the import, the `polyweave` command and the plugin keep the short name, and an extra is
+`pip install polyweave-gamekit[audio]`, never `polyweave[audio]`.
 
 The plugin brings one MCP server (`python -m polyweave serve`), the skill that teaches
 Claude Code to drive it, and its hooks. Python 3.11 or newer; Blender and Godot are

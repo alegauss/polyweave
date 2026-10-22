@@ -65,7 +65,6 @@
 ## Block X — The site on the shared design system
 
 - 📋 **PW605** (deps: —) **The depth pages describe finished blocks as plans, and the agent page says "No GUI, ever" beside a desktop window** — A reader meets a format "deliberately unwritten" that motion.md specifies, and copy that the landing page's own review section contradicts. → §PW605
-- 📋 **PW606** (deps: —) **The site installs polyweave from a git URL, now that it is published to PyPI as polyweave-gamekit** — A reader copies the first install line, and the one the site gives skips the published release and its extras. → §PW606
 
 ## Done when — PW36
 

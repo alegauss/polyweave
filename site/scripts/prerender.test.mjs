@@ -85,6 +85,8 @@ test("the landing twin carries the session — the product an agent can grep", (
 
 test("the landing page carries the install commands", () => {
   const md = readFileSync(join(distDir, "index.md"), "utf8");
+  // From PyPI, under the name that is not the unrelated `polyweave` there.
+  assert.ok(md.includes("pip install polyweave-gamekit"), "landing twin missing the pip line");
   assert.ok(md.includes("/plugin marketplace add alegauss/polyweave"), "landing twin missing the marketplace line");
   assert.ok(md.includes("/plugin install polyweave@polyweave"), "landing twin missing the install line");
 });

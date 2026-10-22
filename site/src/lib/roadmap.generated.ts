@@ -48,7 +48,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
-  { block: "X", title: "The site on the shared design system", open: 2 },
+  { block: "X", title: "The site on the shared design system", open: 1 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -134,13 +134,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "X",
     symptom: "The depth pages describe finished blocks as plans, and the agent page says \"No GUI, ever\" beside a desktop window",
     why: "A reader meets a format \"deliberately unwritten\" that motion.md specifies, and copy that the landing page's own review section contradicts.",
-    deps: [],
-  },
-  {
-    id: "PW606",
-    block: "X",
-    symptom: "The site installs polyweave from a git URL, now that it is published to PyPI as polyweave-gamekit",
-    why: "A reader copies the first install line, and the one the site gives skips the published release and its extras.",
     deps: [],
   },
 ];

@@ -529,14 +529,3 @@ section names every paid service rather than one. The words the landing page use
 layer are made one set: images rather than pictures, the ten layers listed the same way
 in the description, the cards and llms.txt, and the sponsor copy in llms.txt matching
 the page's.
-
-### §PW606 The site installs from PyPI
-
-The package is published as `polyweave-gamekit`, because `polyweave` on PyPI is an
-unrelated project, and the landing page's install block, the llms.txt an agent reads and
-the prerender test all still say `pip install
-git+https://github.com/alegauss/polyweave`. The install block becomes `pip install
-polyweave-gamekit` followed by the two plugin commands, its intro says which line runs
-in a shell and which inside Claude Code, and the note under it names the audio extra by
-the distribution's name, since `polyweave[audio]` would resolve to the unrelated
-project. The prerender test holds the landing twin to the pip line.
