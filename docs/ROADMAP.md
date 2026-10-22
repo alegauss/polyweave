@@ -64,7 +64,6 @@
 
 ## Block X — The site on the shared design system
 
-- 📋 **PW603** (deps: —) **The site's session transcript runs `polyweave accept`, `search` and `bake`, which no command line has** — A reader or an agent copies a line from the landing page, and the note under it says those are the fixed surface. → §PW603
 - 📋 **PW604** (deps: —) **The specs page lists six specs, three "to come", while docs/specs holds twenty-two, all written** — The page is a hand copy of the specs index, and it has drifted since the day the second spec was added. → §PW604
 - 📋 **PW605** (deps: —) **The depth pages describe finished blocks as plans, and the agent page says "No GUI, ever" beside a desktop window** — A reader meets a format "deliberately unwritten" that motion.md specifies, and copy that the landing page's own review section contradicts. → §PW605
 - 📋 **PW606** (deps: —) **The site installs polyweave from a git URL, now that it is published to PyPI as polyweave-gamekit** — A reader copies the first install line, and the one the site gives skips the published release and its extras. → §PW606

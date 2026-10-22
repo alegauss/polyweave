@@ -48,7 +48,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
-  { block: "X", title: "The site on the shared design system", open: 4 },
+  { block: "X", title: "The site on the shared design system", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -127,13 +127,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "S",
     symptom: "game.set given a vector as a JSON list writes it as zero and answers as if it worked",
     why: "A camera or node moved for a capture lands at the origin, found only by reading now in the answer.",
-    deps: [],
-  },
-  {
-    id: "PW603",
-    block: "X",
-    symptom: "The site's session transcript runs `polyweave accept`, `search` and `bake`, which no command line has",
-    why: "A reader or an agent copies a line from the landing page, and the note under it says those are the fixed surface.",
     deps: [],
   },
   {

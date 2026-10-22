@@ -48,6 +48,11 @@ stems = ["demucs>=4"]
 # way: an SVG with no text never imports it, and one with text refuses by name.
 text = ["fonttools>=4.40"]
 
+# `polyweave <operation>` once pip has installed it: the same command line as
+# `python -m polyweave`, which the plugin's server and hooks keep using.
+[project.scripts]
+polyweave = "polyweave.surface.cli:main"
+
 [project.urls]
 Homepage = "https://alegauss.github.io/polyweave/"
 Source = "https://github.com/alegauss/polyweave"

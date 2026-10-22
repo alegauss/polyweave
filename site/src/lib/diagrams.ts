@@ -253,29 +253,33 @@ export const geometryDiagram = `
 
 // The session transcript — a formatted figure like the SVGs, kept verbatim so the column
 // alignment and the per-line colours render exactly as written. Rendered inside a .term
-// <pre>. Every command is the surface docs/specs/tool-surface.md fixes; the values are
-// illustrative, and the two costs in it are Cottony's own.
-export const sessionTerminal = `<span class="c"># the agent has a drawing and a name, and no numbers at all</span>
+// <pre>. Every command is a real operation with its real flags, and the failure is the
+// real code with its real message and remedy; tests/test_site_session.py parses each one
+// against the command line. The values are illustrative.
+export const sessionTerminal = `<span class="c"># Claude Code wrote the bar from the drawing: assets/mascot.accept.toml,</span>
+<span class="c"># 3 predicates and the 2 parameters a search may move. No number set by hand.</span>
 
-<span class="pr">&gt;</span> polyweave accept mascot --from docs/design/art/ui/mascot.png
-  <span class="ok">wrote</span> assets/mascot.accept.toml    3 predicates, 2 parameters to search
-
-<span class="pr">&gt;</span> polyweave search mascot
+<span class="pr">&gt;</span> polyweave search.sweep --spec assets/mascot.accept.toml --out .polyweave/samples/mascot --job
   <span class="hl">job</span> j_7f3a  stage=queued
-  <span class="hl">job</span> j_7f3a  stage=rendering  rung=sphere   18/64  elapsed_s=54
-  <span class="hl">job</span> j_7f3a  stage=rendering  rung=preview  61/64  elapsed_s=212
+
+<span class="pr">&gt;</span> polyweave job poll j_7f3a
+  <span class="hl">job</span> j_7f3a  stage=rendering  rung=preview  17/24  elapsed_s=212
+
+<span class="pr">&gt;</span> polyweave job result j_7f3a --wait
   <span class="ok">done</span>  score 0.94   light=2.8  form=1.9
         sheet  .polyweave/sheets/mascot-7f3a.png   <span class="c">(5 candidates)</span>
-        trace  .polyweave/traces/mascot-7f3a.json  <span class="c">(64 samples, 41 cached)</span>
+        trace  .polyweave/traces/mascot-7f3a.json  <span class="c">(24 samples, 9 cached)</span>
 
-<span class="pr">&gt;</span> polyweave bake mascot --rung final
-  <span class="ok">done</span>  1024x1024  saturation_p99=0.87  delta_e=1.4  silhouette_iou=0.981
-        <span class="ok">accept: 3/3 predicates pass</span>   rung=final
+<span class="pr">&gt;</span> polyweave render.bake --spec assets/mascot.accept.toml --rung final --out assets/mascot.png
+  <span class="ok">done</span>  1024x1024  rung=final
 
-<span class="pr">&gt;</span> polyweave bake shelf --rung final
-  <span class="fail">post.render-uniform</span>  the render is a single colour, so nothing was lit
-  <span class="rem">-&gt; the model 'shelf' carries no material. Set \`material\` on it, or pass
-     \`glaze: {roughness: 0.22}\` to apply the default.</span>`;
+<span class="pr">&gt;</span> polyweave accept.check --spec assets/mascot.accept.toml --subject assets/mascot.png --rung final
+  <span class="ok">accept: 3/3 predicates pass</span>   saturation_p99=0.87  delta_e=1.4  silhouette_iou=0.981
+
+<span class="pr">&gt;</span> polyweave render.bake --model assets/shelf.glb --rung final --out assets/shelf.png
+  <span class="fail">post.render-uniform</span>: every visible pixel of the render is #3a3a3a, so it carries no image
+  <span class="rem">do: the scene was empty or the light never fired; if a flat #3a3a3a is what
+      was wanted, pass allow_uniform=True</span>`;
 
 // The conventions, as the fixed strip they are. Not a figure — the section renders these
 // as a grid — but they live beside the drawings because they are the same kind of thing:

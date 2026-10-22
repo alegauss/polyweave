@@ -666,3 +666,4 @@
 ## Block X — The site on the shared design system
 
 - ✅ **PW572** **The site keeps its own copy of the template that eight product sites share** — The site's nav, hero, section heads, buttons, sponsor, footer and theme toggle come from the shared site layer in the hub's teal; analytics waits for consent (design recorded in `site/README.md`).
+- ✅ **PW603** **The site's session transcript runs `polyweave accept`, `search` and `bake`, which no command line has** — The transcript is six real calls with real flags and post.render-uniform's real remedy, a `polyweave` console script installs with the package, and a test parses each line.

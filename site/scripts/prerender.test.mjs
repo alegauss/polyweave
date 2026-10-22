@@ -73,7 +73,7 @@ test("no twin leaks the nav, the footer or the call to action", () => {
 
 test("the landing twin carries the session — the product an agent can grep", () => {
   const md = readFileSync(join(distDir, "index.md"), "utf8");
-  assert.ok(md.includes("polyweave search mascot"), "landing twin missing the session");
+  assert.ok(md.includes("polyweave search.sweep --spec"), "landing twin missing the session");
   assert.ok(md.includes("post.render-uniform"), "landing twin missing the typed failure");
 });
 

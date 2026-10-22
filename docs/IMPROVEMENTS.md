@@ -516,18 +516,6 @@ take is read off that code rather than invented here.
 
 ## Block X — The site on the shared design system
 
-### §PW603 The session transcript runs real commands
-
-The transcript in `site/src/lib/diagrams.ts` was written before the surface existed and
-was never re-read against it: none of its commands parses, and its failure's remedy
-names a `glaze` argument nothing takes. It becomes six real calls (`search.sweep --job`,
-`job poll`, `job result --wait`, `render.bake`, `accept.check`, and a `render.bake`
-refused with `post.render-uniform` and that code's real message and remedy). The package
-gains a `polyweave` console script, so the transcript's `polyweave <operation>` is what
-pip installs rather than only `python -m polyweave`. `tests/test_site_session.py` parses
-every command in the transcript with the command line itself and holds every code it
-shows to the published codes, so the figure cannot drift from the surface again.
-
 ### §PW604 The specs page reads the specs index
 
 The table on `/specs/` and its "deliberately not specced yet" list were typed into

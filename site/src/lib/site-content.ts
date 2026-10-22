@@ -394,10 +394,10 @@ export const session = {
   eyebrow: "See it in action",
   heading: "What Claude Code actually does.",
   intro: [
-    `${SPELLED_SMALL[sessionCalls] ?? sessionCalls} calls: turn a sketch into a bar, search until it passes, take the final render, and get a failure that says how to fix it.`,
+    `${SPELLED_SMALL[sessionCalls] ?? sessionCalls} calls: search the bar Claude Code wrote from a sketch, follow the handle, take the final render, check it, and get a failure that says how to fix it.`,
   ] as Rich,
   note: [
-    "The commands are the surface ",
+    "Each command is a real operation, the same one Claude Code calls as an MCP tool; ",
     { code: "docs/specs/tool-surface.md" },
     " fixes; the values are illustrative.",
   ] as Rich,
