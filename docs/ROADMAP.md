@@ -16,6 +16,8 @@
 
 ## Block H — Proof on a real game
 
+- 📋 **PW597** (deps: —) **clip.shots frames carry no provenance record, and no shot can be kept as an artefact at a path** — A game's world picture framed from its clip cannot be found outdated or made again, and is brought in as a borrowed copy. → §PW597
+
 ## Block I — Voxel models from a declaration
 
 - 📋 **PW596** (deps: —) **a voxel model's grid spans the uncarved primitives and the cutters, so a model centred on its box sits off its middle** — A carved diorama is drawn units off where a game places it, and its extent check reads the same padded box. → §PW596

@@ -100,6 +100,34 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
+### §PW597 A clip's shot kept as an artefact, with its record
+
+Met in Spinhold (RK254) on 2026-10-22. The map's panel shows a picture of each ring,
+`assets/ui/worlds/<id>.png`, framed from the world's own camera clip. With PW591 this
+works: `clip.shots` with `source = art/cinema/waist.camera.toml`, `clip =
+res://game/ui/waist_camera.tscn`, `place = /root/Main/Opening:_anchored` and a session
+opened on `main.tscn` with `--world=waist` wrote five frames to
+`.polyweave/rk254/waist/`.
+
+Two gaps then:
+
+- The frames carry no `.prov.json`. Nothing records the clip, its build, the shot, the
+  `into`, the scene, the flags or the session's resolution and locale, so
+  `provenance.verify` cannot say the picture is outdated when the clip or the ring
+  changes, and `capture.again` cannot make it again.
+- There is no way to keep one shot as an artefact at a path. Spinhold brought shot 5 in
+  with `provenance.borrow` from its own work area, which records a copy of a file and
+  not how it was made, and only because borrow does not refuse its own project.
+
+The HUD also had to be hidden by hand first (`game.set Hud visible false`), as the game
+hides it while a cutscene plays.
+
+What polyweave should do: `clip.shots` writes a record beside every frame, as
+`capture.run` does, naming the clip and the shot; and it takes `keep = {<shot>: <path>}`
+(or a `clip.keep`) that writes the chosen frame to an artefact path with that record, so
+`capture.again` frames it again after the ring changes. It could also take a list of
+nodes to hide while framing, as a cutscene does.
+
 ## Block I — Voxel models from a declaration
 
 ### §PW596 A voxel grid trimmed to the cells it keeps
