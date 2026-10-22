@@ -314,6 +314,30 @@ def test_a_set_seeds_a_generator_the_game_made_itself(tmp_path):
         driving.closed(session, root=str(root))
 
 
+def test_a_vector_given_as_a_list_is_set_as_the_propertys_own_type(tmp_path):
+    """§PW599: Spinhold's camera moved to [10.8, 0.7, -1.6] landed at the origin."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    session = driving.opened(str(root))["session"]
+    try:
+        moved = driving.set_value(session, path=".", prop="position", value="[1, 2]",
+                                  root=str(root))
+        assert moved["result"]["now"] == [1.0, 2.0]
+        spelt = driving.set_value(session, path=".", prop="position",
+                                  value='"Vector2(3, 4)"', root=str(root))
+        assert spelt["result"]["now"] == [3.0, 4.0]
+        tinted = driving.set_value(session, path=".", prop="modulate",
+                                   value="[1, 0, 0]", root=str(root))
+        assert tinted["result"]["now"][:3] == [1.0, 0.0, 0.0]
+        with pytest.raises(PolyweaveError) as refused:
+            driving.set_value(session, path=".", prop="position", value="[1, 2, 3]",
+                              root=str(root))
+        assert "a list of 2 numbers" in refused.value.message
+    finally:
+        driving.closed(session, root=str(root))
+
+
 SAVING = """extends Node2D
 
 var opened := 0

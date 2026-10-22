@@ -504,6 +504,7 @@
 - ✅ **PW277** **a selector cannot pick out an unnamed node by its place under a named one, so buttons inside a screen stay fragile** — A selector may name the ancestor it looks under and the node's order there, so re-keying Cottony left no generated path in either flow.
 - ✅ **PW278** **a kept expectation on a dictionary or array of numbers fails every replay, since 1 is compared to 1.0 as text** — The driver compares numbers as numbers inside a Dictionary or Array, so an expectation on a tally replays as passed and a wrong one still fails.
 - ✅ **PW339** **game.open ignores the resolution and locale [capture] declares, and game.shot does not say what it took** — game.open runs in [capture]'s resolution and locale unless the call names its own, and game.shot answers the size and locale it took, naming a gap (design recorded in `docs/specs/driving.md`).
+- ✅ **PW599** **game.set given a vector as a JSON list writes it as zero and answers as if it worked** — game.set turns a JSON list or a spelt vector into the property's vector, colour, rect or quaternion, and refuses one it cannot, naming the shape it wants.
 
 ## Block T — Adopting polyweave in a project
 

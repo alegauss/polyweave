@@ -604,7 +604,9 @@ def set_value(
     *,
     path: Annotated[str, Param("the node the property is on")],
     prop: Annotated[str, Param("the property; a nested one as rng:seed")],
-    value: Annotated[str, Param("the value to set, as JSON")],
+    value: Annotated[
+        str, Param("the value to set, as JSON; a vector or colour a list")
+    ],
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
     """Set a property for setup, such as the seed of a generator the game made itself.

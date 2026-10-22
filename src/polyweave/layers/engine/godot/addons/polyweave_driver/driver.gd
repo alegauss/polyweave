@@ -717,12 +717,58 @@ func _set_property(asked: Dictionary) -> Dictionary:
 	if named == "" or not (head in nodes[0]):
 		return _refused("driver.bad-command", "%s has no property %s" % [nodes[0].get_path(), head])
 	var before = nodes[0].get_indexed(NodePath(named))
-	var value = asked.get("value")
-	# JSON gives every number as a float; an int property keeps being an int.
-	if typeof(before) == TYPE_INT and typeof(value) == TYPE_FLOAT:
-		value = int(value)
+	var value = _as_type(asked.get("value"), typeof(before))
+	if SIZES.has(typeof(before)) and typeof(value) != typeof(before):
+		return _refused("driver.bad-command", "%s is a %s, and %s is not one: give it as %s" % [
+			named, type_string(typeof(before)), JSON.stringify(asked.get("value")),
+			_spelt(typeof(before))])
 	nodes[0].set_indexed(NodePath(named), value)
 	return {"result": {"was": _plain(before), "now": _plain(nodes[0].get_indexed(NodePath(named)))}}
+
+
+## The components each list-shaped type takes, in order, as JSON gives them.
+const SIZES := {
+	TYPE_VECTOR2: 2, TYPE_VECTOR2I: 2, TYPE_VECTOR3: 3, TYPE_VECTOR3I: 3,
+	TYPE_VECTOR4: 4, TYPE_VECTOR4I: 4, TYPE_QUATERNION: 4, TYPE_RECT2: 4,
+	TYPE_RECT2I: 4, TYPE_COLOR: 4,
+}
+
+
+## A value from JSON as the property's own type: a list as a vector, colour, rect or
+## quaternion, a `Vector3(1, 2, 3)` string parsed, an int kept an int. A list was
+## written as zero before, and answered as if it had worked (§PW599).
+func _as_type(value: Variant, wanted: int) -> Variant:
+	if wanted == TYPE_INT and typeof(value) == TYPE_FLOAT:
+		return int(value)
+	if typeof(value) == TYPE_STRING and SIZES.has(wanted):
+		var parsed = str_to_var(value)
+		return parsed if typeof(parsed) == wanted else value
+	if typeof(value) != TYPE_ARRAY or not SIZES.has(wanted):
+		return value
+	var n: Array = value
+	var count: int = SIZES[wanted]
+	if n.size() != count and not (wanted == TYPE_COLOR and n.size() == 3):
+		return value
+	for one in n:
+		if typeof(one) != TYPE_FLOAT and typeof(one) != TYPE_INT:
+			return value
+	match wanted:
+		TYPE_VECTOR2: return Vector2(n[0], n[1])
+		TYPE_VECTOR2I: return Vector2i(n[0], n[1])
+		TYPE_VECTOR3: return Vector3(n[0], n[1], n[2])
+		TYPE_VECTOR3I: return Vector3i(n[0], n[1], n[2])
+		TYPE_VECTOR4: return Vector4(n[0], n[1], n[2], n[3])
+		TYPE_VECTOR4I: return Vector4i(n[0], n[1], n[2], n[3])
+		TYPE_QUATERNION: return Quaternion(n[0], n[1], n[2], n[3])
+		TYPE_RECT2: return Rect2(n[0], n[1], n[2], n[3])
+		TYPE_RECT2I: return Rect2i(n[0], n[1], n[2], n[3])
+		TYPE_COLOR: return Color(n[0], n[1], n[2], n[3] if n.size() == 4 else 1.0)
+	return value
+
+
+## How a refusal tells the caller to write a value of this type.
+func _spelt(wanted: int) -> String:
+	return "a list of %d numbers" % SIZES[wanted]
 
 
 ## A camera clip's scene stood up in the running game, its anchors found by name or by

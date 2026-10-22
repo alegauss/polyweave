@@ -48,8 +48,6 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW599** (deps: —) **game.set given a vector as a JSON list writes it as zero and answers as if it worked** — A camera or node moved for a capture lands at the origin, found only by reading now in the answer. → §PW599
-
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs

@@ -586,7 +586,7 @@ export interface GameSetArgs {
   path: string
   /** the property; a nested one as rng:seed */
   prop: string
-  /** the value to set, as JSON */
+  /** the value to set, as JSON; a vector or colour a list */
   value: string
   /** the project the game belongs to; default "." */
   root?: string
