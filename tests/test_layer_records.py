@@ -76,7 +76,7 @@ def test_provenance_imports_nothing_from_a_layer():
 def test_the_kinds_are_the_kernels_and_each_layers():
     assert set(provenance.kinds()) == {
         "render", "mesh", "capture", "fetch", "picture", "sound", "vfx", "camera",
-        "timeline", "borrow", "extend",
+        "timeline", "shot", "borrow", "extend",
     }
 
 

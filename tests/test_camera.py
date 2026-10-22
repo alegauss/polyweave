@@ -288,6 +288,74 @@ def test_a_clip_the_game_is_not_playing_is_stood_up_and_framed(tmp_path, monkeyp
     ]
 
 
+def _framing(monkeypatch, sent):
+    """A game that frames whatever it is asked to, and says what it was asked."""
+    from PIL import Image
+
+    from polyweave.layers.engine import driving
+
+    def shot(session, *, out, root):
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (32, 18), (40, 40, 60)).save(out)
+        return {"environment": {"resolution": "32x18", "locale": "en"}}
+
+    monkeypatch.setattr(driving, "opened", lambda root, **said: (
+        sent.append(("open", said)) or {"session": "g9"}))
+    monkeypatch.setattr(driving, "send", lambda session, cmd, **said: {
+        "result": {"path": "/root/Main/opening"}})
+    monkeypatch.setattr(driving, "set_value", lambda session, **said: sent.append(
+        ("set", said["path"], said["prop"], said["value"])))
+    monkeypatch.setattr(driving, "called", lambda session, **said: None)
+    monkeypatch.setattr(driving, "stepped", lambda session, **said: None)
+    monkeypatch.setattr(driving, "closed", lambda session, **said: sent.append(
+        ("close", session)))
+    monkeypatch.setattr(driving, "shot", shot)
+
+
+def test_each_shot_is_recorded_and_a_kept_one_lands_at_its_path(tmp_path, monkeypatch):
+    """§PW597: Spinhold borrowed a world picture from its work area, with no record of
+    the clip that framed it, and hid its HUD by hand first."""
+    sent = []
+    _framing(monkeypatch, sent)
+    said = camera.shots(clip_file(tmp_path), clip="cinema/opening.tscn",
+                        args=["--world=waist"], out=".polyweave/waist",
+                        keep={"2": "assets/ui/worlds/waist.png"}, hide=["Main/Hud"],
+                        root=str(tmp_path))
+    assert said["shots"][1]["kept"] == "assets/ui/worlds/waist.png"
+    assert len(said["records"]) == 3
+    record = provenance.read("assets/ui/worlds/waist.png", root=str(tmp_path))
+    assert record["kind"] == "shot" and record["params"]["shot"] == 2
+    assert record["inputs"][0]["path"] == "cinema/opening.camera.toml"
+    assert record["call"]["clip"] == "cinema/opening.tscn"
+    assert record["call"]["hide"] == ["Main/Hud"]
+    assert record["call"]["environment"] == {"resolution": "32x18", "locale": "en"}
+    assert ("set", "Main/Hud", "visible", "false") in sent
+    assert sent[-2:] == [("set", "Main/Hud", "visible", "true"), ("close", "g9")]
+
+
+def test_a_kept_shot_is_framed_again_from_its_record(tmp_path, monkeypatch):
+    from polyweave.layers.engine import capture
+
+    sent = []
+    _framing(monkeypatch, sent)
+    camera.shots(clip_file(tmp_path), clip="cinema/opening.tscn", out=".polyweave/w",
+                 keep={"1": "assets/ui/worlds/waist.png"}, root=str(tmp_path))
+    sent.clear()
+    again = capture.taken_again("assets/ui/worlds/waist.png",
+                                environment={"locale": "pt_BR"}, root=str(tmp_path))
+    assert again["shots"][0]["kept"] == "assets/ui/worlds/waist.png"
+    [(_, opened)] = [one for one in sent if one[0] == "open"]
+    assert opened["locale"] == "pt_BR" and opened["display"] is True
+    assert sent[-1] == ("close", "g9")
+
+
+def test_keep_naming_a_shot_the_clip_has_not_is_refused(tmp_path):
+    with pytest.raises(PolyweaveError) as refused:
+        camera.shots(clip_file(tmp_path), session="g1", camera="Camera", out="o",
+                     keep={"3": "a.png"}, root=str(tmp_path))
+    assert refused.value.code == "clip.bad-camera"
+
+
 def test_a_stood_up_clip_whose_anchors_are_absent_names_them(tmp_path, monkeypatch):
     from polyweave.layers.engine import driving
 

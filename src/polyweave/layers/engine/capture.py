@@ -48,6 +48,8 @@ from polyweave.kernel import provenance
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.layer import call as layer_call
+from polyweave.kernel.layer import part
 
 from . import engine, offscreen
 
@@ -940,7 +942,8 @@ def taken_again(
     The record keeps the script, its own arguments and how the call was made (§PW418),
     so a store screenshot is taken again in another locale without reframing it by
     guesswork. Where the script writes its picture is the script's: one that writes
-    per locale lands beside it, and one that does not writes over it.
+    per locale lands beside it, and one that does not writes over it. A shot clip.shots
+    kept is framed again from its clip and written over itself (§PW597).
     """
     here = load(root).root
     try:
@@ -953,6 +956,11 @@ def taken_again(
             detail=missing.message,
         ) from missing
     call = record.get("call") or {}
+    # A kind another layer frames, such as a clip's shot, is that layer's to take
+    # again (§PW597).
+    again = part(f"again:{record.get('kind')}")
+    if again:
+        return layer_call(again, picture, record, environment, root)
     if record.get("kind") != "capture" or not call.get("expect"):
         raise PolyweaveError(
             "capture.unrecorded",

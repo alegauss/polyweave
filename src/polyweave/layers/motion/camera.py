@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import difflib
 import math
+import shutil
 import tomllib
 from pathlib import Path
 from typing import Annotated, Any
@@ -458,6 +459,13 @@ def shots(
     into: Annotated[
         float, Param("how far through each shot's hold it is framed", lo=0.0, hi=1.0)
     ] = 0.5,
+    keep: Annotated[
+        dict, Param("shot number to a path under the project, each written with its "
+                    "record so capture.again frames it again")
+    ] = None,
+    hide: Annotated[
+        list, Param("node paths hidden while framing, as a cutscene hides its HUD")
+    ] = None,
     root: Annotated[str, Param("the project the clip belongs to")] = ".",
 ) -> dict:
     """Frame every shot of a camera clip in the running game and lay them out to judge.
@@ -470,13 +478,15 @@ def shots(
     With no `session` the game is opened here with `args`, and closed after (§PW553).
     Given `clip` instead of `camera`, the camera is stood up in the game as it stands,
     each anchor found by name or by `anchors`, so a cutscene reached through menus is
-    framed with no driving to it (§PW591).
+    framed with no driving to it (§PW591). Every frame is recorded with the clip, the
+    shot and the game it was framed in, and `keep` writes a chosen shot to a path of
+    its own with that record, which capture.again frames again (§PW597).
     """
     from polyweave.layers.engine import driving
     from polyweave.loop import verdict
 
     config = load(root)
-    _, declared = _source(source, config)
+    where, declared = _source(source, config)
     if bool(camera) == bool(clip):
         raise PolyweaveError(
             "clip.camera-absent",
@@ -484,10 +494,14 @@ def shots(
             "itself, and was given " + ("both" if camera else "neither"),
             "pass camera, the playing camera's node, or clip, the built clip's .tscn",
         )
+    kept = _kept(keep, len(declared["shots"]), config.root)
     folder = Path(out) if Path(out).is_absolute() else config.root / out
     own = not session
     if own:
         session = driving.opened(root, display=True, args=args)["session"]
+    call = {"source": provenance.relative(where, config.root), "camera": camera,
+            "clip": clip, "anchors": dict(anchors or {}), "place": place,
+            "hide": list(hide or ()), "into": into, **_opened_as(session, args, root)}
     try:
         if clip:
             camera = _stood_up(session, declared, clip, anchors, place, root)
@@ -497,8 +511,11 @@ def shots(
         if own:
             driving.closed(session, root=root)
         raise
-    taken = []
+    taken, records = [], []
     try:
+        for node in hide or ():
+            driving.set_value(session, path=node, prop="visible", value="false",
+                              root=root)
         for index, when in enumerate(moments(declared, into)):
             driving.set_value(session, path=camera, prop="pinned", value=str(when),
                               root=root)
@@ -508,12 +525,24 @@ def shots(
                                root=root)
             driving.stepped(session, frames=2, root=root)
             picture = folder / f"{declared['name']}-{index + 1}.png"
-            driving.shot(session, out=str(picture), root=root)
+            said = driving.shot(session, out=str(picture), root=root) or {}
             mark = declared["shots"][index]["mark"]
-            taken.append({"shot": index + 1, "at": round(when, 3), "mark": mark,
-                          "picture": provenance.relative(picture, config.root)})
+            one = {"shot": index + 1, "at": round(when, 3), "mark": mark,
+                   "picture": provenance.relative(picture, config.root)}
+            environment = said.get("environment") or call["environment"]
+            for at in (picture, *([kept[index + 1]] if index + 1 in kept else [])):
+                if at != picture:
+                    at.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(picture, at)
+                    one["kept"] = provenance.relative(at, config.root)
+                framed = {**call, "environment": environment}
+                records.append(_shot_record(at, one, framed, where, clip, config.root))
+            taken.append(one)
     finally:
         driving.set_value(session, path=camera, prop="pinned", value="-1", root=root)
+        for node in hide or ():
+            driving.set_value(session, path=node, prop="visible", value="true",
+                              root=root)
         if own:
             driving.closed(session, root=root)
     members = [{"name": f"shot {one['shot']}" + (f" ({one['mark']})" if one["mark"]
@@ -525,9 +554,95 @@ def shots(
               f"{into:.0%} of the way through its hold.",
     )
     return {"source": source, "shots": taken, "sitting": laid["manifest"],
-            "page": laid["page"],
+            "page": laid["page"], "records": records,
             "says": f"{len(taken)} shot(s) of {declared['name']} to judge at "
-                    f"{laid['page']}"}
+                    f"{laid['page']}"
+                    + "".join(f"; shot {one['shot']} kept at {one['kept']}"
+                              for one in taken if one.get("kept"))}
+
+
+def _kept(keep: dict | None, count: int, here: Path) -> dict[int, Path]:
+    """Each shot to keep, by its number, at its path under the project (§PW597)."""
+    found = {}
+    for key, path in (keep or {}).items():
+        number = int(key) if str(key).strip().isdigit() else 0
+        if not 1 <= number <= count:
+            raise PolyweaveError(
+                "clip.bad-camera",
+                f"keep names shot {key!r}, and the clip has shots 1 to {count}",
+                "key keep by a shot's number, as the answer's shots list it",
+                given=str(key),
+            )
+        at = Path(path) if Path(path).is_absolute() else here / path
+        found[number] = at
+    return found
+
+
+def _opened_as(session: str, args: list | None, root: str) -> dict:
+    """How the game framing the shots was opened, as far as its session says.
+
+    The scene, the game's own flags and the environment asked are what capture.again
+    opens it with; a game driven by hand before it was given here is opened that way
+    too, so what was done to it by hand is not in the record (§PW597).
+    """
+    from polyweave.layers.engine import driving
+
+    try:
+        held = driving._session(session, root)
+    except PolyweaveError:
+        held = {}
+    environment = held.get("environment") or {}
+    return {"scene": held.get("scene", ""),
+            "args": [str(one) for one in held.get("args") or args or ()],
+            "environment": {"resolution": environment.get("resolution"),
+                            "locale": environment.get("locale")}}
+
+
+def _shot_record(at: Path, one: dict, call: dict, where: Path, clip: str,
+                 here: Path) -> str:
+    """The record beside one framed shot: the clip, the shot and how it was framed."""
+    inputs = [provenance.source("camera", where, here)]
+    built = here / clip.removeprefix("res://").lstrip("/") if clip else None
+    if built is not None and built.is_file():
+        inputs.append(provenance.source("clip", built, here))
+    written = provenance.write(provenance.build(
+        "shot", at, engine={"name": "clip.shots"}, inputs=inputs,
+        params={"shot": one["shot"], "at": one["at"], "mark": one["mark"]},
+        extra={"call": call}, root=here,
+    ), here)
+    return provenance.relative(written, here)
+
+
+def framed_again(picture: str, record: dict, environment: dict | None,
+                 root: str) -> dict:
+    """A kept shot framed again from its record, only the environment changed (§PW597).
+
+    capture.again's answer for a `shot` record: the game is opened as the record says,
+    the clip framed, and the shot written over the picture with a new record.
+    """
+    from polyweave.layers.engine import driving
+
+    call = record.get("call") or {}
+    asked = {**(call.get("environment") or {}), **(environment or {})}
+    size = str(asked.get("resolution") or "")
+    session = driving.opened(
+        root, display=True, scene=call.get("scene") or "", args=call.get("args"),
+        resolution=[int(v) for v in size.split("x")] if "x" in size else None,
+        locale=asked.get("locale"),
+    )["session"]
+    try:
+        if call.get("camera") and not call.get("clip"):
+            _awaited(session, call["camera"], call.get("args"), root)
+        return shots(
+            call["source"], out=f".polyweave/clip-again/{Path(picture).stem}",
+            camera="" if call.get("clip") else call.get("camera", ""),
+            clip=call.get("clip", ""), anchors=call.get("anchors"),
+            place=call.get("place", ""), session=session, into=call.get("into", 0.5),
+            keep={str(record["params"]["shot"]): picture}, hide=call.get("hide"),
+            root=root,
+        )
+    finally:
+        driving.closed(session, root=root)
 
 
 def _awaited(session: str, camera: str, args: list | None, root: str) -> None:

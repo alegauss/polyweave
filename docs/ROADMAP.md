@@ -16,8 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW597** (deps: —) **clip.shots frames carry no provenance record, and no shot can be kept as an artefact at a path** — A game's world picture framed from its clip cannot be found outdated or made again, and is brought in as a borrowed copy. → §PW597
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

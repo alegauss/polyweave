@@ -15,7 +15,9 @@ LAYER = Layer(
         "polyweave.layers.motion.timeline",
     ),
     requires=("blender",),
-    kinds=("camera", "timeline"),
+    kinds=("camera", "timeline", "shot"),
+    # capture.again's answer for a shot clip.shots kept (§PW597).
+    parts={"again:shot": "polyweave.layers.motion.camera:framed_again"},
     codes="polyweave.layers.motion.codes",
     config="polyweave.layers.motion.settings",
     # 7,104 with clip.shots, each camera shot framed in the running game (§PW372).
@@ -37,6 +39,8 @@ LAYER = Layer(
             "internal", "the camera at a moment, as the scene frames"),
         "polyweave.layers.motion.camera:moments": (
             "internal", "the moment of each shot clip.shots frames"),
+        "polyweave.layers.motion.camera:framed_again": (
+            "internal", "a kept shot framed again: capture.again"),
         "polyweave.layers.motion.clip": (
             "internal", "compiling needs a mesh and a rig: motion.bake"),
         "polyweave.layers.motion.skeleton": (

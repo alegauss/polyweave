@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 1 },
+  { block: "H", title: "Proof on a real game", open: 0 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW597",
-    block: "H",
-    symptom: "clip.shots frames carry no provenance record, and no shot can be kept as an artefact at a path",
-    why: "A game's world picture framed from its clip cannot be found outdated or made again, and is brought in as a borrowed copy.",
-    deps: [],
-  },
   {
     id: "PW598",
     block: "M",

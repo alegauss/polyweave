@@ -163,7 +163,9 @@ from polyweave.surface.capabilities import capabilities
 #: which Cottony held to a hand-tuned percentile in a script of its own (§PW585).
 #: 157,438 with clip.shots's clip, anchors and place, a cutscene framed with no menus
 #: driven to it (§PW591).
-DESCRIBE = 157_700
+#: 157,761 with clip.shots's keep and hide, a shot kept at a path with its record
+#: (§PW597).
+DESCRIBE = 158_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -298,7 +300,8 @@ DESCRIBE = 157_700
 #: import into the export (§PW583).
 #: 173,111 with picture.copies and its three codes (§PW585).
 #: 173,589 with clip.shots's clip and clip.anchor-absent (§PW591).
-CAPABILITIES = 173_900
+#: 173,912 with clip.shots's keep and hide (§PW597).
+CAPABILITIES = 174_200
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

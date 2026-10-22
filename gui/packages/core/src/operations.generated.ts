@@ -204,6 +204,10 @@ export interface ClipShotsArgs {
   args?: unknown[]
   /** how far through each shot's hold it is framed; from 0 to 1; default 0.5 */
   into?: number
+  /** shot number to a path under the project, each written with its record so capture.again frames it again */
+  keep?: Record<string, unknown>
+  /** node paths hidden while framing, as a cutscene hides its HUD */
+  hide?: unknown[]
   /** the project the clip belongs to; default "." */
   root?: string
 }
