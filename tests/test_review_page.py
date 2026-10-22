@@ -120,6 +120,39 @@ def test_a_picture_is_served_and_nothing_outside_the_project_is(page):
         assert caught.value.code == 404
 
 
+def test_a_member_that_moves_is_served_as_a_loop_and_answered(tmp_path):
+    """§PW600: a flight, a filling bar or smoke could not be judged from stills."""
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    flying = member(tmp_path, "tender", 120)
+    (tmp_path / "renders" / "tender.mp4").write_bytes(b"\x00\x00\x00\x18ftypmp42")
+    verdict.sitting({"tender": [{**flying, "motion": "renders/tender.mp4"}]},
+                    out="review", root=tmp_path)
+    serving = review.server(tmp_path)
+    threading.Thread(target=serving.serve_forever, daemon=True).start()
+    try:
+        base = "http://{}:{}".format(*serving.server_address[:2])
+        _, body, _ = get(base + "/api/state")
+        laid = json.loads(body)["sittings"][0]["families"]["tender"]
+        assert laid["members"][0]["motion"] == "renders/tender.mp4"
+        status, _, kind = get(base + "/file?path=renders/tender.mp4")
+        assert status == 200 and kind == "video/mp4"
+        status, said = post(base + "/api/judge", judged(family="tender",
+                                                         choice="accept", why=""))
+        assert status == 200, said
+    finally:
+        serving.shutdown()
+        serving.server_close()
+
+
+def test_motion_that_is_not_a_loop_is_refused(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    flying = member(tmp_path, "tender", 120)
+    with pytest.raises(verdict.PolyweaveError) as refused:
+        verdict.sitting({"tender": [{**flying, "motion": "renders/tender.gif"}]},
+                        out="review", root=tmp_path)
+    assert refused.value.code == "verdict.bad-member"
+
+
 def test_the_one_write_is_a_verdict_and_it_moves_the_bound(page):
     base, where = page
     status, said = post(base + "/api/judge", judged())

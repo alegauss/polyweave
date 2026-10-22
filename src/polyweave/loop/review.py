@@ -62,16 +62,17 @@ HOST = "127.0.0.1"
 #: post a verdict here, which a form or a plain fetch from it otherwise could.
 ASKED = "X-Polyweave"
 
-#: What the page may be sent from the project: pictures, sounds to hear (§PW256), and
-#: the records beside them.
+#: What the page may be sent from the project: pictures, sounds to hear (§PW256), loops
+#: to watch where the look is motion (§PW600), and the records beside them.
 SERVED = {".png", ".jpg", ".jpeg", ".webp", ".json", ".wav", ".ogg", ".flac", ".mp3",
-          ".opus"}
+          ".opus", ".mp4", ".webm"}
 
 # Not every platform's table knows these, and a sound sent as octet-stream is one a
 # browser may refuse to play.
 for _kind, _suffix in (("audio/wav", ".wav"), ("audio/ogg", ".ogg"),
                        ("audio/flac", ".flac"), ("audio/mpeg", ".mp3"),
-                       ("audio/opus", ".opus"),
+                       ("audio/opus", ".opus"), ("video/mp4", ".mp4"),
+                       ("video/webm", ".webm"),
                        # A module script sent as text/plain, as some platforms' tables
                        # say, is one a browser refuses to run.
                        ("text/javascript", ".js"), ("text/css", ".css"),

@@ -171,7 +171,7 @@ video; `vfx.preview`'s stills are also frozen (PW598).
 polyweave already films motion: `capture.movie` takes every frame between two marks and
 `video.cut` makes an MP4. Nothing carries either into a sitting.
 
-What polyweave should do:
+Landed: the first bullet. Still to do:
 - A sitting member may carry `motion`: a short loop (MP4 or WebM, H.264 or VP9, a few
   seconds, muted), and the review page plays it in place, looping and autoplaying, at
   the size it is shown in the game, with the still beside it for the measures.

@@ -2372,7 +2372,7 @@ export interface VerdictAnswersArgs {
 
 /** What a person said of a family, carried into the ledger and the spec. */
 export interface VerdictJudgeArgs {
-  /** each member: name, spec and new, and optionally old, capture with box, shown, and canon, the style family an accepted picture joins */
+  /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, and motion, a loop to play */
   members: unknown[]
   /** what the person said of the family */
   choice: "accept" | "look" | "number"
@@ -2432,7 +2432,7 @@ export interface VerdictPromoteArgs {
 
 /** The family on one picture: old beside new at the size shown, and what failed. */
 export interface VerdictSheetArgs {
-  /** each member: name, spec and new, and optionally old, capture with box, shown, and canon, the style family an accepted picture joins */
+  /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, and motion, a loop to play */
   members: unknown[]
   /** where the sheet is written, under the project */
   out: string

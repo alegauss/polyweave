@@ -64,7 +64,9 @@ CORE_TOOLS = 39_000
 #: 137,117 with picture.copies (§PW585), inside the picture layer's own figure.
 #: 137,507 with clip.shots's clip, anchors and place (§PW591), whose motion layer's
 #: figure rose by 600 for them.
-SESSION_BUDGET = 137_800
+#: 137,832 with clip.shots's keep and hide (§PW597) and a sitting member's motion
+#: (§PW600), each inside its layer's own figure.
+SESSION_BUDGET = 138_100
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

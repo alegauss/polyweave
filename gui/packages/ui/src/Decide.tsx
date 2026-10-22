@@ -18,6 +18,7 @@ import {
   last,
   listed,
   measuredOf,
+  moving,
   progress,
   say,
   sittingOf,
@@ -301,6 +302,21 @@ export function Shown({ desk, path, alt }: { desk: Desk; path: string; alt: stri
   // Shown whole on a click, since a sheet of six stills is small in a card.
   const [whole, setWhole] = useState(false)
   if (!source) return <Loading />
+  if (moving(path)) {
+    // Motion is judged moving: looped, muted so it may start on its own (§PW600).
+    return (
+      <video
+        src={source}
+        aria-label={alt}
+        autoPlay
+        loop
+        muted
+        playsInline
+        controls
+        className="max-h-80 w-auto rounded border object-contain"
+      />
+    )
+  }
   return (
     <img
       src={source}

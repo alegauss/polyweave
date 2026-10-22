@@ -56,7 +56,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW600",
     block: "O",
     symptom: "the review page shows a still or a sheet where the look is motion, and has no video to play a loop",
-    why: "A person cannot judge a flight, a filling bar, a turning island or smoke from stills, so motion sittings go unanswered.",
+    why: "clip.shots, panel.capture and capture.movie with video.cut still write no loop for their sittings, and a look verdict cannot name the moment.",
     deps: [],
   },
   {

@@ -75,8 +75,11 @@ def _said(result: dict) -> str:
 
 MEMBERS = (
     "each member: name, spec and new, and optionally old, capture with box, shown, "
-    "and canon, the style family an accepted picture joins"
+    "canon, the style family an accepted picture joins, and motion, a loop to play"
 )
+
+#: What a member's `motion` may be: a short muted loop the review page plays (§PW600).
+MOTION = (".mp4", ".webm")
 
 
 def members_of(members: Any) -> list[dict]:
@@ -105,6 +108,10 @@ def members_of(members: Any) -> list[dict]:
             needed = ("name",) if member.get("line") else ("name", "new")
             lacking = [key for key in needed if not member.get(key)]
             said = f"has no {' or '.join(lacking)}" if lacking else ""
+            # A look that moves is a loop the page plays, beside its still (§PW600).
+            moving = str(member.get("motion") or "")
+            if moving and not said and Path(moving).suffix.lower() not in MOTION:
+                said = f"names motion {moving}, which is not a {' or '.join(MOTION)}"
         if said:
             raise PolyweaveError(
                 "verdict.bad-member",

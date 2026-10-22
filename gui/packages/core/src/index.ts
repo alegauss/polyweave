@@ -28,6 +28,7 @@ export {
   unanswered,
   unready,
   visual,
+  moving,
 } from './desk'
 export type {
   AnswerBody,

@@ -13,6 +13,7 @@ import {
   last,
   listed,
   measuredOf,
+  moving,
   narrower,
   ordered,
   progress,
@@ -136,6 +137,14 @@ describe('the decision screen', () => {
     // Accepting the rest answers only what no one answered, a redo included.
     expect(unanswered(state.sittings[1]!, state.answers)).toEqual(['c'])
     expect(unanswered(state.sittings[0]!, state.answers)).toEqual([])
+  })
+
+  it('plays a member whose look is motion as a loop, first (§PW600)', () => {
+    const shown = visual({ sheet: 's', members: [{ name: 'tender', new: 't.png', motion: 't.mp4' }] })
+    expect(shown).toEqual({ kind: 'films', films: [{ label: 'tender', path: 't.mp4' }], sheet: 's' })
+    expect(moving('t.mp4')).toBe(true)
+    expect(moving('t.WEBM')).toBe(true)
+    expect(moving('t.webp')).toBe(false)
   })
 
   it('shows a line, then films, then the pictures, then the sheet', () => {

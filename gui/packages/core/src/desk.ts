@@ -27,6 +27,8 @@ export interface Member {
   line?: string
   examples?: string[]
   films?: { label: string; path: string }[]
+  /** Where the look is motion, a short muted loop (.mp4 or .webm) played in place. */
+  motion?: string
   /** A sound's numbers by version, or a line's measure as words. */
   measured?: { old?: Record<string, unknown>; new?: Record<string, unknown> } | string
   /** A loop, played looped so its seam is heard. */
@@ -426,11 +428,20 @@ export function visual(laid: Laid): Visual {
   const members = laid.members ?? []
   const lines = members.filter((one) => one.text)
   if (lines.length) return { kind: 'line', lines }
-  const films = members.flatMap((one) => one.films ?? [])
+  // A member's own loop first, then any films it carries (§PW600).
+  const films = members.flatMap((one) => [
+    ...(one.motion ? [{ label: one.name, path: one.motion }] : []),
+    ...(one.films ?? []),
+  ])
   if (films.length) return { kind: 'films', films, sheet: laid.sheet }
   const pictures = members.filter((one) => one.new && !one.sound)
   if (pictures.length) return { kind: 'pictures', members: pictures, sheet: laid.sheet }
   return { kind: 'sheet', sheet: laid.sheet }
+}
+
+/** Whether a path is a loop to play rather than a picture to show (§PW600). */
+export function moving(path: string): boolean {
+  return /\.(mp4|webm)$/i.test(path)
 }
 
 /** A card's title: who says a line, else the family's name. */
