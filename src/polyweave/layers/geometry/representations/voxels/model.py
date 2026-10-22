@@ -573,9 +573,10 @@ def voxelize(
     """Which cells a declaration fills, and what each one wears.
 
     The grid is centred on what the output covers, so a symmetric shape comes back
-    symmetric, and a cell is filled where its centre is inside. A document with a
-    `cells` node is the exception: its grid sits on whole cells from the origin, so a
-    drawn cell is a cell of the model and not split between two. `cell` or `across`
+    symmetric, and a cell is filled where its centre is inside; it is then trimmed to
+    the cells filled, so `size` and `origin` are the model's box (§PW596). A document
+    with a `cells` node is the exception: its grid sits on whole cells from the origin,
+    so a drawn cell is a cell of the model and not split between two. `cell` or `across`
     override the document's own `[voxels]` for this call, and a document stating
     neither takes the project's `[voxels] cell` (§PW229).
     """
@@ -601,6 +602,14 @@ def voxelize(
     inside = _hollowed(document, model.resolved["params"], found.inside, counts)
     filled = index[inside]
     owners = found.owner[inside]
+    # The grid spans the output's bounds, which a carved model's are before the carving:
+    # trimmed to the cells kept, its box is the model's and not its cutters' (§PW596).
+    kept_origin, kept_counts = origin, counts
+    if len(filled):
+        low_cell = filled.min(axis=0)
+        filled = filled - low_cell
+        kept_counts = filled.max(axis=0) + 1
+        kept_origin = origin + low_cell * size
 
     names = [node["id"] for node in document["nodes"]]
     wears = [str(one) for one in found.wears[inside].tolist()]
@@ -619,8 +628,8 @@ def voxelize(
         "format": FORMAT,
         "name": document["name"],
         "cell": float(size),
-        "size": [int(n) for n in counts],
-        "origin": [float(v) for v in origin],
+        "size": [int(n) for n in kept_counts],
+        "origin": [float(v) for v in kept_origin],
         "palette": palette,
         "nodes": names,
         "cells": {

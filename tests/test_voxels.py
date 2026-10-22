@@ -109,7 +109,8 @@ def test_a_frustum_holds_its_own_volume():
     made = V.voxelize(shape(hull, voxels={"cell": 0.5}))
     volume = math.pi * 6.0 / 3 * (10**2 + 10 * 4 + 4**2)
     assert made["count"] * 0.5**3 == pytest.approx(volume, rel=0.05)
-    assert made["size"] == [40, 40, 12]
+    # The outer ring of the 40-cell grid has no centre inside the circle (§PW596).
+    assert made["size"] == [38, 38, 12]
 
 
 def test_a_capsule_holds_its_own_volume_on_the_grid():
@@ -355,6 +356,18 @@ def test_a_carve_takes_its_cutter_out():
     made = V.voxelize(shape(CUBE, cutter, cut, voxels={"cell": 1.0}))
     assert made["count"] == 64 - 8
     assert (1, 1, 1) not in cells_of(made)
+
+
+def test_a_carved_model_answers_the_box_of_what_is_left():
+    """§PW596: the grid once spanned the uncarved cube, so the model sat off its box."""
+    cutter = {"id": "big", "op": "primitive", "kind": "cube", "size": 8.0,
+              "at": [4, 0, 0]}
+    cut = {"id": "cut", "op": "carve", "into": "box", "cutter": "big"}
+    made = V.voxelize(shape(CUBE, cutter, cut, voxels={"cell": 1.0}))
+    assert made["count"] == 2 * 4 * 4
+    assert made["size"] == [2, 4, 4]
+    assert made["origin"] == [-2.0, -2.0, -2.0]
+    assert min(made["cells"]["x"]) == 0 and max(made["cells"]["x"]) == 1
 
 
 def test_a_transform_turns_and_scales_the_cells_it_asks_for():

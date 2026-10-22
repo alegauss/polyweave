@@ -291,6 +291,7 @@
 - ✅ **PW317** **build --set voxels.cell=0.03 is dropped without a word, and the build answers built at the declared cell** — build --set now reaches a declaration's fields (voxels.cell), echoes what each key changed, and refuses a key naming nothing, listing what it takes (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW318** **a declaration cannot state its own cell ceiling, so a model allowed over the voxels budget carries the finding for good** — A declaration's [voxels] budget is now its own ceiling, and the checks and any budget finding say whose bound held (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW326** **geometry.fit scores a whole alpha silhouette, so a part inside a picture, like the V on a badge's disc, cannot be fitted** — geometry.fit takes a region, a drawing's colours scored against named materials in their whole, so a part fits in place and at scale (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW596** **a voxel model's grid spans the uncarved primitives and the cutters, so a model centred on its box sits off its middle** — A voxel build trims its grid to the cells it keeps, so size and origin are the carved model's (design recorded in `src/polyweave/layers/geometry/representations/voxels/model.py`).
 
 ## Block J — A bar a person sets once
 

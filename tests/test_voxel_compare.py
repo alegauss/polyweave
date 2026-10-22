@@ -53,11 +53,22 @@ def test_a_rewrite_that_builds_the_same_model_is_the_same():
     assert found["says"] == "the same 8 cells, each wearing the same material"
 
 
-def test_an_empty_row_moves_the_grid_and_not_the_cells():
-    """The old drawing carried an empty row; the cells are still the same."""
+def test_a_drawn_empty_row_is_trimmed_from_the_grid():
+    """§PW596: a build's grid is the box of the cells it keeps, not of the drawing."""
     found = C.compare(
         V.voxelize(drawn(["....", "####", "####"])), V.voxelize(ship())
     )
+    assert found["same"] is True and found["grid"]["differs"] is False
+
+
+def test_an_empty_row_moves_the_grid_and_not_the_cells():
+    """A model written before §PW596 carried an empty row; the cells are the same."""
+    padded = V.voxelize(ship())
+    padded["size"] = [padded["size"][0], padded["size"][1] + 1, padded["size"][2]]
+    padded["origin"] = [padded["origin"][0], padded["origin"][1] - 1.0,
+                        padded["origin"][2]]
+    padded["cells"]["y"] = [y + 1 for y in padded["cells"]["y"]]
+    found = C.compare(padded, V.voxelize(ship()))
     assert found["same"] is True
     assert found["grid"]["differs"] is True
     assert found["grid"]["first"]["size"] != found["grid"]["second"]["size"]
