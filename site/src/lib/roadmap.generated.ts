@@ -48,7 +48,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
-  { block: "X", title: "The site on the shared design system", open: 3 },
+  { block: "X", title: "The site on the shared design system", open: 2 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -127,13 +127,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "S",
     symptom: "game.set given a vector as a JSON list writes it as zero and answers as if it worked",
     why: "A camera or node moved for a capture lands at the origin, found only by reading now in the answer.",
-    deps: [],
-  },
-  {
-    id: "PW604",
-    block: "X",
-    symptom: "The specs page lists six specs, three \"to come\", while docs/specs holds twenty-two, all written",
-    why: "The page is a hand copy of the specs index, and it has drifted since the day the second spec was added.",
     deps: [],
   },
   {

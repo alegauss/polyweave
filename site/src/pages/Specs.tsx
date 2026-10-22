@@ -1,6 +1,7 @@
 import { Footer, Nav } from "../components/Chrome";
 import { SiteCopyButton, SiteRich as Rich } from "@viglet/viglet-design-system/site";
 import { specs, specsUrl } from "../lib/site-content";
+import { notSpecced, specRows } from "../lib/specs";
 
 export function Specs() {
   return (
@@ -28,32 +29,25 @@ export function Specs() {
                   <th>Spec</th>
                   <th>What it fixes</th>
                   <th>Lines it binds</th>
-                  <th>State</th>
                 </tr>
               </thead>
               <tbody>
-                {specs.table.map((row) => (
+                {specRows.map((row) => (
                   <tr key={row.name}>
                     <td>
-                      <code>{row.name}</code>
+                      <a href={`${specsUrl}/${row.name}`.replace("/tree/", "/blob/")}>
+                        <code>{row.name}</code>
+                      </a>
                     </td>
                     <td>{row.fixes}</td>
                     <td className="num">{row.binds}</td>
-                    <td className={row.written ? "state-yes" : "state-no"}>
-                      {row.written ? "written" : "to come"}
-                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           <p className="table-note">
-            The four written ones live in{" "}
-            <a href={specsUrl}>
-              <code>docs/specs/</code>
-            </a>
-            . They are ordinary documents — nothing governs them, and they are edited
-            directly, unlike the roadmap.
+            <Rich runs={specs.tableNote} />
           </p>
         </div>
       </section>
@@ -100,7 +94,7 @@ export function Specs() {
             <div className="prose-block">
               <h2>{specs.notYet.heading}</h2>
               <ul className="feat-list">
-                {specs.notYet.list.map((runs, i) => (
+                {notSpecced.map((runs, i) => (
                   <li key={i}>
                     <span className="chk">◆</span>
                     <span>

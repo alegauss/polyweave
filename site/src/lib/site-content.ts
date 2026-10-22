@@ -649,52 +649,20 @@ export const specs = {
     ", at whatever length that takes.",
   ] as Rich,
   status: [
-    { b: "Status: the contract the code is held to." },
-    " Each spec is written ahead of, or beside, the lines that implement it, and a shipped line records its design in one. Where the code and a spec disagree, that is evidence about the spec, not only about the code.",
+    { b: "Every spec describes code that exists," },
+    " and is the contract that code is held to. Where the code and a spec disagree, that is evidence about the spec, not only about the code.",
   ] as Rich,
-  table: [
-    {
-      name: "tool-surface.md",
-      fixes: "How every call behaves: handles, post-conditions, errors, self-description, conventions",
-      binds: "PW1–PW6",
-      written: true,
-    },
-    {
-      name: "project-config.md",
-      fixes: "What a project declares, and how a value is resolved",
-      binds: "PW5",
-      written: false,
-    },
-    {
-      name: "measurements.md",
-      fixes: "The closed vocabulary a comparison may return",
-      binds: "PW8–PW11",
-      written: true,
-    },
-    {
-      name: "acceptance-spec.md",
-      fixes: "What “correct” means, as a file a search can aim at",
-      binds: "PW12, PW13, PW15",
-      written: true,
-    },
-    {
-      name: "geometry.md",
-      fixes: "A shape as data rather than as a program",
-      binds: "PW30–PW34",
-      written: false,
-    },
-    {
-      name: "provenance.md",
-      fixes: "What is recorded beside an artefact, and the cache key",
-      binds: "PW6, PW14, PW17",
-      written: false,
-    },
-  ],
+  // The table and the not-yet list are read off docs/specs/README.md, in lib/specs.ts.
+  tableNote: [
+    "Each one lives in ",
+    { code: "docs/specs/" },
+    ". They are ordinary documents, edited directly, unlike the roadmap, which roadkeep governs.",
+  ] as Rich,
   formats: {
     heading: "Two format rules, so nobody has to decide twice",
     body: [
       { b: "TOML for documents a person authors or reads" },
-      " — the project config, an acceptance spec, a geometry declaration. ",
+      " — the project config, an acceptance spec, a geometry declaration, an animation clip. ",
       { b: "JSON for records a machine writes" },
       " — provenance sidecars, job state, ledgers, cache entries. The split is about who edits the file, not about what is in it. A document may also arrive as JSON where a caller emits it programmatically; a record never arrives as TOML.",
     ] as Rich,
@@ -738,20 +706,6 @@ step = 0.1`,
   },
   notYet: {
     heading: "Deliberately not specced yet",
-    list: [
-      [
-        { b: "The clip and curve format." },
-        " It depends on decisions the skeleton line makes, and a format written before them would be guessing. Its own roadmap section holds the requirements until then.",
-      ] as Rich,
-      [
-        { b: "The paid-service lock and ledger." },
-        " One file written by one task, whose fields are already pinned on that line. It becomes a spec here if a second consumer appears.",
-      ] as Rich,
-      [
-        { b: "The tool list." },
-        " Which calls exist is implementation, and it follows from the tool surface rather than needing a document of its own.",
-      ] as Rich,
-    ],
   },
   cannot: {
     heading: "What an acceptance spec deliberately cannot say",

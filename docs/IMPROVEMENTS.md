@@ -516,17 +516,6 @@ take is read off that code rather than invented here.
 
 ## Block X — The site on the shared design system
 
-### §PW604 The specs page reads the specs index
-
-The table on `/specs/` and its "deliberately not specced yet" list were typed into
-`site-content.ts`, and both went stale: project-config, geometry and provenance are
-marked to come and written, sixteen specs are missing, and the not-yet list still names
-the clip format that motion.md specifies. The site's own rule is that it reads from
-`docs/` rather than copying it, so `site/src/lib/specs.ts` imports
-`docs/specs/README.md` raw at build time and takes the table rows and the not-yet
-bullets from it, throwing at import if either is gone. The state column goes, since the
-index says every spec describes code that exists, and each spec name links to its file.
-
 ### §PW605 The site's prose read against what shipped
 
 The seven depth pages in `features.ts` were written while blocks A to G were open:
