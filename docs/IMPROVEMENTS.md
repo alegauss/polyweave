@@ -515,3 +515,51 @@ take is read off that code rather than invented here.
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system
+
+### §PW603 The session transcript runs real commands
+
+The transcript in `site/src/lib/diagrams.ts` was written before the surface existed and
+was never re-read against it: none of its commands parses, and its failure's remedy
+names a `glaze` argument nothing takes. It becomes six real calls (`search.sweep --job`,
+`job poll`, `job result --wait`, `render.bake`, `accept.check`, and a `render.bake`
+refused with `post.render-uniform` and that code's real message and remedy). The package
+gains a `polyweave` console script, so the transcript's `polyweave <operation>` is what
+pip installs rather than only `python -m polyweave`. `tests/test_site_session.py` parses
+every command in the transcript with the command line itself and holds every code it
+shows to the published codes, so the figure cannot drift from the surface again.
+
+### §PW604 The specs page reads the specs index
+
+The table on `/specs/` and its "deliberately not specced yet" list were typed into
+`site-content.ts`, and both went stale: project-config, geometry and provenance are
+marked to come and written, sixteen specs are missing, and the not-yet list still names
+the clip format that motion.md specifies. The site's own rule is that it reads from
+`docs/` rather than copying it, so `site/src/lib/specs.ts` imports
+`docs/specs/README.md` raw at build time and takes the table rows and the not-yet
+bullets from it, throwing at import if either is gone. The state column goes, since the
+index says every spec describes code that exists, and each spec name links to its file.
+
+### §PW605 The site's prose read against what shipped
+
+The seven depth pages in `features.ts` were written while blocks A to G were open:
+motion is "the shortest block, each line waiting on the one before", its curve format is
+"deliberately unwritten", the noise floor is something "the first implementation has to
+demonstrate". Every one of those blocks is finished, so each sentence is restated as
+what the block does. The agent page's "No GUI, ever" contradicts the review page and the
+desktop window the landing page shows; it becomes the non-goal it was quoting, a
+graphical editor, with the review surfaces named as where a person answers. Its spending
+section names every paid service rather than one. The words the landing page uses for a
+layer are made one set: images rather than pictures, the ten layers listed the same way
+in the description, the cards and llms.txt, and the sponsor copy in llms.txt matching
+the page's.
+
+### §PW606 The site installs from PyPI
+
+The package is published as `polyweave-gamekit`, because `polyweave` on PyPI is an
+unrelated project, and the landing page's install block, the llms.txt an agent reads and
+the prerender test all still say `pip install
+git+https://github.com/alegauss/polyweave`. The install block becomes `pip install
+polyweave-gamekit` followed by the two plugin commands, its intro says which line runs
+in a shell and which inside Claude Code, and the note under it names the audio extra by
+the distribution's name, since `polyweave[audio]` would resolve to the unrelated
+project. The prerender test holds the landing twin to the pip line.
