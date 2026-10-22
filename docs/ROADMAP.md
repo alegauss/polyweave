@@ -20,7 +20,7 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW596** (deps: —) **a voxel model's grid spans the uncarved primitives and the cutters, so a model centred on its box sits off its middle** — A carved diorama is drawn units off where a game places it, and its extent check reads the same padded box. → §PW596
+- 🛠 **PW596** (deps: —) **a voxel model's grid spans the uncarved primitives and the cutters, so a model centred on its box sits off its middle** — A carved diorama is drawn units off where a game places it, and its extent check reads the same padded box. → §PW596
 
 ## Block J — A bar a person sets once
 
@@ -57,6 +57,8 @@
 - 📋 **PW599** (deps: —) **game.set given a vector as a JSON list writes it as zero and answers as if it worked** — A camera or node moved for a capture lands at the origin, found only by reading now in the answer. → §PW599
 
 ## Block T — Adopting polyweave in a project
+
+- 📋 **PW602** (deps: —) **polyweave cannot be pip-installed by name, and its refusals say `pip install polyweave[stems]`, another PyPI project** — An adopter installs from a git URL, and a remedy followed as written installs Sigma-Pi hypernetworks instead of the extra it names. → §PW602
 
 ## Block U — A window on everything a project governs
 
