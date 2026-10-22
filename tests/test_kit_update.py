@@ -65,6 +65,23 @@ def test_an_update_replaces_the_core_keeps_the_scene_and_is_proved(setup):
     assert provenance.outdated(root=str(game))["kits"] == []
 
 
+def test_an_update_keeps_the_engine_sidecars_of_files_still_in_the_core(setup):
+    shelf, game = setup
+    core = game / "addons" / "polyweave" / "input"
+    (core / "icon.png.import").write_text("[remap]\nuid=\"uid://kept\"\n", "utf-8")
+    (core / "gone.gd").write_text("# old\n", encoding="utf-8")
+    (core / "gone.gd.uid").write_text("uid://gone\n", encoding="utf-8")
+    newer(shelf)
+    said = kits.update("input", root=str(game))
+    assert said["ok"] is True
+    assert (core / "icon.png.import").read_text("utf-8") == (
+        "[remap]\nuid=\"uid://kept\"\n")
+    assert not (core / "gone.gd.uid").exists()
+    assert not (core / "switch.gd.uid").exists()
+    (core / "icon.png.import").write_text("rewritten by the editor\n", "utf-8")
+    assert kits.update("input", root=str(game))["ok"] is True
+
+
 def test_a_core_edited_in_the_project_is_a_finding_never_an_overwrite(setup):
     shelf, game = setup
     (game / "addons" / "polyweave" / "input" / "icon.png").write_bytes(b"edited")

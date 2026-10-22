@@ -518,12 +518,14 @@ def install(
             proofs.append(spec)
         if not write:
             continue
+        sidecars = _sidecars(core)
         if core.exists():
             shutil.rmtree(core)
         shutil.copytree(source / kit["installs"]["core"], core)
         for part in out:
             for file in kit["parts"][part]["core"]:
                 (core / file).unlink()
+        _put_back(sidecars, core)
         _own_records(core, here, one, kit["version"])
         if target is not None and not target.exists():
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -872,8 +874,43 @@ def _first(verdict: dict) -> dict:
     return {"said": "the proof did not pass"}
 
 
+#: What Godot writes beside a file it imports or names by uid, which is the game's.
+SIDECARS = (".import", ".uid")
+
+
+def _sidecars(core: Path) -> dict[str, bytes]:
+    """The engine's sidecars in an installed core, by path, to outlive its replacement.
+
+    A core is replaced whole, and the `.import` beside each icon and the `.uid` beside
+    each script went with it: the game lost every icon, and each scene naming a script
+    by `uid://` would have been given a new id (§PW595).
+    """
+    if not core.is_dir():
+        return {}
+    return {
+        one.relative_to(core).as_posix(): one.read_bytes()
+        for one in sorted(core.rglob("*"))
+        if one.is_file() and one.suffix in SIDECARS
+    }
+
+
+def _put_back(sidecars: dict[str, bytes], core: Path) -> list[str]:
+    """Each kept sidecar whose file the new core still has, written back; one whose
+    file is gone goes with it, and a new file's is left to the engine."""
+    back = []
+    for path, data in sidecars.items():
+        at = core / path
+        if at.with_suffix("").is_file() and not at.exists():
+            at.write_bytes(data)
+            back.append(path)
+    return back
+
+
 def _digests(core: Path) -> dict[str, str]:
-    """Every file a kit's core laid down, by its path in the core, with its SHA-256."""
+    """Every file a kit's core laid down, by its path in the core, with its SHA-256.
+
+    The engine's sidecars are left out: Godot rewrites them, and that is no edit.
+    """
     from polyweave.kernel.provenance import sha256_of
 
     return {
@@ -882,6 +919,7 @@ def _digests(core: Path) -> dict[str, str]:
         if one.is_file()
         and one.name not in ("kit.json", "kit.json.prov.json")
         and not one.name.endswith(".prov.json")
+        and one.suffix not in SIDECARS
     }
 
 

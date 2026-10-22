@@ -62,8 +62,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW595** (deps: —) **kit.update deletes the .import and .uid files Godot keeps beside the kit's core, so the game loses every icon** — A game's checks fail on every icon after an update, and a script's uid comes back new, breaking each scene that names it. → §PW595
-
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system
