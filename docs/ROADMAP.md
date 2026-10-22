@@ -36,6 +36,8 @@
 
 ## Block O — A person sees and answers
 
+- 📋 **PW600** (deps: —) **the review page shows a still or a sheet where the look is motion, and has no video to play a loop** — A person cannot judge a flight, a filling bar, a turning island or smoke from stills, so motion sittings go unanswered. → §PW600
+
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world

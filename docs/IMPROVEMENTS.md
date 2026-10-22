@@ -231,6 +231,31 @@ model and the members.
 
 ## Block O — A person sees and answers
 
+### §PW600 A sitting member that moves, played on the review page
+
+Met in Spinhold on 2026-10-22: the owner, answering the review page, could not judge
+what moves from stills. The map's tender holding station, banking and flying into a
+world (RK255), the stage bar filling and flashing (RK259), the Playdeck's course turning
+on the beat (RK232), the world dioramas turning and bobbing (RK250) and their smoke,
+sparks and glints (RK261) are all motion, and each sitting shows a still or a sheet of
+stills. The review page draws `<img>` and plays audio for sound sittings, but has no
+video; `vfx.preview`'s stills are also frozen (PW598).
+
+polyweave already films motion: `capture.movie` takes every frame between two marks and
+`video.cut` makes an MP4. Nothing carries either into a sitting.
+
+What polyweave should do:
+- A sitting member may carry `motion`: a short loop (MP4 or WebM, H.264 or VP9, a few
+  seconds, muted), and the review page plays it in place, looping and autoplaying, at
+  the size it is shown in the game, with the still beside it for the measures.
+- `vfx.preview`, `clip.shots`, `panel.capture` and `verdict.sitting` write that loop from
+  what they already film, and `capture.movie` plus `video.cut` make one from a game
+  scene for anything else (a camera on the running map, a HUD through a stage).
+- The verdict covers the motion: "look" on a loop names the moment (a time) that is
+  wrong.
+
+A test: a sitting with one motion member serves the video and the page answers it.
+
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world
