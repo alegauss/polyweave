@@ -468,27 +468,6 @@ back.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW602 Published to PyPI as polyweave-gamekit
-
-The name `polyweave` on PyPI belongs to an unrelated, active project (Sigma-Pi layers
-and hypernetworks, two releases in June 2026), so PEP 541 has nothing to reclaim, and
-`poly-weave` is refused by PyPI's similarity rule since it normalises to the same
-string. The distribution is therefore `polyweave-gamekit`; the import name, `python -m
-polyweave` and the plugin's MCP command stay as they are, so no adopter's `.mcp.json`
-changes.
-
-The hazard that makes this more than convenience is the remedy text. Four refusals and a
-capability note tell the agent to run `pip install polyweave[...]`, and an agent follows
-a remedy literally: today that resolves to the other project. Every such remedy names
-`polyweave-gamekit[...]`, and a test holds the source to it.
-
-The version is read from `polyweave.__version__` by hatch, and a test holds the plugin
-manifest to the same number, so a release cannot ship two. Publishing runs from a tag
-through PyPI's Trusted Publishing, which needs no stored token; registering the
-publisher on pypi.org is the owner's one manual step. The plugin keeps invoking
-`python`, not `uvx`: the extras (bpy, pedalboard, demucs) belong in the interpreter the
-adopter controls.
-
 ## Block U — A window on everything a project governs
 
 ### §PW311 The window proved on Starship

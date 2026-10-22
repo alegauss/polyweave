@@ -119,7 +119,7 @@ def test_without_demucs_the_split_is_refused_with_its_extra():
     with pytest.raises(PolyweaveError) as refused:
         sound_stems._separate(np.zeros((RATE, 2)))
     assert refused.value.code == "sound.no-separator"
-    assert "polyweave[stems]" in refused.value.remedy
+    assert "polyweave-gamekit[stems]" in refused.value.remedy
 
 
 @needs_ffmpeg

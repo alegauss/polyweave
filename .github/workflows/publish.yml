@@ -1,0 +1,75 @@
+# Publishes polyweave-gamekit to PyPI from a version tag (§PW602). The distribution is
+# named apart because `polyweave` on PyPI is an unrelated project; the import is still
+# `polyweave`.
+#
+# No token is stored: PyPI's Trusted Publishing trusts this workflow by name. Before the
+# first release the project's publisher is registered once on pypi.org (owner
+# alegauss, repository polyweave, workflow publish.yml, environment pypi), and the
+# same on test.pypi.org with environment testpypi. A tag goes to TestPyPI first and to
+# PyPI only once that upload passed; a manual run goes to TestPyPI alone, as a rehearsal.
+name: publish
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build the sdist and the wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: build
+        run: |
+          python -m pip install build twine
+          python -m build
+          python -m twine check --strict dist/*
+      # A tag that disagrees with the package is a release that would publish one
+      # number under another's name.
+      - name: the tag names the package's version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          version=$(python -c "import re,pathlib; print(re.search(r'__version__ = \"(.+)\"', pathlib.Path('src/polyweave/__init__.py').read_text()).group(1))")
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME, package $version"; exit 1; }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  testpypi:
+    name: publish to TestPyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          # TestPyPI never takes a version twice, so a rehearsal of a number already
+          # there passes rather than blocking the tag that follows it.
+          skip-existing: true
+
+  pypi:
+    name: publish to PyPI
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: testpypi
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

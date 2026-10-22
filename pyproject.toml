@@ -3,12 +3,28 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "polyweave"
-version = "0.1.0"
+# `polyweave` on PyPI is an unrelated project, so the distribution is named apart and
+# the import stays `polyweave` (§PW602). A remedy that says `pip install` names this.
+name = "polyweave-gamekit"
+dynamic = ["version"]
 description = "Make a game's parts by declaring what each must satisfy: 3D assets, pictures, sound loops and the world's text, on top of Blender, Godot and paid generators."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Alexandre Oliveira" }]
+keywords = ["gamedev", "3d", "blender", "godot", "assets", "sound", "mcp", "claude-code"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Games/Entertainment",
+    "Topic :: Multimedia :: Graphics :: 3D Modeling",
+]
 # Both are what a pixel question needs and neither is exotic: Blender bundles numpy, and
 # the assertions and measurements here would otherwise decode PNG by hand.
 dependencies = ["numpy>=1.26", "pillow>=10"]
@@ -31,6 +47,19 @@ stems = ["demucs>=4"]
 # Outlining an SVG's live text before the engine draws it (§PW453). Optional the same
 # way: an SVG with no text never imports it, and one with text refuses by name.
 text = ["fonttools>=4.40"]
+
+[project.urls]
+Homepage = "https://alegauss.github.io/polyweave/"
+Source = "https://github.com/alegauss/polyweave"
+Issues = "https://github.com/alegauss/polyweave/issues"
+
+# One number for the package, the MCP server's serverInfo and the provenance record; the
+# plugin manifest is held to it by tests/test_packaging.py.
+[tool.hatch.version]
+path = "src/polyweave/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src/polyweave", "README.md", "LICENSE", "pyproject.toml"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/polyweave"]

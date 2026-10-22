@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
-  { block: "T", title: "Adopting polyweave in a project", open: 1 },
+  { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
@@ -127,13 +127,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "S",
     symptom: "game.set given a vector as a JSON list writes it as zero and answers as if it worked",
     why: "A camera or node moved for a capture lands at the origin, found only by reading now in the answer.",
-    deps: [],
-  },
-  {
-    id: "PW602",
-    block: "T",
-    symptom: "polyweave cannot be pip-installed by name, and its refusals say `pip install polyweave[stems]`, another PyPI project",
-    why: "An adopter installs from a git URL, and a remedy followed as written installs Sigma-Pi hypernetworks instead of the extra it names.",
     deps: [],
   },
 ];

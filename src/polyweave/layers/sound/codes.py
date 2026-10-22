@@ -60,7 +60,7 @@ CODES: dict[str, Code] = {
     "sound.no-separator": Code(
         means="splitting a track into stems needs Demucs and torch, and one is missing",
         when="sound.stems on a machine without the stems extra installed (§PW558)",
-        doors=("pip install polyweave[stems]",),
+        doors=("pip install polyweave-gamekit[stems]",),
     ),
     "sound.unknown-cue": Code(
         means="no [sound] family declares a cue of that name",

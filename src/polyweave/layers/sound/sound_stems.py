@@ -74,8 +74,8 @@ def _separate(frames: np.ndarray) -> tuple[dict[str, np.ndarray], dict]:
             "sound.no-separator",
             f"splitting a track needs Demucs and torch, and {missing.name} is not "
             "installed",
-            "pip install polyweave[stems] (CPU torch is enough; a minute of music "
-            "takes about a minute)",
+            "pip install polyweave-gamekit[stems] (CPU torch is enough; a minute of "
+            "music takes about a minute)",
         ) from missing
     model = get_model(MODEL)
     model.eval()

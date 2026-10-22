@@ -56,8 +56,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW602** (deps: —) **polyweave cannot be pip-installed by name, and its refusals say `pip install polyweave[stems]`, another PyPI project** — An adopter installs from a git URL, and a remedy followed as written installs Sigma-Pi hypernetworks instead of the extra it names. → §PW602
-
 ## Block U — A window on everything a project governs
 
 ## Block V — Parts every game repeats, installed already proved

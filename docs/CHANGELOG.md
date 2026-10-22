@@ -528,6 +528,7 @@
 - ✅ **PW325** **no operation brings an artefact another project made into this one with a record of where it came from** — provenance.borrow copies another project's file here, recording its project, path, commit and digest, so outdated names each borrower once it moves (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW374** **vfx.build writes each scene beside its declaration, so effects declared in an unshipped folder load only in the editor** — vfx.build writes where out or [paths] vfx says, and refuses beside a source the export leaves out; clip.camera refuses alike (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW387** **a style cannot take its palette from another project, so a game in a sister game's colours keeps a copy that drifts** — A style reads a palette kept in code, or borrows another project's shifted for its game, and says when that source moved (design recorded in `docs/specs/project-config.md`).
+- ✅ **PW602** **polyweave cannot be pip-installed by name, and its refusals say `pip install polyweave[stems]`, another PyPI project** — The distribution is polyweave-gamekit, a v-tag publishes to TestPyPI then PyPI by Trusted Publishing, and every install remedy names it, so none installs the other project.
 
 ## Block U — A window on everything a project governs
 

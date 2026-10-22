@@ -34,6 +34,13 @@ nothing else. Blender is optional: `pip install -e ".[blender]"` brings `bpy` in
 render path, and without it `capabilities()` says so and a render refuses rather than
 importing a renderer nobody asked for.
 
+On PyPI the distribution is **`polyweave-gamekit`**, because `polyweave` there is an
+unrelated project: `pip install polyweave-gamekit[audio]` installs it with an extra, and
+the import and `python -m polyweave` keep the short name. A `v<version>` tag publishes it
+through `.github/workflows/publish.yml`, to TestPyPI first and then PyPI, and a manual run
+of that workflow rehearses on TestPyPI alone; the version is `polyweave.__version__`, and the
+plugin manifest carries the same number.
+
 It is served as a Claude Code plugin from this repository. `.claude-plugin/` holds the
 marketplace, which names `plugin/` as the plugin: its manifest, its hooks and
 `skills/polyweave/`, the skill that drives it, and nothing else an adopter would have to

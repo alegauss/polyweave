@@ -30,8 +30,8 @@ CORE = ("kernel", "loop", "services", "surface")
 REQUIREMENTS = {
     "blender": "the blender binary, or bpy importable",
     "godot": "the godot binary",
-    "audio": "the audio extra: pip install polyweave[audio]",
-    "text": "the text extra: pip install polyweave[text]",
+    "audio": "the audio extra: pip install polyweave-gamekit[audio]",
+    "text": "the text extra: pip install polyweave-gamekit[text]",
 }
 
 #: The module each optional extra makes importable.

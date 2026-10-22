@@ -97,7 +97,8 @@ def engines(root: str | Path, model: dict) -> dict:
     except ImportError:
         raise _refused(
             "rendering needs Pedalboard, which is not installed here",
-            "pip install pedalboard (or polyweave[audio]) in the Python polyweave runs",
+            "pip install pedalboard (or polyweave-gamekit[audio]) in the Python "
+            "polyweave runs",
         ) from None
     found: dict[str, Any] = {"ffmpeg": shutil.which("ffmpeg")}
     if kinds & {"gm", "drums"}:
