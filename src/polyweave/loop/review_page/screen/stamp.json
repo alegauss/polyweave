@@ -5,10 +5,11 @@
     "gui/packages/ui/review/index.html",
     "gui/packages/ui/src/Advanced.tsx",
     "gui/packages/ui/src/Decide.tsx",
+    "gui/packages/ui/src/Model.tsx",
     "gui/packages/ui/src/index.css",
     "gui/packages/ui/src/review.css",
     "gui/packages/ui/src/review.tsx"
   ],
-  "sha256": "b0f77be73fe60786332da6da71a30c12c2f1e564391f6e2a57ddb0374343e3f6",
+  "sha256": "ebbe8cbe3f89d340e2960dd3d4d1f5445dd2242f40f00bb4a139de59e5802b08",
   "rebuild": "cd gui && npm run build:review"
 }

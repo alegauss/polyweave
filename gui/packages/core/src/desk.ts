@@ -29,6 +29,8 @@ export interface Member {
   films?: { label: string; path: string }[]
   /** Where the look is motion, a short muted loop (.mp4 or .webm) played in place. */
   motion?: string
+  /** A model's .glb, seen in 3D beside its still (§PW601). */
+  model?: string
   /** A sound's numbers by version, or a line's measure as words. */
   measured?: { old?: Record<string, unknown>; new?: Record<string, unknown> } | string
   /** A loop, played looped so its seam is heard. */
@@ -188,6 +190,8 @@ export interface AnswerBody {
   marks?: Mark[]
   /** Moments of a loop marked wrong, each a member and seconds into its loop (§PW600). */
   moments?: { member: string; at: number }[]
+  /** Views of a model marked wrong: where the camera stood and what it looked at (§PW601). */
+  views?: { member: string; camera: [number, number, number]; target: [number, number, number] }[]
   /** The alternative picked, for an accept of a family whose `pick` is one (§PW547). */
   member?: string
 }

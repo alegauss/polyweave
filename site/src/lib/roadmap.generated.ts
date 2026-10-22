@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
-  { block: "O", title: "A person sees and answers", open: 1 },
+  { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW601",
-    block: "O",
-    symptom: "a model's sitting shows it from fixed angles only, so a person never turns it to see its other sides",
-    why: "A diorama's underside or a tower's back is judged by nobody until the game turns it, though its .glb is built beside it.",
-    deps: [],
-  },
   {
     id: "PW202",
     block: "R",

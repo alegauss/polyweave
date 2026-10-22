@@ -41,6 +41,7 @@ import {
 } from '@pw/core'
 
 import { Advanced } from './Advanced'
+import { Model, type View } from './Model'
 
 /** Where a file will show once it has come across the desk. */
 export const Loading = () => <div data-loading className="h-24 w-48 animate-pulse rounded bg-muted" />
@@ -392,18 +393,44 @@ function Loop({
   )
 }
 
+/** A member's .glb, fetched through the desk like any picture, seen in 3D (§PW601). */
+function Shaped({
+  desk,
+  words,
+  member,
+  onView,
+}: {
+  desk: Desk
+  words: Words
+  member: Member
+  onView?: (view: View) => void
+}) {
+  const source = useShown(desk, member.model ?? null)
+  if (!source) return <Loading />
+  return (
+    <Model
+      source={source}
+      label={member.name}
+      words={words}
+      onView={onView && ((view) => onView({ member: member.name, ...view }))}
+    />
+  )
+}
+
 function Visual({
   desk,
   words,
   name,
   laid,
   onMoment,
+  onView,
 }: {
   desk: Desk
   words: Words
   name: string
   laid: Laid
   onMoment?: (moment: Moment) => void
+  onView?: (view: View) => void
 }) {
   const shown = visual(laid)
   const sheet = (label: string, path: string) => (
@@ -487,6 +514,16 @@ function Visual({
             )),
           )}
         </div>
+        {shown.members
+          .filter((member) => member.model)
+          .map((member) => (
+            <figure key={`${member.name}:model`} className="flex flex-col gap-1">
+              <figcaption className="text-xs text-muted-foreground">
+                {say(words, 'in_3d', { name: member.name })}
+              </figcaption>
+              <Shaped desk={desk} words={words} member={member} onView={onView} />
+            </figure>
+          ))}
         {sheet(say(words, 'sheet'), shown.sheet)}
       </>
     )
@@ -537,7 +574,10 @@ function Card({
   const [boxes, setBoxes] = useState<Record<string, Box[]>>({})
   // Moments of a loop marked wrong, sent with the answer (§PW600).
   const [moments, setMoments] = useState<Moment[]>([])
-  const marked = Object.values(boxes).some((one) => one.length > 0) || moments.length > 0
+  // Views of a model marked wrong, sent with the answer (§PW601).
+  const [views, setViews] = useState<View[]>([])
+  const marked =
+    Object.values(boxes).some((one) => one.length > 0) || moments.length > 0 || views.length > 0
   const card = `${sitting.manifest}#${name}`
   useEffect(() => {
     onHold(card, Boolean(picked || why.trim() || marked))
@@ -558,6 +598,7 @@ function Card({
         why: said.trim(),
         marks: drawn(marks),
         ...(moments.length ? { moments } : {}),
+        ...(views.length ? { views } : {}),
         ...(alternatives && choice === 'accept' && one ? { member: one } : {}),
       })
       setMessage({ text: say(words, 'recorded'), bad: false })
@@ -567,6 +608,7 @@ function Card({
       setWhy('')
       setBoxes({})
       setMoments([])
+      setViews([])
       onAnswered()
     } catch (refused) {
       setMessage({ text: (refused as Error).message, bad: true })
@@ -601,7 +643,16 @@ function Card({
         name={name}
         laid={laid}
         onMoment={(one) => setMoments((was) => [...was, one])}
+        onView={(one) => setViews((was) => [...was, one])}
       />
+      {views.length > 0 && (
+        <p data-views className="text-sm">
+          {say(words, 'views', { count: String(views.length) })}{' '}
+          <Button type="button" size="sm" variant="link" className="px-0" onClick={() => setViews([])}>
+            {say(words, 'clear_marks')}
+          </Button>
+        </p>
+      )}
       {moments.length > 0 && (
         <p data-moments className="text-sm">
           {say(words, 'moments', {

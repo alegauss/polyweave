@@ -21,6 +21,7 @@ export const SOURCES = [
   'gui/packages/ui/review/index.html',
   'gui/packages/ui/src/Advanced.tsx',
   'gui/packages/ui/src/Decide.tsx',
+  'gui/packages/ui/src/Model.tsx',
   'gui/packages/ui/src/index.css',
   'gui/packages/ui/src/review.css',
   'gui/packages/ui/src/review.tsx',

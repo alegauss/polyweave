@@ -423,6 +423,7 @@
 - ✅ **PW383** **a transcription read from a reference video cites no frames, and a person's corrections to it are kept nowhere** — A transcription's rows cite their frames, a sitting shows each beside them, and a person's answer per row is kept and read back (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW443** **verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work** — A tool's accept lands only with the code the review page shows for the sitting, so an agent cannot accept its own look (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW600** **the review page shows a still or a sheet where the look is motion, and has no video to play a loop** — clip.shots and panel.capture write muted loops the page plays, and a look answer on one names the moments that are wrong, kept with the verdict (design recorded in `gui/packages/ui/src/Decide.tsx`).
+- ✅ **PW601** **a model's sitting shows it from fixed angles only, so a person never turns it to see its other sides** — A member carries its .glb, attached from its still's record, and the review page turns it in 3D beside the still; an answer names the wrong view (design recorded in `gui/packages/ui/src/Model.tsx`).
 
 ## Block P — Music and sound a game can ship
 

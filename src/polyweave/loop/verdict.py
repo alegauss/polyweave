@@ -75,7 +75,8 @@ def _said(result: dict) -> str:
 
 MEMBERS = (
     "each member: name, spec and new, and optionally old, capture with box, shown, "
-    "canon, the style family an accepted picture joins, and motion, a loop to play"
+    "canon, the style family an accepted picture joins, motion, a loop to play, and "
+    "model, a .glb to turn"
 )
 
 #: What a member's `motion` may be: a short muted loop the review page plays (§PW600).
@@ -112,6 +113,10 @@ def members_of(members: Any) -> list[dict]:
             moving = str(member.get("motion") or "")
             if moving and not said and Path(moving).suffix.lower() not in MOTION:
                 said = f"names motion {moving}, which is not a {' or '.join(MOTION)}"
+            # A model is turned on the page beside its still (§PW601).
+            shaped = str(member.get("model") or "")
+            if shaped and not said and Path(shaped).suffix.lower() != ".glb":
+                said = f"names model {shaped}, which is not a .glb"
         if said:
             raise PolyweaveError(
                 "verdict.bad-member",
@@ -264,7 +269,7 @@ def sitting(
     # Every family checked before any sheet is drawn, so a bad one is refused whole, and
     # a committed old checked out, so the page shows the picture it names (§PW481).
     here = Path(root).resolve()
-    families = {name: _from_git(members_of(one), here)
+    families = {name: _with_model(_from_git(members_of(one), here), here)
                 for name, one in families.items()}
     folder = Path(out)
     sheets = {
@@ -287,6 +292,29 @@ def sitting(
         f"in one sitting, at {address(listed)} on the review page, each answered with "
         "judge(<members>, <choice>, <why>)",
     }
+
+
+def _with_model(members: list[dict], here: Path) -> list[dict]:
+    """Each member whose still's record names a .glb it was drawn from, carrying it as
+    `model`, so the page turns it beside the still (§PW601). A member naming its own, or
+    with no record or no model in it, is left as it is."""
+    from polyweave.kernel import provenance
+
+    found = []
+    for member in members:
+        if member.get("model") or not member.get("new"):
+            found.append(member)
+            continue
+        try:
+            record = provenance.read(str(member["new"]), root=str(here))
+        except PolyweaveError:
+            found.append(member)
+            continue
+        drawn = next((one["path"] for one in record.get("inputs") or ()
+                      if str(one.get("path", "")).lower().endswith(".glb")
+                      and (here / one["path"]).is_file()), None)
+        found.append({**member, "model": drawn} if drawn else member)
+    return found
 
 
 def address(manifest: str) -> str:
@@ -569,14 +597,15 @@ ANSWERS = "answers.jsonl"
 
 def record_answer(
     said: dict, *, sitting: str, family: str, root, marks: list | None = None,
-    chosen: str = "", moments: list | None = None,
+    chosen: str = "", moments: list | None = None, views: list | None = None,
 ) -> dict:
     """Append one answer from the page, for the agent that offered the sitting.
 
     `marks` are where the person said it is wrong, each a mask the size of the picture
     it was drawn on, with that picture's digest (§PW174). `chosen` is the member a
     person picked of a family of alternatives, the others passed over (§PW547).
-    `moments` are when a loop is wrong, seconds into it (§PW600).
+    `moments` are when a loop is wrong, seconds into it (§PW600); `views` where a model
+    is, as the camera that saw it (§PW601).
     """
     import json
     from datetime import UTC, datetime
@@ -593,6 +622,7 @@ def record_answer(
         "marks": list(marks or ()),
         **({"chosen": chosen} if chosen else {}),
         **({"moments": list(moments)} if moments else {}),
+        **({"views": list(views)} if views else {}),
     }
     path = load(root).path("paths.work") / ANSWERS
     path.parent.mkdir(parents=True, exist_ok=True)

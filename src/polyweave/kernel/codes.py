@@ -951,6 +951,12 @@ KERNEL_CODES: dict[str, Code] = {
         "time that is not a number of seconds from zero (§PW600)",
         doors=("mark a moment on a member that plays a loop",),
     ),
+    "loop.bad-view": Code(
+        means="a view marked on an answer is not a camera on a member's model",
+        when="the page's answer carrying a view on a member with no model, or a camera "
+        "or target that is not three numbers (§PW601)",
+        doors=("mark a view on a member that shows a model",),
+    ),
     "loop.unknown-choice": Code(
         means="a verdict is none of the things a person says of a family",
         when="a choice other than accept, look or number (§PW109)",

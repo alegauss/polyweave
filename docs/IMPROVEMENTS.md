@@ -158,30 +158,6 @@ model and the members.
 
 ## Block O — A person sees and answers
 
-### §PW601 A model member seen in 3D and turned on the review page
-
-Asked by Spinhold's owner on 2026-10-22, answering the review page. A model's sitting
-shows one or a few renders from fixed angles, so a person judges one side of it: the
-world dioramas (RK250) were sat from the map's front, and their hull's underside, the
-backs of the towers and anything floating behind are seen by nobody until the game turns
-them. Every model polyweave builds already has its `.glb` beside its cells
-(`assets/voxels/<name>.glb`), wearing its materials' colours.
-
-What polyweave should do: a sitting member whose artefact is a model carries its `.glb`,
-and the review page shows it in 3D beside the still: orbit by drag, zoom by wheel, a
-slow turn on its own until touched, a reset to the still's own camera, and the
-background and lighting the still was rendered under, so the two read alike. A
-`<model-viewer>` element or three.js, loaded locally with the page, never from a CDN.
-
-- The still stays what the spec measures; the 3D view is for the person's eye.
-- `geometry.kit`, `verdict.sheet` and `verdict.sitting` attach the `.glb` where the
-  member's record names one; a member with none shows the still alone.
-- A verdict on a model can name where it is wrong as a view (camera angle and point),
-  as PW174 lets a picture name a region.
-
-A test: a sitting with one model member serves the `.glb` and the page answers it. PW600
-is the same page for motion.
-
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world

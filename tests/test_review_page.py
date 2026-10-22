@@ -152,6 +152,44 @@ def test_a_member_that_moves_is_served_as_a_loop_and_answered(tmp_path):
         serving.server_close()
 
 
+def test_a_model_is_attached_from_its_record_served_and_a_view_answered(tmp_path):
+    """§PW601: a diorama's underside was judged by nobody, its .glb built beside it."""
+    from polyweave.kernel import provenance
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    tower = member(tmp_path, "tower", 90)
+    (tmp_path / "renders" / "tower.glb").write_bytes(b"glTF\x02\x00\x00\x00")
+    mesh = provenance.source("mesh", tmp_path / "renders" / "tower.glb", tmp_path)
+    provenance.write(provenance.build(
+        "render", tmp_path / "renders" / "tower.png", inputs=[mesh], root=tmp_path),
+        tmp_path)
+    verdict.sitting({"tower": [tower]}, out="review", root=tmp_path)
+    serving = review.server(tmp_path)
+    threading.Thread(target=serving.serve_forever, daemon=True).start()
+    try:
+        base = "http://{}:{}".format(*serving.server_address[:2])
+        _, body, _ = get(base + "/api/state")
+        laid = json.loads(body)["sittings"][0]["families"]["tower"]
+        assert laid["members"][0]["model"] == "renders/tower.glb"
+        status, _, kind = get(base + "/file?path=renders/tower.glb")
+        assert status == 200 and kind == "model/gltf-binary"
+        view = {"member": "tower", "camera": [1, 2, 3], "target": [0, 0.5, 0]}
+        status, said = post(base + "/api/judge", judged(
+            family="tower", choice="look", why="the back wall is hollow",
+            views=[view]))
+        assert status == 200, said
+        kept = verdict.kept_answers(tmp_path)[-1]
+        assert kept["views"] == [{"member": "tower", "model": "renders/tower.glb",
+                                  "camera": [1.0, 2.0, 3.0], "target": [0.0, 0.5, 0.0]}]
+        status, said = post(base + "/api/judge", judged(
+            family="tower", choice="look", why="x",
+            views=[{"member": "tower", "camera": [1, 2]}]))
+        assert status == 400 and said["code"] == "loop.bad-view"
+    finally:
+        serving.shutdown()
+        serving.server_close()
+
+
 def test_motion_that_is_not_a_loop_is_refused(tmp_path):
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     flying = member(tmp_path, "tender", 120)

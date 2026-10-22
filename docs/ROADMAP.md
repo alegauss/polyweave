@@ -30,8 +30,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW601** (deps: —) **a model's sitting shows it from fixed angles only, so a person never turns it to see its other sides** — A diorama's underside or a tower's back is judged by nobody until the game turns it, though its .glb is built beside it. → §PW601
-
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world

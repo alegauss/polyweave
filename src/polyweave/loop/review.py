@@ -63,16 +63,17 @@ HOST = "127.0.0.1"
 ASKED = "X-Polyweave"
 
 #: What the page may be sent from the project: pictures, sounds to hear (§PW256), loops
-#: to watch where the look is motion (§PW600), and the records beside them.
+#: to watch where the look is motion (§PW600), models to turn (§PW601), and the records
+#: beside them.
 SERVED = {".png", ".jpg", ".jpeg", ".webp", ".json", ".wav", ".ogg", ".flac", ".mp3",
-          ".opus", ".mp4", ".webm"}
+          ".opus", ".mp4", ".webm", ".glb"}
 
 # Not every platform's table knows these, and a sound sent as octet-stream is one a
 # browser may refuse to play.
 for _kind, _suffix in (("audio/wav", ".wav"), ("audio/ogg", ".ogg"),
                        ("audio/flac", ".flac"), ("audio/mpeg", ".mp3"),
                        ("audio/opus", ".opus"), ("video/mp4", ".mp4"),
-                       ("video/webm", ".webm"),
+                       ("video/webm", ".webm"), ("model/gltf-binary", ".glb"),
                        # A module script sent as text/plain, as some platforms' tables
                        # say, is one a browser refuses to run.
                        ("text/javascript", ".js"), ("text/css", ".css"),
@@ -236,6 +237,7 @@ def answer(root, body: dict) -> dict:
     # recorded without the place it was about.
     shapes = _shapes(members, body.get("marks") or [])
     moments = _moments(members, body.get("moments") or [])
+    views = _views(members, body.get("views") or [])
     why = str(body.get("why") or "").strip()
     if choice == "accept" and not why:
         # A person who clicked accept and wrote nothing said exactly that, and the
@@ -260,9 +262,36 @@ def answer(root, body: dict) -> dict:
     # the person saying so again in chat (§PW173).
     said["answer"] = verdict.record_answer(
         said, sitting=listed, family=family, root=config.root, marks=marks,
-        chosen=chosen, moments=moments,
+        chosen=chosen, moments=moments, views=views,
     )
     return said
+
+
+def _views(members: list[dict], views: list) -> list[dict]:
+    """Each view of a model a person marked wrong: where the camera stood and the point
+    it looked at, in the model's own units, on a member that has one (§PW601)."""
+    named = {str(m["name"]): m for m in members if m.get("model")}
+    found = []
+    for one in views:
+        one = one or {}
+        member = str(one.get("member", ""))
+        points = [one.get("camera"), one.get("target")]
+        whole = all(isinstance(p, list) and len(p) == 3
+                    and all(isinstance(v, int | float) for v in p) for p in points)
+        if member not in named or not whole:
+            raise PolyweaveError(
+                "loop.bad-view",
+                f"a view names {member or 'no member'}, and a view is a member with a "
+                "model, the camera's place and the point it looks at, three numbers "
+                "each",
+                "mark a view on a member that shows a model",
+                given=member,
+                allowed=sorted(named),
+            )
+        found.append({"member": member, "model": named[member]["model"],
+                      "camera": [round(float(v), 3) for v in points[0]],
+                      "target": [round(float(v), 3) for v in points[1]]})
+    return found
 
 
 def _moments(members: list[dict], moments: list) -> list[dict]:
