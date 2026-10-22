@@ -1340,9 +1340,10 @@ def _framing(effect: dict, fps: int = 60) -> dict:
     (§PW281), and a one-shot burst is watched standing still."""
     if effect["kind"] == "struck":
         return _framing_struck(effect, fps)
-    # A particle is a speck in its spray; a sheet's own size is already its reach.
+    # A particle is a speck in its spray; a sheet's own size is already its reach. No
+    # floor past that: a map-sized effect fills the frame as a 6 m one does (§PW598).
     floor = 0.0 if effect["kind"] == "sheet" else effect["size"] * 6
-    reach = max(measured(effect)["reach"], 0.5, floor)
+    reach = max(measured(effect)["reach"], floor, 0.01)
     d = effect["direction"]
     norm = math.sqrt(sum(v * v for v in d)) or 1.0
     d = [v / norm for v in d]

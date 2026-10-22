@@ -7,6 +7,7 @@ the game cannot play.
 
 from __future__ import annotations
 
+import math
 import os
 import re
 from pathlib import Path
@@ -702,6 +703,59 @@ def test_an_effect_is_watched_over_its_life_as_a_sitting(tmp_path):
 
         drawn = np.asarray(sheet.convert("RGB"))[8:8 + vfx.FRAME[1], 8:]
         assert drawn.max() > 120
+
+
+BURST = """\
+[effect.burst]
+amount = 40
+lifetime = 1.0
+one_shot = true
+explosiveness = 1.0
+speed = [2.0, 4.0]
+spread = 60
+size = 0.15
+"""
+
+
+def test_a_burst_is_filmed_alive_and_not_one_frozen_particle(tmp_path):
+    """§PW598: every still of Spinhold's sparks showed one dot in one place, because a
+    minimised window drew one frame and the movie repeated it."""
+    import numpy as np
+    from PIL import Image
+
+    from polyweave.layers.engine import offscreen
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    try:
+        offscreen.route_for(tmp_path)
+    except PolyweaveError:
+        pytest.skip("no route draws real pixels here")
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    vfx.preview(effects(tmp_path, BURST), out="review/fx", stills=6,
+                root=str(tmp_path))
+    filmed = tmp_path / ".polyweave" / "vfx" / "burst" / "frames"
+    frames = sorted(filmed.glob("*.png"))
+    picked = [frames[round(i * (len(frames) - 1) / 5)] for i in range(6)]
+    lit = []
+    for one in picked:
+        grey = np.asarray(Image.open(one).convert("L")).astype(int)
+        lit.append(int((grey > grey.min() + 40).sum()))
+    assert len(set(lit)) > 2, lit
+    assert lit[5] < lit[2], lit
+
+
+def test_a_small_effect_is_framed_by_its_own_reach():
+    """§PW598: a map-sized effect was framed as if it reached half a metre."""
+    small = vfx.checked("s", {"amount": 8, "lifetime": 0.3, "speed": [0.5, 1.0],
+                              "size": 0.02})
+    wide = vfx.checked("w", {"amount": 8, "lifetime": 1.5, "speed": [4.0, 4.0],
+                             "size": 0.02})
+    far = [math.dist([float(v) for v in vfx._framing(one)["eye"].split(",")],
+                     [float(v) for v in vfx._framing(one)["centre"].split(",")])
+           for one in (small, wide)]
+    assert far[0] < 0.5 * 0.9 and far[1] > far[0] * 4
 
 
 def test_an_effect_the_export_leaves_out_is_watched_in_a_sitting_under_art(tmp_path):

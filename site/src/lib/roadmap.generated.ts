@@ -37,7 +37,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
-  { block: "M", title: "What a game needs beyond the look", open: 1 },
+  { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 2 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW598",
-    block: "M",
-    symptom: "vfx.preview's stills show one particle frozen in place across the life, so a person never sees the effect move",
-    why: "An effect's sitting shows a dot where the game plays a spray, so nobody can accept or refuse its look from the sheet.",
-    deps: [],
-  },
   {
     id: "PW600",
     block: "O",
