@@ -186,6 +186,8 @@ export interface AnswerBody {
   choice: string
   why: string
   marks?: Mark[]
+  /** Moments of a loop marked wrong, each a member and seconds into its loop (§PW600). */
+  moments?: { member: string; at: number }[]
   /** The alternative picked, for an accept of a family whose `pick` is one (§PW547). */
   member?: string
 }

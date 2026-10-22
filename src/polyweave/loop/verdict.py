@@ -569,13 +569,14 @@ ANSWERS = "answers.jsonl"
 
 def record_answer(
     said: dict, *, sitting: str, family: str, root, marks: list | None = None,
-    chosen: str = "",
+    chosen: str = "", moments: list | None = None,
 ) -> dict:
     """Append one answer from the page, for the agent that offered the sitting.
 
     `marks` are where the person said it is wrong, each a mask the size of the picture
     it was drawn on, with that picture's digest (§PW174). `chosen` is the member a
     person picked of a family of alternatives, the others passed over (§PW547).
+    `moments` are when a loop is wrong, seconds into it (§PW600).
     """
     import json
     from datetime import UTC, datetime
@@ -591,6 +592,7 @@ def record_answer(
         "members": said["members"],
         "marks": list(marks or ()),
         **({"chosen": chosen} if chosen else {}),
+        **({"moments": list(moments)} if moments else {}),
     }
     path = load(root).path("paths.work") / ANSWERS
     path.parent.mkdir(parents=True, exist_ok=True)

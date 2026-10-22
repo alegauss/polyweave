@@ -136,9 +136,17 @@ def test_a_member_that_moves_is_served_as_a_loop_and_answered(tmp_path):
         assert laid["members"][0]["motion"] == "renders/tender.mp4"
         status, _, kind = get(base + "/file?path=renders/tender.mp4")
         assert status == 200 and kind == "video/mp4"
-        status, said = post(base + "/api/judge", judged(family="tender",
-                                                         choice="accept", why=""))
+        status, said = post(base + "/api/judge", judged(
+            family="tender", choice="look", why="banks too steep at the turn",
+            moments=[{"member": "tender", "at": 1.25}]))
         assert status == 200, said
+        kept = verdict.kept_answers(tmp_path)[-1]
+        assert kept["moments"] == [
+            {"member": "tender", "at": 1.25, "motion": "renders/tender.mp4"}]
+        status, said = post(base + "/api/judge", judged(
+            family="tender", choice="look", why="x",
+            moments=[{"member": "tender", "at": -1}]))
+        assert status == 400 and said["code"] == "loop.bad-moment"
     finally:
         serving.shutdown()
         serving.server_close()

@@ -341,7 +341,70 @@ function Legend({ entries }: { entries: Record<string, string> }) {
   )
 }
 
-function Visual({ desk, words, name, laid }: { desk: Desk; words: Words; name: string; laid: Laid }) {
+/** One moment of a loop a person said is wrong, in seconds into it (§PW600). */
+export interface Moment {
+  member: string
+  at: number
+}
+
+/** A loop played in place, and a button that marks the moment it is paused or playing at. */
+function Loop({
+  desk,
+  words,
+  label,
+  path,
+  onMoment,
+}: {
+  desk: Desk
+  words: Words
+  label: string
+  path: string
+  onMoment?: (at: number) => void
+}) {
+  const source = useShown(desk, path)
+  const video = useRef<HTMLVideoElement>(null)
+  if (!source) return <Loading />
+  return (
+    <>
+      <video
+        ref={video}
+        src={source}
+        aria-label={label}
+        autoPlay
+        loop
+        muted
+        playsInline
+        controls
+        className="max-h-80 w-auto rounded border object-contain"
+      />
+      {onMoment && (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="self-start"
+          onClick={() => onMoment(Math.round((video.current?.currentTime ?? 0) * 100) / 100)}
+        >
+          {say(words, 'mark_moment')}
+        </Button>
+      )}
+    </>
+  )
+}
+
+function Visual({
+  desk,
+  words,
+  name,
+  laid,
+  onMoment,
+}: {
+  desk: Desk
+  words: Words
+  name: string
+  laid: Laid
+  onMoment?: (moment: Moment) => void
+}) {
   const shown = visual(laid)
   const sheet = (label: string, path: string) => (
     <details className="text-sm">
@@ -387,7 +450,17 @@ function Visual({ desk, words, name, laid }: { desk: Desk; words: Words; name: s
           {shown.films.map((film) => (
             <figure key={film.path} className="flex flex-col gap-1">
               <figcaption className="text-xs text-muted-foreground">{film.label}</figcaption>
-              <Shown desk={desk} path={film.path} alt={film.label} />
+              {moving(film.path) ? (
+                <Loop
+                  desk={desk}
+                  words={words}
+                  label={film.label}
+                  path={film.path}
+                  onMoment={onMoment && ((at) => onMoment({ member: film.label, at }))}
+                />
+              ) : (
+                <Shown desk={desk} path={film.path} alt={film.label} />
+              )}
             </figure>
           ))}
         </div>
@@ -462,7 +535,9 @@ function Card({
   const [sending, setSending] = useState(false)
   // Boxes drawn on each member's picture, sent with the answer as its marks (§PW174).
   const [boxes, setBoxes] = useState<Record<string, Box[]>>({})
-  const marked = Object.values(boxes).some((one) => one.length > 0)
+  // Moments of a loop marked wrong, sent with the answer (§PW600).
+  const [moments, setMoments] = useState<Moment[]>([])
+  const marked = Object.values(boxes).some((one) => one.length > 0) || moments.length > 0
   const card = `${sitting.manifest}#${name}`
   useEffect(() => {
     onHold(card, Boolean(picked || why.trim() || marked))
@@ -482,6 +557,7 @@ function Card({
         choice: choice!,
         why: said.trim(),
         marks: drawn(marks),
+        ...(moments.length ? { moments } : {}),
         ...(alternatives && choice === 'accept' && one ? { member: one } : {}),
       })
       setMessage({ text: say(words, 'recorded'), bad: false })
@@ -490,6 +566,7 @@ function Card({
       setMember(null)
       setWhy('')
       setBoxes({})
+      setMoments([])
       onAnswered()
     } catch (refused) {
       setMessage({ text: (refused as Error).message, bad: true })
@@ -518,7 +595,23 @@ function Card({
         </span>
       </header>
       {laid.about && <p className="text-sm">{laid.about}</p>}
-      <Visual desk={desk} words={words} name={name} laid={laid} />
+      <Visual
+        desk={desk}
+        words={words}
+        name={name}
+        laid={laid}
+        onMoment={(one) => setMoments((was) => [...was, one])}
+      />
+      {moments.length > 0 && (
+        <p data-moments className="text-sm">
+          {say(words, 'moments', {
+            at: moments.map((one) => `${one.member} ${one.at.toFixed(2)} s`).join(', '),
+          })}{' '}
+          <Button type="button" size="sm" variant="link" className="px-0" onClick={() => setMoments([])}>
+            {say(words, 'clear_marks')}
+          </Button>
+        </p>
+      )}
       {sounds.map((member) => (
         <Listen key={member.name} desk={desk} words={words} member={member} />
       ))}

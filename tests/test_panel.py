@@ -700,6 +700,28 @@ def test_a_panel_filmed_grown_keeps_its_stitch_pitch(tmp_path):
     assert record["params"] == {"panel": "play", "state": "normal", "size": [256, 48]}
 
 
+def test_a_wipe_is_filmed_as_a_loop_a_sitting_plays(tmp_path):
+    """§PW600: a wipe was judged from its steps as stills."""
+    import os
+    import shutil
+
+    from polyweave.layers.engine import offscreen
+
+    if not os.environ.get("GODOT") or not shutil.which("ffmpeg"):
+        pytest.skip("no $GODOT or no ffmpeg on this machine")
+    try:
+        offscreen.route_for(tmp_path)
+    except PolyweaveError:
+        pytest.skip("no route draws real pixels here")
+    source = panels(tmp_path, HOLO + WIPES)
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="panel"\n', encoding="utf-8")
+    taken = panel.capture(source, out="ui", steps=3, loop=True, root=str(tmp_path))
+    assert taken["loops"] == {"sweep": "ui/sweep.capture.mp4",
+                              "iris": "ui/iris.capture.mp4"}
+    assert (tmp_path / "ui" / "sweep.capture.mp4").stat().st_size > 0
+
+
 def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
     import os
 

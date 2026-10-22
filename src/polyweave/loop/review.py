@@ -235,6 +235,7 @@ def answer(root, body: dict) -> dict:
     # Checked before the verdict, so a mark that cannot be kept never leaves a verdict
     # recorded without the place it was about.
     shapes = _shapes(members, body.get("marks") or [])
+    moments = _moments(members, body.get("moments") or [])
     why = str(body.get("why") or "").strip()
     if choice == "accept" and not why:
         # A person who clicked accept and wrote nothing said exactly that, and the
@@ -259,9 +260,34 @@ def answer(root, body: dict) -> dict:
     # the person saying so again in chat (§PW173).
     said["answer"] = verdict.record_answer(
         said, sitting=listed, family=family, root=config.root, marks=marks,
-        chosen=chosen,
+        chosen=chosen, moments=moments,
     )
     return said
+
+
+def _moments(members: list[dict], moments: list) -> list[dict]:
+    """Each moment of a loop a person marked wrong, on a member that has one (§PW600).
+
+    A look is judged moving, and "the bank is too steep" says nothing about which
+    second; the moment does, in seconds into the member's own loop.
+    """
+    named = {str(m["name"]): m for m in members if m.get("motion")}
+    found = []
+    for one in moments:
+        member = str((one or {}).get("member", ""))
+        at = (one or {}).get("at")
+        if member not in named or not isinstance(at, int | float) or at < 0:
+            raise PolyweaveError(
+                "loop.bad-moment",
+                f"a moment names {member or 'no member'} at {at!r}, and a moment is a "
+                "member with a loop and the seconds into it",
+                "mark a moment on a member that plays a loop",
+                given=member,
+                allowed=sorted(named),
+            )
+        found.append({"member": member, "at": round(float(at), 2),
+                      "motion": named[member]["motion"]})
+    return found
 
 
 def _shapes(members: list[dict], marks: list) -> list[tuple[dict, list]]:

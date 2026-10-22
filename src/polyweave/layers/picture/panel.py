@@ -1629,6 +1629,9 @@ def capture(
         int, Param("screen pixels to one of a panel's", lo=1, hi=8)
     ] = 2,
     sizes: Annotated[list, Param("[w, h]s in panel pixels to film each state at")] = (),
+    loop: Annotated[
+        bool, Param("also write each wipe as a muted .capture.mp4 a sitting plays")
+    ] = False,
     root: Annotated[str, Param("the project the panels belong to")] = ".",
 ) -> dict:
     """Film each panel's shader in each state, and each wipe at each progress step.
@@ -1638,7 +1641,9 @@ def capture(
     step as <wipe>.<step>.capture.png, each recorded, for a spec to hold and a person to
     judge. With `sizes`, each state is filmed once per size instead, as
     <name>.<state>.<w>x<h>.capture.png, which is how the shader draws the panel grown.
-    Needs a display, as `capture.movie` does.
+    With `loop`, each wipe's film is also <wipe>.capture.mp4, a sitting member's
+    `motion`, since a wipe is judged moving (§PW600). Needs a display, as
+    `capture.movie` does.
     """
     import shutil
 
@@ -1651,6 +1656,7 @@ def capture(
     folder = config.path("paths.work", out)
     work = config.path("paths.work") / "panel-film"
     taken: dict[str, dict] = {}
+    loops: dict[str, str] = {}
     films = [
         (name, list(states), [states[s]["material"] for s in states],
          w * scale, h * scale, None, f".{w}x{h}" if asked else "")
@@ -1711,5 +1717,11 @@ def capture(
                 params=params, root=config.root,
             ), config.root)
             taken[name][label + sized] = provenance.relative(still, config.root)
+        if loop and wiping:
+            played = filming.looped(sorted((work / f"{name}{sized}").glob("*.png")),
+                            int(load(root).get("engine.fixed_fps")),
+                            folder / f"{name}.capture.mp4")
+            loops[name] = provenance.relative(played, config.root)
         shutil.rmtree(work / f"{name}{sized}", ignore_errors=True)
-    return {"source": built["source"], "stills": taken}
+    return {"source": built["source"], "stills": taken,
+            **({"loops": loops} if loops else {})}

@@ -466,6 +466,10 @@ def shots(
     hide: Annotated[
         list, Param("node paths hidden while framing, as a cutscene hides its HUD")
     ] = None,
+    loop: Annotated[
+        int, Param("frames a second of a loop of the whole clip played on the page; "
+                   "0 for none", lo=0, hi=30)
+    ] = 0,
     root: Annotated[str, Param("the project the clip belongs to")] = ".",
 ) -> dict:
     """Frame every shot of a camera clip in the running game and lay them out to judge.
@@ -480,7 +484,9 @@ def shots(
     each anchor found by name or by `anchors`, so a cutscene reached through menus is
     framed with no driving to it (§PW591). Every frame is recorded with the clip, the
     shot and the game it was framed in, and `keep` writes a chosen shot to a path of
-    its own with that record, which capture.again frames again (§PW597).
+    its own with that record, which capture.again frames again (§PW597). `loop` films
+    the whole clip at that rate as a muted MP4 the page plays beside the shots, since a
+    move is judged moving (§PW600).
     """
     from polyweave.layers.engine import driving
     from polyweave.loop import verdict
@@ -538,6 +544,7 @@ def shots(
                 framed = {**call, "environment": environment}
                 records.append(_shot_record(at, one, framed, where, clip, config.root))
             taken.append(one)
+        played = _filmed(session, camera, declared, loop, folder, bool(clip), root)
     finally:
         driving.set_value(session, path=camera, prop="pinned", value="-1", root=root)
         for node in hide or ():
@@ -548,6 +555,10 @@ def shots(
     members = [{"name": f"shot {one['shot']}" + (f" ({one['mark']})" if one["mark"]
                                                    else ""),
                 "new": one["picture"]} for one in taken]
+    if played:
+        # The whole move, played, ahead of the shots it passes through (§PW600).
+        members.insert(0, {"name": "the whole clip", "new": taken[0]["picture"],
+                           "motion": provenance.relative(played, config.root)})
     laid = verdict.sitting(
         {declared["name"]: members}, out=str(folder), root=str(config.root),
         about=f"Each shot of {source}, framed in the running game "
@@ -555,10 +566,35 @@ def shots(
     )
     return {"source": source, "shots": taken, "sitting": laid["manifest"],
             "page": laid["page"], "records": records,
+            **({"loop": provenance.relative(played, config.root)} if played else {}),
             "says": f"{len(taken)} shot(s) of {declared['name']} to judge at "
                     f"{laid['page']}"
                     + "".join(f"; shot {one['shot']} kept at {one['kept']}"
                               for one in taken if one.get("kept"))}
+
+
+def _filmed(session: str, camera: str, declared: dict, fps: int, folder: Path,
+            seeks: bool, root: str) -> Path | None:
+    """The whole clip pinned frame by frame and encoded as a loop, or None at 0 fps."""
+    from polyweave.layers.engine import driving
+    from polyweave.layers.engine.capture import looped
+
+    if not fps:
+        return None
+    total = sum(shot["hold"] for shot in declared["shots"])
+    count = max(2, round(total * fps))
+    frames = []
+    for index in range(count):
+        when = index / fps
+        driving.set_value(session, path=camera, prop="pinned", value=str(when),
+                          root=root)
+        if seeks:
+            driving.called(session, path=camera, method="seek", args=[when], root=root)
+        driving.stepped(session, frames=1, root=root)
+        frame = folder / "loop" / f"{index:05d}.png"
+        driving.shot(session, out=str(frame), root=root)
+        frames.append(frame)
+    return looped(frames, fps, folder / f"{declared['name']}.mp4")
 
 
 def _kept(keep: dict | None, count: int, here: Path) -> dict[int, Path]:

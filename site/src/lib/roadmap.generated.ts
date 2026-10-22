@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
-  { block: "O", title: "A person sees and answers", open: 2 },
+  { block: "O", title: "A person sees and answers", open: 1 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW600",
-    block: "O",
-    symptom: "the review page shows a still or a sheet where the look is motion, and has no video to play a loop",
-    why: "clip.shots, panel.capture and capture.movie with video.cut still write no loop for their sittings, and a look verdict cannot name the moment.",
-    deps: [],
-  },
   {
     id: "PW601",
     block: "O",

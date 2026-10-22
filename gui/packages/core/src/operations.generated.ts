@@ -208,6 +208,8 @@ export interface ClipShotsArgs {
   keep?: Record<string, unknown>
   /** node paths hidden while framing, as a cutscene hides its HUD */
   hide?: unknown[]
+  /** frames a second of a loop of the whole clip played on the page; 0 for none; from 0 to 30; default 0 */
+  loop?: number
   /** the project the clip belongs to; default "." */
   root?: string
 }
@@ -1226,6 +1228,8 @@ export interface PanelCaptureArgs {
   scale?: number
   /** [w, h]s in panel pixels to film each state at; default [] */
   sizes?: unknown[]
+  /** also write each wipe as a muted .capture.mp4 a sitting plays; default false */
+  loop?: boolean
   /** the project the panels belong to; default "." */
   root?: string
 }

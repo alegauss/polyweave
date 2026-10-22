@@ -33,6 +33,8 @@
     "mark_help": "Arraste sobre a imagem para desenhar uma caixa em volta do problema.",
     "mark_alt": "{name}, para marcar onde está errado",
     "clear_marks": "Limpar marcas",
+    "mark_moment": "Marcar este momento como errado",
+    "moments": "Momentos marcados: {at}.",
     "details": "Detalhes técnicos",
     "passes": "passa",
     "fails": "falha",

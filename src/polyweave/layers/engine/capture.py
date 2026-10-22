@@ -695,6 +695,41 @@ def _movie_sized(here: Path, asked: dict):
         target.unlink(missing_ok=True)
 
 
+def looped(frames: list[Path], fps: float, target: Path) -> Path:
+    """Frames as a short muted loop the review page plays, H.264 in an MP4 (§PW600).
+
+    Even sides and yuv420p, which every browser decodes; no sound, so it may start on
+    its own.
+    """
+    import shutil
+    import subprocess
+    import tempfile
+
+    encoder = shutil.which("ffmpeg")
+    if not encoder:
+        raise PolyweaveError(
+            "capture.no-ffmpeg", f"there is no ffmpeg on PATH to encode {target.name}",
+            "install ffmpeg and put it on PATH, or leave loop out",
+        )
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory() as scratch:
+        for index, frame in enumerate(frames):
+            shutil.copyfile(frame, Path(scratch) / f"{index:05d}.png")
+        said = subprocess.run(
+            [encoder, "-y", "-loglevel", "error", "-framerate", f"{fps:g}",
+             "-i", str(Path(scratch) / "%05d.png"), "-an", "-c:v", "libx264",
+             "-pix_fmt", "yuv420p", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+             "-movflags", "+faststart", str(target)],
+            capture_output=True, text=True, check=False,
+        )
+    if said.returncode != 0 or not target.is_file():
+        raise PolyweaveError(
+            "capture.no-ffmpeg", f"ffmpeg did not write the loop {target.name}",
+            "read the detail, which is what ffmpeg said", detail=said.stderr[-2000:],
+        )
+    return target
+
+
 @operation("capture.movie", kind="capture")
 def movie(
     script: Annotated[str, Param("the scene script that flies the shot")],

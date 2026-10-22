@@ -417,6 +417,12 @@ CODES: dict[str, Code] = {
         "and no [engine] fixed_fps",
         doors=("pass fps", "capture with capture.movie, whose sequence.json says it"),
     ),
+    "capture.no-ffmpeg": Code(
+        means="a loop for the review page is encoded with ffmpeg, and it is not here",
+        when="clip.shots given loop, or panel.capture given loop, with no ffmpeg on "
+        "PATH (§PW600)",
+        doors=("install ffmpeg and put it on PATH", "leave loop out"),
+    ),
     "capture.unrecorded": Code(
         means="a picture capture.again was asked to take again has no record of how "
         "it was taken",

@@ -349,6 +349,28 @@ def test_a_kept_shot_is_framed_again_from_its_record(tmp_path, monkeypatch):
     assert sent[-1] == ("close", "g9")
 
 
+def test_a_loop_of_the_whole_clip_is_played_first_in_the_sitting(tmp_path, monkeypatch):
+    """§PW600: a camera move was judged from stills of it."""
+    import json
+    import shutil
+
+    if not shutil.which("ffmpeg"):
+        pytest.skip("no ffmpeg on this machine")
+    sent = []
+    _framing(monkeypatch, sent)
+    said = camera.shots(clip_file(tmp_path), clip="cinema/opening.tscn", loop=4,
+                        out=".polyweave/w", root=str(tmp_path))
+    assert said["loop"] == ".polyweave/w/opening.mp4"
+    assert (tmp_path / said["loop"]).stat().st_size > 0
+    # 1.5 s of clip at 4 a second, each pinned.
+    pinned = ("set", "/root/Main/opening", "pinned")
+    pins = [one[3] for one in sent if one[:3] == pinned]
+    assert pins[2:8] == ["0.0", "0.25", "0.5", "0.75", "1.0", "1.25"]
+    laid = json.loads((tmp_path / said["sitting"]).read_text("utf-8"))
+    first = laid["families"]["opening"]["members"][0]
+    assert first["motion"] == ".polyweave/w/opening.mp4"
+
+
 def test_keep_naming_a_shot_the_clip_has_not_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         camera.shots(clip_file(tmp_path), session="g1", camera="Camera", out="o",

@@ -33,6 +33,8 @@
     "mark_help": "Drag over the picture to draw a box around the problem.",
     "mark_alt": "{name}, to mark where it is wrong",
     "clear_marks": "Clear marks",
+    "mark_moment": "Mark this moment as wrong",
+    "moments": "Moments marked: {at}.",
     "details": "Technical details",
     "passes": "passes",
     "fails": "fails",

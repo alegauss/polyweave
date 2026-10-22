@@ -945,6 +945,12 @@ KERNEL_CODES: dict[str, Code] = {
         "§PW547) and the accept carried no member, or one not in it",
         doors=("pass member, the name of the alternative the person picked",),
     ),
+    "loop.bad-moment": Code(
+        means="a moment marked on an answer is not a time in a member's loop",
+        when="the page's answer carrying a moment on a member with no motion, or a "
+        "time that is not a number of seconds from zero (§PW600)",
+        doors=("mark a moment on a member that plays a loop",),
+    ),
     "loop.unknown-choice": Code(
         means="a verdict is none of the things a person says of a family",
         when="a choice other than accept, look or number (§PW109)",

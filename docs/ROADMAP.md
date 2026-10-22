@@ -30,7 +30,6 @@
 
 ## Block O — A person sees and answers
 
-- ⏳ **PW600** (deps: —) **the review page shows a still or a sheet where the look is motion, and has no video to play a loop** — clip.shots, panel.capture and capture.movie with video.cut still write no loop for their sittings, and a look verdict cannot name the moment. → §PW600
 - 📋 **PW601** (deps: —) **a model's sitting shows it from fixed angles only, so a person never turns it to see its other sides** — A diorama's underside or a tower's back is judged by nobody until the game turns it, though its .glb is built beside it. → §PW601
 
 ## Block P — Music and sound a game can ship
@@ -116,15 +115,6 @@
 - **Cottony keeps no mesh preparation of its own** tools/art/prep.py and export_props,
   export_boosters and export_friends are gone from Cottony, its families name prepare
   steps through fixes, and project.adoption lists none of them as kept.
-
-## Done when — PW600
-
-- **clip.shots and panel.capture lay a loop beside their stills** Each sitting they
-  write has a member carrying motion, an .mp4 or .webm cut from what they already film,
-  and the review page plays it.
-- **A look verdict on a loop names the moment that is wrong** The page's answer on a
-  motion member carries a time into the loop, and the verdict keeps it, so a fix knows
-  which moment the person meant.
 
 ## Non-goals
 
