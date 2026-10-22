@@ -102,6 +102,29 @@ stays a test.
 
 ## Block I — Voxel models from a declaration
 
+### §PW596 A voxel grid trimmed to the cells it keeps
+
+Met in Spinhold (RK250) on 2026-10-22, building `art/voxels/bow_diorama.toml`: a curved
+slab of a ring, made as a drum cylinder 36.8 across, carved by a bore and by two cutter
+cubes to the slice that stays. `geometry.build` answered `a voxel model 43 by 70 by 62`
+with `extent: [25.8, 42.0, 37.2]` and `origin: [-12.27, -7.4, -18.6]`, but the cells it
+kept lie in y 1..38 and z 18..43 of that grid: the box is sized over the uncarved drum
+and the cutters, not over what is left.
+
+So everything that centres a model on its box puts this one off its middle. Spinhold's
+`VoxelLook` draws a model centred on `origin + size * cell / 2`, as an actor's mesh is,
+and the diorama stands about 5 units low and 4 units back of where it was placed. The
+`extent` check compares against the same padded box, so it cannot catch it either, and
+the `.glb` is right while the cells are not, so the two disagree.
+
+Workaround in Spinhold: the map works out the middle of the kept cells itself in
+`RindMap`, a few lines that belong to polyweave.
+
+What polyweave should do: once the cells are made, trim the grid to the cells kept, so
+`size`, `origin` and `extent` describe the model and not the nodes that made it, as the
+`.glb` already does. A test: a cube carved by a larger cube answers the box of what is
+left.
+
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source

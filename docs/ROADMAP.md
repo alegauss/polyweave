@@ -18,6 +18,8 @@
 
 ## Block I — Voxel models from a declaration
 
+- 📋 **PW596** (deps: —) **a voxel model's grid spans the uncarved primitives and the cutters, so a model centred on its box sits off its middle** — A carved diorama is drawn units off where a game places it, and its extent check reads the same padded box. → §PW596
+
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
