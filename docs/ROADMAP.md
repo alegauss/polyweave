@@ -30,6 +30,8 @@
 
 ## Block M — What a game needs beyond the look
 
+- 📋 **PW598** (deps: —) **vfx.preview's stills show one particle frozen in place across the life, so a person never sees the effect move** — An effect's sitting shows a dot where the game plays a spray, so nobody can accept or refuse its look from the sheet. → §PW598
+
 ## Block N — Pictures held to a canon
 
 ## Block O — A person sees and answers

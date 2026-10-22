@@ -183,6 +183,28 @@ verdict, and each gap it met is a filed line.
 
 ## Block M — What a game needs beyond the look
 
+### §PW598 vfx.preview films the effect alive, framed by its reach
+
+Met in Spinhold (RK261) on 2026-10-22, previewing the world dioramas' effects for the
+owner's sitting: `python -m polyweave vfx.preview --source art/vfx/dioramas.vfx.toml
+--out art/review/rk261-diorama-life`. It answered six sheets with `frames: 289` and the
+like, but every still on a sheet shows the same single particle in the same place, from
+t = 0 to the end of the life: sparks that spray and fall read as one white dot, smoke
+that rises and swells as one dark dot. A control on an effect the project already ships,
+`--source art/vfx/quilt.vfx.toml --effect quilt_twinkles`, does the same: one gold
+flake, drawn as a plain square, frozen in one spot across all six stills.
+
+The same effects play in the game: on the Rind map the Bow's sparks spray from the
+cradle as declared. So the build is right and the preview films something else: the
+particles not advancing between stills, or only the first emitted, and the `shape`
+texture not applied.
+
+What polyweave should do: film the effect's scene advancing in real process time (or by
+`preprocess` / a fixed step per still), so each still shows the particles alive at that
+moment, every one of `amount`, with their `shape` drawn; and frame the effect by its
+measured `reach` so a map-sized effect (reach 0.3 m) fills the frame as a 6 m one does.
+A test: a burst's six stills differ, and the last shows fewer particles than the third.
+
 ## Block N — Pictures held to a canon
 
 ### §PW450 Buying a picture from Scenario
