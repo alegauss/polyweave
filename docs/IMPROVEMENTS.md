@@ -422,6 +422,24 @@ this line.
 
 ## Block S — Playing the game, not only rendering it
 
+### §PW599 game.set converts a list to the property's vector type
+
+Met in Spinhold (RK261) on 2026-10-22, moving the Rind map's camera up to an island to
+capture its effects: `game.set` on `/root/Main/RouteScreen/.../Camera` with `prop =
+position` and `value = [10.8, 0.7, -1.6]` answered `{"now": [0, 0, 0], "was": [0, 2.2,
+15.5]}`, and the camera went to the origin. `"Vector3(10.8, 0.7, -1.6)"` did the same.
+`rotation` with `[-0.3, 0, 0]` likewise zeroed the rotation. No refusal, no warning: the
+answer's `now` is the only sign, and it reads like a success.
+
+Setting each component worked: `position:x` = 10.8, `position:y`, `position:z`,
+`rotation:x`, four calls in place of two.
+
+What polyweave should do: `game.set` converts a JSON list to the property's own type
+where it is a vector, colour, rect or basis (Vector2/3/4, Color, Rect2, Quaternion), as
+the property's type says, and a value it cannot convert is refused with the type it
+wanted, never written as zero. A test: set a Node3D's position to [1, 2, 3] and read it
+back.
+
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs
