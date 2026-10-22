@@ -64,8 +64,6 @@
 
 ## Block X — The site on the shared design system
 
-- 📋 **PW605** (deps: —) **The depth pages describe finished blocks as plans, and the agent page says "No GUI, ever" beside a desktop window** — A reader meets a format "deliberately unwritten" that motion.md specifies, and copy that the landing page's own review section contradicts. → §PW605
-
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The

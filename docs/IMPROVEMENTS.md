@@ -515,17 +515,3 @@ take is read off that code rather than invented here.
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system
-
-### §PW605 The site's prose read against what shipped
-
-The seven depth pages in `features.ts` were written while blocks A to G were open:
-motion is "the shortest block, each line waiting on the one before", its curve format is
-"deliberately unwritten", the noise floor is something "the first implementation has to
-demonstrate". Every one of those blocks is finished, so each sentence is restated as
-what the block does. The agent page's "No GUI, ever" contradicts the review page and the
-desktop window the landing page shows; it becomes the non-goal it was quoting, a
-graphical editor, with the review surfaces named as where a person answers. Its spending
-section names every paid service rather than one. The words the landing page uses for a
-layer are made one set: images rather than pictures, the ten layers listed the same way
-in the description, the cards and llms.txt, and the sponsor copy in llms.txt matching
-the page's.

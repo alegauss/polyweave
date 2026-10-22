@@ -36,7 +36,7 @@ optional, and `capabilities()` says which tools this machine has.
 
 ## What Claude Code gains
 
-- **Hands on every tool**: Blender, Godot and the 3D, picture, sound and voice generators
+- **Hands on every tool**: Blender, Godot and the 3D, image, sound and voice generators
   through one set of calls.
 - **Eyes and ears**: a render returns its measurements (silhouette, colour, contrast, how
   it reads at display size); a sound returns loudness, clipping and loop seams.
@@ -56,7 +56,7 @@ optional, and `capabilities()` says which tools this machine has.
   spend quoted and written in a ledger.
 - **Provenance**: every artefact records the model, prompt, seed, cost and licence that
   made it; credits are written from that record.
-- **Kits**: menus, settings, saves, input, co-op and accessibility, installed into a
+- **Kits**: menus, settings, saves, controls, co-op and accessibility, installed into a
   project already tested.
 
 ## Non-goals
@@ -70,7 +70,7 @@ game's story for it.
 ## Layout
 
 - `src/polyweave`: the plugin, in Python. `plugin/`: what Claude Code installs.
-- `docs/specs/`: the contracts more than one feature depends on.
+- `docs/specs/`: the contracts more than one roadmap line depends on.
 - `docs/ROADMAP.md`, `docs/CHANGELOG.md`, `docs/IMPROVEMENTS.md`: governed by
   [roadkeep](https://github.com/alegauss/roadkeep). What is still open is in the roadmap.
 - `site/`: this site.
@@ -80,10 +80,10 @@ game's story for it.
 Sponsored by **Viglet** (https://www.viglet.org). Open source search and content tools for
 organisations with a lot to publish. Run on your own servers, with no per-user licence.
 
-- **Viglet Turing** (https://turing.viglet.org). Search for sites with a lot of content,
-  with AI answers drawn only from your own published content.
-- **Viglet Shio** (https://shio.viglet.org). A content system that takes the page out
-  of the development queue, with every version kept.
+- **Viglet Turing** (https://turing.viglet.org), so visitors find what they came for,
+  with AI answers drawn only from your own content.
+- **Viglet Shio** (https://shio.viglet.org), so a new page goes live the same day,
+  reviewed and approved by your own team.
 
 ## Links
 

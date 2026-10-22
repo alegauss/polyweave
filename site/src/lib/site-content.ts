@@ -40,7 +40,7 @@ export type IconName =
 export const meta = {
   title: "polyweave — a Claude Code plugin that makes your game's parts",
   description:
-    "AI generators guess and leave the checking to you. With polyweave, each part of your game starts as a short file saying what correct means; Claude Code drives Blender, Godot and AI generators to make it, measures every result against that file, tunes until it passes, and only then asks you to approve it. 3D models, pictures, sound, music, voices, words, levels and game kits.",
+    "AI generators guess and leave the checking to you. With polyweave, each part of your game starts as a short file saying what correct means; Claude Code drives Blender, Godot and AI generators to make it, measures every result against that file, tunes until it passes, and only then asks you to approve it. 3D models, images, music, sound, effects, voices, words, levels, animation and game kits.",
   og: {
     title: "polyweave",
     description:
@@ -158,7 +158,7 @@ export const different = {
   columns: ["Kind of tool", "What it gives you", "What it leaves to you"],
   rows: [
     {
-      kind: "AI generators for 3D, pictures, sound and voice",
+      kind: "AI generators for 3D, images, sound and voice",
       gives: "A part from a prompt, in seconds.",
       leaves: "Checking it against your drawing and your style, and the cleanup when it misses.",
     },
@@ -195,7 +195,7 @@ export const different = {
       icon: "spark",
       title: "One loop for every layer",
       body: [
-        "Models, pictures, sound, words and levels share one config, one record and one review page, so a game's parts are judged together, not tool by tool.",
+        "Models, images, sound, words and levels share one config, one record and one review page, so a game's parts are judged together, not tool by tool.",
       ] as Rich,
     },
     {
@@ -222,7 +222,7 @@ export const gains = {
     {
       icon: "hand",
       title: "Hands on every tool",
-      body: "Drives Blender, Godot and the 3D, picture, sound and voice generators through one set of calls, each tool in its own language.",
+      body: "Drives Blender, Godot and the 3D, image, sound and voice generators through one set of calls, each tool in its own language.",
     },
     {
       icon: "eye",
@@ -305,7 +305,7 @@ export const steps = {
       n: "2",
       title: "Make",
       body: [
-        "polyweave picks up the right tool and drives it: Blender, Godot, a 3D or picture generator, a synth or a voice.",
+        "polyweave picks up the right tool and drives it: Blender, Godot, a 3D or image generator, a synth or a voice.",
       ] as Rich,
     },
     {
@@ -399,7 +399,7 @@ export const session = {
   note: [
     "Each command is a real operation, the same one Claude Code calls as an MCP tool; ",
     { code: "docs/specs/tool-surface.md" },
-    " fixes; the values are illustrative.",
+    " says how every call behaves. The values are illustrative.",
   ] as Rich,
   more: "How polyweave is built for an agent",
 };
@@ -414,7 +414,7 @@ export const middle = {
   ] as Rich,
   groups: [
     { label: "3D", names: ["Blender", "Meshy"] },
-    { label: "Pictures", names: ["FLUX", "Ideogram"] },
+    { label: "Images", names: ["FLUX", "Ideogram"] },
     { label: "Sound and music", names: ["sfxr", "MIDI"] },
     { label: "Voice", names: ["ElevenLabs"] },
     { label: "Game engine", names: ["Godot"] },
@@ -580,8 +580,8 @@ export const claudeCode = {
       heading: "What follows from it",
       list: [
         [
-          { b: "No GUI, ever." },
-          " A surface that needs a person at a screen to operate is one the agent cannot use at all. That is the first non-goal, and it is the reason for most of the others.",
+          { b: "Nothing only a person can operate." },
+          " A graphical editor is the first non-goal, because a surface that needs a person at a screen is one the agent cannot use. The review page and the desktop window are where a person looks and answers: they edit nothing, and their one write is the verdict.",
         ] as Rich,
         [
           { b: "A file beats a stream." },
@@ -608,9 +608,9 @@ export const claudeCode = {
     {
       heading: "The one thing it may not decide",
       body: [
-        "A fetch from the generative service spends real money, and the plugin will not let an agent authorise that on its own judgement. What it does instead is make the spend bounded and visible: a ceiling in ",
+        "A purchase from a paid service — a mesh, an image, a voice line, a sound — spends real money, and the plugin will not let an agent authorise that on its own judgement. What it does instead is make the spend bounded and visible: a ceiling in ",
         { code: "polyweave.toml" },
-        " that a person sets, a ledger of what has been spent against it, and a silhouette gate that refuses a request which plainly will not match the reference — because the cheapest credit is the one not spent. An agent can work continuously inside that ceiling without asking, and cannot move it.",
+        " that a person sets, a quote before every spend, a ledger of what has been spent against it, and a gate that refuses a request which plainly will not match the reference — because the cheapest credit is the one not spent. An agent can work continuously inside that ceiling without asking, and cannot move it.",
       ] as Rich,
     },
     {

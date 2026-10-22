@@ -48,7 +48,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
-  { block: "X", title: "The site on the shared design system", open: 1 },
+  { block: "X", title: "The site on the shared design system", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -127,13 +127,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "S",
     symptom: "game.set given a vector as a JSON list writes it as zero and answers as if it worked",
     why: "A camera or node moved for a capture lands at the origin, found only by reading now in the answer.",
-    deps: [],
-  },
-  {
-    id: "PW605",
-    block: "X",
-    symptom: "The depth pages describe finished blocks as plans, and the agent page says \"No GUI, ever\" beside a desktop window",
-    why: "A reader meets a format \"deliberately unwritten\" that motion.md specifies, and copy that the landing page's own review section contradicts.",
     deps: [],
   },
 ];

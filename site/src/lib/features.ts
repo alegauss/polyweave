@@ -143,7 +143,9 @@ export const features: FeatureRecord[] = [
       {
         heading: "Equality is the wrong question",
         body: [
-          "Two runs of one unchanged Cottony scene differed in 29,696 pixels, none of them by more than 1/255. That is the noise floor any usable distance metric has to sit above, and the first implementation has to demonstrate the separation on that case rather than assert it.",
+          "Two runs of one unchanged Cottony scene differed in 29,696 pixels, none of them by more than 1/255. That is the noise floor any usable distance has to sit above, so ",
+          { code: "measure.same" },
+          " answers whether two renders are the same picture with a tolerance above it, never with equality.",
         ],
       },
     ],
@@ -255,7 +257,9 @@ export const features: FeatureRecord[] = [
       {
         heading: "The sprite grid is declared once",
         body: [
-          "A baked sprite and the running game agree on scale today because somebody set a render rectangle to match a cell size the game holds separately, and nothing fails if either moves. One declaration both sides read is the difference between an agreement and a coincidence.",
+          "Left to a person, a baked sprite and the running game agree on scale because somebody set a render rectangle to match a cell size the game holds separately, and nothing fails if either moves. So the engine's scale is read from the constant the game itself keeps, and ",
+          { code: "render.bake" },
+          " checks a sprite's declared size against it before it renders. One declaration both sides read is the difference between an agreement and a coincidence.",
         ],
       },
       {
@@ -277,7 +281,9 @@ export const features: FeatureRecord[] = [
     eyebrow: "Block F",
     heading: "Motion",
     lead: [
-      "Every generative mesh arrives as a static surface, and rigging one by hand is the step that keeps character animation out of reach entirely. This block is the shortest on the roadmap and the most dependent: each line waits on the one before it.",
+      "Every generative mesh arrives as a static surface, and rigging one by hand is the step that kept character animation out of reach entirely. So a skeleton is fitted to the mesh, a clip is written once as text, and ",
+      { code: "motion.bake" },
+      " fits, weights, compiles and bakes it on that mesh by name.",
     ],
     sections: [
       {
@@ -289,7 +295,11 @@ export const features: FeatureRecord[] = [
       {
         heading: "A curve is text or it is unreachable",
         body: [
-          "A timing change inside a binary track is invisible in a diff and unreachable by an edit, which makes every adjustment a re-export from a tool nobody scripted. The format is deliberately unwritten until the skeleton decisions are made, because a format written before them would be guessing.",
+          "A timing change inside a binary track is invisible in a diff and unreachable by an edit, which makes every adjustment a re-export from a tool nobody scripted. A clip and its curves are TOML instead, so a retime is one edit a diff shows, and ",
+          { code: "clip.retime" },
+          " and ",
+          { code: "clip.set_key" },
+          " make it as a new clip.",
         ],
       },
       {
@@ -330,7 +340,9 @@ export const features: FeatureRecord[] = [
       {
         heading: "The escape hatch is part of the design",
         body: [
-          "Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced. A declaration that cannot express a shape has to leave a way back to code, and saying so now is cheaper than discovering it later.",
+          "Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced. So the way back to code is a node, not a mode: a ",
+          { code: "custom" },
+          " node names a function in the project, and the rest of the declaration stays data around it.",
         ],
       },
     ],
