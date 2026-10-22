@@ -41,6 +41,26 @@ def test_the_counts_say_which_engine_each_skip_was_for(gate, tmp_path):
     assert found["skipped_for"] == {"Blender": 2, "Godot": 1, "Audio": 0}
 
 
+def test_the_tests_skipped_for_godot_are_named_to_run_again_alone(gate, tmp_path):
+    """The VMware guest crashed with two Godot windows drawing at once, so its gate
+    runs them one at a time after the rest (tools/gate-guest.cmd)."""
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_vfx.py").write_text("", encoding="utf-8")
+    report = tmp_path / "junit.xml"
+    report.write_text(
+        '<testsuites><testsuite>'
+        '<testcase classname="tests.test_vfx" name="test_a[x]">'
+        '<skipped message="no $GODOT on this machine"/></testcase>'
+        '<testcase classname="tests.test_vfx.TestFilm" name="test_b">'
+        '<skipped message="no $GODOT on this machine"/></testcase>'
+        '<testcase classname="tests.test_vfx" name="test_c">'
+        '<skipped message="could not import bpy"/></testcase>'
+        '<testcase classname="tests.test_vfx" name="test_d"/>'
+        '</testsuite></testsuites>', encoding="utf-8")
+    assert gate.skipped_for_godot(report) == [
+        "tests/test_vfx.py::test_a[x]", "tests/test_vfx.py::TestFilm::test_b"]
+
+
 #: What xdist printed on 2026-10-17, the one crash in the kept red logs (§PW524).
 CRASH = (
     "[gw5] node down: Not properly terminated\n"

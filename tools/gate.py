@@ -274,18 +274,44 @@ def runs(argv: list[str]) -> list[list[str]]:
     With xdist here and no `-n` or `-m` chosen, every test not marked `serial` runs on
     every core, then the `serial` ones alone: a test that measures frame times reads the
     machine's load, and Godot's launch proof measured 120 ms frames against its 100 ms
-    budget with 28 workers beside it.
+    budget with 28 workers beside it. `POLYWEAVE_GATE_WORKERS` caps the cores and keeps
+    the serial pass.
     """
     chosen = any(one.startswith(("-n", "--numprocesses", "-m")) for one in argv)
     off = "no:xdist" in argv
     if chosen or off or importlib.util.find_spec("xdist") is None:
         return [list(argv)]
-    return [["-n", "auto", "-m", "not serial", *argv], ["-m", "serial", *argv]]
+    workers = os.environ.get("POLYWEAVE_GATE_WORKERS") or "auto"
+    return [["-n", workers, "-m", "not serial", *argv], ["-m", "serial", *argv]]
 
 
 #: pytest's exit code where a run collected nothing, which a serial pass over files
 #: holding no serial test is, and is not a failure.
 NOTHING_COLLECTED = 5
+
+
+def skipped_for_godot(report: Path) -> list[str]:
+    """The node ids of the tests a run skipped for want of Godot, off its JUnit report.
+
+    JUnit names a test by a dotted classname, which is its module or its module and
+    class, and its own name; the module is the dotted path that is a file.
+    """
+    if not report.is_file():
+        return []
+    found = []
+    for case in ET.parse(report).getroot().iter("testcase"):
+        skip = case.find("skipped")
+        said = "" if skip is None else (skip.get("message", "") + (skip.text or ""))
+        if not any(word in said.lower() for word in ENGINES["Godot"]):
+            continue
+        parts = case.get("classname", "").split(".")
+        for cut in range(len(parts), 0, -1):
+            module = Path(*parts[:cut]).with_suffix(".py")
+            if (ROOT / module).is_file():
+                found.append("::".join([module.as_posix(), *parts[cut:],
+                                        case.get("name", "")]))
+                break
+    return found
 
 
 def main(argv: list[str]) -> int:
@@ -303,8 +329,14 @@ def main(argv: list[str]) -> int:
             stale.unlink(missing_ok=True)
         codes = []
         began = time.time()
+        # Godot's tests alone, after the rest ran on every core without it: in the
+        # VMware guest two Godot windows drawing at once take the guest's graphics
+        # driver, and the guest, down (tools\gate-guest.cmd).
+        alone = bool(os.environ.get("POLYWEAVE_GATE_GODOT_ALONE")) and len(planned) > 1
+        without = {k: v for k, v in os.environ.items() if k != "GODOT"}
+        rerun: list[str] = []
         with log.open("w", encoding="utf-8") as out:
-            for args, report in zip(planned, reports, strict=True):
+            for index, (args, report) in enumerate(zip(planned, reports, strict=True)):
                 out.flush()
                 codes.append(subprocess.run(
                     [sys.executable, "-m", "pytest", f"--junitxml={report}", *args],
@@ -312,6 +344,20 @@ def main(argv: list[str]) -> int:
                     stdout=out,
                     stderr=subprocess.STDOUT,
                     check=False,
+                    env=without if alone and index == 0 else None,
+                ).returncode)
+            if alone:
+                rerun = skipped_for_godot(reports[0])
+            if rerun:
+                listed = HERE / "godot-alone.txt"
+                listed.write_text("\n".join(rerun) + "\n", encoding="utf-8")
+                reports.append(HERE / "junit-godot.xml")
+                out.write(f"\n{len(rerun)} Godot tests, one at a time\n")
+                out.flush()
+                codes.append(subprocess.run(
+                    [sys.executable, "-m", "pytest", f"--junitxml={reports[-1]}",
+                     f"@{listed}"],
+                    cwd=ROOT, stdout=out, stderr=subprocess.STDOUT, check=False,
                 ).returncode)
         ran = [c for c in codes if not (c == NOTHING_COLLECTED and len(codes) > 1)]
         tested = next((c for c in ran if c), 0) if ran else NOTHING_COLLECTED
@@ -319,6 +365,10 @@ def main(argv: list[str]) -> int:
         proved = kits()
         failed = (tested or (gui.get("exit", 0) and 1)
                   or (proved["failed"] and 1))
+        total = summed([counts(report) for report in reports])
+        # A test run again alone was skipped once first, and is counted by its rerun.
+        total["skipped"] -= len(rerun)
+        total["skipped_for"]["Godot"] -= len(rerun)
         stamp = {
             "commit": commit(),
             "exit": failed,
@@ -327,7 +377,7 @@ def main(argv: list[str]) -> int:
             "at": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "log": log.relative_to(ROOT).as_posix(),
             "present": present(),
-            **summed([counts(report) for report in reports]),
+            **total,
         }
         died = crashed(log, began, HERE)
         if died["tests"]:
