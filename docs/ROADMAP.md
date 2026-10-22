@@ -37,6 +37,7 @@
 ## Block O — A person sees and answers
 
 - 📋 **PW600** (deps: —) **the review page shows a still or a sheet where the look is motion, and has no video to play a loop** — A person cannot judge a flight, a filling bar, a turning island or smoke from stills, so motion sittings go unanswered. → §PW600
+- 📋 **PW601** (deps: —) **a model's sitting shows it from fixed angles only, so a person never turns it to see its other sides** — A diorama's underside or a tower's back is judged by nobody until the game turns it, though its .glb is built beside it. → §PW601
 
 ## Block P — Music and sound a game can ship
 
