@@ -18,8 +18,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW610** (deps: —) **a built model cannot be made into a small picture of itself, so a palette tile or bestiary entry is cropped by hand** — Each such picture is rendered at some angle by hand and goes stale the day its model changes, with nothing to report it. → §PW610
-
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source

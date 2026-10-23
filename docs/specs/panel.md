@@ -252,3 +252,34 @@ With `sitting`, on by default, the set waits on the review page at its largest s
 since whether it reads as the pad's own button is a person's to say. A declaration that
 cannot be drawn (an unknown shape or key, a size out of range, no icon) is
 `compose.bad-icons`.
+
+### An icon rendered from a model
+
+A palette tile, an inventory slot, a bestiary entry or a map marker is a small picture of
+a model the project built (§PW610), and cropping a render by hand leaves it stale the day
+the model changes. So an icon may name a `model` instead of a `shape`: a `.glb`, `.gltf`
+or `.fbx` under the project, a geometry build's output or a mesh ingested. Beside it:
+
+- `view`: `three_quarter` (the rig's own camera, azimuth 35, elevation 20, the default),
+  `front` or `side`; `azimuth` and `elevation`, in degrees, override it, which is how an
+  icon takes the game's own camera; `focal_mm` too;
+- `margin`, the room around the subject, as `render.bake` takes it (1.15 by default);
+- `light`, a table of any of `render.bake`'s `key`, `fill`, `rim`, `ambient`,
+  `ambient_colour`, `exposure` and `light_distance`;
+- `background`, `"#RRGGBB"` laid behind it, or `"transparent"`, the default;
+- `rung`, the render rung, `final` unless named.
+
+Shape keys (`fill`, `symbol`, the style) are refused on a model's icon, since it is
+rendered and not drawn. The model is rendered once through `render.bake`, transparent, at
+twice the largest size, into `paths.work/icons/<set>/renders/`, and brought down to each
+size. Each file's record has the mesh as an input (`mesh`) beside the declaration, so
+`provenance.outdated` names every icon a model edit left behind, and `icons.build` again
+makes them anew; an atlas holding one has every model of the set as inputs.
+
+`[accept]` holds a model's icon at the smallest size to `coverage_min`, the share of the
+square the subject fills; `silhouette_kept_min`, the overlap of its outline at that size,
+grown back, with the render's own, which is how much of the shape that tells one actor
+from another survives; and `background_contrast_min`, the subject's median luminance
+against its background, or the worse of white and black where it has none. A model that
+is not there is `compose.bad-icons` before anything renders, and a machine without
+Blender refuses as `render.no-renderer`, where a set of shapes alone needs none.

@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 0 },
-  { block: "I", title: "Voxel models from a declaration", open: 1 },
+  { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 1 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW610",
-    block: "I",
-    symptom: "a built model cannot be made into a small picture of itself, so a palette tile or bestiary entry is cropped by hand",
-    why: "Each such picture is rendered at some angle by hand and goes stale the day its model changes, with nothing to report it.",
-    deps: [],
-  },
   {
     id: "PW612",
     block: "L",

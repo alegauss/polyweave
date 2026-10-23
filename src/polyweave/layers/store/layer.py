@@ -4,7 +4,7 @@ from polyweave.kernel.layer import Layer, Subject
 
 LAYER = Layer(
     name="store",
-    uses=("picture",),
+    uses=("geometry", "picture",),
     summary="What a game shows outside itself: store art, teasers, icons, sheets.",
     modules=(
         "polyweave.layers.store.compose",
@@ -36,6 +36,8 @@ LAYER = Layer(
         "polyweave.layers.store.icons:draw": ("internal", "one icon at one size"),
         "polyweave.layers.store.icons:legibility": (
             "internal", "what icons.build holds a set to"),
+        "polyweave.layers.store.icons:model_legibility": (
+            "internal", "what icons.build holds a model's icon to"),
         "polyweave.layers.store.video:predicate": (
             "internal", "a video predicate, for accept.check"),
     },

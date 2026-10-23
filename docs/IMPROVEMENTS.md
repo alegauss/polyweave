@@ -102,27 +102,6 @@ stays a test.
 
 ## Block I — Voxel models from a declaration
 
-### §PW610 Icons rendered from a model
-
-Found in spinhold while planning its stage editor's palette (RK268): every tile is a
-small picture of one actor, and the actors are voxel models polyweave builds from
-declarations. Nothing turns a built model into that picture.
-
-`icons.build` builds a declared icon set from shapes, and the render operations make a
-turntable or a look for a person to judge, at review sizes. A game also needs its models
-as small, legible pictures for itself: a palette or inventory tile, a bestiary entry, a
-map marker, a store capsule's cast, a save slot. Today a project renders each by hand at
-some angle and crops it, and the picture goes stale the day the model changes.
-
-What polyweave should do: an icon in a set may name a model (a voxel declaration's
-output, or any mesh polyweave ingested) as its source, with a declared camera (a
-three-quarter view, a front view, the game's own camera), lighting, framing margin and
-background. It renders at each declared size and holds each to the set's legibility
-bounds, which for a model includes its silhouette still reading at the smallest size.
-The record names the model and its hash, so `provenance.outdated` reports every picture
-a model edit left behind and one call rebuilds them. A sitting shows the set for a
-person's verdict, as `icons.build --sitting` does.
-
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source

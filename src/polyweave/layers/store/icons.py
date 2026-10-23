@@ -32,6 +32,25 @@ pixels. `[accept]` holds every icon at the smallest size to the set's bounds: th
 symbol's contrast against its face, the icon's edge against a light and a dark
 background, and the symbol's share of the face. A sitting puts the set in front of a
 person, since whether it reads as the pad is theirs to say.
+
+An icon may instead be a picture of a model the project built (§PW610), a palette tile
+or a bestiary entry, rendered rather than cropped by hand:
+
+    [icon.slime]
+    model = "build/actors/slime.glb"   # a mesh under the project
+    view = "three_quarter"             # or front or side; azimuth and elevation win
+    margin = 1.1                       # room around the subject, as render.bake's
+    background = "#20242C"             # or "transparent", the default
+    rung = "final"                     # the render rung, final unless named
+    light = { key = 600, ambient = 0.4 }   # any of render.bake's lights
+
+It is rendered once at twice the largest size and brought down to each. Its record
+names the mesh and its hash beside the declaration, so `provenance.outdated` lists
+every picture a model edit left behind and `icons.build` again makes them anew. At the
+smallest size it is held to `coverage` (the share of the square it fills),
+`silhouette_kept` (how much of its outline survives the shrinking, as an overlap) and
+`background_contrast` against its background, or the worse of white and black where it
+has none.
 """
 
 from __future__ import annotations
@@ -65,7 +84,18 @@ _STYLE = {"outline": "#101014", "outline_width": 0.07, "rim": 0.35, "shade": 0.3
 
 #: Every key an icon, the style and `[accept]` may carry.
 _ICON_KEYS = {"shape", "symbol", "direction", *_STYLE}
-_ACCEPT_KEYS = {"symbol_contrast_min", "background_contrast_min", "symbol_share_min"}
+_ACCEPT_KEYS = {"symbol_contrast_min", "background_contrast_min", "symbol_share_min",
+                "coverage_min", "silhouette_kept_min"}
+
+#: What an icon rendered from a model may say, and the views it may name (§PW610). A
+#: view is render.bake's camera: the rig's own three-quarter, straight on, or the side.
+_MODEL_KEYS = {"model", "view", "azimuth", "elevation", "margin", "focal_mm",
+               "background", "rung", "light"}
+VIEWS = {"three_quarter": (35.0, 20.0), "front": (0.0, 0.0), "side": (90.0, 0.0)}
+#: The lights `light` may set, as render.bake names them.
+_LIGHTS = {"key", "fill", "rim", "ambient", "ambient_colour", "exposure",
+           "light_distance"}
+_MESHES = (".glb", ".gltf", ".fbx")
 
 
 def _refuse(source: Path, what: str, remedy: str, **more) -> PolyweaveError:
@@ -86,6 +116,9 @@ def read(source: Path) -> dict:
     style = {**_STYLE, **(declared.get("style") or {})}
     icons = {}
     for name, own in (declared.get("icon") or {}).items():
+        if "model" in own:
+            icons[name] = _modelled(source, name, own)
+            continue
         unknown = sorted(set(own) - _ICON_KEYS)
         if unknown:
             raise _refuse(source, f"[icon.{name}] declares {', '.join(unknown)}",
@@ -108,6 +141,45 @@ def read(source: Path) -> dict:
     return {"name": str(declared.get("name") or source.name.split(".")[0]),
             "sizes": sizes, "atlas": bool(declared.get("atlas")), "icons": icons,
             "accept": accept}
+
+
+def _modelled(source: Path, name: str, own: dict) -> dict:
+    """An icon rendered from a model, its camera, lights and background checked."""
+    unknown = sorted(set(own) - _MODEL_KEYS)
+    if unknown:
+        raise _refuse(source, f"[icon.{name}] renders a model and declares "
+                      f"{', '.join(unknown)}",
+                      "an icon from a model takes some of "
+                      f"{', '.join(sorted(_MODEL_KEYS))}; a shape is drawn, not "
+                      "rendered",
+                      given=unknown[0], allowed=sorted(_MODEL_KEYS))
+    if Path(str(own["model"])).suffix.lower() not in _MESHES:
+        raise _refuse(source, f"[icon.{name}] names {own['model']!r} as its model",
+                      f"name a mesh, one of {', '.join(_MESHES)}, built or ingested")
+    view = str(own.get("view", "three_quarter"))
+    if view not in VIEWS:
+        raise _refuse(source, f"[icon.{name}] views it from {view!r}",
+                      f"make view one of {', '.join(VIEWS)}, or give azimuth and "
+                      "elevation", given=view, allowed=sorted(VIEWS))
+    light = own.get("light") or {}
+    if not isinstance(light, dict) or set(light) - _LIGHTS:
+        raise _refuse(source, f"[icon.{name}] lights it with {light!r}",
+                      f"give light as a table of some of {', '.join(sorted(_LIGHTS))}")
+    background = str(own.get("background", "transparent"))
+    if background != "transparent":
+        try:
+            _colour(background)
+        except ValueError:
+            raise _refuse(source, f"[icon.{name}] has a background of {background!r}",
+                          'give it as "#RRGGBB", or "transparent"') from None
+    azimuth, elevation = VIEWS[view]
+    return {"model": str(own["model"]),
+            "azimuth": float(own.get("azimuth", azimuth)),
+            "elevation": float(own.get("elevation", elevation)),
+            "margin": float(own.get("margin", 1.15)),
+            "focal_mm": float(own.get("focal_mm", 50.0)),
+            "background": background, "rung": str(own.get("rung", "final")),
+            "light": dict(light)}
 
 
 def _colour(text: str) -> tuple[int, int, int]:
@@ -307,6 +379,71 @@ def legibility(icon: dict, size: int) -> dict:
     return found
 
 
+def _rendered(icon: dict, side: int, out: Path, here: Path):
+    """A model's icon rendered once, transparent, at `side` pixels (§PW610)."""
+    from PIL import Image
+
+    from polyweave.layers.geometry import render as R
+    from polyweave.layers.geometry.shape import _Quiet
+
+    mesh = here / icon["model"]
+    if not mesh.is_file():
+        raise PolyweaveError(
+            "compose.bad-icons",
+            f"the icon's model is not at {icon['model']}",
+            "build or ingest the model first, or name the mesh it was written to",
+            given=icon["model"],
+        )
+    R.bake(
+        _Quiet(), out=str(out), model=str(mesh), rung=icon["rung"], root=str(here),
+        inline=False, azimuth=icon["azimuth"], elevation=icon["elevation"],
+        margin=icon["margin"], focal_mm=icon["focal_mm"], transparent=True,
+        size=side, **icon["light"],
+    )
+    with Image.open(out) as picture:
+        return picture.convert("RGBA")
+
+
+def _shrunk(big, size: int, icon: dict):
+    """A rendered model brought down to one size, laid on its background."""
+    from PIL import Image
+
+    small = big.resize((size, size), Image.Resampling.LANCZOS)
+    if icon["background"] == "transparent":
+        return small
+    laid = Image.new("RGBA", (size, size), (*_colour(icon["background"]), 255))
+    laid.alpha_composite(small)
+    return laid
+
+
+def model_legibility(big, icon: dict, size: int) -> dict:
+    """What a model's icon measures at a size: what it fills, keeps and contrasts."""
+    from PIL import Image
+
+    alpha_big = np.asarray(big, dtype=np.float64)[..., 3] / 255.0 > 0.5
+    small = big.resize((size, size), Image.Resampling.LANCZOS)
+    rgba = np.asarray(small, dtype=np.float64)
+    inside = rgba[..., 3] / 255.0 > 0.5
+    found = {"coverage": round(float(inside.mean()), 3)}
+    # The outline at this size, grown back to the render's, laid over the render's own:
+    # what a palette tile loses of the shape that tells one actor from another.
+    grown = np.asarray(
+        Image.fromarray((inside * 255).astype(np.uint8)).resize(big.size), float
+    ) / 255.0 > 0.5
+    union = float((grown | alpha_big).sum())
+    found["silhouette_kept"] = round(float((grown & alpha_big).sum()) / union, 3) if (
+        union) else 0.0
+    if inside.any():
+        body = float(np.median(_luminance(rgba[..., :3])[inside]))
+        if icon["background"] == "transparent":
+            worse = min(_wcag(body, 1.0), _wcag(body, 0.0))
+        else:
+            behind = float(_luminance(np.array(_colour(icon["background"]), float)))
+            worse = _wcag(body, behind)
+        found["background_contrast"] = round(worse, 2)
+    return found
+
+
 def _failed(found: dict, accept: dict) -> list[str]:
     said = []
     for key, bound in accept.items():
@@ -334,6 +471,10 @@ def build(
     JSON map of names to boxes, every file recorded with the declaration as input.
     `[accept]` holds every icon at the smallest size; `failed` names each under a
     bound. With `sitting`, the set waits on the review page for a person.
+
+    An icon naming a `model` is that mesh rendered, at a declared view, lights,
+    margin and background, and recorded with the mesh as an input, so
+    provenance.outdated names it once the model changes (§PW610).
     """
     from polyweave.kernel import provenance
     from polyweave.kernel.config import load
@@ -353,26 +494,40 @@ def build(
     base = config.path("paths.work", out) if out else where.parent
     folder = base / declared["name"]
     folder.mkdir(parents=True, exist_ok=True)
-    made = []
+    made: dict[Path, list[str]] = {}
+    modelled = {name: icon for name, icon in declared["icons"].items()
+                if "model" in icon}
+    renders = config.path("paths.work", f"icons/{declared['name']}/renders")
+    if modelled:
+        renders.mkdir(parents=True, exist_ok=True)
+    big = {name: _rendered(icon, 2 * max(declared["sizes"]), renders / f"{name}.png",
+                           here)
+           for name, icon in modelled.items()}
     for size in declared["sizes"]:
-        drawn = {name: draw(icon, size)[0] for name, icon in declared["icons"].items()}
+        drawn = {name: _shrunk(big[name], size, icon) if name in big
+                 else draw(icon, size)[0] for name, icon in declared["icons"].items()}
         if declared["atlas"]:
-            made += _atlas(drawn, size, folder, declared["name"])
+            for one in _atlas(drawn, size, folder, declared["name"]):
+                made[one] = list(modelled)
         else:
             for name, image in drawn.items():
                 target = folder / f"{name}_{size}.png"
                 image.save(target)
-                made.append(target)
-    for one in made:
+                made[target] = [name] if name in modelled else []
+    for one, models in made.items():
+        # Each mesh an icon was rendered from is an input, beside the declaration.
+        meshes = [provenance.source("mesh", here / modelled[name]["model"], root=here)
+                  for name in models]
         provenance.write(provenance.build(
             "picture", one, engine={"name": "icons.build"},
-            inputs=[provenance.source("icons", where, root=here)],
+            inputs=[provenance.source("icons", where, root=here), *meshes],
             params={"set": declared["name"]}, root=here,
         ), here)
     smallest = min(declared["sizes"])
     measured, failed = {}, {}
     for name, icon in declared["icons"].items():
-        measured[name] = legibility(icon, smallest)
+        measured[name] = (model_legibility(big[name], icon, smallest) if name in big
+                          else legibility(icon, smallest))
         broken = _failed(measured[name], declared["accept"])
         if broken:
             failed[name] = broken
@@ -390,7 +545,9 @@ def build(
             {declared["name"]: shown},
             out=str(config.path("paths.work", f"icons/{declared['name']}")),
             root=str(here),
-            about="a set of prompt icons: does each read as the pad's own button?"
+            about=("a set of icons rendered from models: does each read as its own "
+                   "model at a glance?" if modelled else
+                   "a set of prompt icons: does each read as the pad's own button?")
             + (f" Failed at {smallest}px: {json.dumps(failed)}" if failed else ""),
         )
         answer["sitting"] = list(laid["sheets"].values())[0].get("sheet")
