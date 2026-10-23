@@ -275,6 +275,33 @@ would not.
 
 Workaround: Cottony's `tools/art/meshy.py`, which still textures.
 
+### §PW628 A family ported member by member
+
+Found in Cottony's RK163 on 2026-10-23. `tools/art/boosters.family.toml` holds three
+members - hammer, wand and shuffle ball. Two were bought again and passed their specs;
+the third, which nobody had changed, failed its own, because its project-built mesh no
+longer renders the ball that was committed. `port.run` bakes only when every member
+passes, so the two accepted renders could not be baked:
+
+```
+python -m polyweave port.run --family tools/art/boosters.family.toml
+members.booster_hammer.failed: []
+members.booster_wand.failed: []
+members.booster_shuffle.failed: ["band-reads-mint", "median-tone"]
+says: not every member passed, so nothing was baked
+```
+
+and the operation takes no member to limit itself to (its parameters are `family`,
+`root`, `run`, `fresh`). The workaround was a copy of the family file under
+`.polyweave/families/` holding only the two members, ported on its own.
+
+Expected: `port.run --members ["booster_hammer","booster_wand"]` ports and bakes those
+alone, recorded as a partial run of the family; and a family whose failing member is
+unchanged since its last bake could say so ("booster_shuffle failed and its inputs did
+not change: its bake stands") rather than holding the others back.
+
+Workaround: a throwaway family file in Cottony's work area; nothing committed.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

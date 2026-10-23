@@ -23,6 +23,7 @@
 - 📋 **PW625** (deps: —) **purchase.remaining refuses a ceiling with no expiry and says, as its reason, that it never lapses** — Cottony's 90 credits read left 0 and not spendable, with a why that argued the opposite and named no door. → §PW625
 - 📋 **PW626** (deps: —) **reference.prepare cuts every pixel near the edge colour, so a subject sharing a hue with its ground loses parts** — Cottony's rainbow ball lost its blue and green bands and the star most of its tail to the well's blue. → §PW626
 - 📋 **PW627** (deps: —) **mesh.buy cannot buy a textured mesh, so a toy whose colours make it must go through a project client** — Cottony's booster toys are fetched textured and had to bypass the ceiling and ledger through meshy.py. → §PW627
+- 📋 **PW628** (deps: —) **port.run bakes nothing when one member fails and takes no member list, so passing members wait on an unrelated one** — Cottony's two re-bought toys passed but could not bake beside an unchanged ball failing its spec. → §PW628
 
 ## Block I — Voxel models from a declaration
 
