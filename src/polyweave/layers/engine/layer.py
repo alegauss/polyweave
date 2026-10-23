@@ -23,6 +23,7 @@ LAYER = Layer(
         "polyweave.layers.engine.states",
         "polyweave.layers.engine.tables",
         "polyweave.layers.engine.testing",
+        "polyweave.layers.engine.traces",
     ),
     requires=("godot",),
     kinds=("capture",),
@@ -42,7 +43,8 @@ LAYER = Layer(
     },
     codes="polyweave.layers.engine.codes",
     config="polyweave.layers.engine.settings",
-    tools=29_000,
+    # 29,481 with game.compare_runs, two runs' traces held together (§PW612).
+    tools=29_800,
     census={
         "polyweave.layers.engine.contrast:targets_in": (
             "internal", "the targets a log's lines name"),
@@ -97,5 +99,11 @@ LAYER = Layer(
             "internal", "contrast as a picture measure, for measure"),
         "polyweave.layers.engine.flashes:predicate": (
             "internal", "a flash predicate, for accept.check"),
+        "polyweave.layers.engine.traces:read": (
+            "internal", "a run trace's samples; game.compare_runs"),
+        "polyweave.layers.engine.traces:compare": (
+            "internal", "two traces held together; game.compare_runs"),
+        "polyweave.layers.engine.traces:distance": (
+            "internal", "how far two traced values are apart"),
     },
 )

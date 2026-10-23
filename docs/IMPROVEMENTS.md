@@ -130,27 +130,6 @@ verdict, and each gap it met is a filed line.
 
 ## Block L — What a run leaves as evidence
 
-### §PW612 Two runs' entity traces compared
-
-Found in spinhold while planning its stage editor: a criterion of its Block Z is that
-what the editor shows at a second is what the game flies at that second. The editor
-replays a level to the playhead through the game's own code; a headless run plays the
-same level. Proving they agree means comparing where every entity stands, second by
-second, in two runs, and nothing in polyweave compares two runs.
-
-The same question comes up whenever a game claims determinism: a replay against the run
-it recorded, a build against the one before, a fixed timestep against a variable one,
-two machines in a lockstep game, an editor preview against play.
-
-What polyweave should do: a trace contract for entity state (each line a time or frame,
-an entity's stable id, its kind and the fields the project declares, such as position,
-health, state), and an operation that reads two traces and answers whether they agree
-within the tolerances the project declares per field. Where they do not, it names the
-first entity and field that diverged, when, by how much, and what each run said, with
-the entities that diverged after it as consequences rather than separate failures. It
-can run as a gate check over a declared pair of runs. Nothing about the genre is built
-in: ids, fields and tolerances are the project's.
-
 ## Block M — What a game needs beyond the look
 
 ## Block N — Pictures held to a canon

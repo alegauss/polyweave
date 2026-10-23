@@ -524,6 +524,34 @@ marked `# final`. It needs no run. A declared skeleton the code fills in waits u
 second game shows state code it would replace, so its shape is read off that code;
 Starship's two machines today read clean.
 
+## Two runs compared
+
+A game that claims determinism is claiming two runs agree: a replay and the run it
+recorded, a build and the one before, a fixed timestep and a variable one, two machines
+in lockstep, an editor's preview and play (§PW612). The determinism kit's proof holds the
+state kit's names equal inside the engine; across processes, builds or tools, the runs
+each write a **trace** and `game.compare_runs(one, other)` holds them together.
+
+A trace is JSON Lines, one entity at one time a line: the time under the key `[trace]
+time` names (`frame`, the default, or `t` in seconds), the entity's stable `id`, and any
+fields the project chooses, `kind`, `position`, `hp` or `state` among them. Nothing about
+a genre is built in. A line that is not JSON, has no time or id, or repeats a sample, and
+a trace with no sample, is `game.bad-trace` with the line; a trace not there is
+`game.no-trace`.
+
+Samples are matched by time and id up to the earlier run's end. A number parts by its
+difference and a list of numbers by its Euclidean distance, each past the field's bound
+in `[trace] tolerance` (the call's `tolerance` overrides it), and every other value, and
+every field no bound names, must be equal: determinism means the same bits. An entity one
+run has at a time and the other has not parts on `exists`, and two runs that agree until
+one ends part on `ended`. The answer is `agree`, `first` (`at`, `id`, `field`, `one`,
+`other`, `by`), the `consequences` (every other entity's first divergence after it, in
+order, the first 20 and `more`), `ends`, `compared` and `says`, so a drift is read as the
+one cause it is and not as fifty failures.
+
+With neither trace named, every pair `[trace] pairs` declares is compared and `passed` is
+whether all agree, which is the form a gate runs.
+
 ## Still to come in this block
 
 Baking at the size a unit declaration gives (PW47).

@@ -356,6 +356,7 @@
 - ✅ **PW248** **a project cannot ask which files it ships were made by a generator, directly or through their inputs** — provenance.generated names every shipped file whose lineage reaches a purchase, with its chain and service, beside the authored and unrecorded ones (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW269** **compose.place writes its picture with no record, so a composed capsule cannot say which pictures it came from** — compose.place and compose.sheet write a record naming the pictures they were made from, so provenance_dependents on a key art finds what was composed from it.
 - ✅ **PW444** **nothing totals what the records already hold per asset, so polyweave's own effect on a game cannot be stated as a number** — loop.report totals each asset's runs, verdicts, purchases and gate refusals from the records, each naming its file (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW612** **two runs of the same level cannot be compared, so no one can say which entity diverged first, or when** — game.compare_runs holds two runs' entity traces together within declared tolerances and names the first entity, field and time to part (design recorded in `docs/specs/engine.md`).
 
 ## Block M — What a game needs beyond the look
 

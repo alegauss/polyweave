@@ -36,7 +36,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
-  { block: "L", title: "What a run leaves as evidence", open: 1 },
+  { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 1 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW612",
-    block: "L",
-    symptom: "two runs of the same level cannot be compared, so no one can say which entity diverged first, or when",
-    why: "Determinism a game claims, for replays, builds, lockstep or an editor's preview, has no check that names where it broke.",
-    deps: [],
-  },
   {
     id: "PW617",
     block: "O",

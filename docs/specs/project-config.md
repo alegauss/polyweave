@@ -101,6 +101,11 @@ quiet     = true               # a capture's window starts minimised, out of sig
 [driving]
 idle = 600                     # seconds a driven game waits for a call before it quits
 
+[trace]                        # two runs' entity traces, game.compare_runs (PW612)
+time      = "frame"            # the key a trace line is stamped by: frame, or t in seconds
+tolerance = { position = 0.5 } # how far a field may part; a field not named must be equal
+pairs     = [{ one = "runs/play.jsonl", other = "runs/editor.jsonl" }]  # what a gate holds
+
 [service]
 base    = "https://api.meshy.ai"
 key_env = "MESHY_API_KEY"      # the NAME of the variable, never the value
@@ -575,7 +580,7 @@ the kernel's schema is the union (PW508). A key for a layer's table is added the
 | Layer | Tables |
 |---|---|
 | geometry | `[render]`, `[geometry]`, `[finish]`, `[voxels]`, `[units]` |
-| engine | `[engine]`, `[perf]`, `[run]`, `[driving]`, `[capture]`, `[flashes]` |
+| engine | `[engine]`, `[perf]`, `[run]`, `[driving]`, `[trace]`, `[capture]`, `[flashes]` |
 | kits | `[kit]` |
 | picture | `[style]` |
 | sound | `[sound]`, `[licence]`, `[voice]` |

@@ -24,8 +24,6 @@
 
 ## Block L — What a run leaves as evidence
 
-- 📋 **PW612** (deps: —) **two runs of the same level cannot be compared, so no one can say which entity diverged first, or when** — Determinism a game claims, for replays, builds, lockstep or an editor's preview, has no check that names where it broke. → §PW612
-
 ## Block M — What a game needs beyond the look
 
 ## Block N — Pictures held to a canon

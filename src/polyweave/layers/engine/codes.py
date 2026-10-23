@@ -47,6 +47,19 @@ CODES: dict[str, Code] = {
         "in an older format",
         doors=("keep the flow with game.keep",),
     ),
+    "game.no-trace": Code(
+        means="there is no run trace to compare at that path, or no pair is declared",
+        when="game.compare_runs before the run wrote its trace, or with neither trace "
+        "named and no [trace] pairs (§PW612)",
+        doors=("name both traces, or declare [trace] pairs",),
+    ),
+    "game.bad-trace": Code(
+        means="a run trace has a line that is not a stamped sample, or a pair is "
+        "malformed",
+        when="a line with no time or id, a repeated sample, an empty trace, or a "
+        "[trace] time that is neither frame nor t (§PW612)",
+        doors=("write each line as {frame, id, kind, fields}",),
+    ),
     "game.flow-broke": Code(
         means="a flow being re-keyed broke on a step, so nothing was written",
         when="game.rekey on a flow the game no longer follows",

@@ -30,6 +30,14 @@ TABLES: dict[str, Any] = {
     # Each engine run a game declares, `[run.<name>]` (§PW467): its script, the line it
     # prints when it worked and what it writes; engine.run_declared runs them.
     "run": {},
+    # Two runs' entity traces compared (§PW612): the key a line is stamped by, frame or
+    # t, the distance each named field may part by (exact where unnamed), and the pairs
+    # game.compare_runs holds to agree when it is named none.
+    "trace": {
+        "time": "frame",
+        "tolerance": {},
+        "pairs": [],
+    },
     "driving": {
         # Seconds a driven game waits for its next call before it quits, so a session an
         # agent forgot never outlives the conversation that opened it (§PW213).
