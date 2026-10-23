@@ -29,6 +29,26 @@ def test_the_committed_sdk_is_what_describe_answers_now():
         "run python tools/operations_ts.py")
 
 
+def test_an_older_polyweave_installed_elsewhere_is_not_the_one_described(tmp_path):
+    """§PW614: a stale copy in site-packages was imported; the SDK went unchanged."""
+    import os
+    import subprocess
+    import sys
+
+    stale = tmp_path / "installed" / "polyweave"
+    (stale / "kernel").mkdir(parents=True)
+    (stale / "__init__.py").write_text("", encoding="utf-8")
+    (stale / "kernel" / "__init__.py").write_text("", encoding="utf-8")
+    (stale / "kernel" / "describe.py").write_text(
+        "def describe():\n    return []\n", encoding="utf-8")
+    said = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "operations_ts.py"), "--check"],
+        cwd=tmp_path, capture_output=True, text=True,
+        env={**os.environ, "PYTHONPATH": str(stale.parent)},
+    )
+    assert said.returncode == 0, said.stdout + said.stderr
+
+
 def test_a_parameter_s_choices_range_and_default_reach_the_type():
     made = generator()
     text = made.generate([{

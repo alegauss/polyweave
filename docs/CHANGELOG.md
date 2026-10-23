@@ -568,6 +568,7 @@
 - ✅ **PW579** **project.inventory rescans the whole project for every page, so opening Spinhold in the window takes 50 s** — The pages of one inventory read share one scan: an offset past 0 reuses the rows the last read at 0 found, so Spinhold opens in about 7 s, not 50 (design recorded in `docs/specs/inventory.md`).
 - ✅ **PW584** **one inventory scan hashes every artefact and input again, so opening Spinhold still takes about 7 s** — sha256_of remembers a settled file's digest by size, mtime and inode, so a shared input is read once and a Spinhold scan fell from about 13 s to 7 s (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW593** **one inventory scan walks the project three times and parses every record twice, so Spinhold still takes about 7 s** — A scan walks once, past .git, .godot and session folders, reading each record once, so Spinhold's warm scan fell from about 7 s to 2 s (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW614** **tools/operations_ts.py writes the SDK from whichever polyweave is installed, not the tree, and says it wrote it** — tools/operations_ts.py puts the tree's src first on the path, refuses another polyweave and names the one it described, so a stale install cannot write the SDK.
 
 ## Block V — Parts every game repeats, installed already proved
 

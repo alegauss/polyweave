@@ -449,29 +449,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW614 The SDK written from the tree it sits in
-
-Found while shipping PW607: the new `game.input` parameters were in `src/`, and `python
-tools/operations_ts.py` answered "wrote gui/packages/core/src/operations.generated.ts:
-208 operations" while writing the same file as before. The script imports `polyweave`
-from wherever Python finds it first, and on this desk that is a non-editable copy in the
-user's site-packages, older than the tree. Only `PYTHONPATH=src` made it write the
-tree's parameters.
-
-pytest is not fooled, since `pyproject.toml` puts `src` on its path, so
-`tests/test_operations_ts.py` reports the file stale; the trap is the regeneration the
-test's own message tells the agent to run, which then "succeeds" without changing
-anything and sends the agent back to the red test.
-
-The script already knows `ROOT`. Putting `ROOT / "src"` first on `sys.path` before the
-import makes it describe the tree it sits in, whatever is installed. Its answer could
-also name the module file it described, so a run against another copy shows it. The same
-check is worth making for any other script under `tools/` that imports `polyweave` to
-write a committed file.
-
-Done when the script, run with an older polyweave installed and no PYTHONPATH, writes
-the tree's operations.
-
 ### §PW615 a re-laid sitting reads as answered
 
 Seen in spinhold on 2026-10-23. Three sittings were laid out again with

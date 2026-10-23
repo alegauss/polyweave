@@ -21,6 +21,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 TARGET = ROOT / "gui" / "packages" / "core" / "src" / "operations.generated.ts"
+#: The tree this script describes, first on the path: an older polyweave installed in
+#: site-packages was imported instead, and the SDK was "written" unchanged (§PW614).
+#: Moved to the front even where it is already on the path: an editable install's .pth
+#: puts it there, behind site-packages, where a stale copy shadows it.
+SRC = ROOT / "src"
+sys.path[:] = [str(SRC), *(p for p in sys.path if Path(p) != SRC)]
 
 #: Each type `describe` names, as TypeScript spells it.
 TYPES = {
@@ -117,7 +123,19 @@ def generate(operations: list[dict]) -> str:
     return "\n".join(out) + "\n"
 
 
+def described() -> Path:
+    """The polyweave this process imports, refused where it is not this tree's."""
+    import polyweave
+
+    found = Path(polyweave.__file__).resolve().parent
+    if not found.is_relative_to(SRC.resolve()):
+        raise SystemExit(f"polyweave was already imported from {found}, not {SRC}: "
+                         "run this script on its own, from any directory")
+    return found
+
+
 def current() -> str:
+    described()
     from polyweave.kernel import describe
 
     return generate(describe.describe())
@@ -125,15 +143,16 @@ def current() -> str:
 
 def main(argv: list[str]) -> int:
     text = current()
+    source = described().relative_to(ROOT).as_posix()
     if "--check" in argv:
         stale = not TARGET.is_file() or TARGET.read_text(encoding="utf-8") != text
         if stale:
-            print(f"{TARGET.relative_to(ROOT)} is stale: "
+            print(f"{TARGET.relative_to(ROOT)} is stale against {source}: "
                   "run python tools/operations_ts.py")
         return 1 if stale else 0
     TARGET.write_text(text, encoding="utf-8", newline="\n")
-    print(f"wrote {TARGET.relative_to(ROOT)}: {text.count('export interface') - 1} "
-          "operations")
+    print(f"wrote {TARGET.relative_to(ROOT)} from {source}: "
+          f"{text.count('export interface') - 1} operations")
     return 0
 
 

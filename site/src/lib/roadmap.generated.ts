@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 3 },
+  { block: "U", title: "A window on everything a project governs", open: 2 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
   { block: "X", title: "The site on the shared design system", open: 0 },
@@ -114,13 +114,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand",
     why: "Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed.",
     deps: ["PW203"],
-  },
-  {
-    id: "PW614",
-    block: "U",
-    symptom: "tools/operations_ts.py writes the SDK from whichever polyweave is installed, not the tree, and says it wrote it",
-    why: "With an older copy in site-packages the regeneration the stale test asks for changes nothing and still reports success.",
-    deps: [],
   },
   {
     id: "PW615",
