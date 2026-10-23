@@ -17,6 +17,7 @@
 ## Block H — Proof on a real game
 
 - 📋 **PW621** (deps: —) **a project-drawn picture judged through a declared capture cannot be searched; each candidate is run by hand** — Choosing a layout seed for Cottony's sky took a throwaway loop over twenty seeds, 35 seconds each. → §PW621
+- 📋 **PW622** (deps: —) **a capture warns same settings, different picture when a script the scene reaches by class_name changed** — PW488 named the sprites a scene draws; a changed class is still read as an undeclared setting, not as different work. → §PW622
 
 ## Block I — Voxel models from a declaration
 
