@@ -155,6 +155,55 @@ Expected: the record's inputs include every script the scene's scripts resolve b
 Workaround: none; the warning was read and the capture kept, since the change was
 intended.
 
+### §PW623 Effects declared for a 2D canvas
+
+Found in Cottony's RK162 on 2026-10-23: candy stars drifting slowly in the gaps between
+the board screen's panels, as `screen1.png` floats them. Cottony's board screen is 2D
+(`Node2D` panels, a `SubViewport` only for the board's own 3D layer), and its effects
+are `CPUParticles2D` in `scripts/fx.gd`.
+
+`vfx.build` was the place to declare it: its `shape = "star"` is the very picture
+wanted, and `size_over_life`, `colour_over_life`, `angular_velocity` and an emission box
+are every knob the drift needed. But every effect it builds is a 3D scene in metres
+(`GPUParticles3D`, quads, meshes), with no way to ask for a `CPUParticles2D` or
+`GPUParticles2D` in pixels for a canvas. So the drift was written by hand as
+`scripts/drift.gd`: four emitter rectangles, a seed, a preprocess, two sizes for depth,
+a colour ramp and a fade, which is exactly a declaration's worth of numbers.
+
+Expected: `[effect.<name>] dimension = "2d"` (or a `canvas = true`) that builds the same
+declaration into a 2D particle scene, extents and sizes in pixels, with `seed` and
+`preprocess` as keys so a capture of it is reproducible, and `emission` taking a list of
+rectangles for an effect that lives in several gaps at once.
+
+Workaround: `scripts/drift.gd` in Cottony, which names this line in its header.
+
+### §PW624 A recorded flow that survives an unrelated node
+
+Found in Cottony's RK162 on 2026-10-23. The task added one `Node2D` with eight unnamed
+`CPUParticles2D` children to the board screen. `python tools/check_export.py` then
+failed a recorded flow it replays:
+
+```
+FAIL  flow lose_later_level.flow.json broke at step 2, frame 127: driver.no-node: nothing on
+screen answers path /root/Main/@Node2D@155/@TextureButton@163
+```
+
+The flow addressed the button by the name Godot generated for it, `@TextureButton@163`,
+and those numbers come from one counter every unnamed node in the process draws from.
+Eight new unnamed nodes, anywhere and unrelated to that button, moved every number after
+them, so the recording broke on a change that has nothing to do with what it plays. The
+workaround was to name the new nodes so they draw no numbers; any later unnamed node
+breaks it again.
+
+Expected: `game.record_flow` never writes a path with an `@...@N` segment. It records
+what stays put: the node's own name where it has one, else a locator such as the class
+with the nearest named ancestor and the node's index among siblings of its class, or the
+text a button carries. A replay that meets a recorded `@..@N` path could say so as its
+own code (`driver.fragile-path`) naming the step to re-record, rather than
+`driver.no-node`.
+
+Workaround: `scripts/drift.gd` and `scripts/game.gd` in Cottony name the new nodes.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
