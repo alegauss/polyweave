@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 1 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 9 },
+  { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 3 },
@@ -114,13 +114,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand",
     why: "Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed.",
     deps: ["PW203"],
-  },
-  {
-    id: "PW613",
-    block: "R",
-    symptom: "measure.pressure runs only in Python over an exported file, so a tool in the running game cannot measure a level",
-    why: "A project ports the formula to the engine and the two drift, so the in-game view and the gate disagree.",
-    deps: [],
   },
   {
     id: "PW614",

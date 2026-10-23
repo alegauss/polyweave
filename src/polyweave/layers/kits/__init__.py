@@ -645,9 +645,10 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
             found.get("log") and log.is_file()) else ""
         if found.get("ok"):
             sounds, contrasts = _sounds(printed, here), _contrasts(printed, here)
-            captures = _captures(printed, here)
+            captures, measures = _captures(printed, here), _measures(printed, here)
             off = next(
-                (s for s in sounds + contrasts + captures if not s["held"]), None
+                (s for s in sounds + contrasts + captures + measures if not s["held"]),
+                None,
             )
             said.append(
                 {
@@ -657,6 +658,7 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
                     **({"sounds": sounds} if sounds else {}),
                     **({"contrasts": contrasts} if contrasts else {}),
                     **({"captures": captures} if captures else {}),
+                    **({"measures": measures} if measures else {}),
                     **({} if off is None else {"said": off["said"]}),
                 }
             )
@@ -823,6 +825,87 @@ def _captures(printed: str, here: Path) -> list[dict]:
         out.append({**entry, "value": value, "held": held,
                     **({} if held else
                        {"said": f"{name} {named} {value}, outside [{low}, {high}]"})})
+    return out
+
+
+#: A measure a proof script took in the engine, its inputs and its answer (§PW613).
+MEASURE = re.compile(
+    r"^KIT MEASURE (?P<measure>\w+) (?P<inputs>\S+) (?P<answer>\S+)$", re.MULTILINE
+)
+
+#: How far an engine copy's number may sit from polyweave's own: the answers round at
+#: four places, and Python's halves round to even where Godot's round away.
+AGREE = 0.001
+
+
+def _pressure(inputs: dict, here: Path) -> dict:
+    from polyweave.layers.engine import pressure
+
+    events, _ = pressure._read(inputs.get("events"), here)
+    return pressure._curves(events, float(inputs.get("warp", 0.0)),
+                            float(inputs.get("window", 0.0)))
+
+
+#: The measures a kit may carry into the engine, each as polyweave answers it.
+MEASURES = {"pressure": _pressure}
+
+
+def _parted(one: Any, other: Any, at: str = "") -> str | None:
+    """Where two answers first differ past AGREE, as a path into them, or None."""
+    if isinstance(one, int | float) and isinstance(other, int | float) and not (
+            isinstance(one, bool) or isinstance(other, bool)):
+        return None if abs(float(one) - float(other)) <= AGREE else (
+            f"{at or 'the answer'} is {other} in the engine and {one} in polyweave")
+    if isinstance(one, dict) and isinstance(other, dict):
+        for key in [*one, *(k for k in other if k not in one)]:
+            if key not in one or key not in other:
+                return f"{at}.{key} is in only one of the two answers".lstrip(".")
+            found = _parted(one[key], other[key], f"{at}.{key}".lstrip("."))
+            if found:
+                return found
+        return None
+    if isinstance(one, list) and isinstance(other, list):
+        if len(one) != len(other):
+            return (f"{at} holds {len(other)} in the engine and {len(one)} in "
+                    "polyweave")
+        for index, (a, b) in enumerate(zip(one, other, strict=True)):
+            found = _parted(a, b, f"{at}[{index}]")
+            if found:
+                return found
+        return None
+    return None if one == other else (
+        f"{at or 'the answer'} is {other!r} in the engine and {one!r} in polyweave")
+
+
+def _measures(printed: str, here: Path) -> list[dict]:
+    """Each measure a proof took in the engine, held to polyweave's own answer.
+
+    A tool inside the running game asks a measure each edit, and a port of it drifts
+    from the one the gate runs; so the kit's proof prints `KIT MEASURE <measure>
+    <inputs> <answer>` for every timeline it measured, and the same inputs are measured
+    here (§PW613). The first value past AGREE fails the proof by its path.
+    """
+    out = []
+    for line in MEASURE.finditer(printed):
+        named = line["measure"]
+        entry = {"measure": named, "inputs": line["inputs"]}
+        if named not in MEASURES:
+            out.append({**entry, "held": False,
+                        "said": f"polyweave carries no measure {named} to hold it to"})
+            continue
+        try:
+            inputs = json.loads((here / line["inputs"]).read_text(encoding="utf-8"))
+            engine_said = json.loads(
+                (here / line["answer"]).read_text(encoding="utf-8"))
+            ours = MEASURES[named](inputs, here)
+        except (OSError, ValueError, PolyweaveError) as broken:
+            out.append({**entry, "held": False,
+                        "said": f"{line['inputs']} could not be measured: {broken}"})
+            continue
+        parted = _parted(ours, engine_said)
+        out.append({**entry, "held": parted is None,
+                    **({"said": f"{named} over {line['inputs']}: {parted}"}
+                       if parted else {})})
     return out
 
 

@@ -1,0 +1,8 @@
+{"events": [
+ {"second": 0.0, "kind": "drone", "weight": 1.0, "until": 6.0},
+ {"second": 0.4, "kind": "drone", "weight": 1.0, "until": 6.0},
+ {"second": 0.8, "kind": "drone", "weight": 1.0, "until": 6.0},
+ {"second": 7.5, "kind": "gunship", "weight": 4.0, "until": 14.0},
+ {"second": 11.0, "kind": "drone", "weight": 1.0, "until": 14.0},
+ {"second": 11.3, "kind": "drone", "weight": 1.0, "until": 14.0}
+]}

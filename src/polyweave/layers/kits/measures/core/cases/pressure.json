@@ -1,0 +1,13 @@
+[
+ {"events": [{"second": 0, "kind": "wasp", "weight": 1, "until": 4},
+             {"second": 0.5, "kind": "wasp", "weight": 1, "until": 4},
+             {"second": 6.25, "kind": "tank", "weight": 3, "until": 9.5}],
+  "warp": 0.5, "window": 1.5},
+ {"events": [{"second": 2}, {"second": 2}, {"second": 2.75, "weight": 0.5}],
+  "warp": 0, "window": 0},
+ {"events": [{"second": 0, "weight": 2, "until": 1.2},
+             {"second": 3.4, "weight": 1, "until": 3.4},
+             {"second": 3.4, "weight": 0, "until": 8},
+             {"second": 10.9, "weight": 1.5, "until": 12}],
+  "warp": 1.25, "window": 2.0}
+]

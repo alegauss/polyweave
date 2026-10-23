@@ -1,0 +1,17 @@
+name = "measures"
+version = "0.1.0"
+summary = "the measures a gate runs, in GDScript for a tool in the running game, proved to answer as polyweave's own"
+requires = []
+
+[installs]
+core = "core"
+
+[declares]
+declaration = "res://polyweave_measures.gd"
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "measure.pressure in GDScript, its threat per second and gaps, proved against the Python measure over the kit's cases and the game's own timelines"

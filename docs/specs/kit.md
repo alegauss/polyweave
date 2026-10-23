@@ -89,7 +89,13 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
   a headless proof lacks, so the script prints `KIT CAPTURE <script> <measure> <min>
   <max> [args]`: the run is taken with `capture.movie` (its environment empty, since
   nothing is committed), measured by `measure.flashes`, and listed under `captures`.
-  Where no route draws real pixels it is `skipped`, and said.
+  Where no route draws real pixels it is `skipped`, and said. A measure a kit carries
+  into the engine is held to polyweave's own (§PW613): the script writes the inputs it
+  measured and the engine's answer beside the game and prints `KIT MEASURE <measure>
+  <inputs> <answer>`, polyweave runs its measure over the same inputs, and the first
+  value more than 0.001 apart (the answers round at four places, and Python rounds a
+  half to even where Godot rounds it away) fails the script by its path, listed under
+  `measures`. A measure polyweave carries no counterpart of fails the same way.
 - A kit proves with a spec, a script or both, and one with neither is refused: it is
   worth more than a snippet only while its proof holds. A kit with no picture to hold,
   such as a menu, proves by its script alone, and `kit.prove` then answers it `skipped`
@@ -686,6 +692,20 @@ and with `RECORD` fed at its frames, and holds the state kit's snapshot of the t
 to agree after every physics frame. It names the first frame and name that differ,
 usually a draw made outside the streams, and refuses a run in which nothing the state
 kit names ever changed.
+
+**measures** (§PW613): the measures a gate runs, in GDScript, for a tool inside the
+running game (a level editor drawing a stage's threat curve as it is edited, a debug
+overlay, a balance view) that cannot call Python each frame. Its first is
+`measure.pressure`: `preload("res://addons/polyweave/measures/pressure.gd").measure(
+events, warp, window)` takes the same events, `{second, kind, weight, until}`, and
+answers the same fields (`seconds`, `entering`, `alive_fast`, `alive_slow`, `total`,
+`peak_slow`, `longest_gap`, `gaps`, `past_window`). Kinds and weights are the game's.
+The proof measures the kit's own cases and every timeline the game declares in
+`res://polyweave_measures.gd`, `const PRESSURE := [{"events": "res://levels/w1.json",
+"warp": 0.5, "window": 3.0}]` (a list, or `{events: [...]}`, as the game writes it), and
+prints each as `KIT MEASURE`, so polyweave holds the engine's answer to its own and a
+port can never drift from the gate. Another measure with plain-data inputs follows by
+carrying its script and its entry in `MEASURES`.
 
 **crash** (§PW361): what a crash leaves behind. `PolyweaveLog.shared()`, opened first
 thing, writes every line the game logs (`info`, `warn`, `error`) to

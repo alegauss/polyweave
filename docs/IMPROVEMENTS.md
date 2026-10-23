@@ -419,28 +419,6 @@ The draft is written with its provenance naming the transcription, its verdicts 
 mapping, marked as a draft so a person still tunes it; rows a person corrected carry
 their corrected value, and a row nobody answered is refused, not guessed.
 
-### §PW613 A measure shipped into the engine as a proved kit
-
-Found in spinhold while planning its stage editor (RK278): the editor should draw a
-stage's threat curve and its gaps as each edit is made. `measure.pressure` computes
-exactly that, but in Python, over a JSON file the game wrote. A tool running inside the
-engine (a level editor, a debug overlay, a balance view) cannot call it each frame, so
-the project would port the formula to GDScript, and the two would drift: the in-game
-view would say one thing and the gate another.
-
-polyweave already ships proved parts into a game as kits (PW340 to PW343,
-`docs/specs/kit.md`). A measure that a running game needs should ship the same way: a
-kit whose core is the measure in the engine's language, taking the same inputs (`events`
-as `{second, kind, weight, until}`, `warp`, `window`) and giving the same result fields.
-Its proof runs both versions over a set of fixtures and over the installing project's
-own exported events, and fails on any difference past a stated tolerance, so the engine
-copy can never drift from the one the gate uses.
-
-Start with `measure.pressure`, the one a level tool asks for live; the contract should
-let any other measure with plain-data inputs follow (the level probe's measures, a level
-measure such as `measure.level`). Nothing about waves or enemies is compiled in: kinds
-and weights are the caller's, as they are for the Python measure.
-
 ## Block S — Playing the game, not only rendering it
 
 ## Block T — Adopting polyweave in a project

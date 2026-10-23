@@ -1,0 +1,9 @@
+; The measures kit's fixture: a game that writes one wave timeline and declares it, so
+; the proof measures it in the engine and polyweave measures it beside.
+
+config_version=5
+
+[application]
+
+config/name="measures fixture"
+run/main_scene="res://main.tscn"
