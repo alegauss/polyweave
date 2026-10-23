@@ -272,10 +272,23 @@ same file is what a background wait watches instead of polling. The page reads a
 five seconds unless an answer is being written, and shows each family's answers with any
 newer candidate for its members, so the person sees their sentence acted on.
 
+**An answer counts from the moment its sitting was laid out** (§PW615). A sitting laid
+again in its folder keeps its manifest's path, and the answers to the members it held
+before were read as answers to the new ones: Spinhold laid three sittings out again after
+the game changed, and the page listed none of them as waiting. So the manifest's `at` is
+to the microsecond, as an answer's is, and an answer given before it answers the members
+it was given to, not the sitting as it stands now; one from before answers kept a time
+still counts. The page's lists, its badges and "accept the rest", the server's
+`N to answer` lines, `verdict.answer`'s skip, the accept `verdict.place` looks for and
+the voice a sitting picked all read answers this way. `review.state` gives each sitting
+`waiting` and the families `unanswered`, so an agent checks before telling a person to
+look.
+
 **A verdict given in conversation is the same write** (§PW375). `verdict.answer(sitting,
 choice, why, family=)` names a sitting by its folder or manifest, as the page lists it,
 and runs the page's own write for that family, or for every family where none is named.
-A family already answered in `answers.jsonl` is skipped and named, never judged twice. It
+A family already answered since the sitting was laid out is skipped and named, never
+judged twice. It
 refuses an empty sentence where the page keeps a silent accept as one, since a verdict
 carried from chat has the person's words, kept as given.
 

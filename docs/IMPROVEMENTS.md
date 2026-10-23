@@ -449,28 +449,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW615 a re-laid sitting reads as answered
-
-Seen in spinhold on 2026-10-23. Three sittings were laid out again with
-`verdict_sitting` after the game changed: art/review/rk262 (family
-`rk262-unseen-reveal`, which had a "look" verdict on the old members),
-art/review/rk259-stage-bar (family `stage bar`, one member accepted the day before) and
-art/review/rk252-map-tags (family `map`, a "look" on the old screen). The owner opened
-the review page and saw only rk261-diorama-life under "Sessões esperando por você",
-reporting "nao esta aparecendo". The new members had never been judged, yet the page
-treated the sittings as answered, apparently matching verdicts by family name rather
-than by the members and pictures now in the sitting.
-
-The workaround was to lay a new sitting with fresh family names
-(art/review/2026-10-23-mapa-e-hud) and hand the person its direct `?sitting=` link.
-
-What polyweave should do: a sitting is waiting while any of its current members (by name
-and by the picture's digest) has no verdict given after the sitting was laid; an older
-verdict on the same family name answers the old members only. `review.state` should say,
-for each sitting, whether it is waiting and which members are unanswered, so an agent
-can check before telling a person to look. A sitting of kind `unheld` should be listed
-the same way as one with specs.
-
 ### §PW616 verdict.sitting writes a family's name as a file name
 
 Seen in spinhold on 2026-10-23. The MCP call `verdict_sitting` with `families = {"RK262

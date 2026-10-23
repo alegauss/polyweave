@@ -569,6 +569,7 @@
 - ✅ **PW584** **one inventory scan hashes every artefact and input again, so opening Spinhold still takes about 7 s** — sha256_of remembers a settled file's digest by size, mtime and inode, so a shared input is read once and a Spinhold scan fell from about 13 s to 7 s (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW593** **one inventory scan walks the project three times and parses every record twice, so Spinhold still takes about 7 s** — A scan walks once, past .git, .godot and session folders, reading each record once, so Spinhold's warm scan fell from about 7 s to 2 s (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW614** **tools/operations_ts.py writes the SDK from whichever polyweave is installed, not the tree, and says it wrote it** — tools/operations_ts.py puts the tree's src first on the path, refuses another polyweave and names the one it described, so a stale install cannot write the SDK.
+- ✅ **PW615** **a sitting laid again under a family name that already holds a verdict is not listed as waiting on the review page** — An answer counts only from when its sitting was laid out, so a re-laid sitting waits and review.state names its unanswered families (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

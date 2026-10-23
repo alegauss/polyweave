@@ -99,6 +99,26 @@ def test_the_page_and_its_script_ship_with_the_plugin(page):
             get(base + below)
 
 
+def test_a_sitting_laid_again_waits_though_its_family_was_answered_before(page):
+    """§PW615: Spinhold re-laid three sittings, and the page read them as answered."""
+    base, root = page
+    assert post(base + "/api/judge", judged(choice="look", why="too dim"))[0] == 200
+    said = review.state(root=str(root))["sittings"][0]
+    assert (said["waiting"], said["unanswered"]) == (False, [])
+    assert review.waiting_at(root, base) == []
+    verdict.sitting(
+        {"stars": [member(root, "star_dim", 90)]}, out="review", root=root
+    )
+    said = review.state(root=str(root))["sittings"][0]
+    assert (said["waiting"], said["unanswered"]) == (True, ["stars"])
+    assert review.waiting_at(root, base) == [
+        f"  1 to answer: {base}{verdict.address('review/sitting.json')}"]
+    # The new members are answered on their own, not skipped as answered before.
+    found = verdict.answer("review", "look", "still too dim", root=str(root))
+    assert [one["family"] for one in found["answered"]] == ["stars"]
+    assert review.state(root=str(root))["sittings"][0]["waiting"] is False
+
+
 def test_the_state_is_what_is_on_disk(page):
     base, _ = page
     _, body, _ = get(base + "/api/state")

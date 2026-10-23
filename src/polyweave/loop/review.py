@@ -438,16 +438,23 @@ _LOADED = newest(CODE)
 @operation("review.state")
 def state(root: Annotated[str, Param("the project the page is for")] = ".") -> dict:
     """Everything the decision screen shows, as the page reads it: the language, what
-    waits on a person, the sittings, their answers, the gate runs and the turntables."""
+    waits on a person, the sittings, their answers, the gate runs and the turntables.
+
+    Each sitting says whether it is `waiting` and which families are `unanswered`, by
+    the answers given since it was laid out, so an agent checks before telling a person
+    to look (§PW615)."""
     from . import review_text
 
     here = load(root).root
+    held = verdict.kept_answers(here)
+    laid = [{**one, "unanswered": verdict.unanswered(one, held)}
+            for one in sittings(here)]
     return {
         # The page's own words follow the project's (§PW287).
         "language": review_text.language(here),
         "project": load(here).get("project.name"),
         "pending": loop.pending(str(here)),
-        "sittings": sittings(here),
+        "sittings": [{**one, "waiting": bool(one["unanswered"])} for one in laid],
         "answers": verdict.answers(root=str(here))["answers"],
         # What each layer puts on the page: a picture's gate runs, a model's
         # turntables (§PW505).
@@ -683,13 +690,12 @@ def server(root=".", port: int = 0, on_stale=None) -> ThreadingHTTPServer:
 
 
 def waiting_at(root, base: str) -> list[str]:
-    """One line per sitting with a family nobody answered, newest last, with its URL."""
-    answered = {(one.get("sitting"), one.get("family"))
-                for one in verdict.kept_answers(root)}
+    """One line per sitting with a family nobody answered since it was laid out, newest
+    last, with its URL."""
+    held = verdict.kept_answers(root)
     lines = []
     for one in sittings(root):
-        left = [name for name in one.get("families") or {}
-                if (one["manifest"], name) not in answered]
+        left = verdict.unanswered(one, held)
         if left:
             at = verdict.address(one["manifest"])
             lines.append(f"  {len(left)} to answer: {base}{at}")

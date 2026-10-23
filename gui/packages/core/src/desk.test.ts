@@ -139,6 +139,20 @@ describe('the decision screen', () => {
     expect(unanswered(state.sittings[0]!, state.answers)).toEqual([])
   })
 
+  it('reads a sitting laid again as waiting, its old answers its old members (§PW615)', () => {
+    // Spinhold laid three sittings out again in their folders, and the page read them
+    // finished: an answer to the members held before was taken as one to the new ones.
+    const again = sitting('art/review/map/sitting.json', ['map'], { at: '2026-10-23T09:00:00.000001+00:00' })
+    const before = { sitting: again.manifest, family: 'map', choice: 'look', at: '2026-10-22T18:00:00.5+00:00' }
+    const state: State = { language: 'pt-BR', pending: { assets: [] }, sittings: [again], answers: [before] }
+    expect(last(again, 'map', state.answers)).toBeUndefined()
+    expect(listed(state).open.map((one) => one.folder)).toEqual(['art/review/map'])
+    const now = { ...before, choice: 'accept', at: '2026-10-23T09:05:00.25+00:00' }
+    expect(last(again, 'map', [before, now])).toEqual(now)
+    // An answer kept before answers carried a time still counts.
+    expect(last(again, 'map', [{ sitting: again.manifest, family: 'map', choice: 'accept' }])).toBeDefined()
+  })
+
   it('plays a member whose look is motion as a loop, first (§PW600)', () => {
     const shown = visual({ sheet: 's', members: [{ name: 'tender', new: 't.png', motion: 't.mp4' }] })
     expect(shown).toEqual({ kind: 'films', films: [{ label: 'tender', path: 't.mp4' }], sheet: 's' })

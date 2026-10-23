@@ -359,7 +359,9 @@ def _manifest(
     where = folder if folder.is_absolute() else here / folder
     abouts = abouts or {}
     manifest = {
-        "at": datetime.now(tz=UTC).isoformat(timespec="seconds"),
+        # To the microsecond, as an answer is: an answer counts from the moment its
+        # sitting was laid out, and one in the same second must fall on the right side.
+        "at": datetime.now(tz=UTC).isoformat(timespec="microseconds"),
         **review_text.told(kind, review_text.language(here), about),
         **({"tone": list(tone)} if tone else {}),
         # The ledger's asset the page's answers are recorded against (§PW465).
@@ -659,6 +661,39 @@ def kept_answers(root) -> list[dict]:
             for one in lines if "moved" not in one]
 
 
+def _when(stamp: str | None):
+    from datetime import datetime
+
+    try:
+        return datetime.fromisoformat(str(stamp))
+    except ValueError:
+        return None
+
+
+def answering(sitting: dict, answers: list[dict]) -> list[dict]:
+    """The answers given to a sitting as it is laid out now (§PW615).
+
+    A sitting laid again in its folder keeps its manifest's path, so the answers to the
+    members it held before were read as answers to the new ones, and a sitting nobody
+    had looked at read as finished. An answer counts from the moment the sitting was
+    laid out; one with no time, from before answers kept one, still counts.
+    """
+    laid = _when(sitting.get("at"))
+
+    def counts(one: dict) -> bool:
+        given = _when(one.get("at")) if one.get("at") else None
+        return laid is None or given is None or given >= laid
+
+    return [one for one in answers
+            if one.get("sitting") == sitting.get("manifest") and counts(one)]
+
+
+def unanswered(sitting: dict, answers: list[dict]) -> list[str]:
+    """The families of a sitting nothing has answered since it was laid out."""
+    done = {one.get("family") for one in answering(sitting, answers)}
+    return [name for name in sitting.get("families") or {} if name not in done]
+
+
 @operation("verdict.move")
 def move(
     sitting: Annotated[
@@ -860,7 +895,11 @@ def _accepted(take: Path, member: str, listed: str, here: Path) -> dict | None:
         last = said[-1]
         return ({"choice": "accept", "why": last.get("why"), "at": last.get("at")}
                 if last.get("choice") == "accept" else None)
-    named = [(one, kept) for one in kept_answers(here) if one.get("sitting") == listed
+    from . import review
+
+    laid = next((one for one in review.sittings(here) if one["manifest"] == listed),
+                {"manifest": listed})
+    named = [(one, kept) for one in answering(laid, kept_answers(here))
              for kept in one.get("members") or () if kept.get("name") == member]
     if not named or not named[-1][1].get("person_accepted"):
         return None
@@ -968,11 +1007,8 @@ def answer(
             given=family,
             allowed=sorted(families),
         )
-    done = {
-        one["family"]
-        for one in kept_answers(config.root)
-        if one.get("sitting") == listed
-    }
+    done = {one["family"]
+            for one in answering(offered[listed], kept_answers(config.root))}
     answered, skipped = [], []
     for one in [family] if family else families:
         if one in done:

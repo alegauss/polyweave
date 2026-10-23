@@ -554,8 +554,9 @@ def _picked(preview: str, here: Path) -> str:
     manifest = json.loads((here / listed).read_text(encoding="utf-8"))
     picks = {name for name, laid in manifest.get("families", {}).items()
              if laid.get("pick") == "one"}
-    taken = [one for one in verdict.kept_answers(here)
-             if one.get("sitting") == listed and one.get("family") in picks]
+    taken = [one for one in verdict.answering({**manifest, "manifest": listed},
+                                              verdict.kept_answers(here))
+             if one.get("family") in picks]
     if not taken or taken[-1].get("choice") != "accept" or not taken[-1].get("chosen"):
         raise PolyweaveError(
             "world.voice-unchosen",

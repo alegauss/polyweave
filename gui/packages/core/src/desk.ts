@@ -343,9 +343,21 @@ export function acceptWithheld(sitting: Sitting, laid: Laid): boolean {
   return failing(laid) && 'number' in (sitting.choices ?? {}) && 'accept' in (sitting.choices ?? {})
 }
 
-/** The last answer a family was given, if any. */
+/** Whether an answer was given to the sitting as it is laid out now (§PW615): a sitting
+ * laid again in its folder keeps its manifest, and the answers to the members it held
+ * before read as answers to the new ones, so a sitting nobody looked at read finished.
+ * An answer with no time, from before answers kept one, still counts. */
+export function since(sitting: Sitting, answer: Recorded): boolean {
+  const laid = Date.parse(sitting.at)
+  const given = answer.at ? Date.parse(answer.at) : NaN
+  return Number.isNaN(laid) || Number.isNaN(given) || given >= laid
+}
+
+/** The last answer a family was given since its sitting was laid out, if any. */
 export function last(sitting: Sitting, family: string, answers: Recorded[]): Recorded | undefined {
-  return answers.filter((one) => one.sitting === sitting.manifest && one.family === family).at(-1)
+  return answers
+    .filter((one) => one.sitting === sitting.manifest && one.family === family && since(sitting, one))
+    .at(-1)
 }
 
 /** A card's badge: waiting, accepted, sent back, or answered otherwise. */

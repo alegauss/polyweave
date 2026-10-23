@@ -53,7 +53,6 @@
 
 ## Block U — A window on everything a project governs
 
-- 📋 **PW615** (deps: —) **a sitting laid again under a family name that already holds a verdict is not listed as waiting on the review page** — New members nobody judged look answered, so the person sees nothing to review and the agent hands out direct links. → §PW615
 - 📋 **PW616** (deps: —) **verdict.sitting crashes when a family name holds a character Windows forbids in a file name, such as a question mark** — A person's family names are prose, so a question mark crashes the sitting and the agent renames what the person reads. → §PW616
 
 ## Block V — Parts every game repeats, installed already proved
