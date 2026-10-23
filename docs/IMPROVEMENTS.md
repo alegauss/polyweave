@@ -449,24 +449,27 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW616 verdict.sitting writes a family's name as a file name
+### §PW618 The watch test held to the window's own quiet
 
-Seen in spinhold on 2026-10-23. The MCP call `verdict_sitting` with `families = {"RK262
-card ? refeito": [...]}` and `out = art/review/2026-10-23-mapa-e-hud` answered
-`op.crashed`: `OSError: [Errno 22] Invalid argument: '...\RK262 card ? refeito.png'`
-from `Image.py:2585 in save`. The family name is used verbatim as the sheet's file name,
-and Windows forbids `? * : < > | "` in one. The refusal said only that polyweave had a
-defect.
+Seen on 2026-10-23 in gates run 39963801275, the first red of the last twelve: the
+window's job failed `gui/packages/shell/src/watch.test.ts` ("calls once for a burst of
+writes, a new file and a nested one included") with `expected 2 to be 1`. Nothing pushed
+in that run touched the watcher.
 
-Families are named for a person to read, in their own language, and a question mark or a
-colon is ordinary there. The workaround was to rename the family ("card de
-interrogacao"), which changes the words the person sees on the page.
+The test started the watch with a quiet of 100 ms, a third of the 300 the window runs
+with, waited 100 ms for it to settle, wrote three files and counted the calls. On Linux,
+Node's recursive watch is built on inotify, and on a loaded runner a late event, or one
+the watch raises while it sets itself up, can come more than 100 ms after the last,
+which reads as a second burst. The same test passed 15 runs out of 15 in a one-CPU
+node:24 container with two CPU burners beside it, so the cause is the likely one, not a
+proved one.
 
-What polyweave should do: keep the family's name as written for display, and derive the
-sheet's file name from it safely (replace forbidden characters and trailing dots or
-spaces, keep it unique within the folder), recording the mapping in sitting.json. A name
-that cannot be made safe is refused before anything is written, with `code`, the
-offending character and a `remedy`, never a crash.
+The test now uses the window's own quiet, settles for two quiet windows and zeroes the
+count before writing, and waits four windows before counting. That is what it claims
+(one call per burst at the quiet the window uses), so it can only be more tolerant of a
+runner, never less strict about the watcher.
+
+Done when the window's job passes on the runner again.
 
 ## Block V — Parts every game repeats, installed already proved
 

@@ -55,6 +55,41 @@ def test_the_sheet_lays_the_family_out_and_says_what_failed(tmp_path):
     assert set(found["choices"]) == {"accept", "look", "number"}
 
 
+def test_a_family_named_in_a_person_s_words_keeps_its_name_and_a_safe_sheet(tmp_path):
+    """§PW616: "RK262 card ? refeito" crashed the sitting on Windows."""
+    import json
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    one = member(tmp_path, "star_dim", BRIGHT)
+    said = verdict.sitting({"RK262 card ? refeito": [one], "mapa: HUD.": [one],
+                            "Mapa- HUD": [one], "con": [one]},
+                           out="review", root=tmp_path)
+    sheets = {name: laid["sheet"].replace("\\", "/").split("/")[-1]
+              for name, laid in said["sheets"].items()}
+    assert sheets == {"RK262 card ? refeito": "RK262 card _ refeito.png",
+                      "mapa: HUD.": "mapa_ HUD.png", "Mapa- HUD": "Mapa- HUD.png",
+                      "con": "con_.png"}
+    laid = json.loads((tmp_path / "review" / "sitting.json").read_text("utf-8"))
+    assert laid["families"]["RK262 card ? refeito"]["sheet"] == (
+        "review/RK262 card _ refeito.png")
+
+
+def test_two_families_one_name_apart_by_case_or_symbol_get_two_sheets():
+    taken: set[str] = set()
+    assert [verdict.file_stem(one, taken) for one in ("Map?", "map*", "MAP")] == [
+        "Map_", "map_-2", "MAP"]
+
+
+@pytest.mark.parametrize("name", ["", "  ", "...", " . "])
+def test_a_family_named_by_nothing_is_refused_before_a_sheet_is_drawn(tmp_path, name):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    one = member(tmp_path, "star_dim", BRIGHT)
+    with pytest.raises(PolyweaveError) as refused:
+        verdict.sitting({"fine": [one], name: [one]}, out="review", root=tmp_path)
+    assert refused.value.code == "verdict.bad-family"
+    assert not (tmp_path / "review" / "fine.png").exists()
+
+
 def _git(tmp_path, *args):
     import subprocess
 

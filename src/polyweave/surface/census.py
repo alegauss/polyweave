@@ -71,6 +71,8 @@ CORE: dict[str, tuple[str, str]] = {
         "internal", "each waiting sitting's link; review"),
     "polyweave.loop.verdict:kept_answers": (
         "internal", "every answer, at its sitting now"),
+    "polyweave.loop.verdict:file_stem": (
+        "internal", "a sheet's safe file name from a family's"),
     "polyweave.loop.verdict:answering": (
         "internal", "a sitting's answers since it was laid out"),
     "polyweave.loop.verdict:unanswered": (

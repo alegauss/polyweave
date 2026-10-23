@@ -48,6 +48,16 @@ go to `verdict.sitting(families, out=)`, which writes every sheet as `<out>/<fam
 so a person looks once. The answers come back as one `judge` call per family. The list
 decides nothing and reorders nothing.
 
+**A family is named in a person's words** (§PW616), and a question mark or a colon is
+ordinary there; Spinhold's `RK262 card ? refeito` crashed the sitting on Windows. So the
+name is kept as written on the page and in `sitting.json`, and only its sheet's file is
+made safe: each of `< > : " / \ | ? *` and every control character becomes `_`, a
+trailing dot or space goes, a device name Windows reserves (`CON`, `NUL`, `COM1`...)
+takes a `_`, the stem stops at 120 characters, and a second family that would land on
+the same file, case aside, takes `-2`. Each family's `sheet` in the manifest is the file
+it was given. A name with nothing left, empty or spaces and dots alone, is
+`verdict.bad-family` before any sheet is drawn. `sound.sitting` names its sheets so too.
+
 **A family's run judges its members, and the page's verdict reaches it** (§PW465). A
 port opens one run per family (`trays`) while specs are one per member (`board_tray`),
 so a verdict now keeps the `member` it is about, and `pending` reads a member as judged

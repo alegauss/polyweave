@@ -456,6 +456,8 @@ def sitting(
     }
     folder = config.path("paths.work", out)
     families, sheets = {}, {}
+    # A sheet's file named safely from the name a person reads (§PW616).
+    taken: set[str] = set()
     for member in members:
         heard = {"name": str(member["name"]), "sound": True}
         for key in ("new", "old", "spec"):
@@ -493,7 +495,7 @@ def sitting(
         spec = verdict._checked(heard, here)[2] if heard.get("spec") else None
         passed = (bool(spec["passed"]) if spec else True) and not spoken_fails
         heard["passed"] = passed
-        drawn = folder / f"{heard['name']}.png"
+        drawn = folder / f"{verdict.file_stem(heard['name'], taken)}.png"
         _drawn(drawn, heard, here)
         families[heard["name"]] = [heard]
         sheets[heard["name"]] = {
@@ -540,7 +542,9 @@ def _alternatives(
     for one in drawn:
         stacked.paste(one, (0, top))
         top += one.height
-    sheet = folder / f"{pick}.png"
+    from polyweave.loop import verdict
+
+    sheet = folder / f"{verdict.file_stem(pick, set())}.png"
     stacked.save(sheet)
     return (
         {pick: [one for members in families.values() for one in members]},

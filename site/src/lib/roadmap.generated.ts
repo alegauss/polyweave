@@ -116,10 +116,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW203"],
   },
   {
-    id: "PW616",
+    id: "PW618",
     block: "U",
-    symptom: "verdict.sitting crashes when a family name holds a character Windows forbids in a file name, such as a question mark",
-    why: "A person's family names are prose, so a question mark crashes the sitting and the agent renames what the person reads.",
+    symptom: "the window's watch test counts one burst of writes as two on a loaded Linux runner, turning the gates red",
+    why: "It held the watcher to a third of the quiet the window runs with, so a late inotify event read as a second burst.",
     deps: [],
   },
 ];

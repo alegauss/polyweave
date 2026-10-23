@@ -570,6 +570,7 @@
 - ✅ **PW593** **one inventory scan walks the project three times and parses every record twice, so Spinhold still takes about 7 s** — A scan walks once, past .git, .godot and session folders, reading each record once, so Spinhold's warm scan fell from about 7 s to 2 s (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW614** **tools/operations_ts.py writes the SDK from whichever polyweave is installed, not the tree, and says it wrote it** — tools/operations_ts.py puts the tree's src first on the path, refuses another polyweave and names the one it described, so a stale install cannot write the SDK.
 - ✅ **PW615** **a sitting laid again under a family name that already holds a verdict is not listed as waiting on the review page** — An answer counts only from when its sitting was laid out, so a re-laid sitting waits and review.state names its unanswered families (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW616** **verdict.sitting crashes when a family name holds a character Windows forbids in a file name, such as a question mark** — A family keeps its name as written and its sheet takes a safe, unique file name, so a question mark no longer crashes a sitting (design recorded in `docs/specs/adoption.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

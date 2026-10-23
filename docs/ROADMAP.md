@@ -53,7 +53,7 @@
 
 ## Block U — A window on everything a project governs
 
-- 📋 **PW616** (deps: —) **verdict.sitting crashes when a family name holds a character Windows forbids in a file name, such as a question mark** — A person's family names are prose, so a question mark crashes the sitting and the agent renames what the person reads. → §PW616
+- 📋 **PW618** (deps: —) **the window's watch test counts one burst of writes as two on a loaded Linux runner, turning the gates red** — It held the watcher to a third of the quiet the window runs with, so a late inotify event read as a second burst. → §PW618
 
 ## Block V — Parts every game repeats, installed already proved
 

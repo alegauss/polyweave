@@ -17,6 +17,7 @@ and the agent carries it. The verdict stays theirs — nothing here decides a lo
 
 from __future__ import annotations
 
+import re
 from datetime import date as Date
 from pathlib import Path
 from typing import Annotated, Any
@@ -238,6 +239,45 @@ def sheet(
     return {"sheet": str(where), "members": said, "choices": dict(offered)}
 
 
+#: What Windows refuses in a file name, and the device names it reserves whatever the
+#: suffix (§PW616).
+_FORBIDDEN = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
+_RESERVED = {"CON", "PRN", "AUX", "NUL", *(f"COM{n}" for n in range(1, 10)),
+             *(f"LPT{n}" for n in range(1, 10))}
+#: The longest a sheet's stem is cut to, inside every platform's limit.
+_LONGEST = 120
+
+
+def file_stem(name: Any, taken: set[str]) -> str:
+    """A file's stem for a family named as a person reads it, unique among `taken`.
+
+    A family is named in the person's words, and a question mark or a colon is ordinary
+    there: Spinhold's "RK262 card ? refeito" crashed the sitting on Windows (§PW616).
+    So its name stays as written on the page, and its sheet takes this stem: every
+    forbidden character as `_`, no trailing dot or space, a reserved device name
+    suffixed, and `-2`, `-3` where another family of the sitting took it already, since
+    Windows does not tell case apart. `taken` is updated. A name with nothing left is
+    `verdict.bad-family`.
+    """
+    stem = _FORBIDDEN.sub("_", str(name)).strip()[:_LONGEST].rstrip(" .")
+    if not stem.strip("_"):
+        raise PolyweaveError(
+            "verdict.bad-family",
+            f"the family {str(name)!r} leaves nothing to name its sheet by",
+            "name the family with a word a person reads; any punctuation is kept on "
+            "the page",
+            given=str(name),
+        )
+    if stem.split(".")[0].upper() in _RESERVED:
+        stem += "_"
+    unique, count = stem, 1
+    while unique.lower() in taken:
+        count += 1
+        unique = f"{stem}-{count}"
+    taken.add(unique.lower())
+    return unique
+
+
 @operation("verdict.sitting")
 def sitting(
     families: Annotated[
@@ -272,8 +312,11 @@ def sitting(
     families = {name: _with_model(_from_git(members_of(one), here), here)
                 for name, one in families.items()}
     folder = Path(out)
+    # Named before any sheet is drawn, so a name that names nothing is refused whole.
+    taken: set[str] = set()
+    stems = {name: file_stem(name, taken) for name in families}
     sheets = {
-        name: sheet(members, out=folder / f"{name}.png", root=root)
+        name: sheet(members, out=folder / f"{stems[name]}.png", root=root)
         for name, members in families.items()
     }
     # A sitting nothing holds is put to the person in words that claim no spec

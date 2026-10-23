@@ -713,6 +713,12 @@ KERNEL_CODES: dict[str, Code] = {
         "an old, new or capture that names no file",
         doors=("write each member as a table, or as the picture's path",),
     ),
+    "verdict.bad-family": Code(
+        means="a family's name leaves nothing a sheet's file can be named by",
+        when="a family named by nothing, or by spaces and dots alone (§PW616); any "
+        "other name is laid out as written, its file named safely",
+        doors=("name the family with a word a person reads",),
+    ),
     "verdict.no-old": Code(
         means="a member's old names a committed picture git cannot give back",
         when="old = '<rev>:<path>' where the revision or the path is not in the "
