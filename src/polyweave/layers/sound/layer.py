@@ -16,6 +16,7 @@ LAYER = Layer(
         "polyweave.layers.sound.sound_buy",
         "polyweave.layers.sound.sound_loop",
         "polyweave.layers.sound.sound_stems",
+        "polyweave.layers.sound.track_data",
     ),
     judges=(
         Judge(
@@ -39,8 +40,9 @@ LAYER = Layer(
     codes="polyweave.layers.sound.codes",
     config="polyweave.layers.sound.settings",
     # 11,222 with sound.stems (§PW558); 12,181 with music.from_midi (§PW559); 13,303
-    # with music.from_audio (§PW559).
-    tools=13_500,
+    # with music.from_audio (§PW559); 13,904 with music.track, a track's peaks and beat
+    # grid for a game's own tools (§PW611).
+    tools=14_100,
     census={
         "polyweave.layers.sound.sound": (
             "internal", "what sound.measure and a sound bound read"),
@@ -66,5 +68,13 @@ LAYER = Layer(
             "internal", "an effect's notes as sfxr's numbers"),
         "polyweave.layers.sound.sound:note_of": (
             "internal", "a pitch as its nearest note"),
+        "polyweave.layers.sound.track_data:peaks": (
+            "internal", "a track's waveform peaks, for its track file"),
+        "polyweave.layers.sound.track_data:declared_grid": (
+            "internal", "a score's beats in seconds, for music.render's track file"),
+        "polyweave.layers.sound.track_data:estimated_grid": (
+            "internal", "a track's beats heard, for music.track"),
+        "polyweave.layers.sound.track_data:written": (
+            "internal", "a track file written and recorded, for music.render"),
     },
 )

@@ -41,7 +41,7 @@ from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 
-from . import licences, music, sfx, sound
+from . import licences, music, sfx, sound, track_data
 
 #: The rate every stem and the master run at.
 RATE = 44100
@@ -409,7 +409,8 @@ def render(
     also writes one file per layer, <out>.<layer>, all one length, which add up to the
     whole. Only the formats asked for are written: those named, else the format of the
     declared cue the output lands at, else WAV and OGG. The answer carries what
-    sound.measure says of each file.
+    sound.measure says of each file, and `track`, the <out>.track.json of waveform
+    peaks and the score's beat grid beside it, for a game's tools (§PW611).
     """
     config = load(root)
     here, where = config.root, config.path("paths.work", source)
@@ -494,6 +495,10 @@ def render(
     target.parent.mkdir(parents=True, exist_ok=True)
     made = _written(target, final, found["ffmpeg"], loop, here, wanted)
     _recorded(made, here, inputs, instruments, None, bar)
+    # Peaks and the declared grid beside the track, for a game's own tools (§PW611).
+    played = here / (made["ogg"] or made["wav"])
+    made["track"] = track_data.written(played, final, RATE, track_data.declared_grid(
+        model), here, inputs=[provenance.source("score", where, here)])
     answer = {
         **made,
         "instruments": instruments,

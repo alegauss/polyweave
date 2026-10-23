@@ -179,30 +179,31 @@ model and the members.
 
 ## Block O — A person sees and answers
 
+### §PW617 The registry loaded before a test reads it
+
+Found while gating PW611:
+`tests/test_server.py::test_an_operation_that_raises_is_refused_and_the_server_answers_on`
+fails with `KeyError: 'verdict.answers'` when it runs alone (`pytest -k
+raises_is_refused`), on HEAD as well as with PW611's change, and failed once more inside
+a six-worker xdist run of a handful of files. The whole file passes, and so did both
+full VM gates, because an earlier test in the same process has called `describe()` or
+`server.tools()` by then.
+
+The test reads `describe._REGISTRY["verdict.answers"]` directly. Registration is an
+import's side effect, and `describe.load()` (the `layers()`-driven import every reader
+of the registry goes through) is what fills it; nothing in this test calls it. So
+whether it passes depends on which tests xdist happened to put on its worker before it,
+and a larger suite or a different `-n` can turn the gate red for no change at all.
+
+The cure is in the test: load the registry before reading it, by calling
+`describe.load()` (or `describe.describe("verdict.answers")`) first. Sixteen reads of
+`describe._REGISTRY` sit in `tests/test_census.py`, `tests/test_panel.py` and
+`tests/test_server.py`; each that does not load first has the same order dependence.
+
+Done when the test passes run alone, and `pytest -p no:randomly -k raises_is_refused`
+and the full file both pass.
+
 ## Block P — Music and sound a game can ship
-
-### §PW611 Waveform peaks and a beat grid beside each track
-
-Found in spinhold while planning its stage editor (RK279): the editor's timeline should
-draw the world's music under its ruler, its waveform and its beats, so an entry can be
-placed on a beat. Godot plays an Ogg Vorbis stream but gives a running game no access to
-its samples, so a game cannot draw a track's waveform itself, and the tempo it snaps to
-is a constant copied by hand from the score.
-
-`music.render` already knows a rendered track's tempo, meter, first beat and sections,
-and the audio it wrote. Beside each rendered track (and any track ingested for a game)
-it should write one small data file with provenance:
-
-- the waveform as peaks: per channel, a minimum and maximum per bucket at a few
-  declared resolutions, so a tool can zoom without decoding audio;
-- the beat grid: each beat's and each bar's second, with the tempo changes a score
-  declares, and the sections' names and starts;
-- loudness per bucket, for a tool that marks the drops.
-
-A track not rendered by polyweave gets the same file from analysis, with the beats it
-estimated marked as estimated rather than declared. The format is the engine's to read
-plainly (JSON or a resource), so any editor, rhythm view or music-synced effect loads
-it. The record names the audio's hash, so a re-render reports the file outdated.
 
 ## Block Q — Words held to the world
 

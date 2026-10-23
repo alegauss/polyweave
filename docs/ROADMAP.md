@@ -32,9 +32,9 @@
 
 ## Block O — A person sees and answers
 
-## Block P — Music and sound a game can ship
+- 📋 **PW617** (deps: —) **a server test reads the operation registry before anything loads it, so it fails alone or on an unlucky xdist worker** — Whether the gate passes then depends on which tests ran first in the same process, not on the code. → §PW617
 
-- 📋 **PW611** (deps: —) **a rendered track leaves no waveform peaks or beat grid, so a game's tool cannot draw its music or snap to its beat** — Godot gives a running game no access to an Ogg stream's samples, and the tempo a tool snaps to is copied by hand. → §PW611
+## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world
 

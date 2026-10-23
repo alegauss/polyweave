@@ -169,7 +169,9 @@ from polyweave.surface.capabilities import capabilities
 #: (§PW600).
 #: 159,772 with game.input's drag, wheel, text, button, double and mods, the gestures a
 #: mouse tool is built on, which the driver could not send (§PW607).
-DESCRIBE = 160_100
+#: 160,417 with music.track, a track's waveform peaks and beat grid beside it, which a
+#: game could not read off an Ogg stream (§PW611).
+DESCRIBE = 160_800
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -307,7 +309,8 @@ DESCRIBE = 160_100
 #: 173,912 with clip.shots's keep and hide (§PW597).
 #: 174,255 with clip.shots's loop and panel.capture's (§PW600).
 #: 175,912 with game.input's drag, wheel, text, button, double and mods (§PW607).
-CAPABILITIES = 176_200
+#: 176,625 with music.track (§PW611).
+CAPABILITIES = 177_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -378,7 +381,8 @@ HELP_VERB = 5_100
 #: 32,372 with music.from_midi (§PW559).
 #: 32,532 with music.from_audio (§PW559).
 #: 32,841 with picture.copies (§PW585).
-HELP_TOP = 33_000
+#: 33,080 with music.track (§PW611).
+HELP_TOP = 33_300
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

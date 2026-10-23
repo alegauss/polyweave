@@ -459,6 +459,7 @@
 - ✅ **PW559** **A recorded track cannot become an editable music.toml score** — music.from_audio hears a recording's stems as notes and hits, drafts a valid score, and answers the calls that sit it by the original (design recorded in `src/polyweave/layers/sound/music_heard.py`).
 - ✅ **PW560** **sound.loop fails an Ogg loop's seam that sound.measure reads as ordinary** — sound.loop judges its seam with sound.measure's seam_step and seam_flux under those names, and an encoded loop says how it read as cut (design recorded in `src/polyweave/layers/sound/sound_loop.py`).
 - ✅ **PW573** **The Surge render test fails in the parallel gate on a Pedalboard UnicodeDecodeError and passes alone** — Surge XT is opened again when a label fails to decode, and is refused as music.engine-unreadable naming the byte if it always fails (design recorded in `src/polyweave/layers/sound/music_render.py`).
+- ✅ **PW611** **a rendered track leaves no waveform peaks or beat grid, so a game's tool cannot draw its music or snap to its beat** — music.render writes a track.json of waveform peaks and the score's beat grid beside each track; music.track hears one for any other track (design recorded in `docs/specs/music.md`).
 
 ## Block Q — Words held to the world
 

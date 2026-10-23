@@ -204,7 +204,8 @@ def test_an_ogg_alone_leaves_no_wav_behind(tmp_path):
     assert found["formats"] == ["ogg"] and found["wav"] is None
     assert found["measured"]["loudness"] < 0
     assert sorted(p.name for p in (tmp_path / "music").glob("cue.*")) == [
-        "cue.music.toml", "cue.ogg", "cue.ogg.prov.json"]
+        "cue.music.toml", "cue.ogg", "cue.ogg.prov.json", "cue.track.json",
+        "cue.track.json.prov.json"]
 
 
 @pytest.mark.parametrize("formats", [["mp3"], []])

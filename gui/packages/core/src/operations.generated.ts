@@ -1188,6 +1188,16 @@ export interface MusicToMidiArgs {
   root?: string
 }
 
+/** Waveform peaks and an estimated beat grid beside a track polyweave did not render, for a game's own tools to draw and snap to (§PW611). */
+export interface MusicTrackArgs {
+  /** the track a game plays, .ogg or .wav */
+  audio: string
+  /** the file to write; <track>.track.json beside it if unset */
+  out?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Compile a score and answer every problem at once, each with its line and fix. */
 export interface MusicValidateArgs {
   /** the *.music.toml, relative to the project */
@@ -2722,6 +2732,7 @@ export interface Operations {
   "music.from_midi": MusicFromMidiArgs
   "music.render": MusicRenderArgs
   "music.to_midi": MusicToMidiArgs
+  "music.track": MusicTrackArgs
   "music.validate": MusicValidateArgs
   "normalise.ingest": NormaliseIngestArgs
   "offscreen.routes": OffscreenRoutesArgs
@@ -2937,6 +2948,7 @@ export const OPERATIONS = [
   "music.from_midi",
   "music.render",
   "music.to_midi",
+  "music.track",
   "music.validate",
   "normalise.ingest",
   "offscreen.routes",

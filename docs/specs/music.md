@@ -230,3 +230,30 @@ ffmpeg `sound.no-ffmpeg`.
 A recorded track can also become a score. `music.from_midi` drafts a `*.music.toml` off
 a MIDI file, and `music.from_audio` off the recording itself, hearing its stems as notes
 and hits first (§PW559); both write a draft a person hears beside the original.
+
+## A track's peaks and beat grid
+
+A game's own tools draw its music and snap to its beat: an editor's timeline, a rhythm
+view, an effect timed to the bar (§PW611). Godot plays an Ogg stream and gives a running
+game none of its samples, so beside a track the game finds `<track>.track.json`, plain
+JSON any engine reads:
+
+- `audio`, the file it describes, `seconds`, `rate` and `channels`;
+- `peaks`, one entry per resolution, 10, 50 and 200 buckets a second: `per_second`,
+  `min` and `max` per channel (one list each, full scale 1.0), and `loudness`, each
+  bucket's RMS of both channels in dBFS, floored at -90. Bucket `i` starts at
+  `i / per_second` exactly, so a tool maps an index to a time without drift;
+- `grid`: `tempo` (each change's second and BPM), `meter`, `beats` and `bars` in seconds,
+  `sections` (`id`, `name`, `start`, `end`), `loop` (`start`, `end`, or null), and
+  `estimated`.
+
+`music.render` writes it beside the whole mix (not beside each layer, which shares its
+grid), its grid the score's own, `estimated: false`, and answers its path as `track`.
+`music.track(audio)` writes it for any other track, an `.ogg` or `.wav` under the project,
+from the sound alone: the tempo and first beat are read off the spectral flux as
+`sound.loop` reads them (90 to 170 BPM), the first beat moved on by the 2048-sample
+analysis window the flux runs ahead of a hit by (45 to 53 ms on click tracks), the meter
+taken as 4/4, no sections, and `estimated: true`. `out` names another place. Its record,
+kind `sound`, names the audio as an input with the role `audio` (and the score for a
+render), so `provenance.outdated` names the file once the track is rendered or replaced
+again, until it is written anew.

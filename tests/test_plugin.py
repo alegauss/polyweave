@@ -37,7 +37,9 @@ SKILL_BUDGET = 3_400
 #: §PW436, §PW444), each the one way to its task.
 #: 4,800 at 4,607 once the music row names sound.stems (§PW558), the one way to take a
 #: voice out of a recorded track.
-REFERENCE_BUDGET = 4_800
+#: 5,000 at 4,805 once the music row names music.track (§PW611), a track's peaks and
+#: beat grid for a game's own tools.
+REFERENCE_BUDGET = 5_000
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():

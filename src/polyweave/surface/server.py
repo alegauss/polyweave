@@ -70,7 +70,8 @@ CORE_TOOLS = 39_000
 #: figure rose by 300 for them.
 #: 139,516 with game.input's drag, wheel, text, button, double and mods (§PW607),
 #: inside the engine layer's own figure.
-SESSION_BUDGET = 139_800
+#: 140,106 with music.track (§PW611), whose sound layer's figure rose by 600 for it.
+SESSION_BUDGET = 140_400
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {
