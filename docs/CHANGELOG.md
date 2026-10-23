@@ -426,6 +426,7 @@
 - ✅ **PW443** **verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work** — A tool's accept lands only with the code the review page shows for the sitting, so an agent cannot accept its own look (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW600** **the review page shows a still or a sheet where the look is motion, and has no video to play a loop** — clip.shots and panel.capture write muted loops the page plays, and a look answer on one names the moments that are wrong, kept with the verdict (design recorded in `gui/packages/ui/src/Decide.tsx`).
 - ✅ **PW601** **a model's sitting shows it from fixed angles only, so a person never turns it to see its other sides** — A member carries its .glb, attached from its still's record, and the review page turns it in 3D beside the still; an answer names the wrong view (design recorded in `gui/packages/ui/src/Model.tsx`).
+- ✅ **PW617** **a server test reads the operation registry before anything loads it, so it fails alone or on an unlucky xdist worker** — A session fixture loads the operation registry before any test reads it, so a test run alone or on any xdist worker finds every operation.
 
 ## Block P — Music and sound a game can ship
 

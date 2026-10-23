@@ -30,8 +30,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW617** (deps: —) **a server test reads the operation registry before anything loads it, so it fails alone or on an unlucky xdist worker** — Whether the gate passes then depends on which tests ran first in the same process, not on the code. → §PW617
-
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world

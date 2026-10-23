@@ -158,30 +158,6 @@ model and the members.
 
 ## Block O — A person sees and answers
 
-### §PW617 The registry loaded before a test reads it
-
-Found while gating PW611:
-`tests/test_server.py::test_an_operation_that_raises_is_refused_and_the_server_answers_on`
-fails with `KeyError: 'verdict.answers'` when it runs alone (`pytest -k
-raises_is_refused`), on HEAD as well as with PW611's change, and failed once more inside
-a six-worker xdist run of a handful of files. The whole file passes, and so did both
-full VM gates, because an earlier test in the same process has called `describe()` or
-`server.tools()` by then.
-
-The test reads `describe._REGISTRY["verdict.answers"]` directly. Registration is an
-import's side effect, and `describe.load()` (the `layers()`-driven import every reader
-of the registry goes through) is what fills it; nothing in this test calls it. So
-whether it passes depends on which tests xdist happened to put on its worker before it,
-and a larger suite or a different `-n` can turn the gate red for no change at all.
-
-The cure is in the test: load the registry before reading it, by calling
-`describe.load()` (or `describe.describe("verdict.answers")`) first. Sixteen reads of
-`describe._REGISTRY` sit in `tests/test_census.py`, `tests/test_panel.py` and
-`tests/test_server.py`; each that does not load first has the same order dependence.
-
-Done when the test passes run alone, and `pytest -p no:randomly -k raises_is_refused`
-and the full file both pass.
-
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world

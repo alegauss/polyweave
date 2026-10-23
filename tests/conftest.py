@@ -20,6 +20,20 @@ def store(tmp_path):
             made.cancel(view["job"])
 
 
+@pytest.fixture(scope="session", autouse=True)
+def registry_loaded():
+    """Every operation registered before any test reads the registry (§PW617).
+
+    Registration is an import's side effect, and sixteen tests read
+    `describe._REGISTRY` by name; run alone, or on an xdist worker no earlier test had
+    loaded it on, one failed with a KeyError for an operation that plainly exists.
+    `test_describe` empties the registry around each of its tests and puts it back.
+    """
+    from polyweave.kernel import describe
+
+    describe.load()
+
+
 @pytest.fixture(autouse=True)
 def no_subscription_read(monkeypatch):
     """The speech service's subscription is never read from a test: a test that buys
