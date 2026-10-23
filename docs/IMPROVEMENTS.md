@@ -325,6 +325,76 @@ every platform. A flow may also declare `locale = "any"` when it reads nothing
 translated. Where an expectation fails on text and the replay's locale differs from the
 recorded one, the answer names both locales.
 
+### §PW630 a carve's cut wears the cutter's material, and a bake can mask by material
+
+Where it happened: Cottony RK168. An unearned star is a star-shaped pocket pressed into
+the bar. `tools/art/score_star_hole.toml` carves the puffy star (a `blend`) out of a
+cube plate. The sprite has to be cut to the pocket's mouth, because the plate around it
+belongs to the bar and not to the sprite.
+
+What came back: every face of the carve wears the plate's material. A test giving the
+plate a key green and the cutter brown rendered all green, the pocket included. So no
+render can say where the pocket ends and the plate begins. The render has no mask pass,
+and the bake answers with no coverage of the cut.
+
+Workaround: `tools/art/make_assets.py` `_star_mouth` recomputes the mouth by hand. It
+reads the declaration's `[params]` with tomllib, rebuilds the 2D field (a core circle
+and five ellipses through polyweave's own `blend.round_union`), foreshortens it by the
+camera's 18 degree elevation, and nudges it 2.5 px down. That number was found by laying
+the outline over a render by eye. It breaks whenever the declaration, the camera or the
+frame's centring moves.
+
+What polyweave should do: give the faces a carve makes the cutter's material, or the
+cutter's own `material` when the node names one, so the cut reads as its own surface.
+Then let a bake write a per-material mask (an ID pass or `masks = ["hole"]`) beside the
+picture. A pocket, a groove or an engraving could then be composed by its own coverage.
+
+### §PW631 inflate's height field is float end to end
+
+Where it happened: Cottony RK168, trying a puffy star by `inflate` before settling on a
+`blend`. There were two declarations.
+
+With a star outline (`outline = { shape = "star", ... }`), the inflated surface came
+back striped, with bands running across the arms.
+
+With `drawing = "<a rounded star PNG>"`, `soften` 0.5 to 3 and `floor = 0.5`, the face
+came back with concentric contour rings under the specular. They are the stair steps of
+an 8-bit height field, which a glossy coat raises to a high power, the same failure
+cottony-art-pipeline records for `blur`. Neither result was usable on candy, which is
+glossy by rule.
+
+Workaround: none inside inflate. The star became a `blend` of ellipsoids
+(`tools/art/score_star.toml`), which gives up the drawn outline.
+
+What polyweave should do: build inflate's height field in float32 end to end: the
+distance transform, the soften, and any resample. Then a glossy coat shows no steps.
+Find and fix whatever stripes an outline-shaped inflate along its arms. A regression
+check would inflate a five-point star with a coat and measure the luma's second
+derivative along an arm.
+
+### §PW632 crowned domes a concave outline by distance to its edge
+
+Where it happened: Cottony RK168. The score bar's stars needed to look like puffy
+moulded plastic, like screen1.png's. The first try was a `crowned` node over a rounded
+five-point outline (plush.shape_star, points passed as `outline = [[x, y], ...]`), with
+`crown` at 0.16 of the canvas and `steps = 20`.
+
+What came back: a pyramid. `solid.crowned` shrinks a concave ring toward its centroid
+(PW66, as its docstring says), so every arm rises along a straight ridge to the middle,
+and each ring between two points folds into a crease. More steps only add more rings to
+the same ridges. The docstring promises "a domed face", and it is one only on a convex
+outline.
+
+Workaround: `tools/art/score_star.toml` builds the star as a `blend` of a core sphere
+and five ellipsoid arms instead, repeated with `rotate = [0, 0, "i * 72"]`. That works,
+but the outline is no longer the drawn one. It is whatever five ellipsoids fillet into.
+
+What polyweave should do: give `crowned` a dome that follows distance from the edge, not
+the centroid: lift = f(distance to the outline), the way `inflate` does it, but on a
+float field (see the inflate line on contour rings) so it stays smooth. A concave
+outline would then dome like a pillow, with rounded valleys between the points. Or say
+on the node that a concave outline gets ridges, so nobody expects a pillow from it.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

@@ -25,6 +25,9 @@
 - 📋 **PW627** (deps: —) **mesh.buy cannot buy a textured mesh, so a toy whose colours make it must go through a project client** — Cottony's booster toys are fetched textured and had to bypass the ceiling and ledger through meshy.py. → §PW627
 - 📋 **PW628** (deps: —) **port.run bakes nothing when one member fails and takes no member list, so passing members wait on an unrelated one** — Cottony's two re-bought toys passed but could not bake beside an unchanged ball failing its spec. → §PW628
 - 📋 **PW629** (deps: —) **a recorded flow replays in whatever locale the machine has, so a flow recorded in pt-BR fails on an English CI runner** — Every flow that reads a translated label breaks on a machine in another language, and the failure reads as a changed screen. → §PW629
+- 📋 **PW630** (deps: —) **a carve's cut faces wear the plate's material, so no render can tell a pocket from the plate it is pressed into** — Composing an engraved pocket means recomputing its outline by hand from the declaration, tuned by eye to the camera. → §PW630
+- 📋 **PW631** (deps: —) **inflate stripes a star outline and rings a drawn one with contour steps, so a glossy inflated shape is unusable** — Candy is glossy by rule, so inflate cannot make any candy panel or puffy shape the style guide asks for. → §PW631
+- 📋 **PW632** (deps: —) **crowned over a concave outline rises in straight ridges to its centroid, so a star comes out a pyramid, never a pillow** — A puffy star or any concave plaque has to be faked from blended primitives, which loses the drawn outline. → §PW632
 
 ## Block I — Voxel models from a declaration
 
