@@ -16,6 +16,8 @@
 
 ## Block H — Proof on a real game
 
+- 📋 **PW621** (deps: —) **a project-drawn picture judged through a declared capture cannot be searched; each candidate is run by hand** — Choosing a layout seed for Cottony's sky took a throwaway loop over twenty seeds, 35 seconds each. → §PW621
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

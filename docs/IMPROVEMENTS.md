@@ -100,6 +100,34 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
+### §PW621 A sweep over a project's own generator, judged downstream
+
+Found in Cottony's RK158 (the board screen's sky). The sky is a panel the project draws
+in Python (`tools/art/make_assets.py`, `_sky_panel(width, height, seed)`) from clouds
+polyweave renders, and it is held through the board capture to
+`docs/design/accept/board_concept.accept.toml` (PW477's concept predicates). Which
+layout passes is a seed, and choosing it meant a loop of four steps per candidate,
+written as a throwaway script:
+
+1. call the project's drawing function at a seed and save `sky.png`;
+2. `$GODOT --headless --editor --quit` so the engine imports it;
+3. `engine.run_declared --runs ["board"]` to re-take the capture;
+4. `accept.check` on the capture, reading `failed`.
+
+Twenty seeds, about 35 seconds each, by hand. `search.sweep` and `port.run` search a
+render rig against a spec, but neither can turn a parameter of a project's own generator
+and judge the declared run's capture downstream of it.
+
+Expected: a sweep whose candidate is "run this project function with these arguments,
+then these declared runs, then this spec", answering each candidate's failed predicates
+and margins and the best one, with the import step done for it. The generator could be
+named in polyweave.toml the way `[extend.measures]` names a function.
+
+Also met in the same loop: on Windows PowerShell 5.1, `--runs '["board"]'` reaches
+polyweave without its inner quotes and is read as something else, silently: the run did
+not happen and the answer still said passed. It needed `'[\"board\"]'`. A list argument
+that does not parse as JSON should be refused, not run as nothing.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
