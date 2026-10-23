@@ -91,6 +91,21 @@ def test_a_region_that_sits_low_says_so_as_geometry(project):
     assert geometry["scale"] == 1.0
 
 
+def test_a_region_flush_with_the_captures_far_edges_is_measured(tmp_path):
+    """§PW619: Cottony's sky below the boosters, a search that slides to the capture's
+    bottom edge at a scale whose copy rounds down (1920 x 0.853 is 1638.4, kept as
+    1638), is measured rather than crashing the placement search."""
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    scene((1024, 1536), (220, 80, 120), (60, 140, 200)).save(tmp_path / "screen.png")
+    scene((1080, 1920), (220, 80, 120), (60, 140, 200)).save(tmp_path / "shot.png")
+    (tmp_path / "screen.concept.toml").write_text(
+        'painting = "screen.png"\n\n[region.below]\n'
+        'painting = [0, 1430, 1024, 106]\ncapture  = [0, 1600, 600, 318]\n',
+        encoding="utf-8")
+    found = concept("screen.concept.toml", "shot.png", root=str(tmp_path))
+    assert "geometry" in found["regions"]["below"]
+
+
 SPEC = """\
 asset = "screen"
 

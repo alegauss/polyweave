@@ -269,6 +269,7 @@
 - ✅ **PW592** **a clip.timeline cannot be played mirrored, so a roll left and right is declared as two files differing by one sign** — A timeline's [mirror] names a second animation with chosen tracks negated, both in one player, so a bank left and right is one file (design recorded in `docs/specs/motion.md`).
 - ✅ **PW594** **a game session leaves its own user:// folder in the work area once it ends, so engine caches pile up** — game.close removes a session's own user:// once its game has ended, and game.open sweeps those left by sessions that quit idle or crashed (design recorded in `docs/specs/driving.md`).
 - ✅ **PW597** **clip.shots frames carry no provenance record, and no shot can be kept as an artefact at a path** — clip.shots records each frame, keeps a chosen shot at a path, hides nodes while framing, and capture.again frames a kept shot again (design recorded in `src/polyweave/layers/motion/camera.py`).
+- ✅ **PW619** **reference.concept crashes with a Pillow traceback when a region ends on the capture's right or bottom edge** — reference.concept measures a region whose placement search reaches the capture's right or bottom edge, the crop held to the rounded copy's bounds.
 
 ## Block I — Voxel models from a declaration
 

@@ -187,7 +187,11 @@ def _aligned(painting, taken, box: tuple[int, ...]) -> dict:
         cut = (cx + dx - half_w, cy + dy - half_h, cx + dx + half_w, cy + dy + half_h)
         if cut[0] < 0 or cut[1] < 0 or cut[2] > taken.size[0] or cut[3] > taken.size[1]:
             return math.inf
-        got = small.resize(shape, Pil.Resampling.BOX, box=tuple(v * k for v in cut))
+        # The copy's size was rounded, so a cut ending on the capture's own edge can
+        # overshoot it by a fraction of a pixel: held to the copy's bounds (§PW619).
+        box = (cut[0] * k, cut[1] * k, min(cut[2] * k, small.size[0]),
+               min(cut[3] * k, small.size[1]))
+        got = small.resize(shape, Pil.Resampling.BOX, box=box)
         return float(np.abs(_luma(np.asarray(got, float) / 255.0) - want).mean())
 
     best = (miss(0, 0, 1.0), 0.0, 0.0, 1.0)

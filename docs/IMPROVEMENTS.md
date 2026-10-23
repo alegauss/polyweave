@@ -100,36 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW619 A concept region flush with the capture's edge
-
-Found adopting PW477 in Cottony (RK156), whose `docs/design/accept/board.concept.toml`
-declares margin and sky regions that run to the capture's edge, as a margin naturally
-does: `margin_right` ends at x = 1080 of a 1080-wide capture, `sky_below` at y = 1920.
-
-```
-python -m polyweave reference.concept --concept docs/design/accept/board.concept.toml \
-    --capture docs/design/screenshot-board.png --out .polyweave/concept/board
-```
-
-came back as a traceback, not an answer: `ValueError: box can't exceed original image
-size` from `_aligned`, at the very first `miss(0, 0, 1.0)`, which is the declared box
-itself.
-
-The cause is in `layers/reference/reference_concept.py`, `_aligned`: `miss` checks the
-cut against `taken.size`, the full capture, then crops `small`, a copy resized by `k`
-whose size is *rounded*. Where `round(width * k)` falls below `width * k`, a cut ending
-on the capture's own edge overshoots `small` by a fraction of a pixel and Pillow raises.
-The declared box is legal (`concept` already refuses one that runs off its picture), so
-the operation crashes on a file it accepted.
-
-Expected: a region that touches an edge is measured like any other, and the geometry
-search simply never tries a placement past it. Checking the cut against `small.size / k`
-(or clamping the scaled box to `small`'s bounds) would do it; a test with a region flush
-to the right and bottom edge at a size whose `k` rounds down holds it.
-
-Workaround in Cottony: every region that would touch the right or bottom edge stops 2 px
-short of it, with a comment naming this line. It can go once this ships.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

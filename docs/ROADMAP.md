@@ -16,8 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW619** (deps: —) **reference.concept crashes with a Pillow traceback when a region ends on the capture's right or bottom edge** — A margin or sky region runs to the edge by nature, and the file declaring it is accepted and then never measured. → §PW619
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
