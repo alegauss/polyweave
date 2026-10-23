@@ -395,6 +395,32 @@ float field (see the inflate line on contour rings) so it stays smooth. A concav
 outline would then dome like a pillow, with rounded valleys between the points. Or say
 on the node that a concave outline gets ridges, so nobody expects a pillow from it.
 
+### §PW633 Captures render the viewport the stretch gives a window
+
+Where it happened: Cottony RK175 laid the board screen out for a 16:9 PC window. The
+project runs `window/stretch/mode = canvas_items` with `aspect = expand` on a 1080 by
+1920 design. A real 1920 by 1080 window is therefore laid out as 3413 by 1920 units and
+scaled down.
+
+A declared capture asks for `resolution = "1920x1080"` (`capture.wanted(...,
+resolution=...)`), and the project's `tools/capture/environment.gd` sizes its
+SubViewport to it. That SubViewport has no stretch, so the game sees a 1920 by 1080
+viewport in units. Every unit-sized margin, pad and card comes out proportionally larger
+than the player's window shows, and the picture is of a layout no player gets.
+
+Workaround: `tools/capture/board_wide.gd` computes the stretch by hand. It renders at
+`(DESIGN.y * w / h, DESIGN.y)`, then `Image.resize`s to the window. Before that, a
+throwaway `.polyweave/wide.gd` did the same to preview layouts. Every capture of a wide
+screen would need the same arithmetic.
+
+What polyweave should do: read the project's `[display] window/stretch/*` and
+`window/size/viewport_*` from project.godot. A capture at a stated window resolution
+then renders the viewport the engine would give that window (the expanded or kept size
+in units) and scales the picture to the window's pixels. The environment line would
+report both: the window resolution and the viewport it was laid out in. A capture of a
+narrow phone and a wide PC screen would then each be the screen the player sees, with no
+project arithmetic.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
