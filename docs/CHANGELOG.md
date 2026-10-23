@@ -571,6 +571,7 @@
 - ✅ **PW614** **tools/operations_ts.py writes the SDK from whichever polyweave is installed, not the tree, and says it wrote it** — tools/operations_ts.py puts the tree's src first on the path, refuses another polyweave and names the one it described, so a stale install cannot write the SDK.
 - ✅ **PW615** **a sitting laid again under a family name that already holds a verdict is not listed as waiting on the review page** — An answer counts only from when its sitting was laid out, so a re-laid sitting waits and review.state names its unanswered families (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW616** **verdict.sitting crashes when a family name holds a character Windows forbids in a file name, such as a question mark** — A family keeps its name as written and its sheet takes a safe, unique file name, so a question mark no longer crashes a sitting (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW618** **the window's watch test counts one burst of writes as two on a loaded Linux runner, turning the gates red** — The watch test holds the watcher to the window's own 300 ms quiet, settles and zeroes its count before writing, so a late inotify event cannot read as a burst.
 
 ## Block V — Parts every game repeats, installed already proved
 
