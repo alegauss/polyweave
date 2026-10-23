@@ -158,6 +158,33 @@ model and the members.
 
 ## Block O — A person sees and answers
 
+### §PW620 A person sets the bar a look must reach
+
+Found in Cottony's RK156, which holds the board screen to its concept painting in 17
+regions through PW477's concept predicates
+(`docs/design/accept/board_concept.accept.toml`).
+
+Its design asks for each region's bar to be set from a sheet the owner looked at: the
+target the rest of the block climbs towards. Today every bound is `origin = "measured"`,
+today's value rounded outward, which only stops the screen walking away from the
+painting.
+
+`verdict.judge` cannot write that. `accept` takes the look as it is; `look` sends the
+renders back and keeps the bounds; `number` rewrites a *failed* bound to the measured
+value and is refused where the family passes (`loop.no-failed-bound`), which a measured
+bound always does on the day it is written. So a person looking at a region's sheet has
+no way to say "this region must reach a palette distance of 4", and the agent would type
+a person's number into the spec by hand, which PW109 exists to stop.
+
+Expected: a verdict that sets a bound tighter than the measured value, for a named
+predicate or for every predicate of a member, written as `origin = "person"` with the
+date and the sentence, offered on the page beside a concept sheet. It could take the
+number, or a fraction of the way to the painting, which a concept ratio already makes
+meaningful (1.0 is the painting).
+
+Workaround in Cottony: none. RK156 ships the measurement with measured bounds and waits
+on the owner for the targets.
+
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world

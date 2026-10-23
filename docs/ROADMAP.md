@@ -30,6 +30,8 @@
 
 ## Block O — A person sees and answers
 
+- 📋 **PW620** (deps: —) **a person looking at a sheet can accept, send back or relax a failed bound, but never set the target a bound must reach** — A concept region far from its painting needs a person's goal to climb towards, and no verdict writes one. → §PW620
+
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world
