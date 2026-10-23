@@ -102,6 +102,27 @@ stays a test.
 
 ## Block I — Voxel models from a declaration
 
+### §PW610 Icons rendered from a model
+
+Found in spinhold while planning its stage editor's palette (RK268): every tile is a
+small picture of one actor, and the actors are voxel models polyweave builds from
+declarations. Nothing turns a built model into that picture.
+
+`icons.build` builds a declared icon set from shapes, and the render operations make a
+turntable or a look for a person to judge, at review sizes. A game also needs its models
+as small, legible pictures for itself: a palette or inventory tile, a bestiary entry, a
+map marker, a store capsule's cast, a save slot. Today a project renders each by hand at
+some angle and crops it, and the picture goes stale the day the model changes.
+
+What polyweave should do: an icon in a set may name a model (a voxel declaration's
+output, or any mesh polyweave ingested) as its source, with a declared camera (a
+three-quarter view, a front view, the game's own camera), lighting, framing margin and
+background. It renders at each declared size and holds each to the set's legibility
+bounds, which for a model includes its silhouette still reading at the smallest size.
+The record names the model and its hash, so `provenance.outdated` reports every picture
+a model edit left behind and one call rebuilds them. A sitting shows the set for a
+person's verdict, as `icons.build --sitting` does.
+
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
@@ -129,6 +150,27 @@ Evidence that it landed: a second client builds, checks and offers one asset for
 verdict, and each gap it met is a filed line.
 
 ## Block L — What a run leaves as evidence
+
+### §PW612 Two runs' entity traces compared
+
+Found in spinhold while planning its stage editor: a criterion of its Block Z is that
+what the editor shows at a second is what the game flies at that second. The editor
+replays a level to the playhead through the game's own code; a headless run plays the
+same level. Proving they agree means comparing where every entity stands, second by
+second, in two runs, and nothing in polyweave compares two runs.
+
+The same question comes up whenever a game claims determinism: a replay against the run
+it recorded, a build against the one before, a fixed timestep against a variable one,
+two machines in a lockstep game, an editor preview against play.
+
+What polyweave should do: a trace contract for entity state (each line a time or frame,
+an entity's stable id, its kind and the fields the project declares, such as position,
+health, state), and an operation that reads two traces and answers whether they agree
+within the tolerances the project declares per field. Where they do not, it names the
+first entity and field that diverged, when, by how much, and what each run said, with
+the entities that diverged after it as consequences rather than separate failures. It
+can run as a gate check over a declared pair of runs. Nothing about the genre is built
+in: ids, fields and tolerances are the project's.
 
 ## Block M — What a game needs beyond the look
 
@@ -159,6 +201,29 @@ model and the members.
 ## Block O — A person sees and answers
 
 ## Block P — Music and sound a game can ship
+
+### §PW611 Waveform peaks and a beat grid beside each track
+
+Found in spinhold while planning its stage editor (RK279): the editor's timeline should
+draw the world's music under its ruler, its waveform and its beats, so an entry can be
+placed on a beat. Godot plays an Ogg Vorbis stream but gives a running game no access to
+its samples, so a game cannot draw a track's waveform itself, and the tempo it snaps to
+is a constant copied by hand from the score.
+
+`music.render` already knows a rendered track's tempo, meter, first beat and sections,
+and the audio it wrote. Beside each rendered track (and any track ingested for a game)
+it should write one small data file with provenance:
+
+- the waveform as peaks: per channel, a minimum and maximum per bucket at a few
+  declared resolutions, so a tool can zoom without decoding audio;
+- the beat grid: each beat's and each bar's second, with the tempo changes a score
+  declares, and the sections' names and starts;
+- loudness per bucket, for a tool that marks the drops.
+
+A track not rendered by polyweave gets the same file from analysis, with the beats it
+estimated marked as estimated rather than declared. The format is the engine's to read
+plainly (JSON or a resource), so any editor, rhythm view or music-synced effect loads
+it. The record names the audio's hash, so a re-render reports the file outdated.
 
 ## Block Q — Words held to the world
 
@@ -347,7 +412,102 @@ at, box, name)` to cut a kind's sample and read its colour from a frame. Until t
 Spinhold's RK198 cites frames, not tracks, and its comparison with `phase_poc` waits on
 this line.
 
+### §PW608 A level schema's reader and field metadata for the engine
+
+Found in spinhold while planning its stage editor (RK264, RK269, RK281). The keys of a
+level file, their bounds, units and what each means live in three places in that game:
+the reader's list of accepted keys and its refusals, the editor's table of bounds and
+steps, and the doc comments a person reads. Each new key is added three times, and they
+already disagree on what a person may type.
+
+§PW203 makes the schema a project's declaration (`[levels] schema`) and checks a level
+against it. That covers the checking. What the engine still lacks is the rest of what a
+declared schema knows:
+
+- **a typed reader**: `tables.check --write` already writes a typed script from a
+  declared table; the same for a nested level document (tables of arrays of tables, inline
+  tables, enumerations, cross-references to other entries), refusing a key by name as
+  the schema does;
+- **field metadata for tools**: per field its type, bounds, step, unit, default, the
+  values an enumeration allows and a one-line help, exported as a resource or JSON a
+  game's own editor or debug panel builds its inspector from;
+- **help in every locale**: the help text routed through the string table, so
+  `words.check` holds it like any other line.
+
+A level editor is the game's, not polyweave's (non-goal "A graphical editor"); this
+gives that editor its fields from the one declaration. Proven on two genres' schemas, as
+§PW205 asks of the level contract.
+
+### §PW609 A draft level from an accepted transcription
+
+Found in spinhold (RK198, RK258, and the library of pieces RK274 plans). A reference
+video is read with `reference.frames`, `reference.events` and `reference.objects`, laid
+out with `reference.transcription`, and a person answers it row by row. What comes next
+is by hand: an agent reads the accepted rows (what arrives, how many, from where, in
+what formation, at what second) and retypes them into the game's level file. Two stages
+have been carried over this way, each a long session of retyping and a source of slips
+the transcription had already settled.
+
+polyweave should take that step: `reference.draft` (or a mode of `level.compile`) turns
+an accepted transcription into a draft level in the project's own declared schema
+(§PW203). The mapping is the project's, declared once beside the schema: which column of
+a row becomes which field, how a row's time becomes the level's clock, how a named
+formation or kind maps to the project's names, what a row with no mapping becomes. No
+genre is compiled in: a shooter maps rows to spawn groups, a rhythm game to notes, a
+platformer to placed objects.
+
+The draft is written with its provenance naming the transcription, its verdicts and the
+mapping, marked as a draft so a person still tunes it; rows a person corrected carry
+their corrected value, and a row nobody answered is refused, not guessed.
+
+### §PW613 A measure shipped into the engine as a proved kit
+
+Found in spinhold while planning its stage editor (RK278): the editor should draw a
+stage's threat curve and its gaps as each edit is made. `measure.pressure` computes
+exactly that, but in Python, over a JSON file the game wrote. A tool running inside the
+engine (a level editor, a debug overlay, a balance view) cannot call it each frame, so
+the project would port the formula to GDScript, and the two would drift: the in-game
+view would say one thing and the gate another.
+
+polyweave already ships proved parts into a game as kits (PW340 to PW343,
+`docs/specs/kit.md`). A measure that a running game needs should ship the same way: a
+kit whose core is the measure in the engine's language, taking the same inputs (`events`
+as `{second, kind, weight, until}`, `warp`, `window`) and giving the same result fields.
+Its proof runs both versions over a set of fixtures and over the installing project's
+own exported events, and fails on any difference past a stated tolerance, so the engine
+copy can never drift from the one the gate uses.
+
+Start with `measure.pressure`, the one a level tool asks for live; the contract should
+let any other measure with plain-data inputs follow (the level probe's measures, a level
+measure such as `measure.level`). Nothing about waves or enemies is compiled in: kinds
+and weights are the caller's, as they are for the Python measure.
+
 ## Block S — Playing the game, not only rendering it
+
+### §PW607 Pointer gestures for the game driver
+
+Found in spinhold while planning its stage editor (Block Z, RK264 to RK284): nearly
+every tool there is a gesture, and none can be driven.
+
+`game.input` sends an action, a key, or a left click at a node's centre or a point
+(driver.gd, `_input`): a motion to the point, then a press and a release on the same
+frame. Nothing else a pointer does can be sent. A game with any tool built on the mouse
+(an editor, an inventory, a map, a card game, a strategy game's box selection) cannot
+have a flow that does what a player does:
+
+- **drag**: press at one node or point, move through points over N frames, release at
+  another, so Godot's `_get_drag_data` / `_can_drop_data` / `_drop_data` run as they do
+  for a person;
+- **modifiers** held on a click, a drag or a key: Shift, Ctrl, Alt, Meta;
+- **other buttons**: right and middle, a double click;
+- **the wheel**, up and down, with modifiers, at a point;
+- **typing** a string into the focused control, as text events, not key names one by one.
+
+Each takes the same addressing a click does (a node by path, group or class, or a point)
+and the same off-screen refusal. `game.keep` writes them into a flow and `game.replay`
+replays them, so a mouse tool's case runs in the gate without an agent.
+
+Done when a fixture is driven through each verb and a kept flow replays it.
 
 ## Block T — Adopting polyweave in a project
 

@@ -18,11 +18,15 @@
 
 ## Block I — Voxel models from a declaration
 
+- 📋 **PW610** (deps: —) **a built model cannot be made into a small picture of itself, so a palette tile or bestiary entry is cropped by hand** — Each such picture is rendered at some angle by hand and goes stale the day its model changes, with nothing to report it. → §PW610
+
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
 
 ## Block L — What a run leaves as evidence
+
+- 📋 **PW612** (deps: —) **two runs of the same level cannot be compared, so no one can say which entity diverged first, or when** — Determinism a game claims, for replays, builds, lockstep or an editor's preview, has no check that names where it broke. → §PW612
 
 ## Block M — What a game needs beyond the look
 
@@ -31,6 +35,8 @@
 ## Block O — A person sees and answers
 
 ## Block P — Music and sound a game can ship
+
+- 📋 **PW611** (deps: —) **a rendered track leaves no waveform peaks or beat grid, so a game's tool cannot draw its music or snap to its beat** — Godot gives a running game no access to an Ogg stream's samples, and the tempo a tool snaps to is copied by hand. → §PW611
 
 ## Block Q — Words held to the world
 
@@ -42,8 +48,13 @@
 - 📋 **PW205** (deps: PW202, PW203) **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once. → §PW205
 - 📋 **PW206** (deps: PW204, PW205) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
 - 📋 **PW327** (deps: PW205) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both. → §PW327
+- 📋 **PW608** (deps: PW203) **a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help** — Each level key is written again in the reader, the editor and the docs, and the three drift apart. → §PW608
+- 📋 **PW609** (deps: PW203) **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed. → §PW609
+- 📋 **PW613** (deps: —) **measure.pressure runs only in Python over an exported file, so a tool in the running game cannot measure a level** — A project ports the formula to the engine and the two drift, so the in-game view and the gate disagree. → §PW613
 
 ## Block S — Playing the game, not only rendering it
+
+- 📋 **PW607** (deps: —) **game.input can only click; it cannot drag, hold a modifier, press another button, turn the wheel or type text** — Any game with a mouse tool, an editor, an inventory or a box selection, has no flow that does what its player does, so none of it reaches the gate. → §PW607
 
 ## Block T — Adopting polyweave in a project
 
