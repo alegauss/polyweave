@@ -204,6 +204,77 @@ own code (`driver.fragile-path`) naming the step to re-record, rather than
 
 Workaround: `scripts/drift.gd` and `scripts/game.gd` in Cottony name the new nodes.
 
+### §PW625 A ceiling with no date says so
+
+Found in Cottony's RK163 on 2026-10-23. The owner set a ceiling for three booster toys,
+and `[budget]` in polyweave.toml was written `credits = 90`, `expires = ""`. Then:
+
+```
+python -m polyweave purchase.remaining
+declared: 90.0   spent: 0.0   left: 0.0   expires: null   spendable: false
+why: the budget has no expiry, and one without a date never lapses
+```
+
+The answer refuses to spend and gives as its reason a sentence that argues the opposite:
+a budget that never lapses should be spendable. `left: 0.0` beside `declared: 90.0` with
+nothing spent says nothing about why. Setting `expires = "2026-11-30"` made it
+spendable, so the real rule is that a ceiling needs a date - which is a sound rule, and
+a refusal should say it.
+
+Expected: `why` states the rule and the door: "a ceiling with no expiry is not
+spendable: give [budget] expires a date", as a `budget.no-expiry` code `explain` knows,
+and `left` reports the declared amount with `spendable: false` rather than 0.0, so the
+two fields do not contradict.
+
+Workaround: none needed; the date is set in Cottony's polyweave.toml.
+
+### §PW626 Background is what reaches the edge
+
+Found in Cottony's RK163 on 2026-10-23, cutting the three booster toys out of the
+concept painting (each standing in a powder-blue well) to send to the mesh service.
+
+```
+python -m polyweave reference.prepare --photo .polyweave/toys/shuffle.crop.png \
+    --out tools/art/3d/booster_shuffle.painted.png --longest 512 --tolerance 48
+```
+
+The hammer came out clean. The ball lost its blue and green bands and the shooting star
+lost most of its blue rainbow tail: `prepare` takes every pixel near the edge's colour
+wherever it is in the picture, so a subject that shares a hue with its background is cut
+into pieces. A lower tolerance kept the well's shading instead.
+
+Expected: background is what is connected to the edge. Flood from the border (and, for a
+subject on a vignetted or gradient ground, from many points round it, each compared with
+its own neighbourhood), then keep the largest remaining piece so isolated sparkles go
+too. A `mode = "colour"` could keep today's behaviour for a ground that shows through
+holes.
+
+Workaround: Cottony's `tools/art/booster_toys.py` floods from the corners and 64 points
+round each well's rim and keeps the largest piece, and names this line.
+
+### §PW627 A textured mesh bought through the plugin
+
+Found in Cottony's RK163 on 2026-10-23. The booster toys - a pink mallet with a yellow
+heart, a rainbow shooting star - are what they are by their colours, and Cottony's
+committed toys were fetched textured (`should_texture` true, a `texture_prompt`) by its
+own `meshy.py`, from before `mesh.buy`. Re-buying them from the painting through the
+plugin was the plan, and `mesh.buy` cannot: it always sends `should_texture` off and
+takes no texture prompt, so the mallet would come back one colour. The purchase had to
+go back through `tools/art/meshy.py`, which `[adoption.own]` keeps only as "the Meshy
+client the committed meshes were fetched with".
+
+Expected: `mesh.buy` takes `texture = true` with a `texture_prompt` (and the service's
+texture resolution), books the textured price row, and records the prompt and resolution
+on the ledger, so a project's textured fetch goes through the ceiling and the ledger
+like every other purchase.
+
+Also met: a 402 from Meshy can mean the plan, not the balance (`NoMorePendingTasks`,
+"task creation on the free plan is no longer supported", with 300 credits left).
+`fetch.over-budget` would misname it; a `fetch.plan` code with the service's message
+would not.
+
+Workaround: Cottony's `tools/art/meshy.py`, which still textures.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

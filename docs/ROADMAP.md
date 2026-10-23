@@ -20,6 +20,9 @@
 - 📋 **PW622** (deps: —) **a capture warns same settings, different picture when a script the scene reaches by class_name changed** — PW488 named the sprites a scene draws; a changed class is still read as an undeclared setting, not as different work. → §PW622
 - 📋 **PW623** (deps: —) **vfx.build only writes 3D scenes in metres, so a 2D game's particle drift is written by hand** — Cottony's board screen is 2D, and its star drift repeated a declaration's worth of numbers in a script. → §PW623
 - 📋 **PW624** (deps: —) **a recorded flow addresses nodes by Godot's @Class@N names, so any new unnamed node breaks the replay** — Eight unrelated particle emitters in Cottony renumbered every generated name and a flow found nothing to press. → §PW624
+- 📋 **PW625** (deps: —) **purchase.remaining refuses a ceiling with no expiry and says, as its reason, that it never lapses** — Cottony's 90 credits read left 0 and not spendable, with a why that argued the opposite and named no door. → §PW625
+- 📋 **PW626** (deps: —) **reference.prepare cuts every pixel near the edge colour, so a subject sharing a hue with its ground loses parts** — Cottony's rainbow ball lost its blue and green bands and the star most of its tail to the well's blue. → §PW626
+- 📋 **PW627** (deps: —) **mesh.buy cannot buy a textured mesh, so a toy whose colours make it must go through a project client** — Cottony's booster toys are fetched textured and had to bypass the ceiling and ledger through meshy.py. → §PW627
 
 ## Block I — Voxel models from a declaration
 
