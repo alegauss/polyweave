@@ -270,6 +270,190 @@ def test_a_held_action_stays_pressed_until_released(tmp_path):
         session.close()
 
 
+#: A stage editor's worth of gestures (§PW607): a tile dragged onto a slot through
+#: Godot's own drag and drop, a pad that counts every other button, the wheel and the
+#: modifiers held on them, and a field to type a name into.
+GESTURES = """extends Node2D
+
+var dropped := ""
+var dropped_at := []
+var right := 0
+var middle := 0
+var doubles := 0
+var wheel := 0
+var shift_wheel := 0
+var ctrl_click := 0
+var shift_held := 0
+var moved := 0
+
+class Tile extends ColorRect:
+\tfunc _get_drag_data(_at: Vector2) -> Variant:
+\t\treturn "tile"
+
+class Slot extends ColorRect:
+\tvar main: Node
+\tfunc _can_drop_data(_at: Vector2, data: Variant) -> bool:
+\t\treturn data == "tile"
+\tfunc _drop_data(at: Vector2, data: Variant) -> void:
+\t\tmain.dropped = data
+\t\tmain.dropped_at = [at.x, at.y]
+
+func _ready() -> void:
+\tvar tile := Tile.new()
+\ttile.name = "Tile"
+\ttile.position = Vector2(20, 20)
+\ttile.size = Vector2(80, 80)
+\tadd_child(tile)
+\tvar slot := Slot.new()
+\tslot.name = "Slot"
+\tslot.main = self
+\tslot.position = Vector2(160, 20)
+\tslot.size = Vector2(80, 80)
+\tadd_child(slot)
+\tvar pad := ColorRect.new()
+\tpad.name = "Pad"
+\tpad.position = Vector2(300, 20)
+\tpad.size = Vector2(300, 200)
+\tpad.gui_input.connect(_on_pad)
+\tadd_child(pad)
+\tvar field := LineEdit.new()
+\tfield.name = "Field"
+\tfield.position = Vector2(20, 260)
+\tfield.size = Vector2(240, 40)
+\tadd_child(field)
+
+func _on_pad(event: InputEvent) -> void:
+\tif event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
+\t\tmoved += 1
+\tif not (event is InputEventMouseButton and event.pressed):
+\t\treturn
+\tif Input.is_key_pressed(KEY_SHIFT):
+\t\tshift_held += 1
+\tmatch event.button_index:
+\t\tMOUSE_BUTTON_RIGHT:
+\t\t\tright += 1
+\t\tMOUSE_BUTTON_MIDDLE:
+\t\t\tmiddle += 1
+\t\tMOUSE_BUTTON_WHEEL_UP:
+\t\t\twheel += 1
+\t\t\tif event.shift_pressed:
+\t\t\t\tshift_wheel += 1
+\t\tMOUSE_BUTTON_WHEEL_DOWN:
+\t\t\twheel -= 1
+\t\tMOUSE_BUTTON_LEFT:
+\t\t\tif event.ctrl_pressed:
+\t\t\t\tctrl_click += 1
+\tif event.double_click:
+\t\tdoubles += 1
+"""
+
+SAID = ["dropped", "dropped_at", "right", "middle", "doubles", "wheel", "shift_wheel",
+        "ctrl_click", "shift_held", "moved"]
+
+
+def gestured(tmp_path: Path) -> Path:
+    root = game(tmp_path)
+    (root / "main.gd").write_text(GESTURES, encoding="utf-8")
+    return root
+
+
+def test_every_gesture_a_mouse_tool_takes_reaches_the_game(tmp_path):
+    """§PW607: Spinhold's stage editor is gestures, and the driver could only click."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    session = Driven(gestured(tmp_path))
+    try:
+        dragged = session.ask("input", drag={"from": {"path": "Tile"},
+                                             "to": {"path": "Slot"}, "frames": 6})
+        assert dragged["result"] == {"from": [60, 60], "to": [200, 60], "lasts": 7}
+        session.ask("step", frames=7)
+        session.ask("input", click={"path": "Pad", "button": "right"})
+        session.ask("input", click={"path": "Pad", "button": "middle"})
+        session.ask("input", click={"path": "Pad", "double": True}, mods=["ctrl"])
+        session.ask("input", wheel={"path": "Pad", "steps": 3}, mods=["shift"])
+        session.ask("input", wheel={"at": [400, 100], "steps": -1})
+        session.ask("input", drag={"from": {"at": [320, 40]}, "to": {"at": [580, 200]},
+                                   "through": [[580, 40]], "frames": 4,
+                                   "button": "right"})
+        session.ask("step", frames=6)
+        said = session.ask("query", path=".", properties=SAID)["result"][0]
+        assert said["properties"] == {
+            "dropped": "tile", "dropped_at": [40, 40], "right": 2, "middle": 1,
+            "doubles": 1, "wheel": 2, "shift_wheel": 3, "ctrl_click": 2,
+            "shift_held": 3, "moved": 4,
+        }
+        session.ask("input", click={"path": "Field"})
+        session.ask("step")
+        session.ask("input", text="Spinhold 1")
+        session.ask("step")
+        typed = session.ask("query", path="Field", properties=["text"])["result"][0]
+        assert typed["properties"]["text"] == "Spinhold 1"
+        for wrong in ({"click": {"path": "Pad", "button": "fourth"}},
+                      {"click": {"path": "Pad"}, "mods": ["hyper"]},
+                      {"wheel": {"path": "Pad", "steps": 0}},
+                      {"drag": {"from": {"path": "Tile"}}},
+                      {"text": "x", "mods": ["shift"]}):
+            assert session.ask("input", **wrong)["error"] == "driver.bad-command"
+        off = session.ask("input", drag={"from": {"path": "Tile"},
+                                         "to": {"at": [900, 9]}})
+        assert off["error"] == "driver.off-screen"
+        assert "drag's end" in off["message"]
+    finally:
+        session.close()
+
+
+def test_a_kept_drag_replays_with_no_agent(tmp_path):
+    """§PW607: a mouse tool's case runs in the gate once game.keep has written it."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(gestured(tmp_path))
+    session = driving.opened(root)["session"]
+    try:
+        lasts = driving.inputted(session, drag="Tile", to="Slot", frames=5,
+                                 mods=["Shift"], root=root)["result"]["lasts"]
+        driving.stepped(session, frames=lasts, root=root)
+        driving.inputted(session, wheel=-2, over="Pad", root=root)
+        driving.inputted(session, at=[400, 100], button="right", double=True, root=root)
+        driving.stepped(session, root=root)
+        seen = driving.queried(session, path=".",
+                               properties=["dropped", "wheel", "right"], root=root)
+        assert seen["result"][0]["properties"] == {"dropped": "tile", "wheel": -2,
+                                                   "right": 2}
+        kept = driving.kept(session, out="tests/flows/drag.flow.json",
+                            proves="a tile dragged onto its slot lands there",
+                            expect=[seen["step"]], root=root)
+    finally:
+        driving.closed(session, root=root)
+    flow = json.loads(Path(kept["flow"]).read_text(encoding="utf-8"))
+    assert flow["steps"][0]["drag"] == {"from": {"path": "Tile"},
+                                        "to": {"path": "Slot"}, "frames": 5}
+    assert flow["steps"][0]["mods"] == ["shift"]
+    replayed = driving.replayed("tests/flows/drag.flow.json", root=root)
+    assert replayed["ok"] is True, replayed["why"]
+
+
+def test_an_input_that_names_two_gestures_or_none_is_refused_before_sending(tmp_path):
+    for asked in ({}, {"click": "A", "drag": "B"}, {"key": "Space", "button": "right"},
+                  {"drag": "A"}, {"wheel": 1}, {"wheel": 1, "over": "A", "at": [1, 1]}):
+        with pytest.raises(PolyweaveError) as refused:
+            driving.inputted("nobody", root=str(tmp_path), **asked)
+        assert refused.value.code == "game.bad-target", asked
+
+
+def test_a_kept_drag_is_rekeyed_at_both_of_its_ends():
+    fields = {"drag": {"from": {"path": "@C@1"}, "to": {"path": "@C@2"}, "frames": 3},
+              "mods": ["ctrl"]}
+    assert driving._step_paths(fields) == ["@C@1", "@C@2"]
+    keyed = driving._selected(fields, {"@C@1": {"class": "Tile"},
+                                       "@C@2": {"class": "Slot"}})
+    assert keyed["drag"] == {"from": {"select": {"class": "Tile"}},
+                             "to": {"select": {"class": "Slot"}}, "frames": 3}
+    assert fields["drag"]["from"] == {"path": "@C@1"}, "the step kept is not changed"
+    clicked = driving._selected({"click": {"path": "@C@1", "button": "right"}},
+                                {"@C@1": {"class": "Tile"}})
+    assert clicked["click"] == {"select": {"class": "Tile"}, "button": "right"}
+
+
 SEEDED = """extends Node2D
 
 var rng := RandomNumberGenerator.new()

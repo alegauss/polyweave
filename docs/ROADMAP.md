@@ -54,11 +54,13 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW607** (deps: —) **game.input can only click; it cannot drag, hold a modifier, press another button, turn the wheel or type text** — Any game with a mouse tool, an editor, an inventory or a box selection, has no flow that does what its player does, so none of it reaches the gate. → §PW607
-
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs
+
+- 📋 **PW614** (deps: —) **tools/operations_ts.py writes the SDK from whichever polyweave is installed, not the tree, and says it wrote it** — With an older copy in site-packages the regeneration the stale test asks for changes nothing and still reports success. → §PW614
+- 📋 **PW615** (deps: —) **a sitting laid again under a family name that already holds a verdict is not listed as waiting on the review page** — New members nobody judged look answered, so the person sees nothing to review and the agent hands out direct links. → §PW615
+- 📋 **PW616** (deps: —) **verdict.sitting crashes when a family name holds a character Windows forbids in a file name, such as a question mark** — A person's family names are prose, so a question mark crashes the sitting and the agent renames what the person reads. → §PW616
 
 ## Block V — Parts every game repeats, installed already proved
 

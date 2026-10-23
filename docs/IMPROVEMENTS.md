@@ -484,31 +484,6 @@ and weights are the caller's, as they are for the Python measure.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW607 Pointer gestures for the game driver
-
-Found in spinhold while planning its stage editor (Block Z, RK264 to RK284): nearly
-every tool there is a gesture, and none can be driven.
-
-`game.input` sends an action, a key, or a left click at a node's centre or a point
-(driver.gd, `_input`): a motion to the point, then a press and a release on the same
-frame. Nothing else a pointer does can be sent. A game with any tool built on the mouse
-(an editor, an inventory, a map, a card game, a strategy game's box selection) cannot
-have a flow that does what a player does:
-
-- **drag**: press at one node or point, move through points over N frames, release at
-  another, so Godot's `_get_drag_data` / `_can_drop_data` / `_drop_data` run as they do
-  for a person;
-- **modifiers** held on a click, a drag or a key: Shift, Ctrl, Alt, Meta;
-- **other buttons**: right and middle, a double click;
-- **the wheel**, up and down, with modifiers, at a point;
-- **typing** a string into the focused control, as text events, not key names one by one.
-
-Each takes the same addressing a click does (a node by path, group or class, or a point)
-and the same off-screen refusal. `game.keep` writes them into a flow and `game.replay`
-replays them, so a mouse tool's case runs in the gate without an agent.
-
-Done when a fixture is driven through each verb and a kept flow replays it.
-
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs
@@ -536,6 +511,70 @@ before handing the window over, and every friction filed as its own line in this
 It is not a test run. A change of plan that the owner asks for mid-way ("undo, try the
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
+
+### §PW614 The SDK written from the tree it sits in
+
+Found while shipping PW607: the new `game.input` parameters were in `src/`, and `python
+tools/operations_ts.py` answered "wrote gui/packages/core/src/operations.generated.ts:
+208 operations" while writing the same file as before. The script imports `polyweave`
+from wherever Python finds it first, and on this desk that is a non-editable copy in the
+user's site-packages, older than the tree. Only `PYTHONPATH=src` made it write the
+tree's parameters.
+
+pytest is not fooled, since `pyproject.toml` puts `src` on its path, so
+`tests/test_operations_ts.py` reports the file stale; the trap is the regeneration the
+test's own message tells the agent to run, which then "succeeds" without changing
+anything and sends the agent back to the red test.
+
+The script already knows `ROOT`. Putting `ROOT / "src"` first on `sys.path` before the
+import makes it describe the tree it sits in, whatever is installed. Its answer could
+also name the module file it described, so a run against another copy shows it. The same
+check is worth making for any other script under `tools/` that imports `polyweave` to
+write a committed file.
+
+Done when the script, run with an older polyweave installed and no PYTHONPATH, writes
+the tree's operations.
+
+### §PW615 a re-laid sitting reads as answered
+
+Seen in spinhold on 2026-10-23. Three sittings were laid out again with
+`verdict_sitting` after the game changed: art/review/rk262 (family
+`rk262-unseen-reveal`, which had a "look" verdict on the old members),
+art/review/rk259-stage-bar (family `stage bar`, one member accepted the day before) and
+art/review/rk252-map-tags (family `map`, a "look" on the old screen). The owner opened
+the review page and saw only rk261-diorama-life under "Sessões esperando por você",
+reporting "nao esta aparecendo". The new members had never been judged, yet the page
+treated the sittings as answered, apparently matching verdicts by family name rather
+than by the members and pictures now in the sitting.
+
+The workaround was to lay a new sitting with fresh family names
+(art/review/2026-10-23-mapa-e-hud) and hand the person its direct `?sitting=` link.
+
+What polyweave should do: a sitting is waiting while any of its current members (by name
+and by the picture's digest) has no verdict given after the sitting was laid; an older
+verdict on the same family name answers the old members only. `review.state` should say,
+for each sitting, whether it is waiting and which members are unanswered, so an agent
+can check before telling a person to look. A sitting of kind `unheld` should be listed
+the same way as one with specs.
+
+### §PW616 verdict.sitting writes a family's name as a file name
+
+Seen in spinhold on 2026-10-23. The MCP call `verdict_sitting` with `families = {"RK262
+card ? refeito": [...]}` and `out = art/review/2026-10-23-mapa-e-hud` answered
+`op.crashed`: `OSError: [Errno 22] Invalid argument: '...\RK262 card ? refeito.png'`
+from `Image.py:2585 in save`. The family name is used verbatim as the sheet's file name,
+and Windows forbids `? * : < > | "` in one. The refusal said only that polyweave had a
+defect.
+
+Families are named for a person to read, in their own language, and a question mark or a
+colon is ordinary there. The workaround was to rename the family ("card de
+interrogacao"), which changes the words the person sees on the page.
+
+What polyweave should do: keep the family's name as written for display, and derive the
+sheet's file name from it safely (replace forbidden characters and trailing dots or
+spaces, keep it unique within the folder), recording the mapping in sitting.json. A name
+that cannot be made safe is refused before anything is written, with `code`, the
+offending character and a `remedy`, never a crash.
 
 ## Block V — Parts every game repeats, installed already proved
 

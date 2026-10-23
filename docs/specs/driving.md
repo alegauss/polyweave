@@ -98,7 +98,7 @@ them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 | `cmd` | Fields | What it does, and what `result` is |
 |---|---|---|
 | `query` | `path`, or `group`, or `class`; optional `properties` | The nodes found, each `{path, class, properties}`. A path is absolute from `/root` or relative to the current scene. Without `properties`: `name`, `visible`, `position`, `text` and `disabled` where the node has them |
-| `input` | `action` or `key`, with `hold` or `release`; or `click` with `path` or `at` | Queued, and delivered when the next frames pass — so a signal the input causes fires inside the `step` or `wait` that follows, where a wait armed for it sees it. An action or a key goes through `Input.parse_input_event`, which is what a game polling `Input.is_action_pressed` reads; a tap presses on one frame and releases on the next, so `is_action_just_pressed` sees it once; `hold` sends only the press, kept down across frames until a `release` (§PW216). A click goes through `Viewport.push_input`, moving the pointer there first, since a Button fires only while hovered; `click` at a node aims at its centre on screen (a Control's rect, a Node2D's position, through its canvas transform), and `at` is a point in the viewport. `result` says where a click lands |
+| `input` | `action` or `key`, with `hold` or `release`; or `click`, `drag`, `wheel` or `text` (see below); `mods` on any but an action and a text | Queued, and delivered when the next frames pass — so a signal the input causes fires inside the `step` or `wait` that follows, where a wait armed for it sees it. Every event goes through `Input.parse_input_event`, which is what a game polling `Input.is_action_pressed` or `Input.get_mouse_position` reads; a tap presses on one frame and releases on the next, so `is_action_just_pressed` sees it once; `hold` sends only the press, kept down across frames until a `release` (§PW216). A click moves the pointer there first, since a Button fires only while hovered; `click` at a node (`path` or `select`) aims at its centre on screen (a Control's rect, a Node2D's position, through its canvas transform), and `at` is a point in the viewport. `result` says where a click or a wheel lands, and a drag's `from`, `to` and `lasts` |
 | `step` | `frames` (default 1) | Lets that many frames pass, then holds |
 | `wait` | `frames` budget, and one of `signal` + `path`, `node` (a path or group that must exist), or `path` + `property` + `equals` | Lets frames pass until the condition holds or the budget is spent; `result` is `{met, frames}`. An unmet wait is `ok` with `met: false` — the budget ran out, which is an answer and not an error |
 | `call` | `path`, `method`, optional `args` | Calls a method the game exposes for setup, and returns its value. An awaited coroutine is not waited on; a caller that needs it done follows with `wait` |
@@ -107,6 +107,31 @@ them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 | `set` | `path`, `property`, `value` | Sets a property for setup, a nested one written `rng:seed` (Godot's `set_indexed`), and answers `{was, now}`; an int stays an int though JSON sends a float. How a flow seeds a generator the game made itself, which `--seed` does not reach (§PW217) |
 | `selector` | `path`, or any target | The selector that picks this one node out now, `{select}`, or `select: null` where none does |
 | `close` | — | Answers, then quits |
+
+**A pointer does what a player's does** (§PW607). A stage editor, an inventory or a box
+selection is built on gestures, and each is a field of `input`, aimed as a click is:
+
+- `click` takes `button` (`left`, the default, `right` or `middle`) and `double`, which
+  presses twice in the frame, the second press marked `double_click` as Godot marks it.
+- `drag` is `{"from": <target>, "to": <target>, "through": [[x, y], ...], "frames": 10,
+  "button": "left"}`: the press at `from` on the first frame, one motion a frame along
+  the line through `through` over `frames` frames, carrying the button's mask, and the
+  release at `to` on the last, so `_get_drag_data`, `_can_drop_data` and `_drop_data` run
+  as they do for a person. `lasts` is the frames that must pass for it to finish,
+  `frames + 1`.
+- `wheel` is `{<target>, "steps": n}`, up above 0 and down below, a press and release of
+  the wheel button per step.
+- `text` is a string typed into the focused control as text events, one per character;
+  a newline is Enter and a tab is Tab.
+- `mods`, a list of `shift`, `ctrl`, `alt` and `meta`, sets each on every event of a key,
+  click, drag or wheel and presses each modifier's own key before and lets it go after,
+  so a game reading `Input.is_key_pressed(KEY_SHIFT)` sees it held. With `hold` the
+  modifiers stay down, and with `release` they come up.
+
+A target is `{"path"}`, `{"select"}` or `{"at": [x, y]}`, and every point a gesture
+touches, a drag's corners included, is held to the viewport as a click is. `game.keep`
+writes a gesture as it was sent, with a selector for each generated path at either end of
+a drag, and `game.replay` replays it.
 
 **A node may be named by what it is** (§PW270). Wherever a command takes `path` it also
 takes `select`, as `click` does inside it: `{"class": <engine class or script
@@ -146,7 +171,7 @@ agent reads a game's health with no path and no print. A game with no state kit 
 | `driver.no-method` | a `call` to a method the node does not have |
 | `driver.no-picture` | a `shot` in a run that renders nothing |
 | `driver.shot-not-written` | a `shot` whose PNG was not written, with the engine's error |
-| `driver.off-screen` | a click outside the viewport, where nothing can be hovered |
+| `driver.off-screen` | a click, a wheel or a point of a drag outside the viewport, where nothing can be hovered |
 | `driver.no-state` | a `state` read in a game that carries no state kit |
 
 ## The session tools
@@ -174,6 +199,10 @@ between connections.
 - `game.query`, `game.input`, `game.step`, `game.wait`, `game.call` and `game.shot` each
   forward one command. `game.query` takes one of `path`, `group` and `of_class`;
   `game.wait` takes `prop` and `equals` (a JSON value), a `signal`, or a `node`.
+  `game.input` takes one of `action`, `key`, `click` or `at`, `drag` or `drag_at` (with
+  `to` or `to_at`, `through` and `frames`), `wheel` (with `over` or `at`) and `text`,
+  besides `button`, `double` and `mods`; two of them, or none, is refused before anything
+  is sent.
 - `game.batch` sends a list of commands in one call, each as the driver takes it
   (`{"cmd": "input", "click": {"path": "UI/Play"}}`), answering each with its `step`
   (§PW271). From a terminal every call is a process, and a match-3 level's loop of

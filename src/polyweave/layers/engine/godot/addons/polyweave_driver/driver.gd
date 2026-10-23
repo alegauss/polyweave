@@ -138,21 +138,21 @@ var queued: Array = []
 
 
 ## Deliver what is due on the frame about to run, and bring the rest a frame nearer.
-## An action or a key goes through Input, which is what a game polling
-## Input.is_action_pressed reads; a click goes to the viewport, where hovering is.
+## Everything goes through Input, which is what a game polling Input.is_action_pressed
+## reads and where the window takes it from. A pointer event too: pushed into the
+## viewport instead, Input's mouse position stayed at the corner, and a drop read
+## there landed at (0, 0) of the screen whatever the drag let go on (§PW607).
 func _deliver() -> void:
 	var later := []
 	for item in queued:
 		if item["after"] > 0:
 			item["after"] -= 1
 			later.append(item)
-		elif item["via"] == "input":
+		else:
 			Input.parse_input_event(item["event"])
 			# Buffered input waits for the next frame's flush; applied now, it lands on
-			# the frame about to run, as a viewport event does.
+			# the frame about to run.
 			Input.flush_buffered_events()
-		else:
-			root.push_input(item["event"], true)
 	queued = later
 
 
@@ -556,9 +556,27 @@ func _state(asked: Dictionary) -> Dictionary:
 	return {"result": load(kit).read(asked.get("names", []))}
 
 
+## The mouse buttons a click or a drag may press, by the name the protocol gives them.
+const BUTTONS := {"left": MOUSE_BUTTON_LEFT, "right": MOUSE_BUTTON_RIGHT,
+	"middle": MOUSE_BUTTON_MIDDLE}
+const MASKS := {MOUSE_BUTTON_LEFT: MOUSE_BUTTON_MASK_LEFT,
+	MOUSE_BUTTON_RIGHT: MOUSE_BUTTON_MASK_RIGHT, MOUSE_BUTTON_MIDDLE: MOUSE_BUTTON_MASK_MIDDLE}
+## The modifiers a key, a click, a drag or the wheel may hold (§PW607).
+const MODIFIERS := {"shift": KEY_SHIFT, "ctrl": KEY_CTRL, "alt": KEY_ALT, "meta": KEY_META}
+
+
 func _input(asked: Dictionary) -> Dictionary:
 	var events := []
 	var landed = null
+	var answer := {}
+	var mods: Array = asked.get("mods", []) if asked.get("mods") is Array else []
+	for one in mods:
+		if not MODIFIERS.has(str(one)):
+			return _refused("driver.bad-command",
+				"there is no modifier %s; the modifiers are shift, ctrl, alt and meta" % one)
+	if not mods.is_empty() and (asked.has("action") or asked.has("text")):
+		return _refused("driver.bad-command",
+			"an action or a text holds no modifiers; give the key, or hold the modifier's key first")
 	# A tap presses on one frame and releases on the next, so a game polling
 	# is_action_just_pressed sees it pressed; `hold` sends only the press and `release`
 	# only the release, for a game that polls is_action_pressed across frames (§PW216).
@@ -573,7 +591,7 @@ func _input(asked: Dictionary) -> Dictionary:
 			event.action = StringName(str(asked["action"]))
 			event.pressed = half[0]
 			event.strength = 1.0 if half[0] else 0.0
-			events.append({"event": event, "via": "input", "after": half[1]})
+			events.append({"event": event, "after": half[1]})
 	elif asked.has("key"):
 		var code := OS.find_keycode_from_string(str(asked["key"]))
 		if code == KEY_NONE:
@@ -583,44 +601,206 @@ func _input(asked: Dictionary) -> Dictionary:
 			event.keycode = code
 			event.physical_keycode = code
 			event.pressed = half[0]
-			events.append({"event": event, "via": "input", "after": half[1]})
+			_modified(event, mods)
+			events.append({"event": event, "after": half[1]})
 	elif asked.has("click"):
 		var click: Dictionary = asked["click"] if asked["click"] is Dictionary else {}
-		var at: Vector2
-		if click.has("at"):
-			at = Vector2(click["at"][0], click["at"][1])
-		else:
-			var nodes := _found(click)
-			if nodes.is_empty() or not (nodes[0] is CanvasItem):
-				return _refused("driver.no-node", "nothing on screen answers %s" % _named(click))
-			at = _centre(nodes[0])
-		var seen := root.get_visible_rect()
-		if not seen.has_point(at):
-			# A pointer outside the window hovers nothing, so a button there takes the
-			# press and never fires; a project with no window size runs at 64 by 64.
-			return _refused("driver.off-screen",
-				"the click at %s is outside the %d by %d viewport, where nothing is hovered; set display/window/size in project.godot"
-				% [at, int(seen.size.x), int(seen.size.y)])
+		var button := _button(click)
+		if button == MOUSE_BUTTON_NONE:
+			return _refused("driver.bad-command",
+				"there is no button %s; the buttons are left, right and middle" % click.get("button"))
+		var at = _point(click, "click")
+		if at is Dictionary:
+			return at
 		landed = at
 		# The pointer arrives before it presses: a Button fires on release only while
 		# the mouse is over it, and hovering is what a motion event sets.
-		var moved := InputEventMouseMotion.new()
-		moved.position = at
-		moved.global_position = at
-		events.append({"event": moved, "via": "viewport", "after": 0})
-		for pressed in [true, false]:
-			var event := InputEventMouseButton.new()
-			event.button_index = MOUSE_BUTTON_LEFT
-			event.pressed = pressed
-			event.position = at
-			event.global_position = at
-			events.append({"event": event, "via": "viewport", "after": 0})
+		events.append(_moved(at, Vector2.ZERO, 0, mods, 0))
+		var presses := [true, false, true, false] if click.get("double", false) else [true, false]
+		for index in presses.size():
+			var event := _pressed(button, presses[index], at, mods)
+			# The second press is the one Godot marks as the double click.
+			event.double_click = index == 2
+			events.append({"event": event, "after": 0})
+	elif asked.has("drag"):
+		var drag = _dragged(asked["drag"], mods)
+		if drag.has("error"):
+			return drag
+		events = drag["events"]
+		answer = drag["result"]
+	elif asked.has("wheel"):
+		var wheel: Dictionary = asked["wheel"] if asked["wheel"] is Dictionary else {}
+		var steps := int(wheel.get("steps", 0))
+		if steps == 0:
+			return _refused("driver.bad-command",
+				"the wheel turns by steps, up above 0 and down below it, never 0")
+		var at = _point(wheel, "wheel")
+		if at is Dictionary:
+			return at
+		landed = at
+		events.append(_moved(at, Vector2.ZERO, 0, mods, 0))
+		var turned := MOUSE_BUTTON_WHEEL_UP if steps > 0 else MOUSE_BUTTON_WHEEL_DOWN
+		for _one in absi(steps):
+			for pressed in [true, false]:
+				var event := _pressed(turned, pressed, at, mods)
+				event.factor = 1.0
+				events.append({"event": event, "after": 0})
+	elif asked.has("text"):
+		# As text events, one per character, which is what a focused LineEdit or
+		# TextEdit inserts; a newline and a tab are their keys, since neither is text.
+		for character in str(asked["text"]):
+			for pressed in [true, false]:
+				var event := InputEventKey.new()
+				event.pressed = pressed
+				if character == "\n" or character == "\t":
+					event.keycode = KEY_ENTER if character == "\n" else KEY_TAB
+					event.physical_keycode = event.keycode
+				else:
+					event.unicode = character.unicode_at(0)
+				events.append({"event": event, "after": 0})
 	else:
-		return _refused("driver.bad-command", "input takes an action, a key or a click")
+		return _refused("driver.bad-command",
+			"input takes an action, a key, a click, a drag, a wheel or a text")
+	# The modifiers are their own keys too, pressed before and let go after, so a game
+	# reading Input.is_key_pressed(KEY_SHIFT) sees them as it would a person's (§PW607).
+	if not mods.is_empty():
+		var last := 0
+		for item in events:
+			last = maxi(last, item["after"])
+		var around := []
+		if not asked.get("release", false):
+			for one in mods:
+				around.append({"event": _modifier(str(one), true), "after": 0})
+		events = around + events
+		if not asked.get("hold", false):
+			for one in mods:
+				events.append({"event": _modifier(str(one), false), "after": last})
 	# Delivered when the next frame passes, not now: a signal the input causes then fires
 	# inside a `step` or `wait`, where a wait armed for it can see it.
 	queued.append_array(events)
-	return {"result": {"at": landed} if landed != null else {}}
+	if landed != null:
+		answer["at"] = landed
+	return {"result": answer}
+
+
+## The button a click or a drag names, left where it names none; NONE for a name not one.
+func _button(asked: Dictionary) -> int:
+	return BUTTONS.get(str(asked.get("button", "left")), MOUSE_BUTTON_NONE)
+
+
+## Where a target lands on screen: its `at`, or the centre of the node it names. A
+## refusal comes back as the Dictionary to answer instead, off the viewport included.
+func _point(target: Dictionary, what: String) -> Variant:
+	var at: Vector2
+	if target.has("at"):
+		at = Vector2(target["at"][0], target["at"][1])
+	else:
+		var nodes := _found(target)
+		if nodes.is_empty() or not (nodes[0] is CanvasItem):
+			return _refused("driver.no-node", "nothing on screen answers %s" % _named(target))
+		at = _centre(nodes[0])
+	var seen := root.get_visible_rect()
+	if not seen.has_point(at):
+		# A pointer outside the window hovers nothing, so a button there takes the
+		# press and never fires; a project with no window size runs at 64 by 64.
+		return _refused("driver.off-screen",
+			"the %s at %s is outside the %d by %d viewport, where nothing is hovered; set display/window/size in project.godot"
+			% [what, at, int(seen.size.x), int(seen.size.y)])
+	return at
+
+
+## A press from one target to another through the points between, a motion a frame, so
+## Godot's own drag and drop runs as it does for a person (§PW607): the press on the
+## first frame, the pointer moving over `frames` frames, the release on the last.
+func _dragged(given, mods: Array) -> Dictionary:
+	var drag: Dictionary = given if given is Dictionary else {}
+	var button := _button(drag)
+	if button == MOUSE_BUTTON_NONE:
+		return _refused("driver.bad-command",
+			"there is no button %s; the buttons are left, right and middle" % drag.get("button"))
+	if not (drag.get("from") is Dictionary) or not (drag.get("to") is Dictionary):
+		return _refused("driver.bad-command",
+			"a drag takes from and to, each a path, a select or an at")
+	var count := int(drag.get("frames", 10))
+	if count < 1:
+		return _refused("driver.bad-command", "a drag moves over a number of frames, 1 or more")
+	var start = _point(drag["from"], "drag's start")
+	if start is Dictionary:
+		return start
+	var end = _point(drag["to"], "drag's end")
+	if end is Dictionary:
+		return end
+	var corners: Array = [start]
+	for one in drag.get("through", []):
+		var through = _point({"at": one}, "drag's point")
+		if through is Dictionary:
+			return through
+		corners.append(through)
+	corners.append(end)
+	var length := 0.0
+	for index in range(1, corners.size()):
+		length += corners[index - 1].distance_to(corners[index])
+	var events := [_moved(start, Vector2.ZERO, 0, mods, 0)]
+	events.append({"event": _pressed(button, true, start, mods), "after": 0})
+	var mask: int = MASKS[button]
+	var was: Vector2 = start
+	for frame_at in range(1, count + 1):
+		var now := _along(corners, length * frame_at / count)
+		events.append(_moved(now, now - was, mask, mods, frame_at))
+		was = now
+	var release := _pressed(button, false, end, mods)
+	events.append({"event": release, "after": count})
+	return {"events": events, "result": {"from": start, "to": end, "lasts": count + 1}}
+
+
+## The point a distance along a line through corners.
+func _along(corners: Array, distance: float) -> Vector2:
+	for index in range(1, corners.size()):
+		var piece: float = corners[index - 1].distance_to(corners[index])
+		if distance <= piece or index == corners.size() - 1:
+			return corners[index - 1].lerp(corners[index], clampf(distance / piece, 0.0, 1.0)
+				if piece > 0.0 else 1.0)
+		distance -= piece
+	return corners[-1]
+
+
+func _moved(at: Vector2, relative: Vector2, mask: int, mods: Array, after: int) -> Dictionary:
+	var moved := InputEventMouseMotion.new()
+	moved.position = at
+	moved.global_position = at
+	moved.relative = relative
+	moved.button_mask = mask
+	_modified(moved, mods)
+	return {"event": moved, "after": after}
+
+
+func _pressed(button: int, pressed: bool, at: Vector2, mods: Array) -> InputEventMouseButton:
+	var event := InputEventMouseButton.new()
+	event.button_index = button
+	event.pressed = pressed
+	event.position = at
+	event.global_position = at
+	if pressed and MASKS.has(button):
+		event.button_mask = MASKS[button]
+	_modified(event, mods)
+	return event
+
+
+func _modified(event: InputEventWithModifiers, mods: Array) -> void:
+	event.shift_pressed = "shift" in mods
+	event.ctrl_pressed = "ctrl" in mods
+	event.alt_pressed = "alt" in mods
+	event.meta_pressed = "meta" in mods
+
+
+## A modifier's own key going down or up, as the keyboard sends it.
+func _modifier(named: String, pressed: bool) -> InputEventKey:
+	var event := InputEventKey.new()
+	event.keycode = MODIFIERS[named]
+	event.physical_keycode = MODIFIERS[named]
+	event.pressed = pressed
+	_modified(event, [named] if pressed else [])
+	return event
 
 
 func _centre(item: CanvasItem) -> Vector2:

@@ -358,10 +358,21 @@ def _generated(path: Any) -> bool:
     return isinstance(path, str) and "@" in path
 
 
+def _targets(fields: dict) -> list[dict]:
+    """The places an input aims at: its click, its wheel, and a drag's two ends."""
+    drag = fields.get("drag") if isinstance(fields.get("drag"), dict) else {}
+    found = [fields.get("click"), fields.get("wheel"), drag.get("from"), drag.get("to")]
+    return [one for one in found if isinstance(one, dict)]
+
+
+def _paths(fields: dict) -> list:
+    """Every path one command reaches a node by, its own and its input's targets'."""
+    return [fields.get("path"), *(one.get("path") for one in _targets(fields))]
+
+
 def _selectors(session: str, root, cmd: str, fields: dict, result: Any) -> dict:
     """A selector for each generated path a command used or answered (§PW270)."""
-    paths = [fields.get("path"), (fields.get("click") or {}).get("path")
-             if isinstance(fields.get("click"), dict) else None]
+    paths = _paths(fields)
     if cmd == "query" and isinstance(result, list):
         paths += [one.get("path") for one in result if isinstance(one, dict)]
     found = {}
@@ -378,12 +389,10 @@ def _selectors(session: str, root, cmd: str, fields: dict, result: Any) -> dict:
 
 def _selected(fields: dict, selectors: dict) -> dict:
     """A kept step with each generated path it used put as the selector found for it."""
-    out = dict(fields)
-    if out.get("path") in selectors:
-        out["select"] = selectors[out.pop("path")]
-    click = out.get("click")
-    if isinstance(click, dict) and click.get("path") in selectors:
-        out["click"] = {"select": selectors[click["path"]]}
+    out = json.loads(json.dumps(fields))
+    for one in [out, *_targets(out)]:
+        if one.get("path") in selectors:
+            one["select"] = selectors[one.pop("path")]
     return out
 
 
@@ -516,26 +525,96 @@ def inputted(
     action: Annotated[str, Param("an input action, pressed and released")] = "",
     key: Annotated[str, Param("a key by name, e.g. Space")] = "",
     click: Annotated[str, Param("a node's path to click at the centre of")] = "",
-    at: Annotated[list, Param("a point in the viewport to click, [x, y]")] = (),
+    at: Annotated[
+        list, Param("a point in the viewport to click, or to turn the wheel at, [x, y]")
+    ] = (),
     hold: Annotated[bool, Param("press the action or key and keep it held")] = False,
     release: Annotated[bool, Param("release an action or key held before")] = False,
+    button: Annotated[
+        str, Param("the button a click or a drag presses: left, right or middle")
+    ] = "",
+    double: Annotated[bool, Param("make the click a double click")] = False,
+    mods: Annotated[
+        list, Param("modifiers on a key, click, drag or wheel: shift, ctrl, alt, meta")
+    ] = (),
+    drag: Annotated[str, Param("a node's path a drag presses on, at its centre")] = "",
+    drag_at: Annotated[list, Param("a point a drag presses on, [x, y]")] = (),
+    to: Annotated[str, Param("a node's path a drag lets go on, at its centre")] = "",
+    to_at: Annotated[list, Param("a point a drag lets go on, [x, y]")] = (),
+    through: Annotated[
+        list, Param("points a drag passes through on its way, [[x, y], ...]")
+    ] = (),
+    frames: Annotated[
+        int, Param("the frames a drag moves over, one motion each", lo=1)
+    ] = 10,
+    wheel: Annotated[
+        int, Param("wheel steps, up above 0 and down below, at `at` or over `over`")
+    ] = 0,
+    over: Annotated[str, Param("a node's path the wheel turns over")] = "",
+    text: Annotated[str, Param("a string typed into the focused control")] = "",
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
-    """Press an action or a key, or click a node or a point; it lands next frame."""
-    halves = {k: True for k, v in (("hold", hold), ("release", release)) if v}
+    """Press an action or key, click, drag, turn the wheel or type; it lands next frame.
+
+    A click takes `button` and `double`; a drag presses on `drag` or `drag_at`, moves
+    through `through` over `frames` frames and lets go on `to` or `to_at`, so Godot's
+    own drag and drop runs, and answers `lasts`, the frames it needs to pass. `mods`
+    hold Shift, Ctrl, Alt or Meta through a key, click, drag or wheel (§PW607).
+    """
+    given = [name for name, value in (
+        ("action", action), ("key", key), ("click", click or (at and not wheel)),
+        ("drag", drag or drag_at), ("wheel", wheel), ("text", text)) if value]
+    if len(given) != 1:
+        raise PolyweaveError(
+            "game.bad-target",
+            "an input is one thing: an action, a key, a click, a drag, a wheel or a "
+            "text" + (f", and this gave {', '.join(given)}" if given else ""),
+            "give one of action, key, click or at, drag or drag_at, wheel and text",
+        )
+    if (button or double) and given[0] not in ("click", "drag"):
+        raise PolyweaveError(
+            "game.bad-target",
+            "button and double are a click's, or a drag's button",
+            "give them with click or at, or button with drag",
+        )
+    held = {k: True for k, v in (("hold", hold), ("release", release)) if v}
+    if mods:
+        held["mods"] = [str(one).lower() for one in mods]
+    pressing = {"button": button} if button else {}
     if action:
-        return send(session, "input", root=root, action=action, **halves)
+        return send(session, "input", root=root, action=action, **held)
     if key:
-        return send(session, "input", root=root, key=key, **halves)
-    if click:
-        return send(session, "input", root=root, click={"path": click})
-    if at:
-        return send(session, "input", root=root, click={"at": list(at)})
-    raise PolyweaveError(
-        "game.bad-target",
-        "an input needs an action, a key, a node to click or a point",
-        "give one of action, key, click and at",
-    )
+        return send(session, "input", root=root, key=key, **held)
+    if text:
+        return send(session, "input", root=root, text=text)
+    if wheel:
+        aim = _aimed(over, at, "over", "at", "the wheel")
+        return send(session, "input", root=root, wheel={**aim, "steps": int(wheel)},
+                    **held)
+    if drag or drag_at:
+        gesture = {
+            "from": _aimed(drag, drag_at, "drag", "drag_at", "a drag"),
+            "to": _aimed(to, to_at, "to", "to_at", "a drag's end"),
+            "frames": int(frames), **pressing,
+        }
+        if through:
+            gesture["through"] = [list(one) for one in through]
+        return send(session, "input", root=root, drag=gesture, **held)
+    if double:
+        pressing["double"] = True
+    aim = {"path": click} if click else {"at": list(at)}
+    return send(session, "input", root=root, click={**aim, **pressing}, **held)
+
+
+def _aimed(path: str, point, by_path: str, by_point: str, what: str) -> dict:
+    """The one place a gesture aims at, a node's path or a point."""
+    if bool(path) == bool(point):
+        raise PolyweaveError(
+            "game.bad-target",
+            f"{what} aims at one place, a node or a point",
+            f"give exactly one of {by_path} and {by_point}",
+        )
+    return {"path": path} if path else {"at": list(point)}
 
 
 @operation("game.step")
@@ -846,12 +925,7 @@ def kept(
         written.write(json.dumps(flow, indent=2) + "\n")
     # A generated path no selector picked out stays, and is said, since a node added
     # ahead of it breaks the flow (§PW270).
-    fragile = sorted({
-        one for step in steps
-        for one in (step.get("path"), (step.get("click") or {}).get("path")
-                    if isinstance(step.get("click"), dict) else None)
-        if _generated(one)
-    })
+    fragile = sorted({one for step in steps for one in _step_paths(step)})
     return {
         "flow": str(where),
         "steps": len(steps),
@@ -999,9 +1073,7 @@ def crash_read(
 
 def _step_paths(step: dict) -> list[str]:
     """The generated paths one kept step reaches its node by."""
-    click = step.get("click")
-    found = [step.get("path"), click.get("path") if isinstance(click, dict) else None]
-    return [one for one in found if _generated(one)]
+    return [one for one in _paths(step) if _generated(one)]
 
 
 @operation("game.rekey")

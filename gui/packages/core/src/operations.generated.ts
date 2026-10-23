@@ -458,7 +458,7 @@ export interface GameExportSmokeArgs {
   root?: string
 }
 
-/** Press an action or a key, or click a node or a point; it lands next frame. */
+/** Press an action or key, click, drag, turn the wheel or type; it lands next frame. */
 export interface GameInputArgs {
   /** the session game.open answered */
   session: string
@@ -468,12 +468,36 @@ export interface GameInputArgs {
   key?: string
   /** a node's path to click at the centre of */
   click?: string
-  /** a point in the viewport to click, [x, y]; default [] */
+  /** a point in the viewport to click, or to turn the wheel at, [x, y]; default [] */
   at?: unknown[]
   /** press the action or key and keep it held; default false */
   hold?: boolean
   /** release an action or key held before; default false */
   release?: boolean
+  /** the button a click or a drag presses: left, right or middle */
+  button?: string
+  /** make the click a double click; default false */
+  double?: boolean
+  /** modifiers on a key, click, drag or wheel: shift, ctrl, alt, meta; default [] */
+  mods?: unknown[]
+  /** a node's path a drag presses on, at its centre */
+  drag?: string
+  /** a point a drag presses on, [x, y]; default [] */
+  drag_at?: unknown[]
+  /** a node's path a drag lets go on, at its centre */
+  to?: string
+  /** a point a drag lets go on, [x, y]; default [] */
+  to_at?: unknown[]
+  /** points a drag passes through on its way, [[x, y], ...]; default [] */
+  through?: unknown[]
+  /** the frames a drag moves over, one motion each; from 1 to …; default 10 */
+  frames?: number
+  /** wheel steps, up above 0 and down below, at `at` or over `over`; default 0 */
+  wheel?: number
+  /** a node's path the wheel turns over */
+  over?: string
+  /** a string typed into the focused control */
+  text?: string
   /** the project the game belongs to; default "." */
   root?: string
 }

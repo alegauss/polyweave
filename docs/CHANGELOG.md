@@ -507,6 +507,7 @@
 - ✅ **PW278** **a kept expectation on a dictionary or array of numbers fails every replay, since 1 is compared to 1.0 as text** — The driver compares numbers as numbers inside a Dictionary or Array, so an expectation on a tally replays as passed and a wrong one still fails.
 - ✅ **PW339** **game.open ignores the resolution and locale [capture] declares, and game.shot does not say what it took** — game.open runs in [capture]'s resolution and locale unless the call names its own, and game.shot answers the size and locale it took, naming a gap (design recorded in `docs/specs/driving.md`).
 - ✅ **PW599** **game.set given a vector as a JSON list writes it as zero and answers as if it worked** — game.set turns a JSON list or a spelt vector into the property's vector, colour, rect or quaternion, and refuses one it cannot, naming the shape it wants.
+- ✅ **PW607** **game.input can only click; it cannot drag, hold a modifier, press another button, turn the wheel or type text** — game.input drags through Godot's drop, clicks right, middle and double, turns the wheel, types and holds modifiers; a kept drag replays (design recorded in `docs/specs/driving.md`).
 
 ## Block T — Adopting polyweave in a project
 

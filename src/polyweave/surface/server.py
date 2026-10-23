@@ -68,7 +68,9 @@ CORE_TOOLS = 39_000
 #: (§PW600), each inside its layer's own figure.
 #: 138,123 with clip.shots's loop and panel.capture's (§PW600), whose motion layer's
 #: figure rose by 300 for them.
-SESSION_BUDGET = 138_400
+#: 139,516 with game.input's drag, wheel, text, button, double and mods (§PW607),
+#: inside the engine layer's own figure.
+SESSION_BUDGET = 139_800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {
