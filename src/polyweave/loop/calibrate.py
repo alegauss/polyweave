@@ -397,7 +397,10 @@ def _inline(bound: dict) -> str:
 
     def spelled(value) -> str:
         # A JSON string is a TOML basic string for everything a sentence holds.
-        return f"{value:g}" if isinstance(value, int | float) else json.dumps(value)
+        # A bool is an int to Python and `true` to TOML, so it is asked about first.
+        if isinstance(value, int | float) and not isinstance(value, bool):
+            return f"{value:g}"
+        return json.dumps(value)
 
     keys = ["value", "origin"] + [
         k for k in accept.BOUND_KEYS if k not in ("value", "origin") and k in bound

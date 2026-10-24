@@ -603,6 +603,142 @@ def judge(
     }
 
 
+@operation("verdict.target", guard=person.targeting)
+def target(
+    members: Annotated[list, Param(MEMBERS)],
+    targets: Annotated[
+        dict, Param("each predicate's id, or a member's name for all its predicates, "
+                    "to the number the person said it must reach")
+    ],
+    why: Annotated[str, Param("the person's own sentence, as they said it")],
+    *,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    run: Annotated[dict, Param("the open loop run the verdict is recorded in")] = None,
+    asset: Annotated[
+        str, Param("with no run: the asset a run is opened and closed for, here")
+    ] = None,
+    when: Annotated[str, Param("the date of the verdict; today where empty")] = "",
+    code: Annotated[str, Param(CODE)] = "",
+) -> dict:
+    """The bar a person says a look must reach, written into its spec (§PW620).
+
+    `accept`, `look` and `number` take the look as it is; this sets where it has to
+    get to. Each target is written past today's value on the bound that faces it, a
+    `min` above it or a `max` below it, as `origin = "person"` with `target = true`,
+    the date and the sentence, so a miss reads as a goal not yet reached rather than a
+    look that moved. A target today's look already meets, one looser than its bound,
+    or one on a side the predicate does not bound is `loop.bad-target`. Called as a
+    tool it needs `code`, the one the page shows for a sitting laying out these
+    members: only a person sets a bar. The look is not accepted, and the ledger says so.
+    """
+    members = members_of(members)
+    if not str(why).strip():
+        raise PolyweaveError(
+            "loop.no-reason",
+            "a target came with no sentence",
+            "pass the person's own words as `why`, as they said them",
+        )
+    if not isinstance(targets, dict) or not targets:
+        raise PolyweaveError(
+            "loop.bad-target",
+            "no target was named",
+            'pass targets as {"<predicate id or member name>": <number>}',
+        )
+    here = Path(root).resolve()
+    checked = [(member, *_checked(member, here)) for member in members]
+    known = {r["id"] for *_, found in checked for r in found["predicates"]}
+    known |= {member["name"] for member, spec, *_ in checked if spec is not None}
+    unknown = sorted(set(targets) - known)
+    if unknown:
+        raise PolyweaveError(
+            "loop.unknown-predicate",
+            f"the target names {', '.join(unknown)}, which is neither a predicate of a "
+            "member's spec nor a member with one",
+            "name predicates or members from: " + ", ".join(sorted(known)),
+            given=unknown[0],
+            allowed=known,
+        )
+    stamp = when or Date.today().isoformat()
+    # Every bound settled before any spec is written, so a bad target refuses them all.
+    planned = []
+    for member, spec, spec_path, found in checked:
+        if spec is None:
+            continue
+        by_id = {p.id: p for p in spec.predicates}
+        out: dict = {}
+        for result in found["predicates"]:
+            reach = targets.get(result["id"], targets.get(member["name"]))
+            if reach is None:
+                continue
+            side, bound = _aimed(by_id[result["id"]], result, reach, member["name"])
+            out[result["id"]] = {side: {**bound, "date": stamp, "why": why}}
+        if out:
+            planned.append((member, spec_path, found, out))
+    opened = run is None and bool(asset)
+    if opened:
+        run = loop.judging(str(asset), root=str(here))
+    answers = []
+    for member, spec_path, found, out in planned:
+        if run is not None:
+            loop.judged(
+                run, tool_passed=found["passed"], person_accepted=False,
+                why=f"{member['name']}: {why}", check=found, named=sorted(out),
+                root=str(here), member=member["name"],
+            )
+        written = calibrate.apply(spec_path, {"apply": out}, root=here,
+                                  person=True)["written"]
+        answers.append({
+            "name": member["name"],
+            "written": written,
+            "targets": {pid: {s: b["value"] for s, b in sides.items()}
+                        for pid, sides in out.items()},
+        })
+    if opened:
+        loop.finish(run, root=str(here))
+    return {
+        "why": why,
+        "members": answers,
+        "says": f"{sum(len(one['written']) for one in answers)} bound(s) set as a "
+        "person's target; each fails until the look reaches it",
+        "ledger": f"recorded in a run opened and closed for {asset}"
+        if opened
+        else "recorded in the open run"
+        if run is not None
+        else "not recorded: no run was open; pass run= from loop.start, or asset=",
+    }
+
+
+def _aimed(p, result: dict, reach, member: str) -> tuple[str, dict]:
+    """The side a target is written on and its bound, or `loop.bad-target`."""
+    if isinstance(reach, bool) or not isinstance(reach, int | float):
+        raise PolyweaveError(
+            "loop.bad-target",
+            f"{p.id}'s target is {reach!r}, and a target is a number",
+            "pass the value the person said it must reach",
+            given=str(reach),
+        )
+    value, reach = float(result["value"]), float(reach)
+    side = "min" if reach > value else "max" if reach < value else None
+    now = None if side is None else p.minimum if side == "min" else p.maximum
+    said = None
+    if side is None:
+        said = (f"{p.id} of {member} measures {value:g} already, so {reach:g} is where "
+                "the look is, not where it has to get to")
+        remedy = "say accept, or name a number past today's value"
+    elif now is None:
+        past = "above" if side == "min" else "below"
+        said = (f"{p.id} has no {side}, so a target {past} today's {value:g} has no "
+                "bound to be written on")
+        remedy = f"write a {side} on {p.id} in its spec first, then set the target"
+    elif (side == "min" and reach <= now) or (side == "max" and reach >= now):
+        said = (f"{p.id}'s {side} is {now:g} already, and {reach:g} would loosen it")
+        remedy = "a bound the look should pass looser is moved with number"
+    if said:
+        raise PolyweaveError("loop.bad-target", said, remedy, given=str(reach))
+    return side, {"value": reach, "origin": "person", "measured": round(value, 6),
+                  "target": True, "old": now}
+
+
 @operation("verdict.promote", guard=person.promoting)
 def promote(
     gate: Annotated[str, Param("the gate run the picture was refused in, by its id")],

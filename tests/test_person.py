@@ -123,6 +123,21 @@ def test_promote_needs_the_code_above_the_page_s_lanes(project):
     assert said["refused"]["code"] == "verdict.not-the-person"
 
 
+def test_a_target_is_a_bar_only_a_person_sets(project):
+    """§PW620: an agent typing a person's number into a spec is what PW109 stops."""
+    refused, said = tool("verdict_target", members=stars(project),
+                         targets={"tone": 0.1}, why="darker", root=str(project))
+    assert refused
+    assert said["refused"]["code"] == "verdict.not-the-person"
+    assert "sets the bar a look must reach" in said["refused"]["message"]
+    code = person.issue(project, SITTING)
+    refused, said = tool("verdict_target", members=stars(project),
+                         targets={"tone": 0.1}, why="darker", code=code,
+                         root=str(project))
+    assert not refused, said
+    assert said["members"][0]["targets"] == {"tone": {"max": 0.1}}
+
+
 def test_a_window_s_own_server_is_the_person_s_surface(project, monkeypatch):
     monkeypatch.setenv(person.SURFACE, "window")
     refused, said = tool("verdict_judge", members=stars(project), choice="accept",

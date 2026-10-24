@@ -317,7 +317,8 @@ ORIGINS = ("measured", "margin", "person")
 
 #: What a bound written as a table may say beside its number. `spread` is how far the
 #: measure moved on its own under harmless changes, where calibration found it (§PW107).
-BOUND_KEYS = ("value", "origin", "measured", "spread", "date", "why")
+#: `target` marks a person's bound set past the look, which it has to reach (§PW620).
+BOUND_KEYS = ("value", "origin", "measured", "spread", "date", "why", "target")
 
 
 def _origin(entry: dict, key: str, name: str) -> dict | None:
@@ -652,6 +653,13 @@ def _meaning(name: str, side: str, origin: dict) -> str:
             f"{name} missed its {side}, a margin put by hand"
             + (f" over the measured {guarded:g}" if guarded is not None else "")
             + ": the number may be what is wrong, not the look"
+        )
+    if kind == "person" and origin.get("target"):
+        when = origin.get("date")
+        return (
+            f"{name} has not reached its {side}, a target a person set"
+            + (f" {when}" if when else "")
+            + ": the look has further to go"
         )
     if kind == "person":
         when = origin.get("date")

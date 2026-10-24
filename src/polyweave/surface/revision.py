@@ -510,7 +510,8 @@ def paid() -> list[str]:
 
 
 #: The tools a revision's session never has: a verdict is the person's (non-goal).
-WITHHELD = ("mcp__polyweave__verdict_judge", "mcp__polyweave__verdict_promote")
+WITHHELD = ("mcp__polyweave__verdict_judge", "mcp__polyweave__verdict_promote",
+            "mcp__polyweave__verdict_target")
 
 
 @operation("revision.settings")

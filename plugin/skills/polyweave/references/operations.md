@@ -14,7 +14,7 @@
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector`, `picture.copies` |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
-| Carry a person's verdict (an accept needs the page's `code`) | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`, `verdict.answer`, `verdict.move`, `verdict.place`; `review` shows one, `verdict.answers` resumes |
+| Carry a person's verdict (an accept needs the page's `code`) | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `verdict.target` (a bar the look must reach, always needs `code`), `sound.sitting`, `verdict.answer`, `verdict.move`, `verdict.place`; `review` shows one, `verdict.answers` resumes |
 | The decision screen | `review.state`, `review.words`, `review.canon`, `review.compare`, `review.answer` |
 | Asked changes | `revision.ask`, `revision.open`, `revision.turn`, `revision.check`, `revision.settings`, `revision.outside`, `revision.close` |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |

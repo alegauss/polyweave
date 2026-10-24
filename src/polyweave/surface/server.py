@@ -49,7 +49,8 @@ TOOL_BUDGET = 4500
 #: What the kernel's and the loop's own tools may cost the list, every project's.
 #: Each layer's figure is its own, in its `layer.py`, beside the code that grows it
 #: (§PW510): measured at 37,550 here when the figure moved.
-CORE_TOOLS = 39_000
+#: 39,740 with verdict.target (§PW620), a person's bar, which is the loop's own.
+CORE_TOOLS = 40_200
 
 #: What the heaviest session a real consumer opens may cost, every layer on: Spinhold's,
 #: which declares no [layers]. 129,979 when this was set. It is not raised by a line
@@ -72,7 +73,8 @@ CORE_TOOLS = 39_000
 #: inside the engine layer's own figure.
 #: 140,106 with music.track (§PW611), whose sound layer's figure rose by 600 for it.
 #: 140,798 with game.compare_runs (§PW612), whose engine layer's figure rose by 800.
-SESSION_BUDGET = 141_100
+#: 142,089 with verdict.target (§PW620), whose core figure rose by 1,200 for it.
+SESSION_BUDGET = 142_400
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

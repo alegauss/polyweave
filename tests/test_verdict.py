@@ -226,6 +226,65 @@ def test_a_verdict_that_cannot_be_carried_is_refused(tmp_path, choice, why, code
     assert refused.value.code == code
 
 
+CONCEPT = """asset = "{name}"
+
+[[predicate]]
+id      = "near-painting"
+measure = "luma_p99"
+region  = "frame"
+min     = {{ value = 0.1, origin = "measured", measured = 0.133 }}
+max     = 0.9
+"""
+
+
+def test_a_person_s_target_is_written_past_the_look_and_fails_until_reached(tmp_path):
+    """§PW620: a region far from its painting needs a goal a person set."""
+    one = member(tmp_path, "board", DARK)
+    spec = tmp_path / "accept" / "board.accept.toml"
+    spec.write_text(CONCEPT.format(name="board"), encoding="utf-8")
+    run = loop.start("board", "after", root=tmp_path)
+    said = verdict.target([one], {"board": 0.4}, "closer to the painting",
+                          root=tmp_path, run=run, when="2026-10-24")
+    assert said["members"] == [{"name": "board", "written": ["near-painting:min"],
+                                "targets": {"near-painting": {"min": 0.4}}}]
+    (p,) = accept.read(spec).predicates
+    assert (p.minimum, p.maximum) == (0.4, 0.9)
+    assert p.origins["min"] == {
+        "origin": "person", "measured": pytest.approx(0.133, abs=1e-3),
+        "date": "2026-10-24", "why": "closer to the painting", "target": True}
+    found = accept.check(accept.read(spec), tmp_path / one["new"], root=tmp_path)
+    assert not found["passed"]
+    assert "has not reached its min, a target a person set 2026-10-24" in (
+        found["predicates"][0]["why"])
+    assert [v["person_accepted"] for v in run["verdicts"]] == [False]
+
+
+@pytest.mark.parametrize(
+    ("byte", "targets", "said"),
+    [
+        (BRIGHT, {"no-hot-facet": 0.4}, "would loosen it"),
+        (DARK, {"no-hot-facet": 0.5}, "has no min"),
+        (DARK, {"star_gold": "dark"}, "a target is a number"),
+        (DARK, {}, "no target was named"),
+    ],
+)
+def test_a_target_that_is_no_bar_to_reach_is_refused(tmp_path, byte, targets, said):
+    one = member(tmp_path, "star_gold", byte)
+    before = (tmp_path / "accept" / "star_gold.accept.toml").read_text("utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        verdict.target([one], targets, "hmm", root=tmp_path)
+    assert refused.value.code == "loop.bad-target"
+    assert said in refused.value.message
+    assert (tmp_path / "accept" / "star_gold.accept.toml").read_text("utf-8") == before
+
+
+def test_a_target_naming_nothing_a_member_carries_is_refused(tmp_path):
+    with pytest.raises(PolyweaveError) as refused:
+        verdict.target([member(tmp_path, "star_gold", DARK)], {"glow": 0.1}, "hmm",
+                       root=tmp_path)
+    assert refused.value.code == "loop.unknown-predicate"
+
+
 def test_naming_a_predicate_no_member_carries_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         verdict.judge(

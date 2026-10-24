@@ -45,7 +45,7 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW620** (deps: —) **a person looking at a sheet can accept, send back or relax a failed bound, but never set the target a bound must reach** — A concept region far from its painting needs a person's goal to climb towards, and no verdict writes one. → §PW620
+- ⏳ **PW620** (deps: —) **a person looking at a sheet can accept, send back or relax a failed bound, but never set the target a bound must reach** — The review page offers no control to set a target beside a concept sheet, and a target cannot yet be said as a fraction of the way to the painting. → §PW620
 
 ## Block P — Music and sound a game can ship
 
@@ -132,6 +132,15 @@
 - **Cottony keeps no mesh preparation of its own** tools/art/prep.py and export_props,
   export_boosters and export_friends are gone from Cottony, its families name prepare
   steps through fixes, and project.adoption lists none of them as kept.
+
+## Done when — PW620
+
+- **A target is set on the review page beside a concept sheet** A card with a held
+  member offers a number per predicate, the page's answer carries it as targets, and the
+  spec gains the person's target bound with no chat message and no code typed.
+- **A target can be said as a fraction of the way to the painting** On a concept ratio,
+  toward=0.5 writes today's value plus half the gap to 1.0, and a measure that declares
+  no ideal refuses it with loop.bad-target.
 
 ## Non-goals
 

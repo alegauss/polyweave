@@ -90,7 +90,8 @@ max = { value = 0.41, origin = "person", date = "2026-09-24", why = "same star a
 min = { value = 0.30, origin = "measured", measured = 0.3207 }     # read off an artefact
 ```
 
-It takes `value`, `origin`, `measured`, `date` and `why`, and an origin other than those
+It takes `value`, `origin`, `measured`, `date` and `why`, and `target` on a bar a person
+set past the look (§PW620), and an origin other than those
 three is refused (`spec.bad-origin`), because a bound that cannot say where it came from is
 the guess this exists to expose. What changes is the failure: each predicate's result names
 the bound that decided it (`bound`: the side broken, or the nearer one on a pass, with its
@@ -141,6 +142,23 @@ check. With no run open, the answer says it was not recorded. The codes are
 `loop.unknown-choice`, `loop.no-reason` and `loop.no-failed-bound`, the last for `number`
 said of a family that all passes. A sheet and a command, never an editor, and the verdict
 stays the person's.
+
+**A person sets the bar a look must reach** (§PW620). The three choices take the look as
+it is, so a bound read off today's value only stops a look walking away from its
+painting. `verdict.target(members, targets, why, run=, asset=, code=)` writes where it has
+to get to. `targets` maps a predicate's id, or a member's name for all its predicates, to
+the number the person said. Each is written on the bound facing it, a `min` above today's
+value or a `max` below it, as `origin = "person"` with `target = true`, `measured`, the
+date and the sentence:
+
+```toml
+min = { value = 0.4, origin = "person", measured = 0.133, date = "2026-10-24", why = "closer to the painting", target = true }
+```
+
+A miss on it says the predicate "has not reached its min, a target a person set": the look
+has further to go, not a look that moved. A target today's look already meets, one looser
+than its bound, a side the predicate does not bound and anything not a number are
+`loop.bad-target`, and nothing is written. The look is not accepted, and the run says so.
 
 **A member nothing holds says so** (§PW338). A member with no `spec`, a bare path among
 them, was measured against nothing, so it neither passes nor fails: it answers
@@ -304,7 +322,8 @@ operation's answer, `review.state` included, carries one. A restarted server iss
 codes. The page's own write goes straight to the answer and needs none, and so does a
 server the desktop window started for the person, which it marks with
 `POLYWEAVE_PERSON=window` in that process's environment alone. A rejection (`look`)
-needs no code. The check is a guard on the operation, run before the call by both
+needs no code. `verdict.target` always needs one, because a bar is the person's to set.
+The check is a guard on the operation, run before the call by both
 dispatchers, so it holds for any MCP client without a hook, and a Python caller in
 process is the plugin's own code and is not asked.
 
@@ -355,8 +374,9 @@ never the ones the session prefers. That means `accept.check` where a spec holds
 nothing checks the kind yet. `revision.settings(revision)` is the Claude Code settings a
 session on the revision runs under. Its hooks call `python -m polyweave hook revision --revision <id>`,
 which runs those checks after every write that touches the item and hands the result to
-the session as context it cannot skip. It denies `verdict.judge` and `verdict.promote`
-before they run, and the same two are in the settings' denied permissions. The window
+the session as context it cannot skip. It denies `verdict.judge`, `verdict.promote` and
+`verdict.target` before they run, and the same three are in the settings' denied
+permissions. The window
 passes these settings to the session it opens, and a terminal session gets the same with
 `claude --settings`.
 

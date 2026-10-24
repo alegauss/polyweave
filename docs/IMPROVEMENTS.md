@@ -510,28 +510,27 @@ model and the members.
 
 Found in Cottony's RK156, which holds the board screen to its concept painting in 17
 regions through PW477's concept predicates
-(`docs/design/accept/board_concept.accept.toml`).
+(`docs/design/accept/board_concept.accept.toml`). Its design asks for each region's bar
+to be set from a sheet the owner looked at. Every bound there is `origin = "measured"`,
+which only stops the screen walking away from the painting.
 
-Its design asks for each region's bar to be set from a sheet the owner looked at: the
-target the rest of the block climbs towards. Today every bound is `origin = "measured"`,
-today's value rounded outward, which only stops the screen walking away from the
-painting.
+Landed: `verdict.target(members, targets, why, code=)` takes a predicate id, or a member
+name for all its predicates, to a number, and writes it past today's value on the facing
+bound as `origin = "person"` with `target = true`. A miss then reads "has not reached
+its min, a target a person set". It always needs the page's code (`person.targeting`),
+and `loop.bad-target` refuses a target already met, looser than its bound, or on an
+unbounded side. See `docs/specs/acceptance-spec.md`.
 
-`verdict.judge` cannot write that. `accept` takes the look as it is; `look` sends the
-renders back and keeps the bounds; `number` rewrites a *failed* bound to the measured
-value and is refused where the family passes (`loop.no-failed-bound`), which a measured
-bound always does on the day it is written. So a person looking at a region's sheet has
-no way to say "this region must reach a palette distance of 4", and the agent would type
-a person's number into the spec by hand, which PW109 exists to stop.
+Left:
 
-Expected: a verdict that sets a bound tighter than the measured value, for a named
-predicate or for every predicate of a member, written as `origin = "person"` with the
-date and the sentence, offered on the page beside a concept sheet. It could take the
-number, or a fraction of the way to the painting, which a concept ratio already makes
-meaningful (1.0 is the painting).
-
-Workaround in Cottony: none. RK156 ships the measurement with measured bounds and waits
-on the owner for the targets.
+- **The page.** A card on a concept sheet offers no way to set a target, so today the
+  person says the number in chat with the code. The page's answer body needs a
+  `targets` map and a number field per failed or named predicate, written through
+  `verdict.target` as `review.answer` writes through `judge`, with words in both
+  catalogs.
+- **A fraction of the way.** A concept ratio is 1.0 at the painting, so "half the way
+  there" is meaningful: `toward=0.5` would be today's value plus half the gap to 1.0. It
+  needs to know which measures have an ideal, which nothing declares yet.
 
 ## Block P — Music and sound a game can ship
 

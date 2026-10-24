@@ -978,6 +978,13 @@ KERNEL_CODES: dict[str, Code] = {
         when="number said of a family every member of which passes",
         doors=("say accept", "say look and name the bound that let it through"),
     ),
+    "loop.bad-target": Code(
+        means="a person's target is not a bar the look has still to reach",
+        when="verdict.target given no number, one today's look already meets, one "
+        "looser than its bound, or one on a side the predicate does not bound (§PW620)",
+        doors=("name a number past today's value", "say accept",
+               "write the missing min or max in the spec first"),
+    ),
     "loop.malformed": Code(
         means="the ledger is not readable",
         when="a hand edit that left invalid JSON behind",

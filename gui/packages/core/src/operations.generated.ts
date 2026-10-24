@@ -2504,6 +2504,26 @@ export interface VerdictSittingArgs {
   asset?: string
 }
 
+/** The bar a person says a look must reach, written into its spec (§PW620). */
+export interface VerdictTargetArgs {
+  /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, motion, a loop to play, and model, a .glb to turn */
+  members: unknown[]
+  /** each predicate's id, or a member's name for all its predicates, to the number the person said it must reach */
+  targets: Record<string, unknown>
+  /** the person's own sentence, as they said it */
+  why: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+  /** the open loop run the verdict is recorded in */
+  run?: Record<string, unknown>
+  /** with no run: the asset a run is opened and closed for, here */
+  asset?: string
+  /** the date of the verdict; today where empty */
+  when?: string
+  /** the code the review page shows for the sitting, as the person said it; an accept from conversation needs it */
+  code?: string
+}
+
 /** Build declared particle, ribbon and sheet effects into Godot scenes, recorded. */
 export interface VfxBuildArgs {
   /** the *.vfx.toml, relative to the project */
@@ -2852,6 +2872,7 @@ export interface Operations {
   "verdict.promote": VerdictPromoteArgs
   "verdict.sheet": VerdictSheetArgs
   "verdict.sitting": VerdictSittingArgs
+  "verdict.target": VerdictTargetArgs
   "vfx.build": VfxBuildArgs
   "vfx.preview": VfxPreviewArgs
   "video.cut": VideoCutArgs
@@ -3069,6 +3090,7 @@ export const OPERATIONS = [
   "verdict.promote",
   "verdict.sheet",
   "verdict.sitting",
+  "verdict.target",
   "vfx.build",
   "vfx.preview",
   "video.cut",

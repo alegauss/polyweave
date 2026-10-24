@@ -173,7 +173,9 @@ from polyweave.surface.capabilities import capabilities
 #: game could not read off an Ogg stream (§PW611).
 #: 161,208 with game.compare_runs, two runs' entity traces held together and the first
 #: entity to part named, which no check could say (§PW612).
-DESCRIBE = 161_600
+#: 162,676 with verdict.target, the bar a person says a look must reach, which an agent
+#: would otherwise type into a spec by hand (§PW620).
+DESCRIBE = 163_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -313,7 +315,8 @@ DESCRIBE = 161_600
 #: 175,912 with game.input's drag, wheel, text, button, double and mods (§PW607).
 #: 176,625 with music.track (§PW611).
 #: 177,451 with game.compare_runs and its two codes (§PW612).
-CAPABILITIES = 177_800
+#: 178,960 with verdict.target and loop.bad-target (§PW620).
+CAPABILITIES = 179_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -386,6 +389,7 @@ HELP_VERB = 5_100
 #: 32,841 with picture.copies (§PW585).
 #: 33,080 with music.track (§PW611).
 #: 33,313 with game.compare_runs (§PW612).
+#: 33,464 with verdict.target (§PW620).
 HELP_TOP = 33_600
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now

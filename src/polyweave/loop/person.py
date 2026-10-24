@@ -89,7 +89,8 @@ def at_the_surface() -> bool:
     return os.environ.get(SURFACE) == "window"
 
 
-def require(root, keys: list[str], code: str, *, what: str) -> None:
+def require(root, keys: list[str], code: str, *, what: str,
+            does: str = "accepts a look") -> None:
     """Refuse an accept unless `code` is the one the page shows for one of `keys`."""
     if at_the_surface():
         return
@@ -102,9 +103,9 @@ def require(root, keys: list[str], code: str, *, what: str) -> None:
     )
     raise PolyweaveError(
         "verdict.not-the-person",
-        f"{what} accepts a look, and only a person can: no {where} came with it"
+        f"{what} {does}, and only a person can: no {where} came with it"
         if not code
-        else f"{what} accepts a look, and {code!r} is not {where}",
+        else f"{what} {does}, and {code!r} is not {where}",
         "ask the person to answer on the review page (python -m polyweave review), or "
         f"to say {where} and pass it as code",
         given=code or None,
@@ -148,6 +149,17 @@ def judging(args: dict) -> None:
     names = [member["name"] for member in members_of(args.get("members") or [])]
     require(root, sittings_holding(root, names), args.get("code") or "",
             what="verdict.judge")
+
+
+def targeting(args: dict) -> None:
+    """verdict.target always sets a person's bar: the code of a sitting laying out its
+    members, whatever the target (§PW620)."""
+    from .verdict import members_of
+
+    root = args.get("root") or "."
+    names = [member["name"] for member in members_of(args.get("members") or [])]
+    require(root, sittings_holding(root, names), args.get("code") or "",
+            what="verdict.target", does="sets the bar a look must reach")
 
 
 def answering(args: dict) -> None:
