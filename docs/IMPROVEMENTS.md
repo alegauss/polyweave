@@ -421,6 +421,33 @@ report both: the window resolution and the viewport it was laid out in. A captur
 narrow phone and a wide PC screen would then each be the screen the player sees, with no
 project arithmetic.
 
+### §PW634 A mesh brought to a budget
+
+Where it happened: Cottony RK172 moves the booster toys from baked PNGs to live meshes
+in the board's 3D layer. The two toys bought from Meshy are the meshes to load:
+`tools/art/3d/booster_hammer.glb` (8.5 MB) and `booster_wand.glb` (9.1 MB).
+
+`python -m polyweave cost.read --of tools/art/3d/booster_hammer.glb` answers 104,450
+triangles and 67,108,864 texture bytes: a 4096 texture, for a toy the wide card draws
+about 150 px tall. Cottony's export ceiling is 24 MB (`tools/check_export.py`), so the
+two toys alone would be most of the build, and three of them on screen with the board is
+a frame cost nobody measured.
+
+Nothing in polyweave brings a mesh to a budget. `normalise.ingest` orients, centres and
+sizes. `render.bake --prepare` offers dedust and settle. `cost.read` measures but
+changes nothing. The only route is a Blender script in the project (decimate modifier,
+texture resize, glTF export) written outside the record, the shape PW582 removed for
+prep.py.
+
+What polyweave should do: an operation, say `mesh.budget`, taking a .glb and a target (a
+triangle count or ratio, and a texture edge in pixels, or a screen height the mesh is
+drawn at from which both are derived). It writes a slimmed .glb with a record naming the
+source and the numbers, and reads `cost.read` before and after so the answer says what
+was saved. A silhouette check against a render of the source would say whether the
+decimation cost the shape.
+
+Until then Cottony's RK172 waits on this line rather than growing a project exporter.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
