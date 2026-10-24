@@ -272,6 +272,7 @@
 - ✅ **PW619** **reference.concept crashes with a Pillow traceback when a region ends on the capture's right or bottom edge** — reference.concept measures a region whose placement search reaches the capture's right or bottom edge, the crop held to the rounded copy's bounds.
 - ✅ **PW635** **a WAV transcoded through ffmpeg's pipe keeps placeholder sizes, so reading it asks for four gigabytes** — A WAV out of ffmpeg's pipe is kept with sizes set from its own bytes, and sound.read sizes one first, so a placeholder header reads instead of asking for 4 GB.
 - ✅ **PW621** **a project-drawn picture judged through a declared capture cannot be searched; each candidate is run by hand** — search.sweep's then and judged import the project, make the declared runs and check the spec on their capture, and a project producer's seed is searchable.
+- ✅ **PW622** **a capture warns same settings, different picture when a script the scene reaches by class_name changed** — A capture's record hashes every script its scene reaches by class_name, so a changed class reads as different work naming that script.
 
 ## Block I — Voxel models from a declaration
 

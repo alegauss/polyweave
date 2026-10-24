@@ -100,33 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW622 A capture's record names the classes its scene resolves
-
-Found in Cottony's RK159 on 2026-10-23. The task changed `scripts/tray_mesh.gd` (the
-board tray's geometry, `class_name TrayMesh`, built by `Board3D`), then re-took the
-strike screen:
-
-```
-python tools/capture_screens.py tools/capture/strike.gd
-SAME SETTINGS, DIFFERENT PICTURE: screenshot-strike.png: the same declared settings produced
-different bytes ... locale, resolution and seed were pinned, so something this picture
-depends on is not declared
-```
-
-The picture changed because the tray did, which is the point of the task. PW488 taught
-the record to name the sprites a scene draws, so a changed sprite reads as different
-work and not as noise; the board capture's own record lists `shaders/tray.gdshader` and
-`scripts/level_set.gd` among what moved. But a script the scene reaches by its
-`class_name` (`TrayMesh.build()` from `board3d.gd`), never by a `preload` or `load`
-path, is not in the record, so its change reads as an undeclared setting.
-
-Expected: the record's inputs include every script the scene's scripts resolve by
-`class_name`, read from `.godot/global_script_class_cache.cfg` or the scripts' own
-`class_name` lines, so a changed class reads `different-work` naming it.
-
-Workaround: none; the warning was read and the capture kept, since the change was
-intended.
-
 ### §PW623 Effects declared for a 2D canvas
 
 Found in Cottony's RK162 on 2026-10-23: candy stars drifting slowly in the gaps between

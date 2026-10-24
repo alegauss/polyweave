@@ -95,6 +95,44 @@ def test_a_picture_that_moved_because_a_sprite_did_names_the_sprite(tmp_path):
     assert found["reproduced"]["holds"] is True
 
 
+def classes(tmp_path):
+    """Cottony's shape: the shot builds a board, the board a tray, by class alone."""
+    (tmp_path / "scripts").mkdir()
+    for name, said in {
+        "board3d": "class_name Board3D\nfunc _ready():\n\tTrayMesh.build()\n",
+        "tray_mesh": "class_name TrayMesh\nstatic func build():\n\treturn Bevel.new()",
+        "bevel": "class_name Bevel\n",
+        "unused": "class_name Unused\n",
+    }.items():
+        (tmp_path / "scripts" / f"{name}.gd").write_text(said, encoding="utf-8")
+    shot_gd = tmp_path / "shot.gd"
+    shot_gd.write_text(shot_gd.read_text("utf-8") + "\nvar board = Board3D.new()\n",
+                       encoding="utf-8")
+
+
+def test_a_script_reached_by_class_name_alone_is_an_input(tmp_path):
+    """§PW622: the log never names a class loaded by its name, never by a path."""
+    script, shot = setup(tmp_path)
+    classes(tmp_path)
+    found = take(tmp_path, script, shot, b"one")
+    record = json.loads(Path(found["records"][0]).read_text(encoding="utf-8"))
+    assert [i["path"] for i in record["inputs"] if i["role"] == "class"] == [
+        "scripts/bevel.gd", "scripts/board3d.gd", "scripts/tray_mesh.gd"]
+
+
+def test_a_picture_that_moved_because_a_class_did_names_the_class(tmp_path):
+    script, shot = setup(tmp_path)
+    classes(tmp_path)
+    take(tmp_path, script, shot, b"one")
+    (tmp_path / "scripts" / "tray_mesh.gd").write_text(
+        "class_name TrayMesh\nstatic func build():\n\treturn Bevel.new(2)",
+        encoding="utf-8")
+    found = take(tmp_path, script, shot, b"two")
+    (verdict,) = found["reproduced"]["artefacts"]
+    assert verdict["verdict"] == "different-work"
+    assert verdict["moved"] == ["scripts/tray_mesh.gd"]
+
+
 def test_with_every_input_unchanged_it_still_blames_what_is_undeclared(tmp_path):
     script, shot = setup(tmp_path)
     take(tmp_path, script, shot, b"one")

@@ -432,6 +432,13 @@ imported copies under `res://.godot/` are left out, so a changed sprite is named
 sprite. Cottony's re-taken booster tray had warned that the same settings drew a
 different picture, the one case where nothing undeclared had moved.
 
+A script reached by its `class_name` alone (`TrayMesh.build()`) is never loaded by a path,
+so the log never names it (§PW622). The record's inputs add each script the captured
+script and the loaded `.gd` files reach that way, transitively, as role `class`. The names
+are read off the project's own `class_name` lines, not the engine's cache under
+`.godot/`. Cottony's changed tray then reads as `different-work` naming
+`scripts/tray_mesh.gd`, not as an undeclared setting.
+
 **A script can say where it drew each asset** (§PW112). A line `region: star_dim=412,96,508,192`
 names a rectangle of the picture in pixels, `[x0, y0, x1, y1]`, and the script can print one
 per asset it placed, since it knows where it put each one. The run keeps them as `regions`

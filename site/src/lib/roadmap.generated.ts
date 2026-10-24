@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 13 },
+  { block: "H", title: "Proof on a real game", open: 12 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW622",
-    block: "H",
-    symptom: "a capture warns same settings, different picture when a script the scene reaches by class_name changed",
-    why: "PW488 named the sprites a scene draws; a changed class is still read as an undeclared setting, not as different work.",
-    deps: [],
-  },
   {
     id: "PW623",
     block: "H",

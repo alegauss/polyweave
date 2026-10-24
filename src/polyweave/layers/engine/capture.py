@@ -104,7 +104,52 @@ def inputs(script: str | Path, opened: list[str], root: str | Path) -> dict:
             found.append(provenance.source("loaded", path, root=where))
         else:
             unread.append(name)
+    held = {one["path"] for one in found}
+    found += [provenance.source("class", path, root=where)
+              for path in reached(found, where)
+              if provenance.relative(path, where) not in held]
     return {"inputs": found, "unread": unread}
+
+
+#: A script's own name for itself, which any other script may use without a path.
+CLASS_NAME = re.compile(r"^[ \t]*class_name[ \t]+(?P<name>[A-Za-z_]\w*)", re.MULTILINE)
+#: A word that could be a class's name where a script uses it.
+WORD = re.compile(r"\b[A-Za-z_]\w*\b")
+
+
+def reached(found: list[dict], where: Path) -> list[Path]:
+    """Every script the inputs' scripts reach by `class_name` alone, transitively.
+
+    `TrayMesh.build()` loads `tray_mesh.gd` by its class, never by a path, so the
+    engine's log never names it and a changed tray read as an undeclared setting
+    (§PW622). The names are read off the project's own `class_name` lines; the engine's
+    cache under `.godot/` is not needed for that and may not be there.
+    """
+    classes = {}
+    for path in sorted(where.rglob("*.gd")):
+        if ".godot" in path.relative_to(where).parts:
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for one in CLASS_NAME.finditer(text):
+            classes.setdefault(one.group("name"), path)
+    if not classes:
+        return []
+    seen: set[Path] = set()
+    waiting = [where / one["path"] for one in found if one["path"].endswith(".gd")]
+    out = []
+    while waiting:
+        path = waiting.pop()
+        if path in seen or not path.is_file():
+            continue
+        seen.add(path)
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for word in set(WORD.findall(text)) & set(classes):
+            other = classes[word]
+            if other not in seen:
+                out.append(other)
+                waiting.append(other)
+    starts = {where / one["path"] for one in found}
+    return sorted({one for one in out if one not in starts})
 
 
 def regions(output: str) -> dict[str, list[int]]:
