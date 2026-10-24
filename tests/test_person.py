@@ -116,6 +116,19 @@ def test_review_answer_as_a_tool_needs_the_code_in_its_body(project):
     assert not refused, said
 
 
+def test_a_redo_carrying_a_target_needs_the_code_as_a_tool(project):
+    """§PW620: a redo needs no code, but the bar it sets is the person's."""
+    body = {"sitting": SITTING, "family": "stars", "choice": "look", "why": "darker",
+            "targets": {"tone": 0.1}}
+    refused, said = tool("review_answer", body=body, root=str(project))
+    assert refused
+    assert "sets the bar" in said["refused"]["message"]
+    code = person.issue(project, SITTING)
+    refused, said = tool("review_answer", body={**body, "code": code},
+                         root=str(project))
+    assert not refused, said
+
+
 def test_promote_needs_the_code_above_the_page_s_lanes(project):
     refused, said = tool("verdict_promote", gate="g1", picture="p.png", why="ok",
                          root=str(project))

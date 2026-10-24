@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import {
   acceptable,
   acceptWithheld,
+  aims,
   choices,
   drawn,
   figures,
@@ -47,6 +48,17 @@ const sitting = (manifest: string, families: string[], more: Partial<Sitting> = 
   },
   families: Object.fromEntries(families.map((name) => [name, { sheet: `${manifest}/${name}.png` }])),
   ...more,
+})
+
+describe('a target typed beside a redo (§PW620)', () => {
+  it('keeps each number, a decimal comma read as a point, and drops a blank or a word', () => {
+    expect(aims({ tone: '0,4', glow: ' 0.25 ', edge: '', hue: 'lots' })).toEqual({ tone: 0.4, glow: 0.25 })
+  })
+
+  it('is null where nothing was typed, so the answer carries no targets', () => {
+    expect(aims({ tone: '  ' })).toBeNull()
+    expect(aims({})).toBeNull()
+  })
 })
 
 describe('the decision screen', () => {

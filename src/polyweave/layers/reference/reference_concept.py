@@ -287,6 +287,19 @@ CONCEPTS: dict[str, str] = {
     "concept_scale": "the scale the region sits at against its declared box",
 }
 
+#: Each measure's value where the region is the painting's, which a person's target
+#: may be set a fraction of the way to (§PW620).
+IDEALS: dict[str, float] = {
+    "concept_palette_delta_e": 0.0,
+    "concept_saturation_ratio": 1.0,
+    "concept_luma_ratio": 1.0,
+    "concept_luma_p90_ratio": 1.0,
+    "concept_edge_ratio": 1.0,
+    "concept_structure": 1.0,
+    "concept_offset": 0.0,
+    "concept_scale": 1.0,
+}
+
 
 def concept_value(measure: str, *, concept: Any, region: Any, subject: Path,
                   here: Path, size: int = 256) -> float:

@@ -506,32 +506,6 @@ model and the members.
 
 ## Block O — A person sees and answers
 
-### §PW620 A person sets the bar a look must reach
-
-Found in Cottony's RK156, which holds the board screen to its concept painting in 17
-regions through PW477's concept predicates
-(`docs/design/accept/board_concept.accept.toml`). Its design asks for each region's bar
-to be set from a sheet the owner looked at. Every bound there is `origin = "measured"`,
-which only stops the screen walking away from the painting.
-
-Landed: `verdict.target(members, targets, why, code=)` takes a predicate id, or a member
-name for all its predicates, to a number, and writes it past today's value on the facing
-bound as `origin = "person"` with `target = true`. A miss then reads "has not reached
-its min, a target a person set". It always needs the page's code (`person.targeting`),
-and `loop.bad-target` refuses a target already met, looser than its bound, or on an
-unbounded side. See `docs/specs/acceptance-spec.md`.
-
-Left:
-
-- **The page.** A card on a concept sheet offers no way to set a target, so today the
-  person says the number in chat with the code. The page's answer body needs a
-  `targets` map and a number field per failed or named predicate, written through
-  `verdict.target` as `review.answer` writes through `judge`, with words in both
-  catalogs.
-- **A fraction of the way.** A concept ratio is 1.0 at the painting, so "half the way
-  there" is meaningful: `toward=0.5` would be today's value plus half the gap to 1.0. It
-  needs to know which measures have an ideal, which nothing declares yet.
-
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world

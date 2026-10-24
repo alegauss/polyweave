@@ -120,7 +120,10 @@
     "pick_alone": "Hear the options and pick just one; this card is left out of accepting the rest.",
     "need_pick": "Pick which of the alternatives you accept.",
     "picked": "picked: {name}",
-    "no_accept": "This card failed a bound of its spec, written above, so there is no plain Accept: accepting the look here moves that bound to what was measured, as your decision."
+    "no_accept": "This card failed a bound of its spec, written above, so there is no plain Accept: accepting the look here moves that bound to what was measured, as your decision.",
+    "target_heading": "Set the goal it must reach (optional)",
+    "target_help": "Type the number a measure must reach for the look to be right. It is saved in the spec as your goal, and the picture fails that measure until a new version reaches it. Leave a field empty to keep its limit as it is.",
+    "target_today": "today: {values}"
   },
   "kinds": {
     "look": {

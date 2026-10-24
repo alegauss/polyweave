@@ -143,6 +143,25 @@ def test_a_spec_holds_a_capture_to_a_region_of_the_painting(project):
     assert all(p["margin"] < 1 for p in drifted["predicates"])
 
 
+def test_a_target_a_share_of_the_way_to_the_painting_is_written_as_its_number(project):
+    """§PW620: half the way there means something where 1.0 is the painting."""
+    from polyweave.loop import accept, verdict
+
+    (project / "screen.accept.toml").write_text(SPEC, encoding="utf-8")
+    # A board a shade off the painting's, its structure just under 1.
+    scene((300, 450), (220, 80, 120), (90, 120, 180)).save(project / "shots" / "a.png")
+    one = {"name": "screen", "spec": "screen.accept.toml", "new": "shots/a.png"}
+    today = next(p["value"] for p in accept.check(
+        accept.read("screen.accept.toml", project), project / "shots" / "a.png",
+        root=project)["predicates"] if p["id"] == "board-holds-its-stripes")
+    said = verdict.target([one], {"board-holds-its-stripes": {"toward": 0.5}},
+                          "closer to the painting", root=project)
+    reach = round(today + 0.5 * (1.0 - today), 4)
+    assert said["members"][0]["targets"] == {"board-holds-its-stripes": {"min": reach}}
+    held = {p.id: p for p in accept.read("screen.accept.toml", project).predicates}
+    assert held["board-holds-its-stripes"].origins["min"]["target"] is True
+
+
 def test_a_concept_predicate_naming_no_region_it_declares_is_refused(project):
     from polyweave.loop import accept
 

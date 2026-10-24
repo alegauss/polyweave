@@ -189,3 +189,7 @@ def page_answer(args: dict) -> None:
     if body.get("choice") in ACCEPTS:
         require(root, [manifest_of(body.get("sitting") or "")], body.get("code") or "",
                 what="review.answer")
+    elif body.get("targets"):
+        # A bar is the person's to set, on the page or with its code (§PW620).
+        require(root, [manifest_of(body.get("sitting") or "")], body.get("code") or "",
+                what="review.answer", does="sets the bar a look must reach")

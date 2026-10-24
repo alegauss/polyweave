@@ -79,6 +79,8 @@ CORE: dict[str, tuple[str, str]] = {
         "internal", "a sitting's families with no answer since"),
     "polyweave.loop.verdict:members_of": (
         "internal", "a sheet's members, checked first"),
+    "polyweave.loop.verdict:aimed": (
+        "internal", "a page's targets, checked before its answer is kept"),
     "polyweave.surface.revision:hooked": (
         "internal", "the `hook revision` verb's answer"),
     "polyweave.surface.revision:paid": (

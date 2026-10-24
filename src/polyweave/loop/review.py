@@ -239,6 +239,18 @@ def answer(root, body: dict) -> dict:
     moments = _moments(members, body.get("moments") or [])
     views = _views(members, body.get("views") or [])
     why = str(body.get("why") or "").strip()
+    # A bar the look must reach goes with a redo, and is checked before anything is
+    # recorded, so a bad one never leaves a verdict without its target (§PW620).
+    targets = body.get("targets") or {}
+    if targets:
+        if choice != "look":
+            raise PolyweaveError(
+                "loop.bad-target",
+                f"a target came with {choice!r}, and a look short of its bar is a redo",
+                "answer look with the targets, or leave the targets out",
+                given=choice,
+            )
+        verdict.aimed(members, targets, why, root=config.root)
     if choice == "accept" and not why:
         # A person who clicked accept and wrote nothing said exactly that, and the
         # ledger says so in their language; judge still refuses an empty sentence from
@@ -258,11 +270,16 @@ def answer(root, body: dict) -> dict:
         asset=offered[listed].get("asset") or None,
     )
     marks = [_mark(member, drawn, config) for member, drawn in shapes]
+    if targets:
+        # Recorded with the redo above, so the target writes the spec and nothing more.
+        said["targets"] = verdict.target(members, targets, why,
+                                         root=str(config.root))["members"]
     # An event on disk, so the agent that offered the sitting resumes on it without
     # the person saying so again in chat (§PW173).
     said["answer"] = verdict.record_answer(
         said, sitting=listed, family=family, root=config.root, marks=marks,
         chosen=chosen, moments=moments, views=views,
+        targets=said.get("targets"),
     )
     return said
 

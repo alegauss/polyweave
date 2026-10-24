@@ -196,9 +196,14 @@ def sheet(
             "nothing holds it: no spec measured it")
         lines = [f"{member['name']}: {state}", *[f"  {one}" for one in failed]]
         rows.append((tiles, lines))
+        # Each predicate's value and bounds, which the page sets a target beside
+        # (§PW620).
+        measured = [{"id": r["id"], "value": r.get("value"), "min": r.get("min"),
+                     "max": r.get("max")} for r in found["predicates"]]
         said.append(
             {"name": member["name"], "passed": found["passed"], "checked": held,
              "failed": failed,
+             **({"predicates": measured} if measured else {}),
              **({"old_from": member["old_from"]} if member.get("old_from") else {})}
         )
     # A family nothing holds is offered no choice that speaks of a spec (§PW338).
@@ -608,7 +613,8 @@ def target(
     members: Annotated[list, Param(MEMBERS)],
     targets: Annotated[
         dict, Param("each predicate's id, or a member's name for all its predicates, "
-                    "to the number the person said it must reach")
+                    'to the number the person said it must reach, or {"toward": 0.5}, '
+                    "that share of the way to the measure's ideal")
     ],
     why: Annotated[str, Param("the person's own sentence, as they said it")],
     *,
@@ -631,13 +637,53 @@ def target(
     tool it needs `code`, the one the page shows for a sitting laying out these
     members: only a person sets a bar. The look is not accepted, and the ledger says so.
     """
-    members = members_of(members)
     if not str(why).strip():
         raise PolyweaveError(
             "loop.no-reason",
             "a target came with no sentence",
             "pass the person's own words as `why`, as they said them",
         )
+    here = Path(root).resolve()
+    planned = aimed(members, targets, why, root=here, when=when)
+    opened = run is None and bool(asset)
+    if opened:
+        run = loop.judging(str(asset), root=str(here))
+    answers = []
+    for member, spec_path, found, out in planned:
+        if run is not None:
+            loop.judged(
+                run, tool_passed=found["passed"], person_accepted=False,
+                why=f"{member['name']}: {why}", check=found, named=sorted(out),
+                root=str(here), member=member["name"],
+            )
+        written = calibrate.apply(spec_path, {"apply": out}, root=here,
+                                  person=True)["written"]
+        answers.append({
+            "name": member["name"],
+            "written": written,
+            "targets": {pid: {s: b["value"] for s, b in sides.items()}
+                        for pid, sides in out.items()},
+        })
+    if opened:
+        loop.finish(run, root=str(here))
+    return {
+        "why": why,
+        "members": answers,
+        "says": f"{sum(len(one['written']) for one in answers)} bound(s) set as a "
+        "person's target; each fails until the look reaches it",
+        "ledger": f"recorded in a run opened and closed for {asset}"
+        if opened
+        else "recorded in the open run"
+        if run is not None
+        else "not recorded: no run was open; pass run= from loop.start, or asset=",
+    }
+
+
+def aimed(members: Any, targets: Any, why: str, *, root, when: str = "") -> list:
+    """Each member's targets as the bounds `verdict.target` writes, every one checked
+    and nothing written, so the page refuses a bad target before it records the answer
+    it came with (§PW620)."""
+    members = members_of(members)
     if not isinstance(targets, dict) or not targets:
         raise PolyweaveError(
             "loop.bad-target",
@@ -674,42 +720,13 @@ def target(
             out[result["id"]] = {side: {**bound, "date": stamp, "why": why}}
         if out:
             planned.append((member, spec_path, found, out))
-    opened = run is None and bool(asset)
-    if opened:
-        run = loop.judging(str(asset), root=str(here))
-    answers = []
-    for member, spec_path, found, out in planned:
-        if run is not None:
-            loop.judged(
-                run, tool_passed=found["passed"], person_accepted=False,
-                why=f"{member['name']}: {why}", check=found, named=sorted(out),
-                root=str(here), member=member["name"],
-            )
-        written = calibrate.apply(spec_path, {"apply": out}, root=here,
-                                  person=True)["written"]
-        answers.append({
-            "name": member["name"],
-            "written": written,
-            "targets": {pid: {s: b["value"] for s, b in sides.items()}
-                        for pid, sides in out.items()},
-        })
-    if opened:
-        loop.finish(run, root=str(here))
-    return {
-        "why": why,
-        "members": answers,
-        "says": f"{sum(len(one['written']) for one in answers)} bound(s) set as a "
-        "person's target; each fails until the look reaches it",
-        "ledger": f"recorded in a run opened and closed for {asset}"
-        if opened
-        else "recorded in the open run"
-        if run is not None
-        else "not recorded: no run was open; pass run= from loop.start, or asset=",
-    }
+    return planned
 
 
 def _aimed(p, result: dict, reach, member: str) -> tuple[str, dict]:
     """The side a target is written on and its bound, or `loop.bad-target`."""
+    if isinstance(reach, dict):
+        reach = _toward(p, float(result["value"]), reach)
     if isinstance(reach, bool) or not isinstance(reach, int | float):
         raise PolyweaveError(
             "loop.bad-target",
@@ -737,6 +754,35 @@ def _aimed(p, result: dict, reach, member: str) -> tuple[str, dict]:
         raise PolyweaveError("loop.bad-target", said, remedy, given=str(reach))
     return side, {"value": reach, "origin": "person", "measured": round(value, 6),
                   "target": True, "old": now}
+
+
+def _toward(p, value: float, said: dict) -> float:
+    """`{"toward": f}`: today's value moved the fraction f of the way to where the
+    measure's layer says the file is what it is held to, a concept ratio's 1.0 (§PW620).
+    """
+    from polyweave.kernel.layer import subjects
+
+    share = said.get("toward")
+    owner = subjects().get(p.measure)
+    ideal = owner[1].ideal(p.measure) if owner else None
+    if set(said) != {"toward"} or isinstance(share, bool) or not isinstance(
+            share, int | float) or not 0 < share <= 1:
+        raise PolyweaveError(
+            "loop.bad-target",
+            f"{p.id}'s target is {said!r}, and a share of the way is "
+            '{"toward": <a fraction above 0, at most 1>}',
+            "pass a number, or the share of the way to the ideal",
+            given=str(said),
+        )
+    if ideal is None:
+        raise PolyweaveError(
+            "loop.bad-target",
+            f"{p.measure} declares no value where it is ideal, so {p.id} has no way to "
+            "go a share of",
+            "pass the number the person said instead",
+            given=p.measure,
+        )
+    return round(value + float(share) * (ideal - value), 4)
 
 
 @operation("verdict.promote", guard=person.promoting)
@@ -779,6 +825,7 @@ ANSWERS = "answers.jsonl"
 def record_answer(
     said: dict, *, sitting: str, family: str, root, marks: list | None = None,
     chosen: str = "", moments: list | None = None, views: list | None = None,
+    targets: list | None = None,
 ) -> dict:
     """Append one answer from the page, for the agent that offered the sitting.
 
@@ -786,7 +833,8 @@ def record_answer(
     it was drawn on, with that picture's digest (§PW174). `chosen` is the member a
     person picked of a family of alternatives, the others passed over (§PW547).
     `moments` are when a loop is wrong, seconds into it (§PW600); `views` where a model
-    is, as the camera that saw it (§PW601).
+    is, as the camera that saw it (§PW601); `targets` the bars a person set with it,
+    each member's as `verdict.target` wrote them (§PW620).
     """
     import json
     from datetime import UTC, datetime
@@ -804,6 +852,7 @@ def record_answer(
         **({"chosen": chosen} if chosen else {}),
         **({"moments": list(moments)} if moments else {}),
         **({"views": list(views)} if views else {}),
+        **({"targets": list(targets)} if targets else {}),
     }
     path = load(root).path("paths.work") / ANSWERS
     path.parent.mkdir(parents=True, exist_ok=True)

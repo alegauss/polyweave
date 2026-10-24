@@ -2508,7 +2508,7 @@ export interface VerdictSittingArgs {
 export interface VerdictTargetArgs {
   /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, motion, a loop to play, and model, a .glb to turn */
   members: unknown[]
-  /** each predicate's id, or a member's name for all its predicates, to the number the person said it must reach */
+  /** each predicate's id, or a member's name for all its predicates, to the number the person said it must reach, or {"toward": 0.5}, that share of the way to the measure's ideal */
   targets: Record<string, unknown>
   /** the person's own sentence, as they said it */
   why: string

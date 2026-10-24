@@ -155,10 +155,19 @@ date and the sentence:
 min = { value = 0.4, origin = "person", measured = 0.133, date = "2026-10-24", why = "closer to the painting", target = true }
 ```
 
-A miss on it says the predicate "has not reached its min, a target a person set": the look
-has further to go, not a look that moved. A target today's look already meets, one looser
+A target may also be `{"toward": f}`, f above 0 and at most 1: today's value moved that
+share of the way to the measure's ideal, which a layer's subject declares in `ideals` (the
+concept measures do: 1.0 for a ratio or structure, 0 for ΔE and offset). A measure with no
+ideal refuses it. A miss on it says the predicate "has not reached its min, a target a
+person set": the look has further to go, not a look that moved. A target today's look already meets, one looser
 than its bound, a side the predicate does not bound and anything not a number are
 `loop.bad-target`, and nothing is written. The look is not accepted, and the run says so.
+On the page the target rides on a Redo: a sheet's `said` lists each held member's
+`predicates` (id, value, min, max), the card offers a number beside each under Redo, and
+`review.answer` takes them as `targets`. It checks them before anything is recorded
+(`verdict.aimed`), so a bad one leaves no answer, and refuses targets on any other choice.
+The answer keeps the bounds written as `targets`. The page's own write needs no code, and
+the same body called as a tool needs the sitting's.
 
 **A member nothing holds says so** (§PW338). A member with no `spec`, a bare path among
 them, was measured against nothing, so it neither passes nor fails: it answers

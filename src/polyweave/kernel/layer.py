@@ -88,10 +88,19 @@ class Subject:
     measures: str
     #: `module:function`, imported only when a spec bounds one of its measures.
     target: str
+    #: `module:NAME`, each measure's value where the file is what it is held to, for a
+    #: target set a fraction of the way there (§PW620); none where nothing is ideal.
+    ideals: str = ""
 
     def names(self) -> dict[str, str]:
         module, name = self.measures.split(":")
         return dict(getattr(importlib.import_module(module), name))
+
+    def ideal(self, measure: str) -> float | None:
+        if not self.ideals:
+            return None
+        module, name = self.ideals.split(":")
+        return getattr(importlib.import_module(module), name).get(measure)
 
 
 @dataclass(frozen=True)

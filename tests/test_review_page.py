@@ -228,6 +228,41 @@ def test_the_one_write_is_a_verdict_and_it_moves_the_bound(page):
     assert "same star at size" in spec
 
 
+def test_a_redo_on_the_page_sets_the_bar_the_look_must_reach(page):
+    """§PW620: the person types the goal beside the sheet, with no chat and no code."""
+    from polyweave.loop import accept
+
+    base, where = page
+    laid = json.loads((where / "review" / "sitting.json").read_text("utf-8"))
+    (held,) = laid["families"]["stars"]["said"]
+    assert [one["id"] for one in held["predicates"]] == ["no-hot-facet"]
+    assert held["predicates"][0]["max"] == 0.37
+    status, said = post(base + "/api/judge", judged(
+        choice="look", why="far from the painting", targets={"no-hot-facet": 0.3}))
+    assert status == 200, said
+    assert said["targets"] == [{"name": "star_dim", "written": ["no-hot-facet:max"],
+                                "targets": {"no-hot-facet": {"max": 0.3}}}]
+    (p,) = accept.read(where / "accept" / "star_dim.accept.toml").predicates
+    assert p.maximum == 0.3
+    assert p.origins["max"]["target"] is True
+    kept = verdict.kept_answers(where)[-1]
+    assert kept["choice"] == "look"
+    assert kept["targets"][0]["targets"] == {"no-hot-facet": {"max": 0.3}}
+
+
+@pytest.mark.parametrize(
+    ("choice", "reach"), [("accept", 0.3), ("look", 0.5)],
+)
+def test_a_target_the_page_cannot_carry_records_nothing(page, choice, reach):
+    base, where = page
+    before = (where / "accept" / "star_dim.accept.toml").read_text("utf-8")
+    status, said = post(base + "/api/judge", judged(
+        choice=choice, why="hmm", targets={"no-hot-facet": reach}))
+    assert status == 400 and said["code"] == "loop.bad-target"
+    assert verdict.kept_answers(where) == []
+    assert (where / "accept" / "star_dim.accept.toml").read_text("utf-8") == before
+
+
 def test_a_post_another_site_could_make_is_refused(page):
     base, where = page
     status, _ = post(base + "/api/judge", judged(why="forged"), asked=False)

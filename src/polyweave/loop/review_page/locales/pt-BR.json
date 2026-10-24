@@ -120,7 +120,10 @@
     "pick_alone": "Ouça as opções e escolha uma só; este cartão fica de fora do aceite em lote.",
     "need_pick": "Escolha qual das alternativas você aceita.",
     "picked": "escolhida: {name}",
-    "no_accept": "Este cartão reprovou um limite da especificação, escrito acima, então não há um Aceitar simples: aceitar o visual aqui ajusta esse limite para o valor medido, como decisão sua."
+    "no_accept": "Este cartão reprovou um limite da especificação, escrito acima, então não há um Aceitar simples: aceitar o visual aqui ajusta esse limite para o valor medido, como decisão sua.",
+    "target_heading": "Definir a meta que ele precisa atingir (opcional)",
+    "target_help": "Digite o número que uma medida precisa atingir para o visual ficar certo. Ele fica salvo na especificação como meta sua, e a imagem reprova nessa medida até uma nova versão chegar lá. Deixe um campo vazio para manter o limite como está.",
+    "target_today": "hoje: {values}"
   },
   "kinds": {
     "look": {

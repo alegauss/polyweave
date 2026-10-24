@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
-  { block: "O", title: "A person sees and answers", open: 1 },
+  { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
@@ -148,13 +148,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a bought mesh cannot be brought down to a game's triangle and texture budget; no operation decimates or downsizes",
     why: "Cottony's booster toys are 104k triangles on a 4096 texture each, so loading them live would take most of a 24 MB build.",
-    deps: [],
-  },
-  {
-    id: "PW620",
-    block: "O",
-    symptom: "a person looking at a sheet can accept, send back or relax a failed bound, but never set the target a bound must reach",
-    why: "The review page offers no control to set a target beside a concept sheet, and a target cannot yet be said as a fraction of the way to the painting.",
     deps: [],
   },
   {

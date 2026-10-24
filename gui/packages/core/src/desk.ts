@@ -60,6 +60,27 @@ export interface Held {
   name: string
   passed: boolean | null
   failed?: string[]
+  /** Each predicate's value today and its bounds, which a target is set beside (§PW620). */
+  predicates?: Measured[]
+}
+
+/** One predicate of a held member, as the sheet measured it. */
+export interface Measured {
+  id: string
+  value: number | null
+  min: number | null
+  max: number | null
+}
+
+/**
+ * The targets a person typed, as `review.answer` takes them (§PW620): each predicate's id to
+ * a number, a blank or unreadable field left out. Null where nothing was typed.
+ */
+export function aims(typed: Record<string, string>): Record<string, number> | null {
+  const found = Object.entries(typed)
+    .map(([id, text]) => [id, Number(text.trim().replace(',', '.'))] as const)
+    .filter(([id, value]) => typed[id]!.trim() !== '' && Number.isFinite(value))
+  return found.length ? Object.fromEntries(found) : null
 }
 
 export interface Laid {
@@ -194,6 +215,8 @@ export interface AnswerBody {
   views?: { member: string; camera: [number, number, number]; target: [number, number, number] }[]
   /** The alternative picked, for an accept of a family whose `pick` is one (§PW547). */
   member?: string
+  /** With a redo: each predicate's id to the bar the person says it must reach (§PW620). */
+  targets?: Record<string, number>
 }
 
 /** The page's other writes: a gate's picture promoted or taken into a canon, a candidate

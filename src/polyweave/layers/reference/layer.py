@@ -29,6 +29,7 @@ LAYER = Layer(
             about="a capture against the concept painting it copies",
             measures="polyweave.layers.reference.reference_concept:CONCEPTS",
             target="polyweave.layers.reference.reference_concept:predicate",
+            ideals="polyweave.layers.reference.reference_concept:IDEALS",
         ),
     ),
     config="polyweave.layers.reference.settings",

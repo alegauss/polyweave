@@ -5,6 +5,7 @@ export type { Refusal, Server, Transport } from './client'
 export {
   acceptable,
   acceptWithheld,
+  aims,
   answered,
   choiceOf,
   choices,
@@ -43,6 +44,7 @@ export type {
   Laid,
   Listed,
   Mark,
+  Measured,
   Member,
   Overrule,
   Recorded,

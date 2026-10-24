@@ -11,6 +11,7 @@ import {
   answered,
   acceptable,
   acceptWithheld,
+  aims,
   choices,
   drawn,
   holding,
@@ -576,8 +577,13 @@ function Card({
   const [moments, setMoments] = useState<Moment[]>([])
   // Views of a model marked wrong, sent with the answer (§PW601).
   const [views, setViews] = useState<View[]>([])
+  // The bar each predicate must reach, typed beside a redo (§PW620).
+  const [aiming, setAiming] = useState<Record<string, string>>({})
   const marked =
-    Object.values(boxes).some((one) => one.length > 0) || moments.length > 0 || views.length > 0
+    Object.values(boxes).some((one) => one.length > 0) ||
+    moments.length > 0 ||
+    views.length > 0 ||
+    Object.values(aiming).some((one) => one.trim())
   const card = `${sitting.manifest}#${name}`
   useEffect(() => {
     onHold(card, Boolean(picked || why.trim() || marked))
@@ -590,6 +596,7 @@ function Card({
     if (missing) return setMessage({ text: say(words, missing), bad: true })
     setSending(true)
     setMessage({ text: say(words, 'recording'), bad: false })
+    const targets = choice === 'look' ? aims(aiming) : null
     try {
       await desk.answer({
         sitting: sitting.manifest,
@@ -600,8 +607,10 @@ function Card({
         ...(moments.length ? { moments } : {}),
         ...(views.length ? { views } : {}),
         ...(alternatives && choice === 'accept' && one ? { member: one } : {}),
+        ...(targets ? { targets } : {}),
       })
       setMessage({ text: say(words, 'recorded'), bad: false })
+      setAiming({})
       setAgain(false)
       setPicked(null)
       setMember(null)
@@ -623,6 +632,14 @@ function Card({
   const drawable = (laid.members ?? []).filter((one) => one.new && !one.sound && !one.text)
   const marks = (): Mark[] =>
     Object.entries(boxes).map(([member, shapes]) => ({ member, shapes: shapes.map((box) => ({ box })) }))
+  // Each predicate a held member carries, once by id with every member's value today.
+  const aimable = new Map<string, string[]>()
+  for (const held of laid.said ?? []) {
+    for (const one of held.predicates ?? []) {
+      const today = one.value === null ? '?' : String(Number(one.value.toPrecision(4)))
+      aimable.set(one.id, [...(aimable.get(one.id) ?? []), `${held.name} ${today}`])
+    }
+  }
   return (
     <article
       ref={here}
@@ -738,6 +755,30 @@ function Card({
             <p data-no-accept className="text-sm text-muted-foreground">
               {say(words, 'no_accept')}
             </p>
+          )}
+          {picked === 'look' && aimable.size > 0 && (
+            // The bar the look must reach, set with the redo and written as the person's
+            // own target (§PW620).
+            <details data-targets className="flex flex-col gap-2 rounded-md border p-3 text-sm">
+              <summary className="cursor-pointer font-medium">{say(words, 'target_heading')}</summary>
+              <p className="text-muted-foreground">{say(words, 'target_help')}</p>
+              {[...aimable].map(([id, today]) => (
+                <label key={id} className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono">{id}</span>
+                  <span className="text-muted-foreground">
+                    {say(words, 'target_today', { values: today.join(', ') })}
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    data-target={id}
+                    value={aiming[id] ?? ''}
+                    onChange={(event) => setAiming((was) => ({ ...was, [id]: event.target.value }))}
+                    className="w-24 rounded border px-2 py-1"
+                  />
+                </label>
+              ))}
+            </details>
           )}
           {picked && (
             <label className="flex flex-col gap-1 text-sm">

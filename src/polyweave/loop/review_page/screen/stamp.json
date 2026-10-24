@@ -10,6 +10,6 @@
     "gui/packages/ui/src/review.css",
     "gui/packages/ui/src/review.tsx"
   ],
-  "sha256": "67df30c208c81efc253a671f03bac59525547f8720c4a851a54c4f70132da12c",
+  "sha256": "57c1e7a9eee0e95d5ac99b1efa5aec2f32aab11dc6df7a9f29fb6a1f9b896251",
   "rebuild": "cd gui && npm run build:review"
 }

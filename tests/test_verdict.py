@@ -266,6 +266,8 @@ def test_a_person_s_target_is_written_past_the_look_and_fails_until_reached(tmp_
         (DARK, {"no-hot-facet": 0.5}, "has no min"),
         (DARK, {"star_gold": "dark"}, "a target is a number"),
         (DARK, {}, "no target was named"),
+        (DARK, {"no-hot-facet": {"toward": 0.5}}, "declares no value where it is"),
+        (DARK, {"no-hot-facet": {"toward": 2}}, "a share of the way"),
     ],
 )
 def test_a_target_that_is_no_bar_to_reach_is_refused(tmp_path, byte, targets, said):
