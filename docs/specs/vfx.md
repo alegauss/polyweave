@@ -110,6 +110,22 @@ amount = 27
 
 A table mixing keys of its own with parts is refused.
 
+**An effect can be drawn on a 2D canvas** (§PW623). `canvas = true` builds particles as a
+`CPUParticles2D` instead, every length in pixels and y down: `size`, `speed`, `radius`,
+`extents` and `gravity`, with `direction`, `gravity` and `extents` taking `[x, y]`. The
+shape is the node's texture and `size` a scale of its side (a plain square is an 8-pixel
+white image of its own). `rects`, a list of `[x, y, width, height]`, emits from several
+rectangles at once: one emitter apiece under a `Node2D`, sharing `amount` by area, which
+is how Cottony's stars drift in every gap between its panels; `emission` and `extents`
+beside it are refused. Only particles draw on a canvas, so a ribbon, a sheet, a struck
+piece or a `mesh` there is refused, and an effect's parts are all on the canvas or none,
+held by a `Node2D`. `vfx.preview` films in 3D and refuses a canvas effect
+(`vfx.unwatched`): it is watched in the screen that shows it.
+
+`seed`, in 2D and 3D alike, fixes the particles' randomness (each rectangle's emitter the
+next seed on), and `preprocess` is the seconds it has already run when it appears, so a
+capture of it is the same picture each time and not one seen starting.
+
 ## Building
 
 `vfx.build(source, effect=, out=)` builds every effect in the file, or the one named, as

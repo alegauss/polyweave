@@ -16,7 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW623** (deps: —) **vfx.build only writes 3D scenes in metres, so a 2D game's particle drift is written by hand** — Cottony's board screen is 2D, and its star drift repeated a declaration's worth of numbers in a script. → §PW623
 - 📋 **PW624** (deps: —) **a recorded flow addresses nodes by Godot's @Class@N names, so any new unnamed node breaks the replay** — Eight unrelated particle emitters in Cottony renumbered every generated name and a flow found nothing to press. → §PW624
 - 📋 **PW625** (deps: —) **purchase.remaining refuses a ceiling with no expiry and says, as its reason, that it never lapses** — Cottony's 90 credits read left 0 and not spendable, with a why that argued the opposite and named no door. → §PW625
 - 📋 **PW626** (deps: —) **reference.prepare cuts every pixel near the edge colour, so a subject sharing a hue with its ground loses parts** — Cottony's rainbow ball lost its blue and green bands and the star most of its tail to the well's blue. → §PW626
@@ -28,6 +27,7 @@
 - 📋 **PW632** (deps: —) **crowned over a concave outline rises in straight ridges to its centroid, so a star comes out a pyramid, never a pillow** — A puffy star or any concave plaque has to be faked from blended primitives, which loses the drawn outline. → §PW632
 - 📋 **PW633** (deps: —) **a capture at a window resolution sizes the viewport to its pixels and ignores the project's stretch** — A game laid out by canvas_items and expand is captured at a layout no player gets, unless the project does the stretch arithmetic itself. → §PW633
 - 📋 **PW634** (deps: —) **a bought mesh cannot be brought down to a game's triangle and texture budget; no operation decimates or downsizes** — Cottony's booster toys are 104k triangles on a 4096 texture each, so loading them live would take most of a 24 MB build. → §PW634
+- 📋 **PW636** (deps: —) **vfx.preview films only in 3D, so an effect drawn on a 2D canvas has no sitting of its own** — A drift between panels is judged only inside the whole screen, where a change to it cannot be laid beside the drift as it was. → §PW636
 
 ## Block I — Voxel models from a declaration
 

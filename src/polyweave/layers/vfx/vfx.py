@@ -114,6 +114,10 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "give": (float, 0.0),
     "wobble": (float, 3.0),
     "falloff": (float, 1.5),
+    "canvas": (bool, False),
+    "rects": (list, []),
+    "seed": (int, -1),
+    "preprocess": (float, 0.0),
 }
 
 #: The solids a particle may be drawn as instead of a quad (§PW427): primitives the
@@ -180,6 +184,14 @@ ABOUT: dict[str, str] = {
     "wobble": "how many times a second a struck piece swings back and forth",
     "falloff": "how the swing grows up a struck piece: 0 moves it whole, 1 evenly "
                "from its base, more keeps the base still and the top loose",
+    "canvas": "true builds particles for a 2D canvas, a CPUParticles2D, every length "
+              "in pixels and y down; direction, gravity and extents may be [x, y]",
+    "rects": "on a canvas, the rectangles it emits from, each [x, y, width, height] "
+             "in pixels, one emitter apiece sharing amount by area",
+    "seed": "fixes the particles' randomness, so a capture of it is the same each "
+            "time; -1 leaves it to the engine",
+    "preprocess": "seconds it has already run when it appears, so it is not seen "
+                  "starting",
 }
 
 #: Every effect measure a predicate may bound, and what it says.
@@ -382,6 +394,7 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
     if not isinstance(own["one_shot"], bool):
         raise _bad(name, f"sets one_shot to {own['one_shot']!r}",
                    "write one_shot as true or false")
+    _canvas_keys(name, own, table)
     own["direction"] = _vector(name, "direction", own["direction"], 3)
     own["gravity"] = _vector(name, "gravity", own["gravity"], 3)
     own["speed"] = sorted(_vector(name, "speed", own["speed"], 2))
@@ -425,6 +438,8 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
                    "write squash as three scales above 0; a sphere's or capsule's x "
                    "and z are one, since it is round about its upright")
     own["shape"] = _shape(name, own["shape"], root)
+    if own["canvas"] and own["shape"] not in NAMED:
+        own["picture_side"] = _picture_side(name, own["shape"], root)
     own["facing"] = _vector(name, "facing", own["facing"], 3)
     for key in ("step", "gap"):
         if not _number(own[key]) or own[key] <= 0:
@@ -460,6 +475,53 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
     _sheet_keys(name, own)
     _struck_keys(name, own)
     return own
+
+
+def _canvas_keys(name: str, own: dict, table: dict) -> None:
+    """A canvas's own keys and a seed's, checked in place (§PW623).
+
+    On a canvas a direction, a pull and a box are flat, so `[x, y]` is read as
+    `[x, y, 0]`; and only particles draw there, since a ribbon, a sheet, a struck piece
+    and a solid are each a 3D thing.
+    """
+    if not isinstance(own["canvas"], bool):
+        raise _bad(name, f"sets canvas to {own['canvas']!r}",
+                   "write canvas as true or false")
+    if isinstance(own["seed"], bool) or not isinstance(own["seed"], int) \
+            or own["seed"] < -1:
+        raise _bad(name, f"sets seed to {own['seed']!r}",
+                   "write seed as a whole number no less than 0, or -1 for none")
+    if not _number(own["preprocess"]) or own["preprocess"] < 0:
+        raise _bad(name, f"sets preprocess to {own['preprocess']!r}",
+                   "write preprocess as seconds, no less than 0")
+    own["preprocess"] = float(own["preprocess"])
+    if not own["canvas"]:
+        if own["rects"]:
+            raise _bad(name, "emits from rects and is not on a canvas",
+                       "set canvas = true, or emit from a box of extents in metres")
+        return
+    if own["kind"] != "particles" or own["mesh"]:
+        drawn = f"{own['kind']} of {own['mesh']}" if own["mesh"] else own["kind"]
+        raise _bad(name, f"is a {drawn} on a canvas", "draw particles on a canvas, "
+                   "with a shape and no mesh: ribbons, sheets, struck pieces and "
+                   "solids are 3D")
+    for key in ("direction", "gravity", "extents"):
+        if isinstance(own[key], list) and len(own[key]) == 2:
+            own[key] = [*own[key], 0.0]
+    rects = own["rects"]
+    if not isinstance(rects, list) or not all(
+            isinstance(one, list) and len(one) == 4 and all(_number(v) for v in one)
+            and one[2] > 0 and one[3] > 0 for one in rects):
+        raise _bad(name, f"sets rects to {rects!r}",
+                   "write rects as [[x, y, width, height], ...] in pixels, each wider "
+                   "and taller than nothing")
+    if rects and ("emission" in table or "extents" in table):
+        raise _bad(name, "emits from rects and from an emission or extents too",
+                   "leave emission and extents out: each rectangle is its own box")
+    if len(rects) > own["amount"]:
+        raise _bad(name, f"has {len(rects)} rects and {own['amount']} particles",
+                   "raise amount to one particle a rectangle at least")
+    own["rects"] = [[float(v) for v in one] for one in rects]
 
 
 #: The most strikes a struck piece's shader holds at once: a uniform array's length.
@@ -520,9 +582,16 @@ def declared(name: str, table: Any, root: Path | None = None) -> dict:
     """
     if isinstance(table, dict) and table and all(
             isinstance(v, dict) for v in table.values()):
-        return {"kind": "parts",
-                "parts": {part: checked(f"{name}.{part}", sub, root)
-                          for part, sub in table.items()}}
+        parts = {part: checked(f"{name}.{part}", sub, root)
+                 for part, sub in table.items()}
+        flat = {part for part, one in parts.items() if one["canvas"]}
+        if flat and (flat != set(parts) or any(parts[p]["rects"] for p in flat)):
+            # One root holds them, a Node2D or a Node3D, and a part of rectangles is
+            # already a group of emitters (§PW623).
+            raise _bad(name, "mixes parts on a canvas with parts in 3D, or has a part "
+                       "of rects", "put every part on the canvas or none, and give "
+                       "rects to an effect of its own")
+        return {"kind": "parts", "parts": parts}
     if isinstance(table, dict) and any(isinstance(v, dict) for v in table.values()):
         tables = sorted(k for k, v in table.items() if isinstance(v, dict))
         raise _bad(name, f"mixes keys of its own with parts ({', '.join(tables)})",
@@ -1022,6 +1091,8 @@ def scene(name: str, effect: dict) -> str:
         '[sub_resource type="Curve" id="sizes"]\n'
         f"max_value = {top:.6g}\n_data = [{points}]\npoint_count = {len(sizes)}\n\n"
     )
+    if effect.get("canvas"):
+        return _canvas_scene(name, effect, colours, curve)
     if effect["kind"] == "path_ribbon":
         return _path_ribbon(name, effect, colours, curve)
     if effect["kind"] == "sheet":
@@ -1081,12 +1152,112 @@ def scene(name: str, effect: dict) -> str:
         f"one_shot = {'true' if effect['one_shot'] else 'false'}\n"
         f"explosiveness = {effect['explosiveness']:.6g}\n"
         f"randomness = {effect['randomness']:.6g}\n"
+        + _repeatable(effect)
         + (f"trail_enabled = true\ntrail_lifetime = {effect['trail']:.6g}\n"
            if ribbon else "")
         + 'process_material = SubResource("process")\n'
         + ('draw_pass_1 = ExtResource("mesh")\n' if owned
            else 'draw_pass_1 = SubResource("draw")\n')
     )
+
+
+def _repeatable(effect: dict, offset: int = 0) -> str:
+    """A particle node's preprocess and fixed seed, where the effect states them, so a
+    capture of it is the same each time (§PW623)."""
+    return ((f"preprocess = {effect['preprocess']:.6g}\n"
+             if effect.get("preprocess") else "")
+            + (f"use_fixed_seed = true\nseed = {effect['seed'] + offset}\n"
+               if effect.get("seed", -1) >= 0 else ""))
+
+
+#: The side of the plain square a canvas particle draws when its shape is square.
+_SQUARE_SIDE = 8
+
+
+def _canvas_texture(effect: dict) -> tuple[str, str, str, float]:
+    """A canvas particle's texture: its external picture, its own resources, the
+    node's line, and the texture's side in pixels, which its size is a scale of."""
+    shape = effect["shape"]
+    if shape == "square":
+        white = ", ".join(["255, 255"] * _SQUARE_SIDE * _SQUARE_SIDE)
+        own = ('[sub_resource type="Image" id="drawn"]\n'
+               f'data = {{\n"data": PackedByteArray({white}),\n'
+               f'"format": "LumAlpha8",\n"height": {_SQUARE_SIDE},\n"mipmaps": false,'
+               f'\n"width": {_SQUARE_SIDE}\n}}\n\n'
+               '[sub_resource type="ImageTexture" id="shape"]\n'
+               'image = SubResource("drawn")\n\n')
+        return "", own, 'texture = SubResource("shape")\n', float(_SQUARE_SIDE)
+    picture, own, line = _shaped(effect)
+    line = line.replace("albedo_texture", "texture")
+    if picture:
+        return picture, own, line, float(effect["picture_side"])
+    return "", own, line, float(DRAWN_SIDE if shape in DRAWN else 64)
+
+
+def _picture_side(name: str, shape: str, root: Path | None) -> float:
+    """The larger side of a picture a canvas particle draws, read off the file: the
+    particle's size in pixels is a scale of it."""
+    from PIL import Image
+
+    try:
+        with Image.open((root or Path(".")) / shape) as opened:
+            return float(max(opened.size))
+    except OSError as unread:
+        raise _bad(name, f"draws {shape} on a canvas, and its size cannot be read",
+                   "draw a .png or .webp on a canvas; its size is what the particle's "
+                   "size scales") from unread
+
+
+def _canvas_scene(name: str, effect: dict, colours: str, curve: str) -> str:
+    """Particles for a 2D canvas: a CPUParticles2D in pixels, y down, or one for each
+    rectangle under a Node2D, sharing the amount by area (§PW623)."""
+    picture, shaped, textured, side = _canvas_texture(effect)
+    rects = effect["rects"]
+    whole = sum(w * h for _, _, w, h in rects)
+    emitters = ([(f"{name}_{i}", (x + w / 2, y + h / 2), (w / 2, h / 2),
+                  max(1, round(effect["amount"] * w * h / whole)))
+                 for i, (x, y, w, h) in enumerate(rects)]
+                if rects else
+                [(name, None, tuple(effect["extents"][:2]), effect["amount"])])
+    scale = effect["size"] / side
+    nodes = []
+    for index, (own, at, extents, amount) in enumerate(emitters):
+        parent = ' parent="."' if len(emitters) > 1 else ""
+        emits = 3 if rects else _EMITS[effect["emission"]]
+        nodes.append(
+            f'[node name="{own}" type="CPUParticles2D"{parent}]\n'
+            + (f"position = Vector2({_floats(at)})\n" if at else "")
+            + 'material = SubResource("look")\n'
+            f"amount = {amount}\nlifetime = {effect['lifetime']:.6g}\n"
+            f"one_shot = {'true' if effect['one_shot'] else 'false'}\n"
+            f"explosiveness = {effect['explosiveness']:.6g}\n"
+            f"randomness = {effect['randomness']:.6g}\n"
+            + _repeatable(effect, index) + textured +
+            f"emission_shape = {emits}\n"
+            f"emission_sphere_radius = {effect['radius']:.6g}\n"
+            f"emission_rect_extents = Vector2({_floats(extents)})\n"
+            f"direction = Vector2({_floats(effect['direction'][:2])})\n"
+            f"spread = {effect['spread']:.6g}\n"
+            f"gravity = Vector2({_floats(effect['gravity'][:2])})\n"
+            f"initial_velocity_min = {effect['speed'][0]:.6g}\n"
+            f"initial_velocity_max = {effect['speed'][1]:.6g}\n"
+            f"angular_velocity_min = {effect['angular_velocity'][0]:.6g}\n"
+            f"angular_velocity_max = {effect['angular_velocity'][1]:.6g}\n"
+            f"damping_min = {effect['damping'][0]:.6g}\n"
+            f"damping_max = {effect['damping'][1]:.6g}\n"
+            f"angle_min = {effect['angle'][0]:.6g}\n"
+            f"angle_max = {effect['angle'][1]:.6g}\n"
+            f"scale_amount_min = {scale:.6g}\nscale_amount_max = {scale:.6g}\n"
+            'scale_amount_curve = SubResource("sizes")\n'
+            'color_ramp = SubResource("colours")\n'
+        )
+    head = (f'[node name="{name}" type="Node2D"]\n\n' if len(emitters) > 1 else "")
+    resources = picture + shaped + colours + curve + (
+        '[sub_resource type="CanvasItemMaterial" id="look"]\n'
+        f"blend_mode = {1 if effect['blend'] == 'add' else 0}\n\n")
+    steps = resources.count("[ext_resource") + resources.count("[sub_resource") + 1
+    return (f"[gd_scene load_steps={steps} format=3]\n\n" + resources + head
+            + "\n".join(nodes))
 
 
 def _solid(effect: dict) -> str:
@@ -1129,8 +1300,9 @@ def _composed(name: str, parts: dict) -> str:
                 nodes.append(re.sub(r"^\[node (.*?)\]", r'[node \1 parent="."]', block,
                                     count=1))
     steps = len(external) + len(internal) + 1
+    held = "Node2D" if all(one.get("canvas") for one in parts.values()) else "Node3D"
     return (f"[gd_scene load_steps={steps} format=3]\n\n" + "".join(external)
-            + "".join(internal) + f'[node name="{name}" type="Node3D"]\n\n'
+            + "".join(internal) + f'[node name="{name}" type="{held}"]\n\n'
             + "".join(nodes)).rstrip("\n") + "\n"
 
 
@@ -1546,7 +1718,15 @@ def preview(
         )
     families, sheets, watched, abouts = {}, {}, {}, {}
     for name, made in built.items():
-        own = _watched_as(declared(name, tables[name], here))
+        whole = declared(name, tables[name], here)
+        if any(one.get("canvas") for one in whole.get("parts", {"": whole}).values()):
+            # Filmed from its side in metres, which a canvas in pixels has none of: a
+            # 2D effect is watched where the game draws it (§PW623).
+            raise PolyweaveError(
+                "vfx.unwatched", f"{name} is drawn on a 2D canvas, which this films "
+                "in 3D", "capture the screen that shows it with capture.run or "
+                "clip.shots, and lay it out with verdict.sitting", given=name)
+        own = _watched_as(whole)
         rows = []
         if name in against:
             scene = str(against[name]).removeprefix("res://")

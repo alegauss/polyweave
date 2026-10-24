@@ -100,28 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW623 Effects declared for a 2D canvas
-
-Found in Cottony's RK162 on 2026-10-23: candy stars drifting slowly in the gaps between
-the board screen's panels, as `screen1.png` floats them. Cottony's board screen is 2D
-(`Node2D` panels, a `SubViewport` only for the board's own 3D layer), and its effects
-are `CPUParticles2D` in `scripts/fx.gd`.
-
-`vfx.build` was the place to declare it: its `shape = "star"` is the very picture
-wanted, and `size_over_life`, `colour_over_life`, `angular_velocity` and an emission box
-are every knob the drift needed. But every effect it builds is a 3D scene in metres
-(`GPUParticles3D`, quads, meshes), with no way to ask for a `CPUParticles2D` or
-`GPUParticles2D` in pixels for a canvas. So the drift was written by hand as
-`scripts/drift.gd`: four emitter rectangles, a seed, a preprocess, two sizes for depth,
-a colour ramp and a fade, which is exactly a declaration's worth of numbers.
-
-Expected: `[effect.<name>] dimension = "2d"` (or a `canvas = true`) that builds the same
-declaration into a 2D particle scene, extents and sizes in pixels, with `seed` and
-`preprocess` as keys so a capture of it is reproducible, and `emission` taking a list of
-rectangles for an effect that lives in several gaps at once.
-
-Workaround: `scripts/drift.gd` in Cottony, which names this line in its header.
-
 ### §PW624 A recorded flow that survives an unrelated node
 
 Found in Cottony's RK162 on 2026-10-23. The task added one `Node2D` with eight unnamed
@@ -392,6 +370,26 @@ was saved. A silhouette check against a render of the source would say whether t
 decimation cost the shape.
 
 Until then Cottony's RK172 waits on this line rather than growing a project exporter.
+
+### §PW636 A 2D effect watched on its own
+
+Found shipping PW623, which taught `vfx.build` to draw particles on a 2D canvas (`canvas
+= true`, `rects`, in pixels). `vfx.preview` films an effect in 3D: a camera framing its
+reach in metres, the emitter carried round a circle, a key light, all in `_WATCH` and
+`_framing`. A canvas effect has none of that, so `vfx.preview` now refuses it with
+`vfx.unwatched` and sends the person to the screen that shows it.
+
+That leaves a 2D effect with no sitting of its own: to judge Cottony's star drift a
+person has to see the whole board screen, where the drift is one layer among many, and a
+change to the drift alone cannot be shown beside the drift as it was.
+
+Expected: `vfx.preview` films a canvas effect on its own, in a `SubViewport` sized to
+the rectangles it emits from (or its reach around the origin with none), on the same
+neutral grey, for one and a half lifetimes after its `preprocess`, and lays out the same
+sheet, the same looping films and the same `against` row the 3D path does. Pixels are
+already the unit, so the framing is the rectangles' union plus the reach, and no camera
+moves. The seed makes two takes of it the same picture, which is what lets `against`
+compare.
 
 ## Block I — Voxel models from a declaration
 

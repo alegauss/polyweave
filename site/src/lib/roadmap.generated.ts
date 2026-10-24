@@ -53,13 +53,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW623",
-    block: "H",
-    symptom: "vfx.build only writes 3D scenes in metres, so a 2D game's particle drift is written by hand",
-    why: "Cottony's board screen is 2D, and its star drift repeated a declaration's worth of numbers in a script.",
-    deps: [],
-  },
-  {
     id: "PW624",
     block: "H",
     symptom: "a recorded flow addresses nodes by Godot's @Class@N names, so any new unnamed node breaks the replay",
@@ -134,6 +127,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a bought mesh cannot be brought down to a game's triangle and texture budget; no operation decimates or downsizes",
     why: "Cottony's booster toys are 104k triangles on a 4096 texture each, so loading them live would take most of a 24 MB build.",
+    deps: [],
+  },
+  {
+    id: "PW636",
+    block: "H",
+    symptom: "vfx.preview films only in 3D, so an effect drawn on a 2D canvas has no sitting of its own",
+    why: "A drift between panels is judged only inside the whole screen, where a change to it cannot be laid beside the drift as it was.",
     deps: [],
   },
   {
