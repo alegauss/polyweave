@@ -411,7 +411,7 @@ than the player's window shows, and the picture is of a layout no player gets.
 Workaround: `tools/capture/board_wide.gd` computes the stretch by hand. It renders at
 `(DESIGN.y * w / h, DESIGN.y)`, then `Image.resize`s to the window. Before that, a
 throwaway `.polyweave/wide.gd` did the same to preview layouts. Every capture of a wide
-screen would need the same arithmetic.
+screen needs it; Cottony RK178 title_wide.gd copied it again.
 
 What polyweave should do: read the project's `[display] window/stretch/*` and
 `window/size/viewport_*` from project.godot. A capture at a stated window resolution
