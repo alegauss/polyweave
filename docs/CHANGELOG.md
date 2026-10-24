@@ -270,6 +270,7 @@
 - ✅ **PW594** **a game session leaves its own user:// folder in the work area once it ends, so engine caches pile up** — game.close removes a session's own user:// once its game has ended, and game.open sweeps those left by sessions that quit idle or crashed (design recorded in `docs/specs/driving.md`).
 - ✅ **PW597** **clip.shots frames carry no provenance record, and no shot can be kept as an artefact at a path** — clip.shots records each frame, keeps a chosen shot at a path, hides nodes while framing, and capture.again frames a kept shot again (design recorded in `src/polyweave/layers/motion/camera.py`).
 - ✅ **PW619** **reference.concept crashes with a Pillow traceback when a region ends on the capture's right or bottom edge** — reference.concept measures a region whose placement search reaches the capture's right or bottom edge, the crop held to the rounded copy's bounds.
+- ✅ **PW635** **a WAV transcoded through ffmpeg's pipe keeps placeholder sizes, so reading it asks for four gigabytes** — A WAV out of ffmpeg's pipe is kept with sizes set from its own bytes, and sound.read sizes one first, so a placeholder header reads instead of asking for 4 GB.
 
 ## Block I — Voxel models from a declaration
 

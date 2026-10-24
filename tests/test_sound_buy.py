@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import io
 import shutil
+import struct
 import subprocess
 import urllib.error
 import urllib.request
@@ -148,8 +149,33 @@ def test_a_sound_for_a_declared_cue_lands_there_in_its_format(tmp_path, monkeypa
     found = sound_buy.buy(prompt="footsteps on gravel", cue="footsteps",
                           root=str(tmp_path))
     assert found["file"] == "game/audio/footsteps.wav"
-    assert (tmp_path / "game" / "audio" / "footsteps.wav").read_bytes()[:4] == b"RIFF"
+    body = (tmp_path / "game" / "audio" / "footsteps.wav").read_bytes()
+    assert body[:4] == b"RIFF"
+    # §PW635: a pipe leaves the sizes at 0xFFFFFFFF; the file kept says its own length.
+    assert struct.unpack("<I", body[4:8])[0] == len(body) - 8
+    data = body.index(b"data")
+    assert struct.unpack("<I", body[data + 4:data + 8])[0] == len(body) - data - 8
     assert found["measured"]["duration"] == pytest.approx(1.0, abs=0.1)
+
+
+def test_a_wav_kept_with_a_pipe_s_placeholder_sizes_still_reads(tmp_path):
+    """§PW635: the guest's gate asked wave for four gigabytes and ran out of memory."""
+    import wave
+
+    from polyweave.layers.sound import sound
+
+    held = io.BytesIO()
+    with wave.open(held, "wb") as out:
+        out.setnchannels(1)
+        out.setsampwidth(2)
+        out.setframerate(8000)
+        out.writeframes(b"\x00\x10" * 800)
+    body = bytearray(held.getvalue())
+    body[4:8] = body[body.index(b"data") + 4:body.index(b"data") + 8] = b"\xff" * 4
+    (tmp_path / "piped.wav").write_bytes(bytes(body))
+    samples, rate = sound.read(tmp_path / "piped.wav")
+    assert (len(samples), rate) == (800, 8000)
+    assert sound.sized(b"OggS....") == b"OggS...."
 
 
 @pytest.mark.parametrize(

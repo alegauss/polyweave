@@ -309,7 +309,8 @@ def _trim(played: bytes, target: Path, bounds: dict) -> tuple[bytes, dict | None
             "the take whole",
             detail=done.stderr[:400].decode("utf-8", "replace"),
         )
-    return done.stdout, {"lead": round(start, 3), "tail": round(duration - end, 3)}
+    return sound.sized(done.stdout), {"lead": round(start, 3),
+                                      "tail": round(duration - end, 3)}
 
 
 def _speech(target: Path, words: str, config) -> dict:
@@ -809,7 +810,7 @@ def _drafted(text: str, *, cue, out, entity, root) -> dict:
              *shaped[target.suffix.lower()], "pipe:1"],
             input=body, capture_output=True, check=False,
         )
-        body = done.stdout
+        body = sound.sized(done.stdout)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes(body)
     record = provenance.build(
@@ -922,7 +923,9 @@ def _transcoded(body: bytes, target: Path) -> bytes:
             "read the detail; nothing was ledgered",
             detail=done.stderr[:400].decode("utf-8", "replace"),
         )
-    return done.stdout
+    # A pipe leaves a WAV's sizes as placeholders, which the game would be handed
+    # (§PW635).
+    return sound.sized(done.stdout)
 
 
 def _measured(target: Path) -> dict:

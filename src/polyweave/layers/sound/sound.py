@@ -26,9 +26,11 @@ PATH, and refused where it is not.
 
 from __future__ import annotations
 
+import io
 import math
 import re
 import shutil
+import struct
 import subprocess
 import wave
 from pathlib import Path
@@ -105,9 +107,30 @@ def read(path: str | Path) -> tuple[np.ndarray, int]:
     ) / 32768.0, RATE
 
 
+def sized(body: bytes) -> bytes:
+    """A WAV's RIFF and `data` sizes set from the bytes it holds; anything else as is.
+
+    ffmpeg writing a WAV to a pipe cannot seek back to fill its sizes in, so they stay
+    0xFFFFFFFF, and `wave` asks for four gigabytes to read one (§PW635).
+    """
+    if len(body) < 12 or body[:4] != b"RIFF" or body[8:12] != b"WAVE":
+        return body
+    fixed = bytearray(body)
+    fixed[4:8] = struct.pack("<I", len(body) - 8)
+    at = 12
+    while at + 8 <= len(body):
+        name, size = body[at:at + 4], struct.unpack("<I", body[at + 4:at + 8])[0]
+        if name == b"data" or at + 8 + size > len(body):
+            fixed[at + 4:at + 8] = struct.pack("<I", len(body) - at - 8)
+            break
+        at += 8 + size + (size & 1)
+    return bytes(fixed)
+
+
 def _wav(where: Path) -> tuple[np.ndarray, int]:
     try:
-        with wave.open(str(where), "rb") as held:
+        # Sized first, so a WAV kept with a pipe's placeholder sizes reads (§PW635).
+        with wave.open(io.BytesIO(sized(where.read_bytes())), "rb") as held:
             width, channels = held.getsampwidth(), held.getnchannels()
             rate, raw = held.getframerate(), held.readframes(held.getnframes())
     except (wave.Error, EOFError) as exc:
