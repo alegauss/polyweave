@@ -41,6 +41,8 @@ LAYER = Layer(
             "contrast_min", "contrast_median", "delta_e_min", "text_contrast_min",
         )
     },
+    # A search sample judged on a declared run's capture, after an import (§PW621).
+    parts={"runs.after": "polyweave.layers.engine.runs:after"},
     codes="polyweave.layers.engine.codes",
     config="polyweave.layers.engine.settings",
     # 29,481 with game.compare_runs, two runs' traces held together (§PW612).
@@ -75,6 +77,8 @@ LAYER = Layer(
         "polyweave.layers.engine.integrity:scan": ("internal", "the tree read as text"),
         "polyweave.layers.engine.runs:declared": (
             "internal", "each [run.<name>], checked"),
+        "polyweave.layers.engine.runs:after": (
+            "internal", "the runs a search sample is judged after"),
         "polyweave.layers.engine.pack:files_in": (
             "internal", "a pack's file table; game.pack"),
         "polyweave.layers.engine.pack:source_of": (

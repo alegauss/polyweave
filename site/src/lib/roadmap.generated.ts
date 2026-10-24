@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 14 },
+  { block: "H", title: "Proof on a real game", open: 13 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW621",
-    block: "H",
-    symptom: "a project-drawn picture judged through a declared capture cannot be searched; each candidate is run by hand",
-    why: "Choosing a layout seed for Cottony's sky took a throwaway loop over twenty seeds, 35 seconds each.",
-    deps: [],
-  },
   {
     id: "PW622",
     block: "H",

@@ -129,3 +129,32 @@ def run_declared(
         "what they print they did"
         + (f"; {', '.join(failed)} did not" if failed else ""),
     }
+
+
+def after(runs: list, root=".") -> dict:
+    """The declared runs a search sample is judged downstream of, after an import, so
+    the engine sees the file the sample just wrote (§PW621). A run that fails refuses
+    the search: what it would have judged was never made."""
+    from . import engine
+
+    here = load(root).root
+    every = declared(here)
+    unknown = [name for name in runs if name not in every]
+    if unknown:
+        raise PolyweaveError(
+            "engine.unknown-run",
+            f"{', '.join(unknown)} is not a run this project declares",
+            "name one of: " + (", ".join(sorted(every)) or "none is declared"),
+            given=unknown[0], allowed=sorted(every))
+    engine._launch([engine.find(here), "--headless", "--import", "--path", str(here)],
+                   cwd=here, timeout=300.0)
+    ran = run_declared(list(runs), root=here)
+    if not ran["passed"]:
+        raise PolyweaveError(
+            "search.downstream-failed",
+            f"a sample was made and {ran['says']}, so there is nothing to judge",
+            "run engine.run_declared with these runs by hand and read its log",
+            detail={name: one.get("why") for name, one in ran["runs"].items()
+                    if not one["ok"]},
+        )
+    return ran

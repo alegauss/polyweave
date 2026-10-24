@@ -630,3 +630,9 @@ size   = { type = "int", about = "tile edge", lo = 8, hi = 256, unit = "px" }
   cannot grow without the number showing it.
 - A declaration that cannot be served is `config.bad-operation`, a `project.check`
   finding, and the project's operations are left off the list until it is fixed.
+- A producer's sample may be judged where the game shows it rather than as drawn
+  (PW621): `search.sweep(spec, out=, producer=, then=["board"], judged=<capture>)`
+  imports the project after each sample, makes the declared `[run.<name>]`s in `then`,
+  and checks the spec on `judged`. A run that fails refuses the sweep
+  (`search.downstream-failed`). Its `seed` is its own parameter, a layout, and may be
+  searched: `search.noise-axis` holds only a built-in renderer's seed, samples and size.

@@ -115,7 +115,8 @@ that moved after the proposal was measured (`spec.stale-proposal`) and one not w
 on a single line (`spec.unwritable-bound`), and it leaves a `person` bound alone. `bake`
 takes `seed`, `samples` and `size` so the variants can be made, and a search may not turn
 any of the three (`search.noise-axis`), because that would pick whichever sample the
-noise happened to favour.
+noise happened to favour. A project's own producer's seed is its own parameter, a
+layout, and may be searched (PW621).
 
 **A person's verdict is one sheet and one call** (§PW109). `verdict.sheet(members, out=)`
 puts a whole family on one PNG. A member is `name`, `spec`, `new`, and optionally `old`,

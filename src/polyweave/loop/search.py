@@ -30,7 +30,7 @@ from typing import Annotated, Any
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.kernel.layer import Producer, call, function, producers
+from polyweave.kernel.layer import Producer, call, function, needed, producers
 
 from . import accept, extend, loop
 from .accept import Spec
@@ -103,7 +103,9 @@ def turnable(
     """
     described = _described(producer)
     noise = sorted({name for one in wanted for name in one} & set(NOISE))
-    if noise:
+    # A project's own producer means its own seed, a sky's layout and not a render's
+    # noise, which Cottony searched by hand for want of this (§PW621).
+    if noise and not extend.is_extended(producer):
         raise PolyweaveError(
             "search.noise-axis",
             f"a search may not turn {', '.join(noise)}, which changes the noise and "
@@ -579,14 +581,19 @@ def renderer(
     fixed: dict | None = None,
     bake: Callable | None = None,
     producer: str = "render",
+    then: Sequence[str] = (),
+    judged: str | Path | None = None,
 ) -> Callable[[dict], dict]:
     """An evaluator that makes each sample and checks the spec against it.
 
     `producer` names what makes a sample, a render unless the spec turns something
     else (§PW504). The rung is the lowest one that carries the spec's predicates, which
     is what makes the search affordable: a material question is answered on a sphere
-    in three seconds.
+    in three seconds. `then` names declared engine runs made after each sample, behind
+    an import, and `judged` the file the spec is checked on instead of the sample, such
+    as the capture those runs write (§PW621).
     """
+    after = function(needed("runs.after")) if then else None
     made = _producer(producer, root)
     at = rung or _rung_for(spec, root, made)
     draw = bake or (extend.drawer(producer, root) if extend.is_extended(producer)
@@ -619,7 +626,9 @@ def renderer(
             inline=False,
             **{**(fixed or {}), **values},
         )
-        found = accept.check(spec, Path(root) / out, rung=at, root=root)
+        if after is not None:
+            after(list(then), root=root)
+        found = accept.check(spec, Path(root) / (judged or out), rung=at, root=root)
         # The key is what lets a contact sheet be assembled afterwards, since the cache
         # is already holding every sample's picture under it.
         found["render"] = {
@@ -832,11 +841,19 @@ def sweep(
     producer: Annotated[
         str, Param("what makes each sample: a layer's producer by name")
     ] = "render",
+    then: Annotated[
+        list, Param("declared [run.<name>]s made after each sample, behind an import")
+    ] = (),
+    judged: Annotated[
+        str, Param("the file the spec checks, such as their capture; out if empty")
+    ] = "",
 ) -> dict:
     """Search a spec's permitted parameters by actually rendering, and return the best.
 
     `trace` is where to write down what it rejected. Worth passing: a search returning
     only its winner is one nobody can overrule. `spec` may also be a `Spec` in memory.
+    A sample judged downstream, a project's drawing seen in the game's capture, names
+    the runs in `then` and the capture in `judged` (§PW621).
     """
     if not isinstance(spec, Spec):
         spec = accept.read(spec, root)
@@ -844,7 +861,8 @@ def sweep(
     trace = trace or None
     found = search(
         spec,
-        renderer(spec, out=out, root=root, rung=rung, fixed=fixed, producer=producer),
+        renderer(spec, out=out, root=root, rung=rung, fixed=fixed, producer=producer,
+                 then=tuple(then or ()), judged=judged or None),
         budget=budget,
         points=points,
     )

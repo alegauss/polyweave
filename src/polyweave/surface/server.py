@@ -74,7 +74,8 @@ CORE_TOOLS = 40_200
 #: 140,106 with music.track (§PW611), whose sound layer's figure rose by 600 for it.
 #: 140,798 with game.compare_runs (§PW612), whose engine layer's figure rose by 800.
 #: 142,089 with verdict.target (§PW620), whose core figure rose by 1,200 for it.
-SESSION_BUDGET = 142_400
+#: 142,406 with search.sweep's then and judged (§PW621), inside the core's figure.
+SESSION_BUDGET = 142_700
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

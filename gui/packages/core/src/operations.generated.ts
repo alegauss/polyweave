@@ -2068,6 +2068,10 @@ export interface SearchSweepArgs {
   trace?: string
   /** what makes each sample: a layer's producer by name; default "render" */
   producer?: string
+  /** declared [run.<name>]s made after each sample, behind an import; default [] */
+  then?: unknown[]
+  /** the file the spec checks, such as their capture; out if empty */
+  judged?: string
 }
 
 /** Whether four handles beat four waits, for a render that costs this much. */

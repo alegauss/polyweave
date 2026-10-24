@@ -844,6 +844,12 @@ KERNEL_CODES: dict[str, Code] = {
         when="search.sweep names a producer that no layer.py declares",
         doors=("name one of the producers the layers declare",),
     ),
+    "search.downstream-failed": Code(
+        means="a sample was made, and the declared run it is judged after did not run",
+        when="search.sweep with then= whose engine run failed, so no capture was made "
+        "to check (§PW621)",
+        doors=("run engine.run_declared with those runs and read its log",),
+    ),
     "search.nothing-to-search": Code(
         means="the spec names no parameter a search is permitted to turn",
         when="an acceptance spec with predicates and no search ranges; a parameter not "

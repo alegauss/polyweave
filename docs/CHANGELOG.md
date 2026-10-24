@@ -271,6 +271,7 @@
 - ✅ **PW597** **clip.shots frames carry no provenance record, and no shot can be kept as an artefact at a path** — clip.shots records each frame, keeps a chosen shot at a path, hides nodes while framing, and capture.again frames a kept shot again (design recorded in `src/polyweave/layers/motion/camera.py`).
 - ✅ **PW619** **reference.concept crashes with a Pillow traceback when a region ends on the capture's right or bottom edge** — reference.concept measures a region whose placement search reaches the capture's right or bottom edge, the crop held to the rounded copy's bounds.
 - ✅ **PW635** **a WAV transcoded through ffmpeg's pipe keeps placeholder sizes, so reading it asks for four gigabytes** — A WAV out of ffmpeg's pipe is kept with sizes set from its own bytes, and sound.read sizes one first, so a placeholder header reads instead of asking for 4 GB.
+- ✅ **PW621** **a project-drawn picture judged through a declared capture cannot be searched; each candidate is run by hand** — search.sweep's then and judged import the project, make the declared runs and check the spec on their capture, and a project producer's seed is searchable.
 
 ## Block I — Voxel models from a declaration
 

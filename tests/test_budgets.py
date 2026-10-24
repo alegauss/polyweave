@@ -175,7 +175,9 @@ from polyweave.surface.capabilities import capabilities
 #: entity to part named, which no check could say (§PW612).
 #: 162,676 with verdict.target, the bar a person says a look must reach, which an agent
 #: would otherwise type into a spec by hand (§PW620).
-DESCRIBE = 163_000
+#: 163,031 with search.sweep's then and judged, a sample judged in the capture it
+#: ends up in, which Cottony ran as a throwaway loop of four steps a seed (§PW621).
+DESCRIBE = 163_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -316,7 +318,8 @@ DESCRIBE = 163_000
 #: 176,625 with music.track (§PW611).
 #: 177,451 with game.compare_runs and its two codes (§PW612).
 #: 178,960 with verdict.target and loop.bad-target (§PW620).
-CAPABILITIES = 179_300
+#: 179,343 with search.sweep's then and judged and search.downstream-failed (§PW621).
+CAPABILITIES = 179_700
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
