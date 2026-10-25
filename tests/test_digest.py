@@ -143,6 +143,72 @@ inputs = ["face", "stud"]
 """
 
 
+NOTCH = """name   = "notch"
+output = "cut"
+
+[materials]
+plate = { colour = "#30C040" }
+hole  = { colour = "#805030" }
+
+[[nodes]]
+id       = "slab"
+op       = "primitive"
+kind     = "cube"
+size     = 4.0
+material = "plate"
+
+[[nodes]]
+id       = "knife"
+op       = "primitive"
+kind     = "cube"
+size     = 2.0
+at       = [1.2, 1.2, 1.2]
+material = "hole"
+
+[[nodes]]
+id     = "cut"
+op     = "carve"
+into   = "slab"
+cutter = "knife"
+"""
+
+
+def test_a_bake_writes_the_coverage_of_a_carve_s_own_material(tmp_path):
+    """§PW630: Cottony recomputed a pocket's mouth by hand and nudged it 2.5 px by eye;
+    the cut now wears the cutter, and the bake says where it shows."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave.kernel import config as C
+    from polyweave.kernel.errors import PolyweaveError
+    from polyweave.layers.geometry import render
+    from polyweave.surface import cli
+
+    (tmp_path / C.FILENAME).write_text(
+        "[render]\npreview_size = 96\nfinal_size = 96\n"
+        "samples = { sphere = 4, preview = 8, final = 8 }\nseed = 11\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "notch.toml").write_text(NOTCH, encoding="utf-8")
+    built = cli.build_one("notch.toml", root=tmp_path, out="mesh")
+    (mesh,) = [o for o in built["outputs"] if o.endswith(".glb")]
+
+    class Quiet:
+        def stage(self, *a, **k):
+            pass
+
+    found = render.bake(Quiet(), out="notch.png", model=mesh, rung="preview",
+                        inline=False, masks=["hole"], root=tmp_path)
+    assert found["masks"] == {"hole": "notch.hole.mask.png"}
+    hole = measure.load(tmp_path / "notch.hole.mask.png").rgba[..., 0] > 127
+    subject = measure.load(tmp_path / "notch.png").subject(0.02)
+    assert 0 < hole.sum() < subject.sum()
+    assert not (hole & ~subject).any(), "a mask never reaches past the subject"
+    with pytest.raises(PolyweaveError) as refused:
+        render.bake(Quiet(), out="n2.png", model=mesh, rung="preview", inline=False,
+                    masks=["glass"], root=tmp_path)
+    assert refused.value.code == "render.unknown-mask"
+    assert set(refused.value.as_dict()["allowed"]) == {"plate", "hole"}
+
+
 def test_restyling_a_small_slot_moves_its_own_palette_entry(tmp_path):
     """§PW161: the mean of the whole subject barely moves when a small slot is
     recoloured; the slot's own colour does."""

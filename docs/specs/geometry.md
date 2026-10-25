@@ -223,6 +223,10 @@ is `geom.bad-solid`.
 Blender, and each material goes in as a slot of its own and comes back as a group, so a
 bevelled piece in three colours is still in three: a bevel's new faces wear the face
 they grew from, and a carve's walls the cutter's. Before, both came back in none.
+And the build keeps them (§PW630): it had laid the carve's whole result in what it cut
+into, so Cottony's star pocket rendered all plate green. A material the carve node names
+goes on the faces it cut into, and the cut keeps the cutter's, so a pocket reads as its own
+surface and a bake can mask it (`render.bake`'s `masks`).
 
 **`smooth` shades a mesh smooth by angle** (§PW564): every edge whose faces turn by
 less than that many degrees shares its normals, and the sharper ones stay flat, so a

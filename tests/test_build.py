@@ -89,6 +89,37 @@ def test_a_solid_round_on_every_edge_builds_from_a_declaration(tmp_path, node):
     assert np.subtract(high, low).tolist() == pytest.approx(node["size"], rel=0.01)
 
 
+def pocket(material=None) -> dict:
+    """Cottony's unearned star: a pocket pressed into a plate, two colours apart."""
+    return {
+        "name": "pocket", "version": 1, "params": {},
+        "materials": {"plate": {"colour": "#30c040"}, "hole": {"colour": "#805030"}},
+        "nodes": [
+            {"id": "slab", "op": "primitive", "kind": "cube", "size": 4.0,
+             "material": "plate"},
+            {"id": "knife", "op": "primitive", "kind": "cube", "size": 2.0,
+             "at": [0, 0, 2.0], "material": "hole"},
+            {"id": "cut", "op": "carve", "into": "slab", "cutter": "knife",
+             **({"material": material} if material else {})},
+        ],
+        "output": "cut",
+    }
+
+
+def test_a_carve_s_cut_wears_the_cutter_s_material(tmp_path):
+    """§PW630: every face of the pocket wore the plate's green, so no render could tell
+    the pocket from the plate."""
+    solving()
+    made = B.build(pocket(), root=tmp_path)["output"]
+    worn = {g["material"] for g in made["groups"]}
+    assert worn == {"plate", "hole"}
+    assert sum(g["faces"][1] - g["faces"][0] for g in made["groups"]) == len(
+        made["faces"])
+    # A material on the carve itself goes on what was cut into; the cut keeps its own.
+    named = B.build(pocket(material="bar"), root=tmp_path)["output"]
+    assert {g["material"] for g in named["groups"]} == {"bar", "hole"}
+
+
 def tree(radius=0.2, **more) -> dict:
     """A trunk and a crown, blended: the plastic city's tree (§PW498)."""
     return {

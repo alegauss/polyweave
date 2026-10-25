@@ -16,7 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW630** (deps: —) **a carve's cut faces wear the plate's material, so no render can tell a pocket from the plate it is pressed into** — Composing an engraved pocket means recomputing its outline by hand from the declaration, tuned by eye to the camera. → §PW630
 - 📋 **PW631** (deps: —) **inflate stripes a star outline and rings a drawn one with contour steps, so a glossy inflated shape is unusable** — Candy is glossy by rule, so inflate cannot make any candy panel or puffy shape the style guide asks for. → §PW631
 - 📋 **PW632** (deps: —) **crowned over a concave outline rises in straight ridges to its centroid, so a star comes out a pyramid, never a pillow** — A puffy star or any concave plaque has to be faked from blended primitives, which loses the drawn outline. → §PW632
 - 📋 **PW633** (deps: —) **a capture at a window resolution sizes the viewport to its pixels and ignores the project's stretch** — A game laid out by canvas_items and expand is captured at a layout no player gets, unless the project does the stretch arithmetic itself. → §PW633

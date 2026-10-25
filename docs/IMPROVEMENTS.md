@@ -100,30 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW630 a carve's cut wears the cutter's material, and a bake can mask by material
-
-Where it happened: Cottony RK168. An unearned star is a star-shaped pocket pressed into
-the bar. `tools/art/score_star_hole.toml` carves the puffy star (a `blend`) out of a
-cube plate. The sprite has to be cut to the pocket's mouth, because the plate around it
-belongs to the bar and not to the sprite.
-
-What came back: every face of the carve wears the plate's material. A test giving the
-plate a key green and the cutter brown rendered all green, the pocket included. So no
-render can say where the pocket ends and the plate begins. The render has no mask pass,
-and the bake answers with no coverage of the cut.
-
-Workaround: `tools/art/make_assets.py` `_star_mouth` recomputes the mouth by hand. It
-reads the declaration's `[params]` with tomllib, rebuilds the 2D field (a core circle
-and five ellipses through polyweave's own `blend.round_union`), foreshortens it by the
-camera's 18 degree elevation, and nudges it 2.5 px down. That number was found by laying
-the outline over a render by eye. It breaks whenever the declaration, the camera or the
-frame's centring moves.
-
-What polyweave should do: give the faces a carve makes the cutter's material, or the
-cutter's own `material` when the node names one, so the cut reads as its own surface.
-Then let a bake write a per-material mask (an ID pass or `masks = ["hole"]`) beside the
-picture. A pocket, a groove or an engraving could then be composed by its own coverage.
-
 ### §PW631 inflate's height field is float end to end
 
 Where it happened: Cottony RK168, trying a puffy star by `inflate` before settling on a

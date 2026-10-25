@@ -1850,7 +1850,7 @@ export interface RenderBakeArgs {
   rung?: "sphere" | "preview" | "final"
   /** the measures the answer has to carry, if no rung is named; default [] */
   asking?: unknown[]
-  /** the lowest rung a verdict on this asset may be taken at */
+  /** the lowest rung a verdict may be taken at */
   floor?: "sphere" | "preview" | "final"
   /** Principled BSDF inputs; with over = true, set on the mesh's own */
   material?: Record<string, unknown>
@@ -1858,7 +1858,7 @@ export interface RenderBakeArgs {
   measures?: unknown[]
   /** where to measure: frame, subject, a rectangle, or a mask file */
   region?: string
-  /** carry the picture back with the numbers, base64 encoded; default true */
+  /** carry the picture back too, base64 encoded; default true */
   inline?: boolean
   /** serve an identical render already paid for; default true */
   cached?: boolean
@@ -1888,13 +1888,13 @@ export interface RenderBakeArgs {
   transparent?: boolean
   /** one flat colour is what was wanted, not a failure; default false */
   allow_uniform?: boolean
-  /** take the shading a service painted into the mesh's texture back out; default false */
+  /** undo shading a service painted into the mesh's texture; default false */
   scrub?: boolean
-  /** steps on the mesh first: dedust, settle or custom; default [] */
+  /** steps on the mesh: dedust, settle or custom; default [] */
   prepare?: unknown[]
-  /** the project's passes over the picture: file.py:fn or {pass, args}; default [] */
+  /** project passes over the picture: file.py:fn or {pass, args}; default [] */
   after?: unknown[]
-  /** the world rectangle this picture stands for: [width, height] centred on the subject, or [x0, y0, x1, y1] where it stands, seen from the front; default [] */
+  /** the world rectangle it stands for: [width, height] centred, or [x0, y0, x1, y1] seen from the front; default [] */
   covers?: unknown[]
   /** the scale it is baked at; the project's if unset; default 0.0 */
   pixels_per_unit?: number
@@ -1906,6 +1906,8 @@ export interface RenderBakeArgs {
   samples?: number
   /** the square's side; the rung's if zero; from 0 to …; in px; default 0 */
   size?: number
+  /** materials masked, as <out>.<name>.mask.png; default [] */
+  masks?: unknown[]
   /** the project to resolve settings against; default "." */
   root?: string
 }

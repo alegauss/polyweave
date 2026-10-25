@@ -493,9 +493,15 @@ same two off any picture by path, at the rung its record names.
 blended result, so a mean over the whole subject let a recoloured wrapper or rim sit
 inside one quantisation step. After the render, the bake paints every slot an emission
 of its own colour, turns the lights and world off and renders one sample at the same
-rig, and gives each subject pixel to the nearest of those colours. The masks are not
-kept. The palette is recorded beside the two hashes, so a moved `look_digest` says which
-slot moved. A subject wearing one slot, and a picture read by path with
+rig, and gives each subject pixel to the nearest of those colours. The masks are kept
+only where asked: `render.bake(masks=["hole"])` writes each named material's coverage as
+`<out>.<name>.mask.png` beside the picture, white where it shows and never past the
+subject, and answers them as `masks` (§PW630). A pocket, a groove or an engraving is then
+cut out by its own coverage, not an outline rebuilt by hand. A name the mesh does not
+wear, or a mesh in more materials than the pass tells apart, is `render.unknown-mask`
+before anything renders, and a bake asking for masks is never served from the cache,
+which keeps the picture alone. The palette is recorded beside the two hashes, so a moved
+`look_digest` says which slot moved. A subject wearing one slot, and a picture read by path with
 `measure.digest`, have no masks and keep the subject's mean.
 
 ## A project's own measure

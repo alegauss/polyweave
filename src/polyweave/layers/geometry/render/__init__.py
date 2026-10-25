@@ -182,7 +182,7 @@ def bake(
     ] = (),
     floor: Annotated[
         str,
-        Param("the lowest rung a verdict on this asset may be taken at", choices=RUNGS),
+        Param("the lowest rung a verdict may be taken at", choices=RUNGS),
     ] = "",
     material: Annotated[
         dict, Param("Principled BSDF inputs; with over = true, set on the mesh's own")
@@ -194,7 +194,7 @@ def bake(
         str, Param("where to measure: frame, subject, a rectangle, or a mask file")
     ] = "",
     inline: Annotated[
-        bool, Param("carry the picture back with the numbers, base64 encoded")
+        bool, Param("carry the picture back too, base64 encoded")
     ] = True,
     cached: Annotated[
         bool,
@@ -238,21 +238,21 @@ def bake(
     ] = False,
     scrub: Annotated[
         bool,
-        Param("take the shading a service painted into the mesh's texture back out"),
+        Param("undo shading a service painted into the mesh's texture"),
     ] = False,
     prepare: Annotated[
         list,
-        Param("steps on the mesh first: dedust, settle or custom"),
+        Param("steps on the mesh: dedust, settle or custom"),
     ] = (),
     after: Annotated[
         list,
-        Param("the project's passes over the picture: file.py:fn or {pass, args}"),
+        Param("project passes over the picture: file.py:fn or {pass, args}"),
     ] = (),
     covers: Annotated[
         list,
         Param(
-            "the world rectangle this picture stands for: [width, height] centred on "
-            "the subject, or [x0, y0, x1, y1] where it stands, seen from the front"
+            "the world rectangle it stands for: [width, height] centred, or "
+            "[x0, y0, x1, y1] seen from the front"
         ),
     ] = (),
     pixels_per_unit: Annotated[
@@ -273,6 +273,9 @@ def bake(
         int,
         Param("the square's side; the rung's if zero", lo=0, unit="px"),
     ] = 0,
+    masks: Annotated[
+        list, Param("materials masked, as <out>.<name>.mask.png")
+    ] = (),
     root: Annotated[str, Param("the project to resolve settings against")] = ".",
 ) -> dict:
     """Render one subject at the cheapest rung that can answer the question.
@@ -287,6 +290,11 @@ def bake(
     `spec` renders the build its `subject` names, at its rung (§PW298).
 
     `prepare` runs steps on the loaded mesh, each in the key and the record (§PW582).
+
+    `masks` names materials whose pixels are written beside the picture, white where
+    each shows, so a pocket carved in its own material is cut out by its own coverage
+    and not by an outline recomputed by hand (§PW630). A bake asking for them is never
+    served from the cache, which keeps the picture alone.
     """
     # What a project did to a mesh in its own Blender code before handing it over: a
     # custom step is recorded with its source's digest, and what each step did comes
@@ -464,7 +472,7 @@ def bake(
     # strictest is the wrong direction: a lower floor refuses less, so the noisiest rung
     # got the bar that lets a flat render through.
     tolerances = config.tolerances(chosen["rung"])
-    if cached:
+    if cached and not masks:
         hit = store.look(signature, work=work)
         if hit is not None:
             report.stage("rendering", progress=1.0, note="cached")
@@ -515,6 +523,25 @@ def bake(
         blender.lay_over(subject, blender.as_inputs(inputs))
     else:
         blender.apply_material(subject, blender.as_inputs(inputs) if inputs else None)
+    if masks:
+        # Refused before the path trace is paid for, with the materials it does wear.
+        worn = [s.material.name for s in subject.material_slots if s.material]
+        unknown = [str(one) for one in masks if str(one) not in worn]
+        if unknown:
+            raise PolyweaveError(
+                "render.unknown-mask",
+                f"{', '.join(unknown)} is no material the subject wears",
+                "name materials from the mesh's own: " + (", ".join(worn) or "none"),
+                given=unknown[0], allowed=worn,
+            )
+        if len(worn) > len(blender.SLOT_COLOURS):
+            raise PolyweaveError(
+                "render.unknown-mask",
+                f"the subject wears {len(worn)} materials, more than the flat pass "
+                f"tells apart ({len(blender.SLOT_COLOURS)})",
+                "bake a mesh in fewer materials to mask one of them",
+                given=str(masks[0]), allowed=worn,
+            )
     blender.place(scene, rig, subject, covers=list(covers) or None)
 
     report.stage(
@@ -556,7 +583,7 @@ def bake(
     # move, and did the look (§PW141). Quantised at this rung's noise floor.
     # A palette per material slot, off one flat pass at the same rig (§PW161): the
     # blended picture alone cannot say which pixels wear which slot.
-    masks = blender.slot_masks(
+    slotted = blender.slot_masks(
         scene, subject, work / "slots" / f"{signature}.png", size=frame
     )
     digested = measure.digests(
@@ -564,11 +591,13 @@ def bake(
         alpha_floor=floor_alpha,
         noise=tolerances.render_noise,
         triangles=blender.triangles(subject),
-        slots=masks,
+        slots=slotted,
     )
     digest = {k: digested[k] for k in ("shape_digest", "look_digest", "quantum")}
     # The palette the look digest is over, so a moved digest says which slot moved.
     digest["palette"] = digested["figures"]["look"]["palette"]
+    written = (_masks_written([str(one) for one in masks], slotted, out_path,
+                              floor_alpha, where) if masks else {})
 
     elapsed = round(time.monotonic() - started, 3)
     record = provenance.build(
@@ -617,10 +646,33 @@ def bake(
         answer["scrubbed"] = scrubbed
     if prepared:
         answer["prepared"] = prepared
+    if written:
+        answer["masks"] = written
     if inline:
         answer["image"] = measure.inline_image(out_path)
     _counted(answer)
     return answer
+
+
+def _masks_written(names: list[str], slotted: dict | None, out_path: Path,
+                   floor: float, where: Path) -> dict[str, str]:
+    """Each named material's pixels as a mask beside the picture, by name (§PW630).
+
+    White where the material shows in the picture and black elsewhere, off the flat
+    pass the look digest already reads; a subject in one material is its own coverage.
+    """
+    from PIL import Image as PILImage
+
+    # Refused before the render where the pass could not tell them apart, so no slots
+    # here means one material, whose coverage is the subject's own.
+    covered = measure.load(out_path).subject(floor)
+    out = {}
+    for name in names:
+        shown = covered & slotted[name] if slotted else covered
+        target = out_path.with_name(f"{out_path.stem}.{name}.mask.png")
+        PILImage.fromarray((shown * 255).astype("uint8"), "L").save(target)
+        out[name] = provenance.relative(target, where)
+    return out
 
 
 def _passes(after, *, where: Path) -> list[dict]:

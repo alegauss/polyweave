@@ -63,6 +63,14 @@ CODES: dict[str, Code] = {
         when="the bpy module is not installed in the interpreter running the work",
         doors=("install bpy", "point [paths] blender at one that runs the worker"),
     ),
+    "render.unknown-mask": Code(
+        means="a mask was asked of a material the subject does not wear, or of one "
+        "among more than the flat pass tells apart",
+        when="render.bake's masks naming a material not in the mesh's slots, or a mesh "
+        "in more than eight materials (§PW630)",
+        doors=("name materials the mesh wears, as the refusal lists them",
+               "bake a mesh in fewer materials"),
+    ),
     "render.unknown-rung": Code(
         means="the rung named is not one of the three the ladder renders",
         when="a project renames a rung, or a caller misspells one",

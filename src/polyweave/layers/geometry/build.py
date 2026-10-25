@@ -184,11 +184,19 @@ def _worn(node: dict, made: dict, built: dict) -> list[dict]:
     operands out in order, so where each one's faces landed is arithmetic. It is also
     what a renderer wants, since a material slot is assigned per polygon.
 
-    **A boolean keeps what it cut into and nothing finer.** The cutter is gone from the
-    result and the solver does not preserve face correspondence, so a carve or a bevel
-    over one material is one group and over several is none. Claiming a range the solver
+    **A carve's cut wears the cutter** (§PW630). The solver hands back each face's
+    material (§PW564), the walls a cut makes in the cutter's, so those groups stand: a
+    pocket pressed into a plate reads as its own surface, which is what lets a render
+    tell the two apart. A material the carve node names goes on what it cut into, and
+    the cut keeps the cutter's. Where the solver said nothing, a carve or a bevel over
+    one material is one group and over several is none; claiming a range the solver
     reordered would be worse than saying nothing.
     """
+    if node["op"] == "carve" and made.get("groups"):
+        cut = {g["material"] for g in built.get(node["cutter"], {}).get("groups") or ()}
+        mine = node.get("material")
+        return [{**one, "material": mine} if mine and one["material"] not in cut
+                else dict(one) for one in made["groups"]]
     if node.get("material"):
         return [{"material": node["material"], "faces": [0, len(made["faces"])]}]
     if node["op"] == "union":
