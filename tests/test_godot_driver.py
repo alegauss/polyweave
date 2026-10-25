@@ -948,6 +948,67 @@ def test_an_expectation_on_a_dictionary_of_numbers_holds_as_numbers(tmp_path):
     assert broke["ok"] is False and '"Menu":1' in broke["why"]
 
 
+#: Cottony's title: an unnamed screen whose PLAY takes the screen away when pressed,
+#: so the button is gone by the time anything is asked about it after the click.
+LEAVES = """extends Node2D
+
+var started := 0
+
+func _ready() -> void:
+\tif FileAccess.file_exists("res://extra.txt"):
+\t\tfor i in 8:
+\t\t\tadd_child(CPUParticles2D.new())
+\tvar title := Node2D.new()
+\tadd_child(title)
+\tvar play := TextureButton.new()
+\tplay.position = Vector2(100, 100)
+\tplay.custom_minimum_size = Vector2(200, 80)
+\tplay.size = Vector2(200, 80)
+\tplay.pressed.connect(_play.bind(title))
+\ttitle.add_child(play)
+
+func _play(title: Node2D) -> void:
+\tstarted += 1
+\ttitle.free.call_deferred()
+"""
+
+
+def test_a_click_that_takes_its_screen_away_is_kept_by_a_selector(tmp_path):
+    """§PW624: Cottony's Play was asked about after the click had removed it, so the
+    flow kept @TextureButton@163, which eight unrelated emitters renumbered."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    (tmp_path / "main.gd").write_text(LEAVES, encoding="utf-8")
+    session = driving.opened(root, seed=1)["session"]
+    try:
+        driving.stepped(session, root=root)
+        play = driving.queried(session, of_class="TextureButton", root=root)
+        path = play["result"][0]["path"]
+        assert "@" in path
+        driving.inputted(session, click=path, root=root)
+        driving.stepped(session, frames=3, root=root)
+        seen = driving.queried(session, path=".", properties=["started"], root=root)
+        kept = driving.kept(session, out="tests/flows/play.flow.json",
+                            proves="PLAY starts the game", expect=[seen["step"]],
+                            root=root)
+    finally:
+        driving.closed(session, root=root)
+    assert kept["fragile"] == []
+    flow = json.loads(Path(kept["flow"]).read_text(encoding="utf-8"))
+    clicked = next(one for one in flow["steps"] if one["cmd"] == "input")
+    assert clicked["click"] == {"select": {"class": "TextureButton"}}
+    (tmp_path / "extra.txt").write_text("eight emitters", encoding="utf-8")
+    assert driving.replayed("tests/flows/play.flow.json", root=root)["ok"] is True
+    # Kept at the generated path, the replay says which step broke on the counter.
+    clicked["click"] = {"path": path}
+    Path(kept["flow"]).write_text(json.dumps(flow), encoding="utf-8")
+    broke = driving.replayed("tests/flows/play.flow.json", root=root)
+    assert broke["ok"] is False
+    assert broke["fragile"]["paths"] == [path]
+    assert "game.rekey" in broke["fragile"]["remedy"]
+
+
 def test_a_flow_kept_before_selectors_is_rekeyed_in_one_call(tmp_path):
     """§PW276: Cottony's older flows still reach their nodes by generated names."""
     if not os.environ.get("GODOT"):

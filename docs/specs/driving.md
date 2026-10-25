@@ -284,8 +284,15 @@ includes wrong turns:
 - a wait is kept as a wait that must be met, where it was met in the session;
 - a shot is left out, since a replay draws nothing;
 - a generated path, one holding an `@`, is written as the selector the driver found for
-  it when the command ran, while the node was there, so the flow survives a node added
-  ahead of it; one no selector picked out stays a path and is named in `fragile`.
+  it before the command ran, while the node was there, so the flow survives a node added
+  ahead of it; one no selector picked out stays a path and is named in `fragile`. Asked
+  after, a click that takes its own screen away left nothing to ask about, and Cottony's
+  Play was kept as `@TextureButton@163` (§PW624). A path a query answers is asked about
+  after, since only then is it known.
+- a replay whose failed step reached its node by a generated path says so: its answer
+  holds `fragile`, the step, those paths and the remedy (`game.rekey`, or naming the
+  node), and its `why` names them, since that step broke on Godot's counter and not on
+  the game.
 
 **A flow kept before that is re-keyed in one call** (§PW276). `game.rekey(flow)` sends
 the flow step by step through a held session at its own seed and scene, as a replay

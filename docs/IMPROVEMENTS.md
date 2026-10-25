@@ -100,33 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW624 A recorded flow that survives an unrelated node
-
-Found in Cottony's RK162 on 2026-10-23. The task added one `Node2D` with eight unnamed
-`CPUParticles2D` children to the board screen. `python tools/check_export.py` then
-failed a recorded flow it replays:
-
-```
-FAIL  flow lose_later_level.flow.json broke at step 2, frame 127: driver.no-node: nothing on
-screen answers path /root/Main/@Node2D@155/@TextureButton@163
-```
-
-The flow addressed the button by the name Godot generated for it, `@TextureButton@163`,
-and those numbers come from one counter every unnamed node in the process draws from.
-Eight new unnamed nodes, anywhere and unrelated to that button, moved every number after
-them, so the recording broke on a change that has nothing to do with what it plays. The
-workaround was to name the new nodes so they draw no numbers; any later unnamed node
-breaks it again.
-
-Expected: `game.record_flow` never writes a path with an `@...@N` segment. It records
-what stays put: the node's own name where it has one, else a locator such as the class
-with the nearest named ancestor and the node's index among siblings of its class, or the
-text a button carries. A replay that meets a recorded `@..@N` path could say so as its
-own code (`driver.fragile-path`) naming the step to re-record, rather than
-`driver.no-node`.
-
-Workaround: `scripts/drift.gd` and `scripts/game.gd` in Cottony name the new nodes.
-
 ### §PW625 A ceiling with no date says so
 
 Found in Cottony's RK163 on 2026-10-23. The owner set a ceiling for three booster toys,

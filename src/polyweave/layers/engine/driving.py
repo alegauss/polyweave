@@ -293,6 +293,11 @@ def send(
     An answered command is journalled, and the answer's `step` is its place in the
     journal, which is how game.keep is told what to drop and what to hold a flow to.
     """
+    # What picks out each node the command reaches, asked before it runs: a click on
+    # Cottony's Play took its title away, so a selector asked after it found nothing and
+    # the flow kept @TextureButton@163, which the next unnamed node renumbered (§PW624).
+    before = (_selectors(session, root, cmd, fields, None)
+              if journal and cmd != "close" else {})
     record = _session(session, root)
     request = {"token": record["token"], "id": 1, "cmd": cmd, **fields}
     try:
@@ -335,8 +340,9 @@ def send(
         kept = {"cmd": cmd, **fields}
         if cmd in ("query", "wait"):
             kept["answered"] = answer.get("result")
-        # Asked now, while the nodes are there: no frame has passed since the command.
-        selectors = _selectors(session, root, cmd, fields, answer.get("result"))
+        # A query's answers asked now, while the nodes are there: no frame has passed.
+        selectors = {**before, **_selectors(session, root, cmd, {},
+                                            answer.get("result"))}
         if selectors:
             kept["selectors"] = selectors
         record = _session(session, root)  # the selector reads moved its log offset
@@ -1196,13 +1202,26 @@ def replayed(
         moved["engine"] = [stated["engine"], _engine_version(log)]
     if stated.get("driver") and _driver_hash(here) != stated["driver"]:
         moved["driver"] = "the driver changed since this flow was kept"
+    failed = int(said["step"]) if said.get("step") else None
+    why = said.get("why") or ("" if passed else found.get("why", ""))
+    # A step that found nothing by a name Godot generated broke on the counter, not on
+    # the game: any unnamed node added before it renumbers it (§PW624). The driver
+    # counts its steps from one.
+    reached = (_step_paths(stated["steps"][failed - 1])
+               if failed is not None and 1 <= failed <= len(stated["steps"]) else [])
+    fragile = ({"step": failed, "paths": reached,
+                "remedy": f"re-key it with game.rekey(flow={flow!r}), or name the node "
+                "in the game; a path Godot generated moves with every unnamed node"}
+               if not passed and reached else None)
     return {
         "ok": passed,
         "proves": stated.get("proves", ""),
         "steps": len(stated["steps"]),
         "frame": int(said["frame"]) if said.get("frame") else None,
-        "failed_step": int(said["step"]) if said.get("step") else None,
-        "why": said.get("why") or ("" if passed else found.get("why", "")),
+        "failed_step": failed,
+        "why": (f"{why}; it reached its node by {', '.join(reached)}, a name Godot "
+                "generated" if fragile else why),
+        **({"fragile": fragile} if fragile else {}),
         "differs": moved,
         "log": found["log"],
     }
