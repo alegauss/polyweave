@@ -176,11 +176,15 @@ def port(
     bake: Callable | None = None,
     build: Callable | None = None,
     fresh: bool = False,
+    only: list | tuple = (),
 ) -> dict:
     """Run a family's port: build, search or take the rig, bake if every member passes.
 
     A searched family tries the rig it kept, or the one its `start` names, before it
     searches, and keeps what a passing search finds. `fresh` searches regardless.
+    `only` names the members ported, the rest left as they are: two re-bought toys bake
+    without waiting on a third nobody touched (§PW628). A rig a part of the family
+    passes is not kept as the family's.
 
     `bake` is the renderer, `render.bake` unless a test stands one in; `build` turns a
     declaration into a mesh, `make.build_one` by default. With `run` open, every bake
@@ -192,6 +196,19 @@ def port(
 
     here = Path(root).resolve()
     family = read(path, here)
+    every = [one["name"] for one in family["member"]]
+    unknown = [name for name in only if name not in every]
+    if unknown:
+        raise PolyweaveError(
+            "search.bad-family",
+            f"{', '.join(unknown)} is not a member of {family['path'].name}",
+            "name members the family file holds",
+            given=unknown[0], allowed=every,
+        )
+    left_out = [name for name in every if only and name not in only]
+    if left_out:
+        family = {**family, "member": [one for one in family["member"]
+                                       if one["name"] in only]}
     draw = bake or R.bake
     making = build or build_one
     # The axes are the family's, not any one member's: each spec is handed them, and a
@@ -243,7 +260,7 @@ def port(
                 budget=int(family.get("budget", search.BUDGET)),
             )
             values, passed = found["best"], found["passed"]
-            if passed:
+            if passed and not left_out:
                 _keep(keeping, family, values, family["search"])
         else:
             values = dict(family["given"])
@@ -274,11 +291,14 @@ def port(
         **({"stopped": found["stopped"]} if found.get("stopped") else {}),
         **({"at_bound": found["at_bound"]} if found.get("at_bound") else {}),
         "baked": baked,
+        **({"left_out": left_out} if left_out else {}),
         "says": (
-            f"every member passed; baked {len(baked)} for a person to look at"
+            f"every member {'asked for ' if left_out else ''}passed; baked "
+            f"{len(baked)} for a person to look at"
             if passed
-            else "not every member passed, so nothing was baked"
-        ),
+            else "not every member passed, so nothing was baked; port.run's members "
+            "names the ones to port alone"
+        ) + (f", leaving {', '.join(left_out)} as it was" if left_out else ""),
     }
 
 
@@ -288,12 +308,16 @@ def ported(
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
     run: Annotated[dict, Param("an open loop run every render counts into")] = None,
     fresh: Annotated[bool, Param("search even where the kept rig passes")] = False,
+    members: Annotated[
+        list, Param("the members to port and bake alone; every one if empty")
+    ] = (),
 ) -> dict:
     """Port a family from its file: build, search as one, bake if every member passes.
 
-    The verdict on the look stays a person's, given with `verdict.judge`.
+    `members` ports some of them alone, the rest left as they are (§PW628). The verdict
+    on the look stays a person's, given with `verdict.judge`.
     """
-    return port(family, root=root, run=run, fresh=fresh)
+    return port(family, root=root, run=run, fresh=fresh, only=list(members or ()))
 
 
 def _named(where: Path, here: Path) -> str:

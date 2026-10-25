@@ -348,7 +348,15 @@ renders to find the same rig again. A kept rig whose values fall outside the fam
 current axes is ignored, since the search could never have proposed it. `start = "<a
 kept rig>"` in another family's file makes that rig its first guess. `fresh` searches
 regardless. The answer says where the rig came from, as `rig_from`: `kept`, `started`,
-`searched` or `given`. This is the appliable half of Shio's blueprints. The
+`searched` or `given`.
+
+**Some members are ported alone** (§PW628). `port.run(family, members=[...])` builds,
+searches and bakes only the members named, the rest left as they are, and its answer names
+them as `left_out`. Cottony's two re-bought toys passed and could not be baked beside a
+ball nobody had changed that failed its own spec. A member the file does not hold is
+`search.bad-family`, with the ones it does. A rig some of the family passes is not kept as
+the family's, since the others were never held to it. A port that bakes nothing because
+one member failed says that `members` is the way to port the rest. This is the appliable half of Shio's blueprints. The
 geometry-with-parameters half is already a declaration, and a recipe that bundles them
 waits on a second family wanting one.
 

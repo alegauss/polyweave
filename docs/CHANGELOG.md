@@ -278,6 +278,7 @@
 - ✅ **PW625** **purchase.remaining refuses a ceiling with no expiry and says, as its reason, that it never lapses** — An undated ceiling is refused as fetch.no-expiry naming its door, and purchase.remaining says what is left beside spendable false rather than 0.
 - ✅ **PW626** **reference.prepare cuts every pixel near the edge colour, so a subject sharing a hue with its ground loses parts** — reference.prepare grows the background a step at a time from the frame's edge, so a subject sharing its ground's hue keeps those parts; mode colour keeps the old cut.
 - ✅ **PW627** **mesh.buy cannot buy a textured mesh, so a toy whose colours make it must go through a project client** — mesh.buy buys a Meshy mesh textured from a gated picture at the model's textured price row, its prompt on the ledger, and a 402 naming the plan is fetch.plan-lacks.
+- ✅ **PW628** **port.run bakes nothing when one member fails and takes no member list, so passing members wait on an unrelated one** — port.run's members ports and bakes the members named alone and says who was left out, so passing toys no longer wait on an unchanged one that fails.
 
 ## Block I — Voxel models from a declaration
 

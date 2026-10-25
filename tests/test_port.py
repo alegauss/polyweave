@@ -108,6 +108,30 @@ def test_nothing_is_baked_when_a_member_cannot_pass(tmp_path):
     assert "nothing was baked" in found["says"]
 
 
+def test_the_members_named_are_ported_and_baked_alone(tmp_path):
+    """§PW628: two re-bought toys passed and waited on a third nobody had touched."""
+    root = project(tmp_path, dim="max = 0.01")
+    baker = Baker(root)
+    found = port.port(root / "family.toml", root=root, bake=baker, only=["star_gold"])
+    assert found["passed"]
+    assert [b["name"] for b in found["baked"]] == ["star_gold"]
+    assert list(found["members"]) == ["star_gold"]
+    assert found["left_out"] == ["star_dim"]
+    assert "leaving star_dim as it was" in found["says"]
+    # A rig the gold star alone passes is not kept as the family's.
+    assert not port._beside(root / "family.toml").exists()
+    assert "kept" not in found
+
+
+def test_a_member_the_family_does_not_hold_is_refused(tmp_path):
+    root = project(tmp_path)
+    with pytest.raises(PolyweaveError) as refused:
+        port.port(root / "family.toml", root=root, bake=Baker(root),
+                  only=["star_blue"])
+    assert refused.value.code == "search.bad-family"
+    assert set(refused.value.as_dict()["allowed"]) == {"star_dim", "star_gold"}
+
+
 def test_a_failed_member_says_what_it_measured_and_by_how_much(tmp_path):
     """§PW475: a hair or a mile, without a second accept.check by hand."""
     root = project(tmp_path, rig="given", given=0.0, dim="max = 0.1")

@@ -1456,6 +1456,8 @@ export interface PortRunArgs {
   run?: Record<string, unknown>
   /** search even where the kept rig passes; default false */
   fresh?: boolean
+  /** the members to port and bake alone; every one if empty; default [] */
+  members?: unknown[]
 }
 
 /** What the project's own code still does that a polyweave call already does. */
