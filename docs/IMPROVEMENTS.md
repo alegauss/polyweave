@@ -454,6 +454,30 @@ their corrected value, and a row nobody answered is refused, not guessed.
 
 ## Block S — Playing the game, not only rendering it
 
+### §PW640 A run flown back at another frame rate
+
+Met in Spinhold, RK263 (2026-10-25). A player's kept run did not fly back to its score.
+Spinhold's proof (`dev/replay.gd`) runs under `--fixed-fps 60`, one tick a frame, so it
+passed over four causes of drift that show only when frames and ticks part:
+
+- `Engine.time_scale` is read once per frame, so a scale set during a tick reaches the
+  next tick only if that tick starts a new frame;
+- a hit stop counted down in `_process`;
+- a camera held in `_process` whose view culled the ship's shots;
+- a map flight (an idle-mode AnimationPlayer) the run waited on.
+
+The workaround is in the project: `dev/replay.gd --scene --fps=<recorded>,<watched>`
+records on the real clock at one `max_fps`, watches at another, samples both on the
+recorder's tick (score, ship, enemies, shots) and names the first tick they differ. Each
+run takes minutes, and it was run by hand several at once, since the drift was
+intermittent and showed under load.
+
+polyweave's game layer should own it: given a scene, a recording driver and a sampler
+(node paths and properties), fly it at two frame rates, repeated N times, and answer the
+first tick and fields that differ. `engine.find` could flag the hazards statically:
+`_process` writing what `_physics_process` reads, `time_scale` set inside a physics
+step, play waiting on an idle-mode AnimationPlayer or Tween.
+
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs

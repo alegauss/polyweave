@@ -52,6 +52,8 @@
 
 ## Block S — Playing the game, not only rendering it
 
+- 📋 **PW640** (deps: —) **a recorded run is never flown back at another frame rate, so play that reads frames instead of ticks passes every proof** — Spinhold's replays drifted from four frame-timed causes that a fixed-fps proof could never show, found by a hand-run project script. → §PW640
+
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs
