@@ -100,9 +100,66 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
+### §PW638 Line widths in a panel are not whole pixels
+
+Met in Spinhold, RK184 (2026-10-25), declaring the holo panel the owner accepted. The
+hand-written shader drew its inner hairline where `abs(depth - 9.0) < 0.6`, a line 1.2
+pixels wide. `panel.build` refused `hairline = { inset = 9, width = 1.2, ... }` with
+`compose.bad-panel: hairline.width is 1.2`, remedy "write hairline.width as a whole
+number from 1". The panel was declared at 1, a thinner line than the look accepted.
+
+The shader route already does the sum in floats (`abs(dist - hairline_inset) <
+hairline_width * 0.5`), and the nine-patch is drawn four times larger and brought down,
+so a fraction of a pixel is drawable on both. Widths that are a line's thickness (the
+hairline, the edge, the bracket, the tick, the piping) should take any number from a
+small floor, say 0.5, while the sizes and margins a nine-patch cuts on stay whole. Done
+when the 1.2 declaration builds and both routes draw the same width.
+
+### §PW639 Moving one Control between a panel's states
+
+Met in Spinhold, RK184 (2026-10-25). `panel.build(shader=true)` writes one
+`<name>.<state>.material.tres` per state, each `resource_local_to_scene`. A Control
+whose state changes at run time (a card gaining focus, a button disabled) cannot simply
+assign one: a loaded material is shared by every panel that loads it, so a per-instance
+`set_shader_parameter` (a tint, a cut) would leak to all of them. Spinhold's
+`game/ui/kit/holo_panel.gd` works round it by keeping its own `ShaderMaterial` and, on
+every state change, looping over `SHADER.get_shader_uniform_list()` to copy each uniform
+from the chosen state's material, then reapplying its tint.
+
+`tint` also surprised: it multiplies `bracket_colour`, so a crew family's gold over the
+kit's cyan comes out green. Spinhold sets `bracket_colour` itself instead.
+
+polyweave should ship the switch with the build: a small GDScript (in the kit's addon,
+or written beside the shader) that holds a panel's states and moves one Control between
+them, keeping per-instance overrides, with the state precedence declared (disabled over
+pressed over focus). And `tint` should say whether it replaces or multiplies, or offer
+both. Done when HoloPanel's copy loop can be deleted for it.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
+
+### §PW637 A picture's first spec, written from its measurements
+
+Met in Spinhold, RK184 (2026-10-25). The menu kit's holo panel became polyweave's
+(`panel.build` from `art/panels/holo.panel.toml`), and its design asked for a spec that
+holds the built still. No operation writes one. `geometry.kit` writes a first spec for a
+model, with its `bounds` parameter, but a picture gets nothing: the agent ran
+`measure.take --subject game/ui/kit/holo/holo.normal.png --measures [...]`, read the
+values, worked out each bound by hand in the project's `margin` convention (min at 0.8
+of the measured value, max at the measured value plus 0.1, copied from other specs), and
+wrote `art/accept/holo-panel.accept.toml` itself, `measured` and `origin` included.
+
+That is the step a person's bar is meant to be spared: a number an agent picks, written
+in a file that then reads as polyweave's. PW107 derives a margin from how far a measure
+moves on its own, but nothing applies it to a new picture spec.
+
+polyweave should write a picture's first spec the way `geometry.kit` writes a model's:
+given the artefact, the measures and a region each, it measures, sets each bound with
+its origin from PW107's margin, and writes `<specs>/<asset>.accept.toml` with the
+measured values recorded, refusing to overwrite one that exists. A `panel.build` could
+offer it for its normal state. Done when Spinhold's holo spec could have been written by
+that call and `accept.verify` passes on it.
 
 ## Block K — Reached without reading the source
 

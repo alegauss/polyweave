@@ -16,9 +16,14 @@
 
 ## Block H — Proof on a real game
 
+- 📋 **PW638** (deps: —) **a panel's hairline, edge or bracket width must be whole pixels, so a 1.2-pixel line a person accepted cannot be declared** — The declared panel draws a thinner line than the look the owner accepted, though both routes can draw a fraction. → §PW638
+- 📋 **PW639** (deps: —) **a Control switching panel states has to copy every uniform from the state's material by hand, and tint multiplies** — Each game rewrites the same state switch round shared materials, and a tint over the kit's colour comes out a third colour. → §PW639
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
+
+- 📋 **PW637** (deps: —) **a picture has no operation that writes its first acceptance spec, so an agent picks each bound and writes the file** — A bound an agent computes by hand reads as polyweave's in the spec, which is the bar a person is meant to set. → §PW637
 
 ## Block K — Reached without reading the source
 
