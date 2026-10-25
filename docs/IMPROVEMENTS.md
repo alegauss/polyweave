@@ -452,6 +452,30 @@ The draft is written with its provenance naming the transcription, its verdicts 
 mapping, marked as a draft so a person still tunes it; rows a person corrected carry
 their corrected value, and a row nobody answered is refused, not guessed.
 
+### §PW641 Enemies told from a city that moves by parallax
+
+Met in Spinhold, RK198 (2026-10-25), after PW480 shipped. Resogun's phase 1
+(`.polyweave/references/resogun_p1`, 170 frames at 2 a second), area `[0, 180, 1920,
+1080]`. The pod kind came from the new `reference.sample` (4.5 s, box `[503, 698, 587,
+762]`, colour `#846ea8`, body share 0.726), and `reference.objects` was called with it:
+
+- tol 0.12, match 0.25, motion 0.15: 2756 tracks; motion 0.3: 1857;
+- tol 0.08, match 0.5, motion 0.5: 1485 tracks;
+- tol 0.10, match 0.6, motion 0.7: 2 tracks.
+
+The sheets (`objects_002.png`) show the 15.5 to 18.5 s lull, which the owner's accepted
+sheet says has nothing new, full of tracks on tower edges and the ring. The city is not
+a flat scrolling backdrop: its towers stand at many depths, so parallax moves them
+against the scroll as much as an enemy moves, and the motion filter keeps them. Between
+the settings that keep the city and the ones that keep nothing there is no step.
+
+What polyweave should do: tell an enemy from the scene by what parallax cannot fake.
+Each Resogun enemy warps in with a white flash a second before it is live and dies in a
+burst; it keeps its shape while it moves, where a tower's edge changes as the view
+turns; and it moves independently of its neighbours, where a building moves with the
+buildings beside it. Until then `reference.objects` and `reference.compare` cannot count
+this reference, and RK198's re-count and its comparison with `phase_poc` stay deferred.
+
 ## Block S — Playing the game, not only rendering it
 
 ### §PW640 A run flown back at another frame rate
