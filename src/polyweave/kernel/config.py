@@ -706,13 +706,19 @@ class Config:
             "expires": expires or None,
             "spendable": False,
             "why": "",
+            # Which refusal it is, which `explain` answers (§PW625).
+            "code": "fetch.budget-closed",
         }
         if amount <= 0:
             return {**found, "why": f"no {unit} are declared in {table} of {FILENAME}"}
         if not expires:
+            # A ceiling is a person's approval, and an approval says until when; the
+            # reason given here once argued that a dateless one never lapses (§PW625).
             return {
                 **found,
-                "why": "the budget has no expiry, and one without a date never lapses",
+                "code": "fetch.no-expiry",
+                "why": f"a ceiling with no expiry is not spendable: give {table} "
+                "expires a date, YYYY-MM-DD",
             }
         try:
             when = date.fromisoformat(expires)
@@ -724,7 +730,7 @@ class Config:
             ) from None
         if when < (today or date.today()):
             return {**found, "why": f"the budget expired on {expires}"}
-        return {**found, "spendable": True}
+        return {**found, "spendable": True, "code": None}
 
 
 def load(root: str | Path = ".") -> Config:

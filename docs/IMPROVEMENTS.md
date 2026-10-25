@@ -100,30 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW625 A ceiling with no date says so
-
-Found in Cottony's RK163 on 2026-10-23. The owner set a ceiling for three booster toys,
-and `[budget]` in polyweave.toml was written `credits = 90`, `expires = ""`. Then:
-
-```
-python -m polyweave purchase.remaining
-declared: 90.0   spent: 0.0   left: 0.0   expires: null   spendable: false
-why: the budget has no expiry, and one without a date never lapses
-```
-
-The answer refuses to spend and gives as its reason a sentence that argues the opposite:
-a budget that never lapses should be spendable. `left: 0.0` beside `declared: 90.0` with
-nothing spent says nothing about why. Setting `expires = "2026-11-30"` made it
-spendable, so the real rule is that a ceiling needs a date - which is a sound rule, and
-a refusal should say it.
-
-Expected: `why` states the rule and the door: "a ceiling with no expiry is not
-spendable: give [budget] expires a date", as a `budget.no-expiry` code `explain` knows,
-and `left` reports the declared amount with `spendable: false` rather than 0.0, so the
-two fields do not contradict.
-
-Workaround: none needed; the date is set in Cottony's polyweave.toml.
-
 ### §PW626 Background is what reaches the edge
 
 Found in Cottony's RK163 on 2026-10-23, cutting the three booster toys out of the

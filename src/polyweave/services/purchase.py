@@ -141,7 +141,10 @@ def remaining(
         "quoted": _charged(read(root) + owed(root), config, quoted=True)[0].get(
             declared["service"], 0.0
         ),
-        "left": max(0.0, left) if declared["spendable"] else 0.0,
+        # What is left of the amount declared, said whether or not it may be spent:
+        # `spendable` and `why` say that, and a 0 beside 90 declared and nothing spent
+        # said nothing about why (§PW625).
+        "left": max(0.0, left),
         "expires": declared["expires"],
         "spendable": declared["spendable"] and left > 0,
         "why": declared["why"]
@@ -150,6 +153,7 @@ def remaining(
             if left > 0
             else f"the budget of {declared['amount']} {declared['unit']} is used up"
         ),
+        "code": declared["code"] or (None if left > 0 else "fetch.budget-closed"),
         "table": declared["table"],
     }
 
@@ -193,7 +197,7 @@ def allow(
     key = "credits" if table == "[budget]" else "amount"
     if not left["spendable"]:
         raise PolyweaveError(
-            "fetch.budget-closed",
+            left["code"] or "fetch.budget-closed",
             f"nothing may be spent on {left['service']}: {left['why']}",
             f"set `{table} {key}` and `expires` in {load(root).source or FILENAME}; "
             f"an absent or expired budget is never read as permission",

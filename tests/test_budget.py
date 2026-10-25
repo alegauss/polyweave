@@ -82,6 +82,18 @@ def test_an_expired_budget_permits_nothing(tmp_path):
     assert "expired" in caught.value.message
 
 
+def test_a_ceiling_with_no_date_says_what_is_left_and_why_it_is_closed(tmp_path):
+    """§PW625: Cottony's 90 credits read left 0, with a why arguing the opposite."""
+    where = project(tmp_path, '[budget]\ncredits = 90\nexpires = ""\n')
+    left = purchase.remaining(where, TODAY)
+    assert (left["declared"], left["left"], left["spendable"]) == (90.0, 90.0, False)
+    assert left["code"] == "fetch.no-expiry"
+    assert "give [budget] expires a date" in left["why"]
+    with pytest.raises(PolyweaveError) as caught:
+        purchase.allow(1, root=where, today=TODAY)
+    assert caught.value.code == "fetch.no-expiry"
+
+
 def test_a_budget_spent_to_the_last_credit_permits_nothing(tmp_path):
     where = project(tmp_path, LIVE)
     bought(where, out="a.glb", task_id="t_1", credits=60)

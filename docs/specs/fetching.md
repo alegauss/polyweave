@@ -67,6 +67,13 @@ expired or exhausted budget permits nothing at all (`fetch.budget-closed`) — t
 a ceiling is never read as permission. What is given up is the per-call veto; what is bought
 is one approval made with the whole plan in view.
 
+A ceiling with no `expires` is not spendable either, since an approval says until when, and
+it is refused as `fetch.no-expiry`, whose reason names the door: "give [budget] expires a
+date" (§PW625). `purchase.remaining` answers a `code` beside `spendable` and `why`, and its
+`left` is the amount declared less what was spent whether or not it may be spent now, so
+Cottony's 90 undated credits read `left: 90, spendable: false` and not a 0 that explained
+nothing.
+
 A project buying from more than one service gives each its own ceiling, `[budget.<name>]`
 with an `amount` and a `unit`, and the ceilings never pool: a spend is judged only against
 the ceiling of the service it draws on, which the call names. The contract is in

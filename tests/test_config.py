@@ -216,13 +216,18 @@ def test_a_live_budget_is_spendable(tmp_path):
         "expires": "2026-12-31",
         "spendable": True,
         "why": "",
+        "code": None,
     }
 
 
 def test_credits_without_an_expiry_are_not_spendable(tmp_path):
-    """A ceiling with no date never lapses, which is not a decision anyone made."""
+    """A ceiling with no date never lapses, which is not a decision anyone made; and
+    the refusal says that rule and its door, not the opposite (§PW625)."""
     found = C.load(project(tmp_path, "[budget]\ncredits = 60\n")).budget()
     assert found["spendable"] is False
+    assert found["code"] == "fetch.no-expiry"
+    assert "give [budget] expires a date" in found["why"]
+    assert "never lapses" not in found["why"]
 
 
 def test_an_expiry_that_is_not_a_date_is_refused(tmp_path):

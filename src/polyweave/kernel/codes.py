@@ -549,6 +549,13 @@ KERNEL_CODES: dict[str, Code] = {
         when="a capture whose transfer never completed",
         doors=("ask the service again before recording anything",),
     ),
+    "fetch.no-expiry": Code(
+        means="a ceiling is declared with no date, and a ceiling without one is never "
+        "spendable",
+        when="[budget] expires left empty beside an amount above 0 (§PW625): a "
+        "person's approval to spend says until when",
+        doors=("give the ceiling's expires a date, YYYY-MM-DD",),
+    ),
     "fetch.budget-closed": Code(
         means="nothing may be spent, because no live budget says it may",
         when="a project with no [budget], an expired one, or one already used up; an "

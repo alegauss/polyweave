@@ -275,6 +275,7 @@
 - ✅ **PW622** **a capture warns same settings, different picture when a script the scene reaches by class_name changed** — A capture's record hashes every script its scene reaches by class_name, so a changed class reads as different work naming that script.
 - ✅ **PW623** **vfx.build only writes 3D scenes in metres, so a 2D game's particle drift is written by hand** — vfx.build draws canvas = true particles as CPUParticles2D in pixels, from several rects at once, with a seed and preprocess that make a capture repeat.
 - ✅ **PW624** **a recorded flow addresses nodes by Godot's @Class@N names, so any new unnamed node breaks the replay** — A flow's selectors are asked before each command, so a click that removes its screen is kept by what the node is, and a replay names a generated path it broke on.
+- ✅ **PW625** **purchase.remaining refuses a ceiling with no expiry and says, as its reason, that it never lapses** — An undated ceiling is refused as fetch.no-expiry naming its door, and purchase.remaining says what is left beside spendable false rather than 0.
 
 ## Block I — Voxel models from a declaration
 
