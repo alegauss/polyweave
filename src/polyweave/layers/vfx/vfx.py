@@ -1487,6 +1487,68 @@ func _process(_delta: float) -> bool:
 """
 
 
+#: The same watch for an effect on a 2D canvas (§PW636): a still camera over the grey,
+#: framing the rectangles it emits from, or its box, grown by its reach in pixels.
+_WATCH_2D = """extends SceneTree
+
+var shown: Node
+
+func _initialize() -> void:
+\tRenderingServer.set_default_clear_color(Color(%(grey)s))
+\tvar world := Node2D.new()
+\tvar camera := Camera2D.new()
+\tcamera.position = Vector2(%(centre)s)
+\tcamera.zoom = Vector2(%(zoom)s, %(zoom)s)
+\tworld.add_child(camera)
+\tshown = load("%(scene)s").instantiate()
+\tworld.add_child(shown)
+\troot.add_child.call_deferred(world)
+
+func _process(_delta: float) -> bool:
+\tvar frame := Engine.get_process_frames()
+\tif frame == %(start)d:
+\t\tprint("environment: resolution=%%dx%%d" %% [root.size.x, root.size.y])
+\t\tprint("movie: from %%d" %% frame)
+\tif frame == %(stop)d:
+\t\tprint("movie: to %%d" %% frame)
+\treturn frame >= %(stop)d + 3
+"""
+
+
+def _canvas_bounds(effect: dict) -> list[float]:
+    """Where a canvas effect's particles can be, in pixels: what it emits from, grown
+    by how far one travels, as [x0, y0, x1, y1] (§PW636)."""
+    if effect["kind"] == "parts":
+        each = [_canvas_bounds(one) for one in effect["parts"].values()]
+        return [min(b[0] for b in each), min(b[1] for b in each),
+                max(b[2] for b in each), max(b[3] for b in each)]
+    reach = max(measured(effect)["reach"], effect["size"] * 2, 1.0)
+    if effect["rects"]:
+        x0 = min(x for x, _, _, _ in effect["rects"])
+        y0 = min(y for _, y, _, _ in effect["rects"])
+        x1 = max(x + w for x, _, w, _ in effect["rects"])
+        y1 = max(y + h for _, y, _, h in effect["rects"])
+    else:
+        ex, ey = effect["extents"][:2] if effect["emission"] == "box" else (
+            [effect["radius"]] * 2)
+        x0, y0, x1, y1 = -ex, -ey, ex, ey
+    return [x0 - reach, y0 - reach, x1 + reach, y1 + reach]
+
+
+def _framing_canvas(effect: dict) -> dict:
+    """A still 2D camera on the middle of a canvas effect, zoomed to hold it whole."""
+    x0, y0, x1, y1 = _canvas_bounds(effect)
+    zoom = min(FRAME[0] / max(x1 - x0, 1.0), FRAME[1] / max(y1 - y0, 1.0))
+    # Rounded down, so the frame never crops what it was sized to hold.
+    zoom = math.floor(zoom * 1e6) / 1e6
+    return {"centre": _floats([(x0 + x1) / 2, (y0 + y1) / 2]), "zoom": f"{zoom:.6g}"}
+
+
+def _canvas(effect: dict) -> bool:
+    parts = effect["parts"].values() if effect["kind"] == "parts" else [effect]
+    return any(one.get("canvas") for one in parts)
+
+
 def _watched_as(effect: dict) -> dict:
     """The one effect a whole is framed as: its farthest-reaching part, living as long
     as the longest, still only where every part is a one-shot burst."""
@@ -1575,17 +1637,21 @@ _KEY_LIGHT = """\tvar key := DirectionalLight3D.new()
 """
 
 
-def _filmed(name: str, scene: str, own: dict, fps: int, work: Path, here: Path) -> list:
-    """One scene played under the watch camera, as the frames Movie Maker kept."""
+def _filmed(name: str, scene: str, own: dict, fps: int, work: Path, here: Path,
+            whole: dict | None = None) -> list:
+    """One scene played under the watch camera, as the frames Movie Maker kept. `whole`
+    is the effect as declared, which says whether it is drawn on a canvas."""
     from polyweave.layers.engine import capture
 
     start, span = 2, max(2, round(own["lifetime"] * 1.5 * fps))
     script = work / f"{name}.watch.gd"
     script.parent.mkdir(parents=True, exist_ok=True)
-    script.write_text(_WATCH % {
-        "grey": _floats(NEUTRAL), "scene": scene,
-        "start": start, "stop": start + span, **_framing(own, fps),
-    }, encoding="utf-8", newline="\n")
+    held = {"grey": _floats(NEUTRAL), "scene": scene, "start": start,
+            "stop": start + span}
+    # A canvas is watched still and in pixels, a 3D effect from its side (§PW636).
+    text = (_WATCH_2D % {**held, **_framing_canvas(whole)} if whole and _canvas(whole)
+            else _WATCH % {**held, **_framing(own, fps)})
+    script.write_text(text, encoding="utf-8", newline="\n")
     shot = capture.movie(
         provenance.relative(script, here), out=str(work / name / "frames"),
         # Asked at the size the sheet draws, which capture.movie sizes Movie Maker
@@ -1719,14 +1785,9 @@ def preview(
     families, sheets, watched, abouts = {}, {}, {}, {}
     for name, made in built.items():
         whole = declared(name, tables[name], here)
-        if any(one.get("canvas") for one in whole.get("parts", {"": whole}).values()):
-            # Filmed from its side in metres, which a canvas in pixels has none of: a
-            # 2D effect is watched where the game draws it (§PW623).
-            raise PolyweaveError(
-                "vfx.unwatched", f"{name} is drawn on a 2D canvas, which this films "
-                "in 3D", "capture the screen that shows it with capture.run or "
-                "clip.shots, and lay it out with verdict.sitting", given=name)
-        own = _watched_as(whole)
+        own = ({"lifetime": max(one["lifetime"] for one in
+                                (whole.get("parts") or {"": whole}).values())}
+               if _canvas(whole) else _watched_as(whole))
         rows = []
         if name in against:
             scene = str(against[name]).removeprefix("res://")
@@ -1735,8 +1796,8 @@ def preview(
                     "vfx.bad-effect", f"against names {scene} for {name}, which is not "
                     "there", "name the scene the game draws the effect with now")
             rows.append((words["rows"][0], _filmed(
-                f"{name}.today", "res://" + scene, own, fps, work, here)))
-        filmed = _filmed(name, "res://" + made["file"], own, fps, work, here)
+                f"{name}.today", "res://" + scene, own, fps, work, here, whole)))
+        filmed = _filmed(name, "res://" + made["file"], own, fps, work, here, whole)
         rows.append((words["rows"][1], filmed))
         said = ", ".join(f"{k} {made[k]:g}" for k in
                          ("lifetime", "reach", "alive", "rate", "brightness"))

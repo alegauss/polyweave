@@ -16,8 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW636** (deps: —) **vfx.preview films only in 3D, so an effect drawn on a 2D canvas has no sitting of its own** — A drift between panels is judged only inside the whole screen, where a change to it cannot be laid beside the drift as it was. → §PW636
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

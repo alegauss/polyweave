@@ -119,8 +119,13 @@ rectangles at once: one emitter apiece under a `Node2D`, sharing `amount` by are
 is how Cottony's stars drift in every gap between its panels; `emission` and `extents`
 beside it are refused. Only particles draw on a canvas, so a ribbon, a sheet, a struck
 piece or a `mesh` there is refused, and an effect's parts are all on the canvas or none,
-held by a `Node2D`. `vfx.preview` films in 3D and refuses a canvas effect
-(`vfx.unwatched`): it is watched in the screen that shows it.
+held by a `Node2D`. `vfx.preview` films a canvas effect on its own (§PW636): a still
+`Camera2D` over the same neutral grey, centred on what it emits from (its rectangles, or
+its box or circle round the origin) grown by its reach in pixels, and zoomed to hold that
+whole in the sheet's frame. No emitter is carried round, since a canvas effect is placed
+by the game. The sheet, the looping films and an `against` row are laid out as for a 3D
+effect, so a drift between panels is judged beside the drift as it was, not only inside
+the whole screen.
 
 `seed`, in 2D and 3D alike, fixes the particles' randomness (each rectangle's emitter the
 next seed on), and `preprocess` is the seconds it has already run when it appears, so a

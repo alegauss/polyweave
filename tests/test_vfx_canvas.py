@@ -107,11 +107,46 @@ def test_parts_on_a_canvas_are_held_by_a_node_2d_and_never_mixed(tmp_path):
     assert "mixes parts on a canvas" in refused.value.message
 
 
-def test_a_canvas_effect_is_not_filmed_in_3d(tmp_path):
-    with pytest.raises(PolyweaveError) as refused:
-        vfx.preview(effects(tmp_path, DRIFT), out="review/fx", root=str(tmp_path))
-    assert refused.value.code == "vfx.unwatched"
-    assert "capture.run" in refused.value.remedy
+def test_a_canvas_effect_is_framed_on_what_it_emits_from(tmp_path):
+    """§PW636: watched still and in pixels, the rectangles grown by the reach."""
+    vfx.build(effects(tmp_path, DRIFT), root=str(tmp_path))
+    effect = vfx.declared("drift", vfx.tomllib.loads(DRIFT)["effect"]["drift"],
+                          tmp_path)
+    x0, y0, x1, y1 = vfx._canvas_bounds(effect)
+    reach = vfx.measured(effect)["reach"]
+    assert (x0, y0) == (pytest.approx(-reach), pytest.approx(-reach))
+    assert (x1, y1) == (pytest.approx(300 + reach), pytest.approx(500 + reach))
+    framed = vfx._framing_canvas(effect)
+    zoom = float(framed["zoom"])
+    assert zoom * (x1 - x0) <= vfx.FRAME[0] + 1e-6
+    assert zoom * (y1 - y0) <= vfx.FRAME[1] + 1e-6
+
+
+def test_a_canvas_effect_is_watched_on_its_own(tmp_path):
+    """§PW636: a drift between panels has a sitting of its own, on the neutral grey."""
+    import json
+
+    import numpy as np
+    from PIL import Image
+
+    from polyweave.layers.engine import offscreen
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    try:
+        offscreen.route_for(tmp_path)
+    except PolyweaveError:
+        pytest.skip("no route draws real pixels here")
+    source = effects(tmp_path, DRIFT.replace('shape = "star"', 'shape = "dot"'))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    laid = vfx.preview(source, out="review/fx", stills=4, root=str(tmp_path))
+    assert laid["effects"]["drift"]["frames"] > 60
+    manifest = json.loads((tmp_path / laid["sitting"]).read_text("utf-8"))
+    assert "drift" in manifest["families"]
+    with Image.open(tmp_path / "review" / "fx" / "drift.png") as sheet:
+        drawn = np.asarray(sheet.convert("RGB"))[32:32 + vfx.FRAME[1], 8:]
+        assert drawn.max() > 120, "the stars are drawn on the grey"
 
 
 LOADS = """extends SceneTree

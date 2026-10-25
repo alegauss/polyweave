@@ -100,26 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW636 A 2D effect watched on its own
-
-Found shipping PW623, which taught `vfx.build` to draw particles on a 2D canvas (`canvas
-= true`, `rects`, in pixels). `vfx.preview` films an effect in 3D: a camera framing its
-reach in metres, the emitter carried round a circle, a key light, all in `_WATCH` and
-`_framing`. A canvas effect has none of that, so `vfx.preview` now refuses it with
-`vfx.unwatched` and sends the person to the screen that shows it.
-
-That leaves a 2D effect with no sitting of its own: to judge Cottony's star drift a
-person has to see the whole board screen, where the drift is one layer among many, and a
-change to the drift alone cannot be shown beside the drift as it was.
-
-Expected: `vfx.preview` films a canvas effect on its own, in a `SubViewport` sized to
-the rectangles it emits from (or its reach around the origin with none), on the same
-neutral grey, for one and a half lifetimes after its `preprocess`, and lays out the same
-sheet, the same looping films and the same `against` row the 3D path does. Pixels are
-already the unit, so the framing is the rectangles' union plus the reach, and no camera
-moves. The seed makes two takes of it the same picture, which is what lets `against`
-compare.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

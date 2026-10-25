@@ -285,6 +285,7 @@
 - ✅ **PW632** **crowned over a concave outline rises in straight ridges to its centroid, so a star comes out a pyramid, never a pillow** — crowned domes a concave outline by each point's distance from its edge, so a star rises like a pillow with rounded valleys, its silhouette still the one drawn.
 - ✅ **PW633** **a capture at a window resolution sizes the viewport to its pixels and ignores the project's stretch** — capture.run works out the viewport the project's stretch gives a window, hands it to the script and records it, so a wide capture is the layout a player sees.
 - ✅ **PW634** **a bought mesh cannot be brought down to a game's triangle and texture budget; no operation decimates or downsizes** — mesh.budget welds, reduces a bought mesh to a triangle count and its textures to an edge, and records the costs either side, so a toy fits a game's build.
+- ✅ **PW636** **vfx.preview films only in 3D, so an effect drawn on a 2D canvas has no sitting of its own** — vfx.preview films a canvas effect on its own with a still 2D camera framing what it emits from, so a drift is judged beside the drift as it was.
 
 ## Block I — Voxel models from a declaration
 
