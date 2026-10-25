@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 3 },
+  { block: "H", title: "Proof on a real game", open: 2 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW633",
-    block: "H",
-    symptom: "a capture at a window resolution sizes the viewport to its pixels and ignores the project's stretch",
-    why: "A game laid out by canvas_items and expand is captured at a layout no player gets, unless the project does the stretch arithmetic itself.",
-    deps: [],
-  },
   {
     id: "PW634",
     block: "H",

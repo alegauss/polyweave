@@ -283,6 +283,7 @@
 - ✅ **PW630** **a carve's cut faces wear the plate's material, so no render can tell a pocket from the plate it is pressed into** — A carve's cut keeps the cutter's material through the build, and render.bake's masks writes each named material's coverage beside the picture.
 - ✅ **PW631** **inflate stripes a star outline and rings a drawn one with contour steps, so a glossy inflated shape is unusable** — inflate skins an outline over its own subdivided triangles, so a star swells without stripes, and a drawing's height is blurred in floats with no 8-bit steps.
 - ✅ **PW632** **crowned over a concave outline rises in straight ridges to its centroid, so a star comes out a pyramid, never a pillow** — crowned domes a concave outline by each point's distance from its edge, so a star rises like a pillow with rounded valleys, its silhouette still the one drawn.
+- ✅ **PW633** **a capture at a window resolution sizes the viewport to its pixels and ignores the project's stretch** — capture.run works out the viewport the project's stretch gives a window, hands it to the script and records it, so a wide capture is the layout a player sees.
 
 ## Block I — Voxel models from a declaration
 

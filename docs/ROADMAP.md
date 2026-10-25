@@ -16,7 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW633** (deps: —) **a capture at a window resolution sizes the viewport to its pixels and ignores the project's stretch** — A game laid out by canvas_items and expand is captured at a layout no player gets, unless the project does the stretch arithmetic itself. → §PW633
 - 📋 **PW634** (deps: —) **a bought mesh cannot be brought down to a game's triangle and texture budget; no operation decimates or downsizes** — Cottony's booster toys are 104k triangles on a 4096 texture each, so loading them live would take most of a 24 MB build. → §PW634
 - 📋 **PW636** (deps: —) **vfx.preview films only in 3D, so an effect drawn on a 2D canvas has no sitting of its own** — A drift between panels is judged only inside the whole screen, where a change to it cannot be laid beside the drift as it was. → §PW636
 

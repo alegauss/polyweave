@@ -284,6 +284,17 @@ where the script said it applied the size asked and the picture disagrees, `why`
 picture's size, the size asked and the likely cause: a window larger than the desktop's
 work area is shrunk by the OS (a key art asked at 3840x2160 came back 3840x2119).
 
+**A window is laid out in the viewport the project's stretch gives it** (§PW633). Under
+`window/stretch/mode = canvas_items` with `aspect = expand`, Cottony's 1080x1920 design
+draws a 1920x1080 window in 3413x1920 units and scales it down, and a capture script that
+renders its own SubViewport at the window's pixels drew a layout no player gets. So
+`capture.run` reads `[display]` from project.godot (Godot's defaults where it is silent),
+works out the viewport the engine would lay that window out in (`expand`, `keep`,
+`keep_width`, `keep_height`, and `window/stretch/scale`), and hands it to the script as
+`viewport=3413x1920` after the settings it echoes. It is no setting, so the script need not
+print it back. The answer and the record carry `layout`: the window, the viewport, the
+stretch and the aspect. A project with its stretch off has none.
+
 **A picture larger than the desktop is taken borderless** (§PW280). The OS shrinks a
 decorated window to the work area and leaves a borderless one at the size asked, even past
 the screen (8000x120 and 5000x3000 on a 3840x2160 display, measured on 4.7.1), and it

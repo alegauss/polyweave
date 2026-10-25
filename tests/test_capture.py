@@ -336,6 +336,65 @@ def picture(where, width, height):
     return where
 
 
+STRETCHED = """config_version=5
+
+[application]
+config/name="probe"
+
+[display]
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/stretch/mode="canvas_items"
+window/stretch/aspect="{aspect}"
+"""
+
+
+@pytest.mark.parametrize(
+    ("aspect", "window", "viewport"),
+    [
+        ("expand", "1920x1080", "3413x1920"),   # Cottony's board on a PC window
+        ("expand", "1080x1920", "1080x1920"),   # the phone it was designed for
+        ("keep", "1920x1080", "1080x1920"),
+        ("keep_height", "1920x1080", "3413x1920"),
+        ("keep_width", "1080x2400", "1080x2400"),
+    ],
+)
+def test_a_window_is_laid_out_in_the_viewport_the_stretch_gives_it(
+        tmp_path, aspect, window, viewport):
+    """§PW633: a 1920x1080 window of a 1080x1920 design is 3413x1920 units, scaled."""
+    project(tmp_path)
+    (tmp_path / "project.godot").write_text(STRETCHED.format(aspect=aspect),
+                                            encoding="utf-8")
+    laid = capture.layout(tmp_path, window)
+    assert laid["viewport"] == viewport and laid["window"] == window
+
+
+def test_a_project_with_no_stretch_lays_out_nothing(tmp_path):
+    project(tmp_path)
+    assert capture.layout(tmp_path, "1920x1080") is None
+
+
+def test_the_script_is_told_the_viewport_and_the_record_keeps_it(tmp_path):
+    script = project(tmp_path, SIZED)
+    (tmp_path / "project.godot").write_text(STRETCHED.format(aspect="expand"),
+                                            encoding="utf-8")
+    shot = picture(tmp_path / "shot.png", 1920, 1080)
+    seen = {}
+    taken = taking("environment: resolution=1920x1080\n"
+                   "captured: res://shot.png 1920 x 1080\n", artefacts=[shot])
+
+    def watching(script_, **how):
+        seen["args"] = how["args"]
+        return taken(script_, **how)
+
+    found = capture.run(script, expect=SHOT, root=tmp_path, take=watching)
+    assert found["ok"] is True, found["why"]
+    assert "viewport=3413x1920" in seen["args"]
+    assert found["layout"]["viewport"] == "3413x1920"
+    record = json.loads(Path(found["records"][0]).read_text(encoding="utf-8"))
+    assert record["layout"] == found["layout"]
+
+
 def test_the_declared_size_goes_on_the_engines_command_line(tmp_path):
     """§PW245: a window override beats root.size; --resolution beats the override."""
     script = project(tmp_path, SIZED)

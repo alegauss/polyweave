@@ -309,6 +309,11 @@ def _once(
     # script's own has written it, and a second would reach the script as an argument.
     given = _sized(tuple(how.pop("args", ())), asked)
     args = given + (() if "--" in given else ("--",)) + as_args(asked)
+    # The viewport the stretch lays the window out in, for a script that renders its
+    # own: after the settings, which it echoes, since this is no setting (§PW633).
+    laid = layout(root, _size_of(asked.get("resolution", "")))
+    if laid:
+        args = (*args, f"viewport={laid['viewport']}")
     if record and "--verbose" not in args:
         # The engine then names every resource the scene loads, which the record
         # hashes, so a picture re-taken because a sprite changed says so instead of
@@ -364,6 +369,7 @@ def _once(
         "regions": regions(log),
         "loaded": loaded(log),
         **({"shrunk": shrunk} if shrunk else {}),
+        **({"layout": laid} if laid else {}),
     }
     if found["ok"] and not against["holds"]:
         # The run worked and the environment did not hold, and that is said at the top,
@@ -385,7 +391,7 @@ def _once(
                 one,
                 asked,
                 {**found, "regions": answer["regions"], "inputs": read["inputs"],
-                 "args": own, "call": call},
+                 "args": own, "call": call, "layout": laid},
                 root,
             )
             for one in found["artefacts"]
@@ -439,6 +445,62 @@ def _size_of(value: Any) -> str:
     text = as_text(value) if not isinstance(value, str) else value
     found = re.fullmatch(r"\s*(\d+)\s*x\s*(\d+)\s*", str(text))
     return f"{found[1]}x{found[2]}" if found else ""
+
+
+#: Godot's own defaults for what `[display]` leaves out.
+_DISPLAY = {"window/size/viewport_width": "1152", "window/size/viewport_height": "648",
+            "window/stretch/mode": "disabled", "window/stretch/aspect": "keep",
+            "window/stretch/scale": "1.0"}
+
+
+def _display(here: Path) -> dict[str, str]:
+    """project.godot's `[display]` settings, Godot's defaults where it says none."""
+    found = dict(_DISPLAY)
+    where = here / "project.godot"
+    if not where.is_file():
+        return found
+    section = ""
+    for line in where.read_text(encoding="utf-8-sig", errors="replace").splitlines():
+        line = line.strip()
+        if line.startswith("[") and line.endswith("]"):
+            section = line[1:-1]
+        elif section == "display" and "=" in line:
+            key, _, value = line.partition("=")
+            found[key.strip()] = value.strip().strip('"')
+    return found
+
+
+def layout(root: str | Path, size: str) -> dict | None:
+    """The viewport the project's stretch lays a window of `size` out in (§PW633).
+
+    A game laid out by `canvas_items` and `expand` on a 1080x1920 design draws a
+    1920x1080 window in 3413x1920 units and scales it down; a capture script rendering
+    its own SubViewport at the window's pixels drew a layout no player gets. This is
+    the engine's arithmetic, so the script is told the viewport rather than working it
+    out. None where nothing is asked or the stretch is off.
+    """
+    found = re.fullmatch(r"(\d+)x(\d+)", size or "")
+    if not found:
+        return None
+    window = (int(found[1]), int(found[2]))
+    shown = _display(load(root).root)
+    mode, aspect = shown["window/stretch/mode"], shown["window/stretch/aspect"]
+    if mode == "disabled":
+        return None
+    design = (float(shown["window/size/viewport_width"]),
+              float(shown["window/size/viewport_height"]))
+    scale = max(float(shown["window/stretch/scale"]), 1e-6)
+    wide, tall = design
+    fit = min(window[0] / wide, window[1] / tall)
+    if aspect == "expand":
+        wide, tall = window[0] / fit, window[1] / fit
+    elif aspect == "keep_width" and window[1] / window[0] > design[1] / design[0]:
+        tall = design[0] * window[1] / window[0]
+    elif aspect == "keep_height" and window[0] / window[1] > design[0] / design[1]:
+        wide = design[1] * window[0] / window[1]
+    viewport = f"{round(wide / scale)}x{round(tall / scale)}"
+    return {"window": f"{window[0]}x{window[1]}", "viewport": viewport,
+            "stretch": mode, "aspect": aspect}
 
 
 def _sized(given: tuple[str, ...], asked: dict) -> tuple[str, ...]:
@@ -613,6 +675,9 @@ def _record(
             **({"call": found["call"]} if found.get("call") else {}),
             **({"regions": found["regions"]} if found.get("regions") else {}),
             **({"tries": found["tries"]} if found.get("tries") else {}),
+            # The window and the viewport it was laid out in, which differ under a
+            # stretch (§PW633).
+            **({"layout": found["layout"]} if found.get("layout") else {}),
         },
         root=root,
     )
