@@ -179,7 +179,10 @@ from polyweave.surface.capabilities import capabilities
 #: ends up in, which Cottony ran as a throwaway loop of four steps a seed (§PW621).
 #: 163,512 with reference.prepare's mode and mesh.buy's texture and texture_prompt, a
 #: painted toy bought through the ceiling rather than round it (§PW626, §PW627).
-DESCRIBE = 163_900
+#: 164,551 with render.bake's masks (§PW630) and mesh.budget, a bought mesh brought to
+#: a game's triangle and texture budget, which a project otherwise scripted in Blender
+#: outside the record (§PW634).
+DESCRIBE = 165_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -323,7 +326,9 @@ DESCRIBE = 163_900
 #: 179,343 with search.sweep's then and judged and search.downstream-failed (§PW621).
 #: 179,923 with fetch.no-expiry, fetch.bad-mode, reference.prepare's mode and
 #: mesh.buy's texture (§PW625-§PW627).
-CAPABILITIES = 180_300
+#: 181,003 with render.bake's masks, render.unknown-mask, mesh.budget and
+#: mesh.no-budget (§PW630, §PW634).
+CAPABILITIES = 181_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -397,7 +402,8 @@ HELP_VERB = 5_100
 #: 33,080 with music.track (§PW611).
 #: 33,313 with game.compare_runs (§PW612).
 #: 33,464 with verdict.target (§PW620).
-HELP_TOP = 33_600
+#: 33,602 with mesh.budget (§PW634).
+HELP_TOP = 33_800
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

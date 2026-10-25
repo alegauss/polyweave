@@ -460,6 +460,17 @@ Anything that genuinely is a judgement — a pose — stays a parameter, but it 
 a known frame rather than an arbitrary one. A lean the drawing already shows is not one of
 those, and is read off it (below).
 
+**A bought mesh is brought to a game's budget** (§PW634). `mesh.budget(path, out=,
+triangles=, texture=)` welds a generator's seams, reduces the mesh to `triangles` with its
+outlines kept (coplanar faces merged first, as an engine-ready ingest does), scales every
+texture down so its longest edge is `texture` pixels, and writes the slimmed .glb with a
+`mesh` record naming the source, the budget and what it did. `cost.read` is taken either
+side and carried as `measurements.before` and `.after`, so the answer says what was saved:
+Cottony's booster hammer, 104,450 triangles on a 4096 texture for a toy the card draws 150
+px tall. A budget naming neither, a path that is no .glb, or an `out` that is the source is
+`mesh.no-budget`. Whether the slimmer mesh still reads as the shape is the look's to judge,
+a render of each laid side by side, which this does not decide.
+
 ## What the service painted in, and taking it out
 
 A generative service returns a mesh whose texture has **shading painted into it** — a dark

@@ -32,7 +32,7 @@
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `reference.register`, `reference.frames`, `reference.objects`, `reference.sample`, `reference.regions`, `reference.minimap`, `reference.events`, `reference.compare`, `reference.transcription`, `reference.transcribed`, `shape.check`, `shape.silhouette`, `shape.turntable` |
 | Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |
-| After buying | `normalise.ingest`, `texture.worth_scrubbing` |
+| After buying | `normalise.ingest`, `mesh.budget` (to a triangle count and a texture edge), `texture.worth_scrubbing` |
 | Bake a clip | `motion.bake`, `clip.camera`, `clip.timeline`, `clip.shots` |
 | Motion | `clip.new`, `clip.read`, `clip.set_key`, `clip.retime`, `clip.write`, `clip.compiled` |
 | A skeleton | `skeleton.plan`, `skeleton.shared`, `skeleton.joints_in`, `skeleton.plays`, `sprites.matched` |

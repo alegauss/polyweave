@@ -1102,6 +1102,20 @@ export interface MeasureTakeArgs {
   behind?: string
 }
 
+/** A bought mesh brought down to a game's triangle and texture budget (§PW634). */
+export interface MeshBudgetArgs {
+  /** the .glb to bring to a game's budget */
+  path: string
+  /** where the slimmed .glb is written */
+  out: string
+  /** the most triangles it may keep; 0 keeps all; from 0 to …; default 0 */
+  triangles?: number
+  /** the longest edge of any texture, in pixels; 0 keeps them; from 0 to …; default 0 */
+  texture?: number
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Buy one mesh, from a prompt or a gated picture, against the ceiling. */
 export interface MeshBuyArgs {
   /** where the .glb is written, under the project */
@@ -2773,6 +2787,7 @@ export interface Operations {
   "measure.pressure": MeasurePressureArgs
   "measure.same": MeasureSameArgs
   "measure.take": MeasureTakeArgs
+  "mesh.budget": MeshBudgetArgs
   "mesh.buy": MeshBuyArgs
   "motion.bake": MotionBakeArgs
   "music.from_audio": MusicFromAudioArgs
@@ -2991,6 +3006,7 @@ export const OPERATIONS = [
   "measure.pressure",
   "measure.same",
   "measure.take",
+  "mesh.budget",
   "mesh.buy",
   "motion.bake",
   "music.from_audio",

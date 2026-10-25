@@ -992,3 +992,95 @@ def ingested(
         root=root,
         ready=ready,
     )
+
+
+@operation("mesh.budget")
+def budgeted(
+    path: Annotated[str, Param("the .glb to bring to a game's budget")],
+    *,
+    out: Annotated[str, Param("where the slimmed .glb is written")],
+    triangles: Annotated[int, Param("the most triangles it may keep; 0 keeps all",
+                                    lo=0)] = 0,
+    texture: Annotated[int, Param("the longest edge of any texture, in pixels; 0 "
+                                  "keeps them", lo=0)] = 0,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """A bought mesh brought down to a game's triangle and texture budget (§PW634).
+
+    Its seams welded, its triangles reduced to `triangles` with its outlines kept, and
+    every texture scaled down so its longest edge is `texture`, then written with a
+    record naming the source and the costs read either side, so the answer says what
+    was saved. Cottony's hammer was 104,450 triangles on a 4096 texture for a toy drawn
+    150 px tall, most of a 24 MB build for two of them.
+    """
+    from . import cost
+    from .render import blender
+
+    here = Path(root).resolve()
+    source = Path(path) if Path(path).is_absolute() else here / path
+    target = Path(out) if Path(out).is_absolute() else here / out
+    if not triangles and not texture:
+        raise PolyweaveError(
+            "mesh.no-budget",
+            "a budget was asked with neither a triangle count nor a texture edge",
+            "pass triangles, texture or both; a mesh with no budget is left as it is",
+        )
+    if source.suffix.lower() != ".glb" or not source.is_file():
+        raise PolyweaveError(
+            "mesh.no-budget", f"there is no .glb at {path} to bring to a budget",
+            "name a .glb under the project", given=str(path))
+    if target.resolve() == source.resolve():
+        raise PolyweaveError(
+            "mesh.no-budget", f"{out} is the mesh itself, which the record names as "
+            "the source", "write the slimmed mesh beside it, under another name",
+            given=str(out))
+    before = cost.read(source)
+    bpy = blender.require()
+    blender.reset()
+    obj = blender.load_mesh(source)
+    did: dict = {}
+    welded = blender.merge_close(obj)
+    if welded:
+        did["welded_vertices"] = welded
+    if triangles and blender.triangles(obj) > triangles:
+        start = blender.triangles(obj)
+        blender.reduce_to(obj, int(triangles))
+        did["triangles"] = [start, blender.triangles(obj)]
+    if texture:
+        scaled = []
+        for image in bpy.data.images:
+            wide, tall = (int(v) for v in image.size)
+            if max(wide, tall) > texture:
+                share = texture / max(wide, tall)
+                image.scale(max(1, round(wide * share)), max(1, round(tall * share)))
+                scaled.append({"image": image.name, "from": [wide, tall],
+                               "to": [int(v) for v in image.size]})
+        if scaled:
+            did["textures"] = scaled
+    target.parent.mkdir(parents=True, exist_ok=True)
+    for other in bpy.context.scene.objects:
+        other.select_set(other is obj)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.export_scene.gltf(filepath=str(target), use_selection=True,
+                              export_format="GLB")
+    after = cost.read(target)
+    from polyweave.kernel import provenance
+
+    record = provenance.build(
+        "mesh", target, inputs=[provenance.source("mesh", source, root=here)],
+        engine={"name": "mesh.budget"},
+        params={"triangles": int(triangles), "texture": int(texture), "did": did},
+        measurements={"before": before, "after": after}, root=here,
+    )
+    written = provenance.write(record, root=here)
+    saved = {key: [before[key], after[key]] for key in ("triangles", "texture_bytes")
+             if key in before and key in after}
+    return {
+        "mesh": provenance.relative(target, here),
+        "record": provenance.relative(written, here),
+        "costs": saved,
+        "did": did,
+        "bytes": [source.stat().st_size, target.stat().st_size],
+        "says": ", ".join(f"{key} {was:,} to {now:,}" for key, (was, now)
+                          in saved.items()) or "nothing was over the budget",
+    }

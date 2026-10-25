@@ -568,6 +568,66 @@ def painted(where):
     return where
 
 
+def heavy(where):
+    """A bought toy in miniature: a dense sphere painted with a 512 px texture."""
+    import bpy
+
+    from polyweave.layers.geometry.render import blender
+
+    blender.reset()
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, radius=1.0)
+    ball = bpy.context.active_object
+    picture = bpy.data.images.new("paint", 512, 512)
+    picture.pixels = [0.9, 0.3, 0.1, 1.0] * (512 * 512)
+    picture.pack()
+    paint = bpy.data.materials.new("paint")
+    paint.use_nodes = True
+    texture = paint.node_tree.nodes.new("ShaderNodeTexImage")
+    texture.image = picture
+    shader = paint.node_tree.nodes["Principled BSDF"]
+    paint.node_tree.links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    ball.data.materials.append(paint)
+    bpy.ops.export_scene.gltf(filepath=str(where), use_selection=False)
+    return where
+
+
+def test_a_bought_mesh_is_brought_to_a_game_s_budget(tmp_path):
+    """§PW634: Cottony's toys were 104k triangles on a 4096 texture, drawn 150 px."""
+    pytest.importorskip("bpy")
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry import cost
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    source = heavy(tmp_path / "toy.glb")
+    said = normalise.budgeted("toy.glb", out="toy.slim.glb", triangles=300,
+                              texture=64, root=str(tmp_path))
+    before, after = cost.read(source), cost.read(tmp_path / "toy.slim.glb")
+    assert after["triangles"] <= 300 < before["triangles"]
+    assert after["texture_bytes"] == 64 * 64 * 4 < before["texture_bytes"]
+    assert said["costs"]["triangles"] == [before["triangles"], after["triangles"]]
+    assert said["did"]["textures"][0]["to"] == [64, 64]
+    record = provenance.read("toy.slim.glb", root=str(tmp_path))
+    assert record["inputs"][0]["path"] == "toy.glb"
+    assert record["measurements"]["before"]["triangles"] == before["triangles"]
+
+
+@pytest.mark.parametrize(
+    ("how", "said"),
+    [
+        ({}, "neither a triangle count"),
+        ({"triangles": 10, "out": "toy.glb"}, "the mesh itself"),
+        ({"triangles": 10, "path": "none.glb"}, "no .glb"),
+    ],
+)
+def test_a_budget_that_says_nothing_is_refused(tmp_path, how, said):
+    (tmp_path / "toy.glb").write_bytes(b"glTF")
+    call = {"path": "toy.glb", "out": "slim.glb", "root": str(tmp_path), **how}
+    with pytest.raises(PolyweaveError) as refused:
+        normalise.budgeted(call.pop("path"), **call)
+    assert refused.value.code == "mesh.no-budget"
+    assert said in refused.value.message
+
+
 def test_what_a_service_painted_comes_through_ingest(tmp_path):
     """§PW90: the fetched hammer came out the right way round, the right size, white."""
     bpy = pytest.importorskip("bpy")

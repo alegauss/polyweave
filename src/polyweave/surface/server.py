@@ -77,7 +77,9 @@ CORE_TOOLS = 40_200
 #: 142,406 with search.sweep's then and judged (§PW621), inside the core's figure.
 #: 142,830 with reference.prepare's mode and mesh.buy's texture (§PW626, §PW627),
 #: whose geometry layer's figure rose by 300 for it.
-SESSION_BUDGET = 143_100
+#: 143,715 with render.bake's masks and mesh.budget (§PW630, §PW634), whose geometry
+#: layer's figure rose by 1,000 for them.
+SESSION_BUDGET = 144_000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

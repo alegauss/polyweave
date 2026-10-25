@@ -32,6 +32,13 @@ CODES: dict[str, Code] = {
         doors=("repair the mesh by hand", "buy it again",
                "move the bound if a person accepts the mesh as it is"),
     ),
+    "mesh.no-budget": Code(
+        means="a mesh was asked to a budget that says nothing, or there is no mesh",
+        when="mesh.budget with neither triangles nor texture, a path that is no .glb, "
+        "or an out that is the source itself (§PW634)",
+        doors=("pass triangles, texture or both",
+               "name a .glb under the project, and write beside it"),
+    ),
     "mesh.bad-frame": Code(
         means="a mesh was asked to be sized on an axis or held from an origin that "
         "does not exist",

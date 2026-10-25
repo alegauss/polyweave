@@ -48,7 +48,9 @@ LAYER = Layer(
     # 18,030 with geometry.kit (§PW568).
     # 18,303 with mesh.buy's texture and texture_prompt, a painted mesh bought through
     # the ceiling rather than round it (§PW627).
-    tools=18_500,
+    # 19,186 with render.bake's masks and mesh.budget, a bought mesh brought to a game's
+    # budget (§PW630, §PW634).
+    tools=19_500,
     census={
         "polyweave.layers.geometry.port:read": (
             "internal", "a family file checked, inside port.run"),
