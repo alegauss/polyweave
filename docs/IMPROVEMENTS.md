@@ -100,29 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW632 crowned domes a concave outline by distance to its edge
-
-Where it happened: Cottony RK168. The score bar's stars needed to look like puffy
-moulded plastic, like screen1.png's. The first try was a `crowned` node over a rounded
-five-point outline (plush.shape_star, points passed as `outline = [[x, y], ...]`), with
-`crown` at 0.16 of the canvas and `steps = 20`.
-
-What came back: a pyramid. `solid.crowned` shrinks a concave ring toward its centroid
-(PW66, as its docstring says), so every arm rises along a straight ridge to the middle,
-and each ring between two points folds into a crease. More steps only add more rings to
-the same ridges. The docstring promises "a domed face", and it is one only on a convex
-outline.
-
-Workaround: `tools/art/score_star.toml` builds the star as a `blend` of a core sphere
-and five ellipsoid arms instead, repeated with `rotate = [0, 0, "i * 72"]`. That works,
-but the outline is no longer the drawn one. It is whatever five ellipsoids fillet into.
-
-What polyweave should do: give `crowned` a dome that follows distance from the edge, not
-the centroid: lift = f(distance to the outline), the way `inflate` does it, but on a
-float field (see the inflate line on contour rings) so it stays smooth. A concave
-outline would then dome like a pillow, with rounded valleys between the points. Or say
-on the node that a concave outline gets ridges, so nobody expects a pillow from it.
-
 ### §PW633 Captures render the viewport the stretch gives a window
 
 Where it happened: Cottony RK175 laid the board screen out for a 16:9 PC window. The

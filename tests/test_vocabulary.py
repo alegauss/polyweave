@@ -674,6 +674,22 @@ def test_an_inflated_star_is_skinned_inside_its_outline():
     assert longest <= span / 24 * 1.5
 
 
+def test_a_crowned_star_domes_like_a_pillow_not_a_pyramid():
+    """§PW632: shrunk toward its centroid, every arm rose on a straight ridge to the
+    middle. The face now rises by each point's distance from the edge."""
+    plaque = S.crowned(STAR, 1.0, 2.0, steps=6)
+    check_mesh(plaque)
+    points = np.asarray(plaque["vertices"], dtype=float)
+    ring = np.asarray(STAR, dtype=float)
+    assert np.allclose(points[:, :2].min(axis=0), ring.min(axis=0))
+    assert np.allclose(points[:, :2].max(axis=0), ring.max(axis=0))
+    face = points[points[:, 2] > 1.0 - 1e-9]
+    reach = S._to_edge(ring, face[:, :2])
+    expected = 1.0 + 2.0 * np.sqrt(1.0 - (1.0 - reach / reach.max()) ** 2)
+    assert np.allclose(face[:, 2], expected)
+    assert points[:, 2].max() == pytest.approx(3.0)
+
+
 def test_a_stuffed_height_has_no_eight_bit_steps():
     """§PW631: a blur through an 8-bit picture came back in 256 levels, rings under a
     glossy coat."""
@@ -815,18 +831,18 @@ def test_a_convex_crown_still_shrinks_along_its_miter():
     assert O.convex(ring) is True
 
 
-def test_every_ring_of_a_concave_dome_is_inside_the_one_below_it():
-    """Which is what scaling toward the centroid gives and offsetting does not."""
+def test_no_point_of_a_concave_dome_reaches_past_its_silhouette():
+    """§PW66: offset, the star reached 82 units past its own outline. Domed by distance
+    from the edge (§PW632), every point is on the outline or inside it, and the face
+    still closes at its crown."""
     ring = O.star(5, 240.64, 120.32)
     made = S.crowned(ring, 51.2, 66.56)
+    check_mesh(made)
     points = np.asarray(made["vertices"], dtype=float)
-    rings = points.reshape(-1, len(ring), 3)
-    reach = [
-        float(np.linalg.norm(one[:, :2] - one[:, :2].mean(axis=0), axis=1).max())
-        for one in rings
-    ]
-    assert reach == sorted(reach, reverse=True), "each ring is no wider than the last"
-    assert reach[-1] < reach[0], "and the dome actually closes"
+    off = S._to_edge(ring, points[:, :2]) > 1e-6
+    inside = S._inside(ring, points[off, :2])
+    assert inside.all(), "nothing lies past the drawn outline"
+    assert points[:, 2].max() == pytest.approx(51.2 + 66.56)
 
 
 # -- where a picture goes on a shape (§PW68) -------------------------------------------

@@ -282,6 +282,7 @@
 - ✅ **PW629** **a recorded flow replays in whatever locale the machine has, so a flow recorded in pt-BR fails on an English CI runner** — A kept flow carries the locale its game came up in and its replay sets it on every platform, naming both locales where a failure ran in another.
 - ✅ **PW630** **a carve's cut faces wear the plate's material, so no render can tell a pocket from the plate it is pressed into** — A carve's cut keeps the cutter's material through the build, and render.bake's masks writes each named material's coverage beside the picture.
 - ✅ **PW631** **inflate stripes a star outline and rings a drawn one with contour steps, so a glossy inflated shape is unusable** — inflate skins an outline over its own subdivided triangles, so a star swells without stripes, and a drawing's height is blurred in floats with no 8-bit steps.
+- ✅ **PW632** **crowned over a concave outline rises in straight ridges to its centroid, so a star comes out a pyramid, never a pillow** — crowned domes a concave outline by each point's distance from its edge, so a star rises like a pillow with rounded valleys, its silhouette still the one drawn.
 
 ## Block I — Voxel models from a declaration
 

@@ -184,12 +184,20 @@ def crowned(
     along its miter, which points inward at a convex corner and *outward* at a reflex
     one. Cottony's star came back reaching 82 units past its own silhouette that way —
     the op promising the silhouette is untouched, breaking it on the one outline whose
-    whole point is being concave. A concave ring is scaled toward its centroid instead,
-    which nests by construction whatever the corners do. A convex one keeps the miter,
-    because that holds a corner radius constant as it shrinks where a scale would not,
-    and because nothing that works today should move.
+    whole point is being concave. A convex one keeps the miter, because that holds a
+    corner radius constant as it shrinks, and because nothing that works today should
+    move.
+
+    **A concave outline domes by its distance from the edge** (§PW632). Scaled toward
+    its centroid, every arm of a star rose along a straight ridge to the middle and came
+    out a pyramid. Its face is now the outline's own triangles, split as `inflate`
+    splits them, each point lifted on the same quarter circle the convex rings follow,
+    by how far it is from the edge over how far the deepest point is: a pillow with
+    rounded valleys between the points, and the silhouette still the one drawn.
     """
     ring = O._ring(points)
+    if not O.convex(ring):
+        return _domed(ring, float(depth), float(crown), float(front), int(steps))
     count = len(ring)
     rings = [np.column_stack([ring, np.full(count, float(front))])]
     reach = float(np.ptp(ring, axis=0).max()) / 2.0
@@ -226,6 +234,35 @@ def crowned(
         _triangulated(ring, top, False) if not O.convex(ring) else [_fan(count, top)[0]]
     )
     return mesh(np.vstack(rings), faces)
+
+
+def _domed(ring: np.ndarray, depth: float, crown: float, front: float,
+           steps: int) -> dict:
+    """A concave plate whose face rises by distance from its edge (§PW632).
+
+    The face and the near cap are the same triangles, and the walls run along their
+    boundary, every point split off the outline included, so the body is closed.
+    """
+    span = float(np.ptp(ring, axis=0).max())
+    # As fine as the convex rings would be: steps rings across the half-width.
+    step = span / 2.0 / max(2, steps)
+    flat, triangles = _subdivided(ring, _triangulated(ring, 0, False), step)
+    reach = _to_edge(ring, flat)
+    deepest = max(float(reach.max()), 1e-9)
+    share = np.clip(reach / deepest, 0.0, 1.0)
+    rise = depth + crown * np.sqrt(1.0 - (1.0 - share) ** 2)
+    count = len(flat)
+    points = np.vstack([np.column_stack([flat, np.full(count, front)]),
+                        np.column_stack([flat, front + rise])])
+    faces = [tuple(count + one for one in face) for face in triangles]
+    faces += [tuple(reversed(face)) for face in triangles]
+    used: dict = {}
+    for face in triangles:
+        for a, b in zip(face, face[1:] + face[:1], strict=True):
+            used[a, b] = True
+    # An edge one triangle uses, and not its reverse, is the outline's.
+    faces += [(b, a, count + a, count + b) for a, b in used if (b, a) not in used]
+    return mesh(points, faces)
 
 
 def annulus(

@@ -294,10 +294,17 @@ its plane is a build warning, since the two halves then overlap for nothing.
 the same question the cap below asks, with the same answer. `offset` moves a corner along
 its miter, which points inward at a convex corner and *outward* at a reflex one, so a
 concave outline's inner vertices travel outward while the ring is supposed to be
-shrinking: Cottony's star came back reaching 82 units past its own silhouette. A concave
-ring is scaled toward its centroid instead, which nests by construction. A convex one
-keeps the miter, because that holds a corner radius constant as it shrinks where a scale
-would not.
+shrinking: Cottony's star came back reaching 82 units past its own silhouette. A convex
+outline keeps the miter, because that holds a corner radius constant as it shrinks.
+
+A concave outline is not shrunk at all (§PW632). Scaled toward its centroid, every arm of
+a star rose along a straight ridge to the middle, a pyramid where a puffy star was asked
+for. Its face is the outline's own triangles, split as `inflate` splits them to about
+`steps` rings across its half-width. Each point is lifted on the quarter circle the convex
+rings follow, `depth + crown * sqrt(1 - (1 - d)^2)` with `d` its distance from the edge
+over the deepest point's. So a star domes like a pillow, with rounded valleys between its
+points. The near cap is the same triangles flat, and the walls run along their boundary, so
+the body is closed and the silhouette is the one drawn.
 
 **A concave cap is triangulated and a convex one is not.** Cottony's first star came back
 with black triangles laid across its arms, which is a cap filled as though its points were
