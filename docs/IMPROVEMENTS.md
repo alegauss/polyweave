@@ -100,29 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW629 Flows pin the locale they were recorded in
-
-Where it happened: Cottony's CI, job `godot`, step `python3 tools/check_export.py
-"Windows Desktop"`, which replays the recorded flows under `tests/flows/` (run
-40027450789 on viglet-games/cottony). The flows were recorded on a pt-BR Windows desk,
-and their expectations read the screen's own words: `LIGADO`, `ACABARAM OS MOVIMENTOS`,
-`NÍVEL CONCLUÍDO`. The Ubuntu runner leaves `LANG` unset, Godot reads that as English,
-and every flow that reads a label fails with `ON`, `OUT OF MOVES`, `LEVEL COMPLETE`. The
-answer says only that the text differed, not that the game ran in another language than
-the one the flow was recorded in.
-
-Workaround: `env: LANG: pt_BR.UTF-8` on that step in `.github/workflows/checks.yml`
-(RK174). It works only because Godot's Linux build reads `LANG`; on Windows the locale
-comes from the system and cannot be set per run, so a flow recorded on an English desk
-would fail on this one.
-
-What polyweave should do: a recorded flow carries the locale it was recorded in
-(`TranslationServer.get_locale()` at record time), and the replay sets it before the
-first step, through `--language` or a `TranslationServer.set_locale` in the driver, on
-every platform. A flow may also declare `locale = "any"` when it reads nothing
-translated. Where an expectation fails on text and the replay's locale differs from the
-recorded one, the answer names both locales.
-
 ### §PW630 a carve's cut wears the cutter's material, and a bake can mask by material
 
 Where it happened: Cottony RK168. An unearned star is a star-shaped pocket pressed into

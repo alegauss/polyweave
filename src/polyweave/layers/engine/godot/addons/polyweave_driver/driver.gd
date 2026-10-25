@@ -25,6 +25,8 @@ var flow: Array = []
 var flow_at := 0
 ## The step whose answer is awaited, so the answer can be held to what the flow expects.
 var flow_step: Dictionary = {}
+## The language a kept flow was recorded in, which its replay is held to (§PW629).
+var flow_locale := ""
 var failed := false
 ## Seconds with no request before the driver quits; 0 waits for ever.
 var idle := 0
@@ -84,6 +86,12 @@ func _initialize() -> void:
 			_seeded(int(parsed["seed"]))
 		if str(parsed.get("scene", "")) != "":
 			scene_path = str(parsed["scene"])
+		# The language it was recorded in, on every platform, since a flow reads the
+		# screen's own words (§PW629); "any" is a flow that reads nothing translated.
+		var spoken := str(parsed.get("locale", ""))
+		if spoken != "" and spoken != "any":
+			flow_locale = spoken
+			TranslationServer.set_locale(flow_locale)
 	var bound := server.listen(port, "127.0.0.1") if flow_path == "" else OK
 	if bound != OK:
 		push_error("polyweave_driver: could not listen on port %d (%s)" % [port, bound])
@@ -102,8 +110,15 @@ func _initialize() -> void:
 		# change_scene_to_file frees it rather than running a second scene over it
 		# (§PW297).
 		current_scene = main
+	if flow_locale != "":
+		# Again once the game has started, which may have set its own from the system.
+		TranslationServer.set_locale(flow_locale)
 	if flow_path == "":
-		print("polyweave_driver: port=%d token=%s" % [server.get_local_port(), token])
+		# The language the game came up in, which a flow kept from it replays in.
+		print("polyweave_driver: port=%d token=%s locale=%s" % [server.get_local_port(),
+			token, TranslationServer.get_locale()])
+	else:
+		print("polyweave_flow: locale=%s" % TranslationServer.get_locale())
 
 
 func _process(_delta: float) -> bool:

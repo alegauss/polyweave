@@ -319,6 +319,17 @@ version or the driver changed since the flow was kept — reported, not failed, 
 different engine is a reason to look and not a verdict. `expect` is a command of its own
 too, answering `{held, value}` with no frame passing.
 
+**A flow replays in the language it was recorded in** (§PW629). The driver says the
+language the game came up in on its listening line (`locale=…`), the session keeps it, and
+`game.keep` writes it as the flow's `locale`. A replay sets it before the scene loads and
+again once it has, through `TranslationServer`, on every platform: Cottony's flows read
+`LIGADO` and `ACABARAM OS MOVIMENTOS` off a pt-BR desk and failed on an English runner,
+where a `LANG` in CI was the workaround and Windows has none. A flow that reads nothing
+translated may say `"locale": "any"` and plays in the machine's own. The replay prints
+`polyweave_flow: locale=…`, its answer's `locale` holds `recorded` and `played`, and a
+failure where the two differ names both in its `why`. `game.rekey` opens its session in
+the flow's language too.
+
 A number arrives as JSON gives it, a float, so `wait … equals` compares numbers as
 numbers: a node's int 42 equals the 42 a caller sent.
 

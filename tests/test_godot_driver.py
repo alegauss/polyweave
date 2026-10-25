@@ -1009,6 +1009,54 @@ def test_a_click_that_takes_its_screen_away_is_kept_by_a_selector(tmp_path):
     assert "game.rekey" in broke["fragile"]["remedy"]
 
 
+#: A label the game writes in the player's language each frame, as Cottony's do.
+SPOKEN = """extends Node2D
+
+var label: Label
+
+func _ready() -> void:
+\tfor pair in [["en", "ON"], ["de", "AN"], ["pt_BR", "LIGADO"]]:
+\t\tvar words := Translation.new()
+\t\twords.locale = pair[0]
+\t\twords.add_message("STATE_ON", pair[1])
+\t\tTranslationServer.add_translation(words)
+\tlabel = Label.new()
+\tlabel.name = "State"
+\tadd_child(label)
+
+func _process(_delta: float) -> void:
+\tlabel.text = tr("STATE_ON")
+"""
+
+
+def test_a_flow_replays_in_the_language_it_was_recorded_in(tmp_path):
+    """§PW629: flows recorded on a pt-BR desk failed on an English runner. Recorded in
+    German here, which neither desk speaks, the replay holds only if it is set."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    (tmp_path / "main.gd").write_text(SPOKEN, encoding="utf-8")
+    session = driving.opened(root, seed=1, locale="de")["session"]
+    try:
+        driving.stepped(session, frames=2, root=root)
+        seen = driving.queried(session, path="State", properties=["text"], root=root)
+        assert seen["result"][0]["properties"]["text"] == "AN"
+        kept = driving.kept(session, out="tests/flows/de.flow.json",
+                            proves="the state reads AN", expect=[seen["step"]],
+                            root=root)
+    finally:
+        driving.closed(session, root=root)
+    flow = json.loads(Path(kept["flow"]).read_text(encoding="utf-8"))
+    assert flow["locale"].startswith("de")
+    again = driving.replayed("tests/flows/de.flow.json", root=root)
+    assert again["ok"] is True, again["why"]
+    assert again["locale"]["played"].startswith("de")
+    # A flow that says it reads nothing translated is played in the machine's own.
+    flow["locale"] = "any"
+    Path(kept["flow"]).write_text(json.dumps(flow), encoding="utf-8")
+    assert driving.replayed("tests/flows/de.flow.json", root=root)["ok"] is False
+
+
 def test_a_flow_kept_before_selectors_is_rekeyed_in_one_call(tmp_path):
     """§PW276: Cottony's older flows still reach their nodes by generated names."""
     if not os.environ.get("GODOT"):

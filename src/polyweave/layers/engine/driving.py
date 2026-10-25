@@ -43,7 +43,11 @@ __all__ = ["opened", "send"]
 DRIVER = "res://addons/polyweave_driver/driver.gd"
 
 #: The line the driver prints once it listens.
-LISTENING = re.compile(r"polyweave_driver: port=(?P<port>\d+) token=(?P<token>\w+)")
+LISTENING = re.compile(r"polyweave_driver: port=(?P<port>\d+) token=(?P<token>\w+)"
+                       r"(?: locale=(?P<locale>\S+))?")
+
+#: The language a replay played in, as the driver says it before the first step.
+PLAYED_IN = re.compile(r"^polyweave_flow: locale=(?P<locale>\S+)", re.MULTILINE)
 
 #: What the driver refuses with, raised here under its own code (docs/specs/driving.md).
 DRIVER_CODES = (
@@ -263,6 +267,9 @@ def opened(
         "seed": int(seed or 0),
         "scene": scene,
         **({"args": own_args} if own_args else {}),
+        # The language the game came up in, which a flow kept from it replays in
+        # (§PW629).
+        **({"locale": found["locale"]} if found["locale"] else {}),
         # Every command that answered, in order, for game.keep (§PW214).
         "journal": [],
     }
@@ -920,6 +927,8 @@ def kept(
         "seed": record.get("seed", 0),
         "scene": record.get("scene", ""),
         **({"args": record["args"]} if record.get("args") else {}),
+        # Replayed in the language it was recorded in, on any machine (§PW629).
+        **({"locale": record["locale"]} if record.get("locale") else {}),
         "engine": _engine_version(
             log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
         ),
@@ -1106,8 +1115,10 @@ def rekeyed(
             "name a .flow.json game.keep wrote, under the project",
         )
     kept = json.loads(where.read_text(encoding="utf-8-sig"))
+    spoken = str(kept.get("locale") or "")
     session = opened(root, scene=kept.get("scene", ""), seed=int(kept.get("seed", 0)),
-                     args=kept.get("args"))
+                     args=kept.get("args"),
+                     **({"locale": spoken} if spoken and spoken != "any" else {}))
     selectors: dict[str, dict] = {}
     broke = None
     try:
@@ -1213,6 +1224,17 @@ def replayed(
                 "remedy": f"re-key it with game.rekey(flow={flow!r}), or name the node "
                 "in the game; a path Godot generated moves with every unnamed node"}
                if not passed and reached else None)
+    # The language it was recorded in beside the one it played in: a label read in
+    # another language reads as a changed screen otherwise (§PW629).
+    played = PLAYED_IN.search(log)
+    spoken = {"recorded": stated.get("locale") or None,
+              "played": played["locale"] if played else None}
+    elsewhere = (not passed and spoken["recorded"] not in (None, "any")
+                 and spoken["played"] and not spoken["played"].startswith(
+                     spoken["recorded"].split("_")[0]))
+    if elsewhere:
+        why = (f"{why}; recorded in {spoken['recorded']}, played in "
+               f"{spoken['played']}")
     return {
         "ok": passed,
         "proves": stated.get("proves", ""),
@@ -1222,6 +1244,7 @@ def replayed(
         "why": (f"{why}; it reached its node by {', '.join(reached)}, a name Godot "
                 "generated" if fragile else why),
         **({"fragile": fragile} if fragile else {}),
+        "locale": spoken,
         "differs": moved,
         "log": found["log"],
     }

@@ -279,6 +279,7 @@
 - ✅ **PW626** **reference.prepare cuts every pixel near the edge colour, so a subject sharing a hue with its ground loses parts** — reference.prepare grows the background a step at a time from the frame's edge, so a subject sharing its ground's hue keeps those parts; mode colour keeps the old cut.
 - ✅ **PW627** **mesh.buy cannot buy a textured mesh, so a toy whose colours make it must go through a project client** — mesh.buy buys a Meshy mesh textured from a gated picture at the model's textured price row, its prompt on the ledger, and a 402 naming the plan is fetch.plan-lacks.
 - ✅ **PW628** **port.run bakes nothing when one member fails and takes no member list, so passing members wait on an unrelated one** — port.run's members ports and bakes the members named alone and says who was left out, so passing toys no longer wait on an unchanged one that fails.
+- ✅ **PW629** **a recorded flow replays in whatever locale the machine has, so a flow recorded in pt-BR fails on an English CI runner** — A kept flow carries the locale its game came up in and its replay sets it on every platform, naming both locales where a failure ran in another.
 
 ## Block I — Voxel models from a declaration
 

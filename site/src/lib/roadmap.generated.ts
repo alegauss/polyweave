@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 7 },
+  { block: "H", title: "Proof on a real game", open: 6 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW629",
-    block: "H",
-    symptom: "a recorded flow replays in whatever locale the machine has, so a flow recorded in pt-BR fails on an English CI runner",
-    why: "Every flow that reads a translated label breaks on a machine in another language, and the failure reads as a changed screen.",
-    deps: [],
-  },
   {
     id: "PW630",
     block: "H",
