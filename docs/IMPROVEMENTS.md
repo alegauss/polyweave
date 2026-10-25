@@ -100,29 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW627 A textured mesh bought through the plugin
-
-Found in Cottony's RK163 on 2026-10-23. The booster toys - a pink mallet with a yellow
-heart, a rainbow shooting star - are what they are by their colours, and Cottony's
-committed toys were fetched textured (`should_texture` true, a `texture_prompt`) by its
-own `meshy.py`, from before `mesh.buy`. Re-buying them from the painting through the
-plugin was the plan, and `mesh.buy` cannot: it always sends `should_texture` off and
-takes no texture prompt, so the mallet would come back one colour. The purchase had to
-go back through `tools/art/meshy.py`, which `[adoption.own]` keeps only as "the Meshy
-client the committed meshes were fetched with".
-
-Expected: `mesh.buy` takes `texture = true` with a `texture_prompt` (and the service's
-texture resolution), books the textured price row, and records the prompt and resolution
-on the ledger, so a project's textured fetch goes through the ceiling and the ledger
-like every other purchase.
-
-Also met: a 402 from Meshy can mean the plan, not the balance (`NoMorePendingTasks`,
-"task creation on the free plan is no longer supported", with 300 credits left).
-`fetch.over-budget` would misname it; a `fetch.plan` code with the service's message
-would not.
-
-Workaround: Cottony's `tools/art/meshy.py`, which still textures.
-
 ### §PW628 A family ported member by member
 
 Found in Cottony's RK163 on 2026-10-23. `tools/art/boosters.family.toml` holds three

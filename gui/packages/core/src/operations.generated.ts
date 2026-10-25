@@ -1102,7 +1102,7 @@ export interface MeasureTakeArgs {
   behind?: string
 }
 
-/** Buy one untextured mesh, from a prompt or a gated picture, against the ceiling. */
+/** Buy one mesh, from a prompt or a gated picture, against the ceiling. */
 export interface MeshBuyArgs {
   /** where the .glb is written, under the project */
   out?: string
@@ -1116,6 +1116,10 @@ export interface MeshBuyArgs {
   model?: string
   /** the triangles to aim at; from 100 to …; default 8000 */
   polycount?: number
+  /** buy it painted, priced at the <model>:textured row; Meshy, from a picture; default false */
+  texture?: boolean
+  /** what its colours are, in words, with texture */
+  texture_prompt?: string
   /** a world entity to compose the prompt from */
   entity?: string
   /** the *.world.toml, needed only among several */

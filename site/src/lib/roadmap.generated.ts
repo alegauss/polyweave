@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 9 },
+  { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW627",
-    block: "H",
-    symptom: "mesh.buy cannot buy a textured mesh, so a toy whose colours make it must go through a project client",
-    why: "Cottony's booster toys are fetched textured and had to bypass the ceiling and ledger through meshy.py.",
-    deps: [],
-  },
   {
     id: "PW628",
     block: "H",

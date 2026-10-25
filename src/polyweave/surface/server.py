@@ -75,7 +75,9 @@ CORE_TOOLS = 40_200
 #: 140,798 with game.compare_runs (§PW612), whose engine layer's figure rose by 800.
 #: 142,089 with verdict.target (§PW620), whose core figure rose by 1,200 for it.
 #: 142,406 with search.sweep's then and judged (§PW621), inside the core's figure.
-SESSION_BUDGET = 142_700
+#: 142,830 with reference.prepare's mode and mesh.buy's texture (§PW626, §PW627),
+#: whose geometry layer's figure rose by 300 for it.
+SESSION_BUDGET = 143_100
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

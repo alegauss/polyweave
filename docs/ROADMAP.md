@@ -16,7 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW627** (deps: —) **mesh.buy cannot buy a textured mesh, so a toy whose colours make it must go through a project client** — Cottony's booster toys are fetched textured and had to bypass the ceiling and ledger through meshy.py. → §PW627
 - 📋 **PW628** (deps: —) **port.run bakes nothing when one member fails and takes no member list, so passing members wait on an unrelated one** — Cottony's two re-bought toys passed but could not bake beside an unchanged ball failing its spec. → §PW628
 - 📋 **PW629** (deps: —) **a recorded flow replays in whatever locale the machine has, so a flow recorded in pt-BR fails on an English CI runner** — Every flow that reads a translated label breaks on a machine in another language, and the failure reads as a changed screen. → §PW629
 - 📋 **PW630** (deps: —) **a carve's cut faces wear the plate's material, so no render can tell a pocket from the plate it is pressed into** — Composing an engraved pocket means recomputing its outline by hand from the declaration, tuned by eye to the camera. → §PW630

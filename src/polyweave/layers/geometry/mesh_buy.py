@@ -55,12 +55,23 @@ def buy(
         str, Param("the service's model: meshy-6-lite, or Tripo's v2.5-20250123")
     ] = "meshy-6-lite",
     polycount: Annotated[int, Param("the triangles to aim at", lo=100)] = 8000,
+    texture: Annotated[
+        bool, Param("buy it painted, priced at the <model>:textured row; Meshy, "
+                    "from a picture")
+    ] = False,
+    texture_prompt: Annotated[
+        str, Param("what its colours are, in words, with texture")
+    ] = "",
     entity: Annotated[str, ENTITY] = None,
     world: Annotated[str, WORLD] = None,
     service: Annotated[str, purchase.SERVICE] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
-    """Buy one untextured mesh, from a prompt or a gated picture, against the ceiling.
+    """Buy one mesh, from a prompt or a gated picture, against the ceiling.
+
+    Untextured unless `texture` says otherwise: a toy that is what it is by its colours
+    is bought painted from Meshy, from a picture, at the `<model>:textured` price row,
+    its `texture_prompt` kept on the ledger (§PW627).
 
     Returns the ledger entry. The cost recorded is what two balance readings either side
     of the task say it was; the `prices` row for `model` only decides whether it may be
@@ -90,15 +101,33 @@ def buy(
             + ("neither" if prompt is None else "both"),
             "pass prompt, or picture_path for a picture picture.gate passed",
         )
+    if texture_prompt and not texture:
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            "a texture_prompt was given for a mesh bought untextured",
+            "pass texture = true with it, or leave the prompt out",
+            given="texture_prompt",
+        )
     config = load(root)
     here = config.root
     name = config.service(service, model=model)
     about = config.services()[name]
     base, key = _reached(name, about)
-    price = client.price(name, about.get("prices") or {}, model, None)
-
     route = "text" if prompt is not None else "views" if views else "image"
     adapter = S.provider(base, "mesh", "meshy")
+    if texture and (adapter.name != "meshy" or route == "text"):
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            "a textured mesh is bought from Meshy, from a picture"
+            + (f", and {name} is {adapter.name}" if adapter.name != "meshy"
+               else ", and this call gave words"),
+            "draw it first and pass picture_path, gated, to a Meshy service; words "
+            "alone are modelled untextured",
+            given="texture",
+        )
+    # Painted costs more than grey, so it is its own row and never the grey one's price.
+    price = client.price(name, about.get("prices") or {}, model,
+                         "textured" if texture else None)
     tripo, rodin = adapter.name == "tripo", adapter.name == "rodin"
     many = picture_path is None or tripo or len(views) > MOST_VIEWS
     if views and not rodin and many:
@@ -118,7 +147,8 @@ def buy(
     order = S.Order(
         service=name, base=base, key=key, price=price, root=here,
         asked={"route": route, "prompt": prompt, "pictures": pictures, "model": model,
-               "polycount": int(polycount)},
+               "polycount": int(polycount), "texture": bool(texture),
+               "texture_prompt": texture_prompt},
         kept={
             "out": out,
             "prompt": prompt,
@@ -130,6 +160,8 @@ def buy(
                 **({"views": list(views)} if views else {}),
                 "model": model,
                 "polycount": int(polycount),
+                **({"texture": True, "texture_prompt": texture_prompt}
+                   if texture else {}),
                 "entity": drawn_from,
             },
             "inputs": [provenance.source("world", drawn_from["world"], root=here)]

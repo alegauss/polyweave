@@ -333,8 +333,18 @@ mode) or from `picture_path` (`/openapi/v1/image-to-3d`, the picture sent as a d
 candidate. `mesh.buy` refuses a picture with none, one the gate refused, or one whose bytes
 changed since (`fetch.picture-ungated`). So a mesh bought from a picture always had its
 silhouette settled on the picture first. A 402 from the service is `fetch.over-budget` on
-the account itself, a 429 `fetch.rate-limited`, and a failed or cancelled task ledgers
-nothing.
+the account itself, unless what it says names the plan, as Meshy's free plan refusing a
+task with credits left did: that is `fetch.plan-lacks` with the service's message
+(§PW627). A 429 is `fetch.rate-limited`, and a failed or cancelled task ledgers nothing.
+
+**A mesh its colours make is bought painted** (§PW627). `texture = true` sends
+`should_texture` on, with `texture_prompt` where given, and prices the buy at the
+`<model>:textured` row of `prices`, refused as `fetch.unpriced` where there is none, since a
+painted mesh costs more than a grey one. The ledger line keeps `texture: {prompt}` and the
+record the same under `details`. Only a Meshy service from a picture is painted here: words
+are modelled in preview, untextured, and another service or a prompt with `texture` is
+`fetch.bad-choice`, as is a `texture_prompt` on an untextured buy. Cottony's pink mallet
+and rainbow star went round the ceiling through its own client for want of this.
 
 **Rodin is the third mesh service** (§PW446), for a part that needs clean topology: a
 service whose `base` is on `hyper3d` or `deemos` (Hyper3D's v2 API) is spoken to as

@@ -384,6 +384,10 @@ def capture(
         # Off the record rather than off `extra`: the record is where a path is spelled
         # the one way both files agree on, and the ledger is committed too (§PW72).
         "reference": record.get("reference"),
+        # A painted mesh costs more than a grey one, and the ledger says which it bought
+        # and what its colours were asked as (§PW627).
+        **({"texture": {"prompt": (details or {}).get("texture_prompt") or ""}}
+           if (details or {}).get("texture") else {}),
         "at": datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
     }
     # Made inside a revision's session: the spend is tied to the change it was for, so

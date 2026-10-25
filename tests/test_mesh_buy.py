@@ -179,6 +179,69 @@ def test_json_is_a_code_on_refusal(monkeypatch):
     assert json.dumps({}) == "{}"
 
 
+def test_a_402_that_names_the_plan_is_not_called_a_short_balance(monkeypatch):
+    """§PW627: Meshy refused a task on its free plan with 300 credits left."""
+    import io
+    import urllib.error
+
+    said = (b'{"message": "NoMorePendingTasks: task creation on the free plan is no '
+            b'longer supported"}')
+
+    def refuse(request, timeout):
+        raise urllib.error.HTTPError(request.full_url, 402, "no", {}, io.BytesIO(said))
+
+    monkeypatch.setattr("urllib.request.urlopen", refuse)
+    with pytest.raises(PolyweaveError) as caught:
+        S.call("POST", "https://api.meshy.ai/x", "k", {})
+    assert caught.value.code == "fetch.plan-lacks"
+    assert "free plan" in caught.value.detail
+
+
+def gated(tmp_path):
+    def drawn(name, box):
+        image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+        ImageDraw.Draw(image).ellipse(box, fill=(200, 60, 60, 255))
+        image.save(tmp_path / name)
+
+    drawn("outline.png", (14, 44, 114, 84))
+    drawn("mallet.png", (15, 44, 115, 84))
+    picture.gate(["mallet.png"], "outline.png", root=tmp_path)
+
+
+def test_a_toy_its_colours_make_is_bought_textured_at_its_own_price(tmp_path, meshy):
+    """§PW627: Cottony's pink mallet came back one colour, or went round the ledger."""
+    (tmp_path / C.FILENAME).write_text(PROJECT.replace(
+        '"meshy-6" = 20 }', '"meshy-6" = 20, "meshy-6-lite:textured" = 15 }'),
+        encoding="utf-8")
+    gated(tmp_path)
+    entry = mesh_buy.buy(out="m/mallet.glb", picture_path="mallet.png", texture=True,
+                         texture_prompt="pink plastic, a yellow heart", root=tmp_path)
+    _, payload = meshy.sent[0]
+    assert payload["should_texture"] is True
+    assert payload["texture_prompt"] == "pink plastic, a yellow heart"
+    assert entry["texture"] == {"prompt": "pink plastic, a yellow heart"}
+    assert purchase.read(tmp_path)[-1]["texture"] == entry["texture"]
+    from polyweave.kernel import provenance
+
+    record = provenance.read("m/mallet.glb", root=str(tmp_path))
+    assert record["details"]["texture"] is True
+
+
+@pytest.mark.parametrize(
+    ("how", "code"),
+    [
+        ({"prompt": "a mallet", "texture": True}, "fetch.bad-choice"),
+        ({"picture_path": "mallet.png", "texture_prompt": "pink"}, "fetch.bad-choice"),
+        ({"picture_path": "mallet.png", "texture": True}, "fetch.unpriced"),
+    ],
+)
+def test_a_textured_buy_that_cannot_be_made_is_refused_first(tmp_path, meshy, how,
+                                                              code):
+    gated(tmp_path)
+    assert refused(out="m.glb", root=tmp_path, **how).code == code
+    assert meshy.sent == []
+
+
 def test_a_refused_picture_a_person_promoted_can_be_bought_from(tmp_path, meshy):
     """§PW208: the gate's bar is the project's, and a person's promotion is its door."""
     from polyweave.loop import review, verdict

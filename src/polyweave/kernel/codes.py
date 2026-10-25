@@ -669,7 +669,8 @@ KERNEL_CODES: dict[str, Code] = {
     "fetch.plan-lacks": Code(
         means="the account's plan does not include what was asked of the service",
         when="a 403 from the speech service, such as voice design asked of a free "
-        "plan; a refused call is not charged",
+        "plan, or a 402 naming the plan, as Meshy's free plan creating no task with "
+        "credits left (§PW627); a refused call is not charged",
         doors=("move the account to a plan that has the feature, at the service",
                "or choose a voice the plan can use, from the service's library"),
     ),

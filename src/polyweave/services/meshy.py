@@ -37,10 +37,15 @@ def submit(order: S.Order) -> str:
         request.update(mode="preview", prompt=asked["prompt"])
     elif route == "views":
         # The front first, which Meshy takes as the primary view.
-        request.update(image_urls=[_data_uri(one) for one in asked["pictures"]],
-                       should_texture=False)
+        request.update(image_urls=[_data_uri(one) for one in asked["pictures"]])
     else:
-        request.update(image_url=_data_uri(asked["pictures"][0]), should_texture=False)
+        request.update(image_url=_data_uri(asked["pictures"][0]))
+    if route != "text":
+        # A toy that is what it is by its colours is bought textured (§PW627).
+        textured = bool(asked.get("texture"))
+        request["should_texture"] = textured
+        if textured and asked.get("texture_prompt"):
+            request["texture_prompt"] = str(asked["texture_prompt"])
     return S.call("POST", order.base + ROUTES[route], order.key, request).get("result")
 
 
