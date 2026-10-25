@@ -649,6 +649,43 @@ def test_a_bevel_and_a_carve_keep_what_each_face_wears():
     assert set(_worn(solver.build(cube, bevel_by=0.4))) == {"pink", "cream"}
 
 
+STAR = [(0, 10), (2.4, 3.2), (9.5, 3.1), (3.8, -1.2), (5.9, -8.1), (0, -4),
+        (-5.9, -8.1), (-3.8, -1.2), (-9.5, 3.1), (-2.4, 3.2)]
+
+
+def test_an_inflated_star_is_skinned_inside_its_outline():
+    """§PW631: the inside's samples were triangulated as if they were a ring, row after
+    row, and the slivers striped a glossy star across its arms."""
+    pillow = S.inflate(STAR, 2.0)
+    check_mesh(pillow)
+    points = np.asarray(pillow["vertices"], dtype=float)
+    ring = np.asarray(STAR, dtype=float)
+    inside = np.array([S._inside(ring, points[list(face), :2].mean(axis=0)[None])[0]
+                       for face in pillow["faces"]])
+    assert inside.all(), "no triangle crosses outside the drawn outline"
+    # The outline's own corners are still where they were drawn, at zero height.
+    for corner in ring:
+        assert np.any(np.all(np.isclose(points, [*corner, 0.0]), axis=1))
+    # And no edge is longer than a few sample steps, so nothing is a sliver.
+    span = float(np.ptp(ring, axis=0).max())
+    longest = max(float(np.linalg.norm(points[a] - points[b]))
+                  for face in pillow["faces"]
+                  for a, b in zip(face, face[1:] + face[:1], strict=True))
+    assert longest <= span / 24 * 1.5
+
+
+def test_a_stuffed_height_has_no_eight_bit_steps():
+    """§PW631: a blur through an 8-bit picture came back in 256 levels, rings under a
+    glossy coat."""
+    body = np.zeros((300, 300))
+    rows, cols = np.mgrid[:300, :300]
+    body[(rows - 150) ** 2 + (cols - 150) ** 2 <= 120 ** 2] = 1.0
+    rise = S._stuffing(body, 120.0)
+    levels = np.unique(rise[rise > 0])
+    assert len(levels) > 1000
+    assert float(np.diff(levels).max()) < 1 / 255
+
+
 def test_a_build_carves_before_it_bevels():
     """A cut against an already-bevelled object is the case that went empty."""
     solver = solving()

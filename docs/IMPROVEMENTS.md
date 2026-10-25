@@ -100,29 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW631 inflate's height field is float end to end
-
-Where it happened: Cottony RK168, trying a puffy star by `inflate` before settling on a
-`blend`. There were two declarations.
-
-With a star outline (`outline = { shape = "star", ... }`), the inflated surface came
-back striped, with bands running across the arms.
-
-With `drawing = "<a rounded star PNG>"`, `soften` 0.5 to 3 and `floor = 0.5`, the face
-came back with concentric contour rings under the specular. They are the stair steps of
-an 8-bit height field, which a glossy coat raises to a high power, the same failure
-cottony-art-pipeline records for `blur`. Neither result was usable on candy, which is
-glossy by rule.
-
-Workaround: none inside inflate. The star became a `blend` of ellipsoids
-(`tools/art/score_star.toml`), which gives up the drawn outline.
-
-What polyweave should do: build inflate's height field in float32 end to end: the
-distance transform, the soften, and any resample. Then a glossy coat shows no steps.
-Find and fix whatever stripes an outline-shaped inflate along its arms. A regression
-check would inflate a five-point star with a coat and measure the luma's second
-derivative along an arm.
-
 ### §PW632 crowned domes a concave outline by distance to its edge
 
 Where it happened: Cottony RK168. The score bar's stars needed to look like puffy

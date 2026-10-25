@@ -336,13 +336,22 @@ topology the solver leaves.
 the outline put it, at zero depth, and only the inside swells — by a function of each
 point's distance from the edge, which is what makes a panel look stuffed rather than
 extruded. A cushion made from a traced drawing therefore still has the drawn outline.
+The outline's own triangles are split at their edges' middles until no edge is longer than
+a sample step (the outline's span over `resolution`), and both faces share them, so a point
+split off the outline lies on it and every triangle stays inside the drawn shape. The
+inside used to be sampled on a grid and the grid triangulated as if it were a ring, row
+after row, which laid slivers across a star's arms and striped it under a glossy coat
+(§PW631).
 
 **`inflate` has two profiles, and what the node was given decides which** (§PW68). An
 `outline` knows only where the shape stops, so the swell is distance from the edge. A
 `drawing` carries what is *inside* it, so its alpha is blurred and the blur is the height:
 a hole drawn in the middle is a hole in the surface rather than something filled in. The
 two agree on a plain blob and differ everywhere else, which is why it is one op with two
-rules rather than two names for giving a drawing volume.
+rules rather than two names for giving a drawing volume. The blur is in floats end to end,
+three box blurs of the Gaussian's variance with the border carried on: through an 8-bit
+picture the height came back in 256 levels, which a glossy coat raised into contour rings
+across the face (§PW631).
 
 ```toml
 [[nodes]]

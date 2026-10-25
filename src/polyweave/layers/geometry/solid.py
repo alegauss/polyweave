@@ -818,27 +818,26 @@ def inflate(
             "give it an outline with some size",
         )
 
-    step = span / max(2, int(resolution))
-    xs = np.arange(low[0] + step / 2, high[0], step)
-    ys = np.arange(low[1] + step / 2, high[1], step)
-    grid = np.array([[x, y] for y in ys for x in xs], dtype=float).reshape(-1, 2)
-    if len(grid):
-        grid = grid[_inside(ring, grid)]
-    if len(grid) < 3:
+    if abs(_signed(ring)) <= 1e-12:
         raise PolyweaveError(
             "geom.bad-solid",
-            f"the outline holds {len(grid)} sample points, which is not an inside",
-            "give it an outline with some area, or raise the resolution",
+            "the outline encloses no area, which is not an inside",
+            "give it an outline with some area",
         )
-
-    reach = _to_edge(ring, grid)
+    # The outline's own triangles, each split at its edges' middles until no edge is
+    # longer than a sample step. The inside's sample points used to be triangulated as
+    # if they were a ring, row after row, which laid slivers across the rows and striped
+    # a glossy star along its arms (§PW631). A point split off the outline lies on it,
+    # so the silhouette is still the one drawn, to the point.
+    step = span / max(2, int(resolution))
+    points, triangles = _subdivided(ring, _triangulated(ring, 0, False), step)
+    reach = _to_edge(ring, points)
     deepest = float(reach.max()) if len(reach) else 0.0
     if deepest <= 1e-9:
         # Nothing is far enough inside to swell, so the panel is a flat sheet.
         return prism(ring, 0.0)
-
     lift = float(thickness) / 2.0 * (reach / deepest) ** float(profile)
-    return _pillow(ring, grid, lift)
+    return _pillow(ring, points, triangles, lift)
 
 
 #: How many pixels of a drawing one grid cell spans, when nothing says otherwise. Below
@@ -956,14 +955,46 @@ def _stuffing(body: np.ndarray, radius: float) -> np.ndarray:
     """
     if radius <= 0:
         return body
-    from PIL import Image as PILImage
-    from PIL import ImageFilter
-
-    picture = PILImage.fromarray((np.clip(body, 0, 1) * 255.0).astype(np.uint8), "L")
-    wide = picture.filter(ImageFilter.GaussianBlur(radius))
-    blurred = np.asarray(wide, dtype=float) / 255.0
+    # In floats end to end: an 8-bit blur came back in 256 steps, which a glossy coat
+    # raised into contour rings across the face (§PW631).
+    blurred = _gaussian(np.clip(body, 0.0, 1.0), float(radius))
     peak = max(float(blurred.max()), 1e-6)
     return np.clip(blurred / peak, 0.0, 1.0) ** 0.6 * body
+
+
+def _gaussian(field: np.ndarray, sigma: float) -> np.ndarray:
+    """A Gaussian blur of `sigma` pixels in floats, as three box blurs (§PW631).
+
+    Three boxes of the widths that match the Gaussian's variance are within a percent or
+    two of it, and each box is a difference of running sums, so a radius of two hundred
+    pixels costs what one of two does. Beyond the edge the field goes on as its border
+    pixels, as Pillow's blur reads it, so a body that touches the canvas swells alike.
+    """
+    count = 3
+    ideal = math.sqrt(12.0 * sigma * sigma / count + 1.0)
+    low = int(math.floor(ideal)) - (1 - int(math.floor(ideal)) % 2)
+    high = low + 2
+    spread = 12 * sigma * sigma - count * low * low - 4 * count * low - 3 * count
+    smaller = round(spread / (-4 * low - 4))
+    out = np.asarray(field, dtype=np.float64)
+    for one in range(count):
+        width = low if one < smaller else high
+        out = _boxed(_boxed(out, width, 0), width, 1)
+    return out
+
+
+def _boxed(field: np.ndarray, width: int, axis: int) -> np.ndarray:
+    """The mean over `width` pixels along one axis, centred, the border carried on."""
+    half = max(0, int(width) // 2)
+    if half == 0:
+        return field
+    moved = np.moveaxis(field, axis, 0)
+    padded = np.concatenate([np.repeat(moved[:1], half + 1, axis=0), moved,
+                             np.repeat(moved[-1:], half, axis=0)])
+    running = np.cumsum(padded, axis=0)
+    span = 2 * half + 1
+    mean = (running[span:] - running[:-span]) / span
+    return np.moveaxis(mean, 0, axis)
 
 
 #: The most pixels a rim is measured in, each one an erosion of the body.
@@ -1080,46 +1111,65 @@ def _to_edge(ring: np.ndarray, points: np.ndarray) -> np.ndarray:
     return best
 
 
-def _pillow(ring: np.ndarray, grid: np.ndarray, lift: np.ndarray) -> dict:
-    """The ring at zero depth, with the inside lifted both ways and skinned.
+#: The most times a triangle is split, so a long thin outline cannot run away.
+SPLITS_MOST = 7
 
-    A fan from each boundary vertex to its nearest inside point would tangle, so the two
-    faces are built as triangle fans over the ring and a strip of quads inward, which is
-    enough structure for a cushion and keeps every boundary vertex where it was.
+
+def _subdivided(ring: np.ndarray, triangles: list, step: float) -> tuple:
+    """The ring's triangles split at their edges' middles until each edge is at most
+    `step`, sharing every middle so the surface stays closed (§PW631)."""
+    points = [np.asarray(p, dtype=float) for p in ring]
+    faces = [tuple(int(i) for i in one) for one in triangles]
+    for _ in range(SPLITS_MOST):
+        longest = max(float(np.linalg.norm(points[a] - points[b]))
+                      for face in faces for a, b in zip(face, face[1:] + face[:1],
+                                                        strict=True))
+        if longest <= step:
+            break
+        middles: dict = {}
+        split = []
+        for a, b, c in faces:
+            ab, bc, ca = (_middle(points, middles, a, b),
+                          _middle(points, middles, b, c),
+                          _middle(points, middles, c, a))
+            split += [(a, ab, ca), (ab, b, bc), (ca, bc, c), (ab, bc, ca)]
+        faces = split
+    return np.array(points), faces
+
+
+def _middle(points: list, middles: dict, a: int, b: int) -> int:
+    """The point halfway along an edge, made once and shared by both its triangles."""
+    key = (min(a, b), max(a, b))
+    if key not in middles:
+        middles[key] = len(points)
+        points.append((points[a] + points[b]) / 2.0)
+    return middles[key]
+
+
+def _pillow(ring: np.ndarray, points: np.ndarray, triangles: list,
+            lift: np.ndarray) -> dict:
+    """Both faces over the same triangles, the front lifted and the back lowered.
+
+    A vertex at zero lift, the outline's own and any split off it, is shared by the two
+    faces, which is what closes the body along the drawn silhouette.
     """
-    count = len(ring)
-    flat = np.column_stack([ring, np.zeros(count)])
-    front = np.column_stack([grid, lift])
-    back = np.column_stack([grid, -lift])
-    points = np.vstack([flat, front, back])
+    count = len(points)
+    flat = lift <= 1e-12
+    back_of = {}
+    extra = []
+    for index in range(count):
+        if flat[index]:
+            back_of[index] = index
+        else:
+            back_of[index] = count + len(extra)
+            extra.append([points[index][0], points[index][1], -lift[index]])
+    front = np.column_stack([points, np.where(flat, 0.0, lift)])
+    every = np.vstack([front, np.array(extra).reshape(-1, 3)])
     # A stuffed panel is the drawing given volume, so the drawing lies on it in the
     # plane it was drawn in (§PW68), over the ring's own bounds: the outline touches 0
     # and 1 on each axis.
     low, high = ring.min(axis=0), ring.max(axis=0)
-    uv = planar_uv(points, [low[0], low[1], *(high - low)])
-
-    faces = []
-    # Each face is a fan from the inside point nearest to each boundary edge.
-    nearest = _nearest(grid, ring)
-    for index in range(count):
-        a, b = index, (index + 1) % count
-        one, two = nearest[index], nearest[(index + 1) % count]
-        if one == two:
-            faces.append((a, b, count + one))
-            faces.append((b, a, count + len(grid) + one))
-        else:
-            faces.append((a, b, count + two, count + one))
-            faces.append((b, a, count + len(grid) + one, count + len(grid) + two))
-    faces += [
-        tuple(count + one for one in face) for face in _triangulated(grid, 0, False)
-    ]
-    faces += [
-        tuple(count + len(grid) + one for one in face)
-        for face in _triangulated(grid, 0, True)
-    ]
-    return mesh(points, faces, uv)
-
-
-def _nearest(grid: np.ndarray, ring: np.ndarray) -> list[int]:
-    """The inside point nearest each boundary vertex, for the skin to reach to."""
-    return [int(np.argmin(np.linalg.norm(grid - point, axis=1))) for point in ring]
+    uv = planar_uv(every, [low[0], low[1], *(high - low)])
+    faces = [tuple(face) for face in triangles]
+    faces += [tuple(back_of[one] for one in reversed(face)) for face in triangles]
+    return mesh(every, faces, uv)

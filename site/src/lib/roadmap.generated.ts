@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 5 },
+  { block: "H", title: "Proof on a real game", open: 4 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW631",
-    block: "H",
-    symptom: "inflate stripes a star outline and rings a drawn one with contour steps, so a glossy inflated shape is unusable",
-    why: "Candy is glossy by rule, so inflate cannot make any candy panel or puffy shape the style guide asks for.",
-    deps: [],
-  },
   {
     id: "PW632",
     block: "H",
