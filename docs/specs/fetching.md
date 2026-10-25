@@ -525,6 +525,16 @@ removing nothing at all. Of what is left, **only the largest island is the subje
 that is the step that drops the logo, which the fill cannot reach but which is still a
 second thing in the picture.
 
+**And it grows one small step at a time** (§PW626). A pixel joins the background only from
+a neighbour already in it and within a step of that neighbour, the larger of 6 ΔE and three
+times the ground's own pixel-to-pixel noise along the frame's edge, as well as within the
+tolerance of the ground. A shaded well's gradient is crossed; the sharp change where a
+subject begins is not, however near the ground its colour is. Cottony's ball stood in a
+powder-blue well whose shading needed a tolerance of 48, and by colour alone it lost its
+blue and green bands to the well. `mode = "colour"` keeps the older fill, every reachable
+pixel near the ground, for a ground that shows through gaps in the subject; any other
+mode is `fetch.bad-mode`.
+
 Two refusals, both before the spend: a background that cannot be told from the subject
 (`fetch.background-fused`) and a subject too small to be read from
 (`fetch.subject-small`). Touching an edge is a **warning** and not a refusal, because a

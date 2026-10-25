@@ -111,6 +111,46 @@ def test_a_pocket_of_background_colour_inside_the_subject_stays_subject(tmp_path
     assert found["subject"][50, 55], "the hole in the middle is still the toy"
 
 
+def ball_in_a_well(where):
+    """Cottony's booster: a powder-blue well shaded top to bottom, and a ball whose
+    middle band is a blue near the well's, touching it with no outline between."""
+    size = 120
+    canvas = np.zeros((size, size, 4), dtype=np.uint8)
+    canvas[:, :, 3] = 255
+    shade = np.linspace(0, 40, size)[:, None]
+    canvas[:, :, 0] = (175 - shade).astype(np.uint8)
+    canvas[:, :, 1] = (205 - shade).astype(np.uint8)
+    canvas[:, :, 2] = 240
+    rows, cols = np.mgrid[:size, :size]
+    ball = (rows - 60) ** 2 + (cols - 60) ** 2 <= 35 ** 2
+    canvas[ball & (rows < 48), :3] = (230, 80, 90)   # red band
+    canvas[ball & (rows >= 48) & (rows < 72), :3] = (120, 170, 235)  # the well's blue
+    canvas[ball & (rows >= 72), :3] = (250, 210, 70)  # yellow band
+    PILImage.fromarray(canvas, "RGBA").save(where)
+    return where
+
+
+def test_a_band_sharing_the_ground_s_hue_stays_with_the_subject(tmp_path):
+    """§PW626: the ball lost its blue band to a well whose shading needed a wide
+    tolerance; the fill now stops at the ball's edge, where the colour steps."""
+    where = ball_in_a_well(tmp_path / "ball.png")
+    found = reference.cut(where, root=tmp_path, tolerance=48)
+    assert found["subject"][60, 60], "the blue band is the ball's"
+    assert found["subject"][60, 30], "even where it meets the well"
+    assert not found["subject"][5, 5] and not found["subject"][115, 60]
+    # By colour alone the band is the well's, and what is left of the ball is in two.
+    old = reference.cut(where, root=tmp_path, tolerance=48, coverage=0.01,
+                        mode="colour")
+    assert not old["subject"][60, 60]
+
+
+def test_a_way_of_cutting_that_is_not_one_is_refused(tmp_path):
+    with pytest.raises(PolyweaveError) as caught:
+        reference.cut(ball_in_a_well(tmp_path / "ball.png"), root=tmp_path,
+                      mode="magic")
+    assert caught.value.code == "fetch.bad-mode"
+
+
 def test_how_much_of_the_frame_the_subject_fills_is_reported(tmp_path):
     found = reference.cut(
         photo(tmp_path / "toy.png", blobs=(((30, 20, 60, 80), (180, 90, 70)),)),

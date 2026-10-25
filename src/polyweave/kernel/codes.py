@@ -549,6 +549,12 @@ KERNEL_CODES: dict[str, Code] = {
         when="a capture whose transfer never completed",
         doors=("ask the service again before recording anything",),
     ),
+    "fetch.bad-mode": Code(
+        means="a way of telling background from subject that is not one",
+        when="reference.prepare given a mode other than edge or colour (§PW626)",
+        doors=("say edge, which stops at the subject's own edge",
+               "say colour, which takes every pixel near the ground's colour"),
+    ),
     "fetch.no-expiry": Code(
         means="a ceiling is declared with no date, and a ceiling without one is never "
         "spendable",

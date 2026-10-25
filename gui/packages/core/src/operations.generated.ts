@@ -1774,6 +1774,8 @@ export interface ReferencePrepareArgs {
   coverage?: number
   /** the longest side it is sized to; from 16 to …; default 1024 */
   longest?: number
+  /** edge stops at the subject's edge, colour takes every pixel near the ground's colour; default "edge" */
+  mode?: "edge" | "colour"
 }
 
 /** Each region a reference declares, laid out enlarged on sheets of its own. */

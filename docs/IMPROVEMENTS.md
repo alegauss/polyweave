@@ -100,30 +100,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW626 Background is what reaches the edge
-
-Found in Cottony's RK163 on 2026-10-23, cutting the three booster toys out of the
-concept painting (each standing in a powder-blue well) to send to the mesh service.
-
-```
-python -m polyweave reference.prepare --photo .polyweave/toys/shuffle.crop.png \
-    --out tools/art/3d/booster_shuffle.painted.png --longest 512 --tolerance 48
-```
-
-The hammer came out clean. The ball lost its blue and green bands and the shooting star
-lost most of its blue rainbow tail: `prepare` takes every pixel near the edge's colour
-wherever it is in the picture, so a subject that shares a hue with its background is cut
-into pieces. A lower tolerance kept the well's shading instead.
-
-Expected: background is what is connected to the edge. Flood from the border (and, for a
-subject on a vignetted or gradient ground, from many points round it, each compared with
-its own neighbourhood), then keep the largest remaining piece so isolated sparkles go
-too. A `mode = "colour"` could keep today's behaviour for a ground that shows through
-holes.
-
-Workaround: Cottony's `tools/art/booster_toys.py` floods from the corners and 64 points
-round each well's rim and keeps the largest piece, and names this line.
-
 ### §PW627 A textured mesh bought through the plugin
 
 Found in Cottony's RK163 on 2026-10-23. The booster toys - a pink mallet with a yellow

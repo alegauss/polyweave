@@ -51,6 +51,16 @@ BORDER = 2
 #: behind, never eats into the subject, which is the direction to fail in.
 PASSES = 4096
 
+#: How the background is told from the subject (§PW626): `edge` grows it a pixel at a
+#: time, each one close to the neighbour it was reached from as well as to the ground,
+#: so a soft shading passes and a subject's own edge stops it even where its colour is
+#: near the ground's; `colour` takes every reachable pixel near the ground, as before.
+MODES = ("edge", "colour")
+
+#: The least step, in CIELAB, the edge fill crosses between two neighbours; it is also
+#: three times the ground's own noise, read along the frame's edge, where that is more.
+STEP = 6.0
+
 
 def is_drawing(subject: Image | str | Path) -> bool:
     """Whether this is already a drawing rather than a photograph.
@@ -180,7 +190,43 @@ def _ground(border: np.ndarray, tolerance: float) -> tuple[np.ndarray, float]:
     )
 
 
-def _background(image: Image, tolerance: float) -> tuple[np.ndarray, float]:
+def _stepped(seed: np.ndarray, allowed: np.ndarray, lab: np.ndarray,
+             step: float) -> np.ndarray:
+    """Everything `allowed` that `seed` reaches one small step at a time (§PW626).
+
+    A pixel joins from a neighbour already in only where the two are within `step` of
+    each other, so the fill follows a vignette across the frame and stops at the sharp
+    change where a subject begins, however close its colour is to the ground's.
+    """
+    down = np.sqrt(((lab[1:] - lab[:-1]) ** 2).sum(axis=2)) <= step
+    across = np.sqrt(((lab[:, 1:] - lab[:, :-1]) ** 2).sum(axis=2)) <= step
+    reach = seed & allowed
+    for _ in range(PASSES):
+        grown = reach.copy()
+        grown[1:, :] |= reach[:-1, :] & down
+        grown[:-1, :] |= reach[1:, :] & down
+        grown[:, 1:] |= reach[:, :-1] & across
+        grown[:, :-1] |= reach[:, 1:] & across
+        grown &= allowed
+        if np.array_equal(grown, reach):
+            break
+        reach = grown
+    return reach
+
+
+def _noise(lab: np.ndarray) -> float:
+    """The ground's own pixel-to-pixel difference, its median along the frame's edge."""
+    rows = np.concatenate([lab[:BORDER], lab[-BORDER:]], axis=0)
+    columns = np.concatenate([lab[:, :BORDER], lab[:, -BORDER:]], axis=1)
+    steps = np.concatenate([
+        np.sqrt(((rows[:, 1:] - rows[:, :-1]) ** 2).sum(axis=2)).ravel(),
+        np.sqrt(((columns[1:] - columns[:-1]) ** 2).sum(axis=2)).ravel(),
+    ])
+    return float(np.median(steps)) if steps.size else 0.0
+
+
+def _background(image: Image, tolerance: float,
+                mode: str = "edge") -> tuple[np.ndarray, float]:
     """What the subject is standing on, grown in from the frame's own edge.
 
     Pixels within `tolerance` of the ground colour, reachable from the border, are that
@@ -198,7 +244,11 @@ def _background(image: Image, tolerance: float) -> tuple[np.ndarray, float]:
     edge[:, :BORDER] = edge[:, -BORDER:] = True
     ground, share = _ground(lab[edge], tolerance)
     near = np.sqrt(((lab - ground) ** 2).sum(axis=2)) <= tolerance
-    return _reachable(edge, near), share
+    if mode == "colour":
+        return _reachable(edge, near), share
+    # Cottony's ball shared the well's blue within the 48 the well's shading needed,
+    # and lost its blue and green bands to it (§PW626).
+    return _stepped(edge, near, lab, max(STEP, 3 * _noise(lab))), share
 
 
 def _touching(mask: np.ndarray) -> list[str]:
@@ -221,8 +271,16 @@ def cut(
     coverage: float | None = None,
     root: str | Path = ".",
     longest: int = LONGEST,
+    mode: str = "edge",
 ) -> dict:
     """The subject's own mask, and what is wrong with the picture it came from."""
+    if mode not in MODES:
+        raise PolyweaveError(
+            "fetch.bad-mode",
+            f"{mode!r} is not a way to tell background from subject",
+            f"name one of {', '.join(MODES)}: edge follows the ground's shading and "
+            "stops at the subject's edge, colour takes all of the ground's colour",
+            given=mode, allowed=list(MODES))
     settings = load(root)
     bar = float(settings.get("tolerance.background_delta_e", tolerance))
     least = float(settings.get("tolerance.subject_coverage", coverage))
@@ -232,7 +290,7 @@ def cut(
     if image.had_alpha and is_drawing(image):
         subject = image.subject(float(settings.get("tolerance.alpha_floor")))
     else:
-        ground, share = _background(image, bar)
+        ground, share = _background(image, bar, mode)
         subject = _largest(~ground)
 
     filled = float(subject.mean())
@@ -275,6 +333,7 @@ def prepare(
     tolerance: float | None = None,
     coverage: float | None = None,
     longest: int = LONGEST,
+    mode: str = "edge",
 ) -> dict:
     """Cut, flatten, check, and write the picture the fetch will actually carry.
 
@@ -286,7 +345,8 @@ def prepare(
 
     settings = load(root)
     found = cut(
-        photo, tolerance=tolerance, coverage=coverage, root=root, longest=longest
+        photo, tolerance=tolerance, coverage=coverage, root=root, longest=longest,
+        mode=mode,
     )
     image, subject = found["image"], found["subject"]
 
@@ -369,8 +429,16 @@ def prepared(
     ] = None,
     coverage: Annotated[float, Param("the least of the frame it fills")] = None,
     longest: Annotated[int, Param("the longest side it is sized to", lo=16)] = 1024,
+    mode: Annotated[
+        str, Param("edge stops at the subject's edge, colour takes every pixel near "
+                   "the ground's colour", choices=MODES)
+    ] = "edge",
 ) -> dict:
-    """A photograph cut from its background and sized, ready to send to the service."""
+    """A photograph cut from its background and sized, ready to send to the service.
+
+    The background is what reaches the frame's edge one small step at a time, so a
+    subject sharing a hue with its ground keeps it (§PW626).
+    """
     return prepare(
         photo,
         out=out,
@@ -378,6 +446,7 @@ def prepared(
         tolerance=tolerance,
         coverage=coverage,
         longest=longest,
+        mode=mode,
     )
 
 

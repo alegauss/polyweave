@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 10 },
+  { block: "H", title: "Proof on a real game", open: 9 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW626",
-    block: "H",
-    symptom: "reference.prepare cuts every pixel near the edge colour, so a subject sharing a hue with its ground loses parts",
-    why: "Cottony's rainbow ball lost its blue and green bands and the star most of its tail to the well's blue.",
-    deps: [],
-  },
   {
     id: "PW627",
     block: "H",
