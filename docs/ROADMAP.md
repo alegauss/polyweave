@@ -31,6 +31,8 @@
 
 ## Block L — What a run leaves as evidence
 
+- 📋 **PW643** (deps: —) **capture.run answers ok true when the picture it was asked for was never written, the reason only in why_unrecorded** — An agent reads ok and goes on to a missing or stale picture, as Spinhold's salvage capture did into a folder not yet made. → §PW643
+
 ## Block M — What a game needs beyond the look
 
 ## Block N — Pictures held to a canon

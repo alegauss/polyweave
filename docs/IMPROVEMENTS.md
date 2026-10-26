@@ -206,6 +206,21 @@ verdict, and each gap it met is a filed line.
 
 ## Block L — What a run leaves as evidence
 
+### §PW643 A capture with no picture is not ok
+
+Met in Spinhold, RK292 (2026-10-26). `capture.run --script dev/shot.gd --expect "^SHOT
+(?P<shot>\S+) " --args [..., "--out=res://.polyweave/salvage/lab.png", ...]` where the
+folder `.polyweave/salvage/` did not exist yet. The game's `image.save_png` failed, no
+picture was written, and the answer was `ok: true` with an empty `why`; only a third
+field, `why_unrecorded`, said that no line named a picture that exists. Run again after
+a `mkdir`, the same call wrote the picture.
+
+An `ok` that holds when the one thing asked for, the picture, is missing sends an agent
+on to read a stale file or none. polyweave should answer `ok: false` with the reason in
+`why` whenever the expected picture does not exist after the run, and could make the
+folder an `--out` under the project names before it starts the engine, since a capture's
+out folder is its to make.
+
 ## Block M — What a game needs beyond the look
 
 ## Block N — Pictures held to a canon
