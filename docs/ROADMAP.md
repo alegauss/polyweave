@@ -21,6 +21,8 @@
 
 ## Block I — Voxel models from a declaration
 
+- 📋 **PW642** (deps: —) **an icon's text symbol such as + or - is drawn a speck of its face, and nothing declares how large it is drawn** — Spinhold's editor gave up a plus and a minus for unrelated glyphs, since its set passed on contrast alone. → §PW642
+
 ## Block J — A bar a person sets once
 
 - 📋 **PW637** (deps: —) **a picture has no operation that writes its first acceptance spec, so an agent picks each bound and writes the file** — A bound an agent computes by hand reads as polyweave's in the spec, which is the bar a person is meant to set. → §PW637

@@ -137,6 +137,25 @@ both. Done when HoloPanel's copy loop can be deleted for it.
 
 ## Block I — Voxel models from a declaration
 
+### §PW642 A text symbol that fills its icon
+
+Met in Spinhold, RK265 (2026-10-26), building the stage editor's toolbar from
+`art/editor/tools.icons.toml` (sizes 32 and 64, `rounded` faces). Two icons took a text
+symbol: `new_wave` with `symbol = "+"` and `delete_wave` with `symbol = "-"`. The build
+measured them at `symbol_share` 0.024 and 0.004 of the face, a speck, where the glyph
+icons beside them (`left`, `square`, `ring`, `view`) came out at 0.11 to 0.18. Nothing
+in the declaration sets how large a text symbol is drawn, and no `[accept]` bound was
+asked for that would have caught it, so the set passed on contrast alone at first.
+
+The workaround was to give up the meaning: `new_wave` became `menu` (three bars) and
+`delete_wave` a `cross`, the same glyph as `delete`, told apart only by its fill.
+
+What polyweave should do: draw a text symbol to fill the face as a glyph does, its
+height fitted to the face's inner box whatever the characters are, with a declared
+`symbol_scale` to change it; and say in `measured` when a symbol's share is far under
+the set's median, even with no `symbol_share_min` declared, since a speck is never what
+was meant. A `plus` and a `minus` glyph would also serve editors and menus.
+
 ## Block J — A bar a person sets once
 
 ### §PW637 A picture's first spec, written from its measurements
