@@ -19,6 +19,7 @@
 - 📋 **PW638** (deps: —) **a panel's hairline, edge or bracket width must be whole pixels, so a 1.2-pixel line a person accepted cannot be declared** — The declared panel draws a thinner line than the look the owner accepted, though both routes can draw a fraction. → §PW638
 - 📋 **PW639** (deps: —) **a Control switching panel states has to copy every uniform from the state's material by hand, and tint multiplies** — Each game rewrites the same state switch round shared materials, and a tint over the kit's colour comes out a third colour. → §PW639
 - 📋 **PW646** (deps: —) **icons.build draws an unknown symbol as text, ignores an unknown key, nests out under the set, and sits off art/review** — Each answers passed while the icon or its folder came out wrong, and finding out took reading icons.py. → §PW646
+- 📋 **PW647** (deps: —) **game.text_fit counts text a ScrollContainer clips away as lying over the panel below, and text off the screen as fitting** — A clean screen fails the check, so its findings are read by eye again, as before PW336. → §PW647
 
 ## Block I — Voxel models from a declaration
 

@@ -157,6 +157,30 @@ silently:
 Workaround: the stray folders deleted by hand and the set rebuilt with `out =
 game/editor/icons`, no sitting; the icon uses `view` in a circle.
 
+### §PW647 game.text_fit judges only the text that is drawn
+
+Met in spinhold (RK295), holding the stage editor's Portuguese text to the screen:
+`game.open --scene res://game/editor/editor.tscn --locale pt_BR --resolution [1920,1080]
+--args ["--phase=1","--pick=1:1"]`, then `game.text_fit`.
+
+It answered `passed: false`, "42 text node(s), 5 that do not fit": the inspector's rows
+`on_line`, its toggle, `on_loss`, its list, and the PROBLEMS heading of the panel under
+it, each "lies over" the other. Those rows are inside a ScrollContainer (the inspector's
+panel), which clips them at the panel's foot: on screen they are not drawn, and the
+captures show the inspector ending cleanly above the Problems panel. `text_fit` reads
+each node's global rect without the clip of the container it sits in, so text scrolled
+out of sight counts as lying over whatever is below it, and the rows further down (at y
+1320, off a 1080 screen) are listed with no finding at all.
+
+What polyweave should do: intersect each node's box with the clip rects of its ancestors
+(`clip_contents`, a ScrollContainer, a SubViewport's bounds, as PW589 did for
+viewports), leave out what is clipped away entirely and say it was clipped, and judge
+only the part drawn. Text that runs past the screen's edge should be its own finding
+rather than none.
+
+Workaround: none; the finding was read against the capture by eye and set aside, which
+is the judging by eye PW336 was meant to end.
+
 ## Block I — Voxel models from a declaration
 
 ### §PW642 A text symbol that fills its icon
