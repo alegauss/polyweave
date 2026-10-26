@@ -23,6 +23,7 @@
 
 - 📋 **PW642** (deps: —) **an icon's text symbol such as + or - is drawn a speck of its face, and nothing declares how large it is drawn** — Spinhold's editor gave up a plus and a minus for unrelated glyphs, since its set passed on contrast alone. → §PW642
 - 📋 **PW644** (deps: —) **an icon set has no star, figure or shield, and no filled and empty state a game tints per use** — A count of marks in each world's colour is drawn by hand in the game, outside every legibility check. → §PW644
+- 📋 **PW645** (deps: —) **icons.build writes a set beside its declaration, not where it was built, and its out is the parent of the set's folder** — A set rebuilt to add one icon lands in the wrong folder twice, each copy left to delete by hand, the answer passed every time. → §PW645
 
 ## Block J — A bar a person sets once
 

@@ -182,6 +182,25 @@ sets at runtime (a white mask plus a facet layer, say), declare states per icon
 figure and shield. `[accept]`'s legibility bounds would then check both states, and
 spinhold would draw the built textures, modulated by the world's colour.
 
+### §PW645 A set rebuilt lands where it was built
+
+Met in Spinhold, RK266 (2026-10-26), adding two icons to `art/editor/tools.icons.toml`,
+a set already built into `game/editor/icons/tools/` (its records say so).
+
+- `icons.build --source art/editor/tools.icons.toml --sitting false` wrote the whole set
+  to `art/editor/tools/`, beside the declaration, not where the set was last built.
+- `--out game/editor/icons/tools` wrote it to `game/editor/icons/tools/tools/`: `out` is
+  the parent of a folder named after the set, which `describe` does not say ("the folder
+  it lands in").
+- `--out game/editor/icons` put it where it belongs. Each wrong run left a full copy of
+  the set to delete by hand, and the answer was `passed: true` every time.
+
+What polyweave should do: with no `out`, build where the set's existing records say it
+was built (or where the declaration names, if it can carry an `out`), and refuse with
+the choice where those disagree; and either make `out` the folder itself or say in
+`describe` and in the answer that the set's own folder is made under it, naming the path
+written.
+
 ## Block J — A bar a person sets once
 
 ### §PW637 A picture's first spec, written from its measurements
