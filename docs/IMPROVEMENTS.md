@@ -181,6 +181,25 @@ rather than none.
 Workaround: none; the finding was read against the capture by eye and set aside, which
 is the judging by eye PW336 was meant to end.
 
+### §PW648 capture.run is ok only with a picture
+
+Met in spinhold (RK268), capturing the stage editor for a new sitting: `python -m
+polyweave capture.run --script dev/shot.gd --expect SHOT --args
+'["--scene=res://game/editor/editor.tscn",
+"--out=res://art/review/editor-palette/palette.png", ...]'` with
+`art/review/editor-palette/` not yet made.
+
+The answer was `ok: true`, `verdict: ok`, `why: ""`, `artefacts: []`, and only a
+`why_unrecorded` line further down said that nothing named a picture. The script could
+not save into a folder that did not exist, so there was no picture at all, and the first
+three fields said all was well. Making the folder and running again gave the picture.
+
+What polyweave should do: a run whose `expect` line names no picture that exists is not
+`ok`; `verdict` says so and `why` carries what `why_unrecorded` says now, and where the
+expect line names a path under a folder that does not exist, the answer names that
+folder. Better still, capture.run makes the folder of a `--out=res://...` argument
+before the run, as `icons.build` makes its `out`.
+
 ## Block I — Voxel models from a declaration
 
 ### §PW642 A text symbol that fills its icon

@@ -20,6 +20,7 @@
 - 📋 **PW639** (deps: —) **a Control switching panel states has to copy every uniform from the state's material by hand, and tint multiplies** — Each game rewrites the same state switch round shared materials, and a tint over the kit's colour comes out a third colour. → §PW639
 - 📋 **PW646** (deps: —) **icons.build draws an unknown symbol as text, ignores an unknown key, nests out under the set, and sits off art/review** — Each answers passed while the icon or its folder came out wrong, and finding out took reading icons.py. → §PW646
 - 📋 **PW647** (deps: —) **game.text_fit counts text a ScrollContainer clips away as lying over the panel below, and text off the screen as fitting** — A clean screen fails the check, so its findings are read by eye again, as before PW336. → §PW647
+- 📋 **PW648** (deps: —) **capture.run answers ok, verdict ok and an empty why when no picture was made, its out folder missing** — A capture that made nothing reads as one that worked, so a sitting is laid out over a picture that is not there. → §PW648
 
 ## Block I — Voxel models from a declaration
 
