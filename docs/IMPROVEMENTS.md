@@ -135,6 +135,28 @@ them, keeping per-instance overrides, with the state precedence declared (disabl
 pressed over focus). And `tint` should say whether it replaces or multiplies, or offer
 both. Done when HoloPanel's copy loop can be deleted for it.
 
+### §PW646 icons.build says what it did with a symbol and a folder
+
+Met in spinhold (RK294), adding `[icon.view_free]` to `art/editor/tools.icons.toml` and
+running `icons.build --source art/editor/tools.icons.toml`. Four things went wrong, each
+silently:
+
+1. `symbol = "camera"` is no glyph (`GLYPHS` in `layers/store/icons.py`), so the word was
+   drawn as text and the answer said `passed: true`, a low `symbol_share` (0.066) the only
+   hint. A word suits a keycap; on a `circle` or `rounded` icon an unknown symbol should be
+   refused with `allowed` and `did_you_mean`, or the answer should say it was drawn as text.
+2. A top-level `out = "game/editor/icons/tools"` was ignored without a refusal, and the
+   set landed in `art/editor/tools/`. A declaration should carry where its set lives, and
+   an unknown top-level key be refused as `[icon.*]` keys are.
+3. `--out game/editor/icons/tools` wrote to `game/editor/icons/tools/tools/`: `out` is the
+   parent the set's name is appended to, which `describe` ("the folder it lands in") and
+   the answer do not say.
+4. With `sitting` on, the sitting went to `icons/tools/` at the project root, not under
+   `art/review/` with the project's other sittings.
+
+Workaround: the stray folders deleted by hand and the set rebuilt with `out =
+game/editor/icons`, no sitting; the icon uses `view` in a circle.
+
 ## Block I — Voxel models from a declaration
 
 ### §PW642 A text symbol that fills its icon
