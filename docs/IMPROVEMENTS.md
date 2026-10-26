@@ -156,6 +156,32 @@ height fitted to the face's inner box whatever the characters are, with a declar
 the set's median, even with no `symbol_share_min` declared, since a speck is never what
 was meant. A `plus` and a `minus` glyph would also serve editors and menus.
 
+### §PW644 Icons a game tints, with a filled and an empty state
+
+Found in spinhold, RK253 (2026-10-26): each world's map card shows three marks, a
+hexagonal pip each: a star, a Holder figure and a shield. A mark earned is filled in the
+world's colour with a white glyph; one still to earn is a dark socket, its glyph faint.
+There are five worlds, each in its own colour.
+
+`icons.build` (art/editor/tools.icons.toml is the project's one set) could not make
+them:
+
+- its symbols have no star, no figure and no shield;
+- an icon has one fill and one symbol colour, so a pip in five world colours is five
+  declarations, and its empty state five more;
+- no state is declared beside the icon (filled and empty, or earned and not), so a game
+  showing a count of marks cannot take both from one declaration.
+
+The workaround is `game/ui/world_marks.gd` in spinhold: a Control that draws the
+hexagons, facets and glyphs with `draw_colored_polygon` at runtime, tinted by a `colour`
+it is given. It also draws the flare (a ring and six rays) as a mark lights.
+
+What polyweave should do: let an icon set declare a `tint` placeholder that the game
+sets at runtime (a white mask plus a facet layer, say), declare states per icon
+(`filled`, `empty`) with how each reads, and grow the symbol vocabulary with star,
+figure and shield. `[accept]`'s legibility bounds would then check both states, and
+spinhold would draw the built textures, modulated by the world's colour.
+
 ## Block J — A bar a person sets once
 
 ### §PW637 A picture's first spec, written from its measurements
