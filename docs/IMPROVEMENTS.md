@@ -646,6 +646,74 @@ first tick and fields that differ. `engine.find` could flag the hazards statical
 `_process` writing what `_physics_process` reads, `time_scale` set inside a physics
 step, play waiting on an idle-mode AnimationPlayer or Tween.
 
+### §PW649 text_fit misreads three kinds of label
+
+Spinhold, RK166 (every screen in pt-BR at 1280x720), 2026-10-26. `python -m polyweave
+game.text_fit --session <s>` on screens a person sees fitting reported them unfit, three
+ways, so every finding had to be checked by eye against a shot:
+
+1. A Label drawn through `label_settings` (font_size 26, outline 6), ship_select's
+   `Text/Stats/OVERDRIVE/Label`, "RAJADA DA LINHA DO SOL": "its text is 397 px wide in a
+   344 px box", although the shot shows it whole and its own `get_combined_minimum_size()`
+   is the box. The width seems measured with another size or outline than the label's.
+2. A Control scaled down by its parent: options.tscn scales the remap kit to 0.64 to fit
+   the rows' height; all 15 of its labels came back unfit by the same factor (249 in
+   160, 209 in 134 ...). The text is measured unscaled and the box scaled.
+3. A modal screen over the HUD: the status screen's labels each "lie over" the HUD's
+   Score, Humans and Banner it covers, and the draft's "NOVO TRIPULANTE" over the banner.
+   Text a panel hides is not text overlapping.
+
+Expected: the width the label draws with (its label_settings, its outline, its global
+scale), and overlap counted only between texts both drawn in front, a covered layer left
+out. The project's workaround is reading every shot by eye; no script was written.
+
+### §PW650 text_fit inside a batch
+
+Spinhold, RK166, 2026-10-26: checking ten screens meant, for each, a game.batch (input,
+step, shot) and then a game.text_fit of its own, since `game.batch` refuses it: "command
+2 is {'cmd': 'text_fit'}, not one a batch sends; make each a table with cmd, one of
+query, input, step, wait, call, set, expect, shot".
+
+A screen-by-screen language pass is exactly a batch: move to a screen, let it settle,
+read its fit, shoot it. The project wrote a throwaway driver for it (scratchpad
+`ptbr_screens.py`, a Python loop over CLI calls), which is the workaround this should
+remove.
+
+What polyweave should do: let a batch carry `text_fit` (answered in the batch's answers
+like any query), or give `game.text_fit` a list of moments ({inputs, frames, shot}) and
+answer each screen's fit and shot together.
+
+### §PW651 an MCP server on a stale copy
+
+Spinhold, 2026-10-26. The polyweave plugin's MCP server (enabled from the
+alegauss/polyweave marketplace, `python -m polyweave serve`) answered `game_open` with
+code `game.not-listening`: the game failed to load
+`.../Python313/site-packages/polyweave/layers/engine/godot/addons/polyweave_driver/driver.gd`,
+"File not found". The same call through the CLI (`python -m polyweave game.open`), which
+imports the editable checkout (`pip install -e D:\Git\alegauss\polyweave`), works. The
+server was started before the editable install and keeps the old installed copy, whose
+driver path no longer exists; earlier in the session its icons.build also refused
+`model` keys the checkout takes.
+
+Expected: the server says which copy of polyweave it runs and refuses with a remedy
+("restart the MCP server; it runs <path>, the CLI runs <path>") when the two differ, or
+it reloads. The workaround was to use the CLI for every call in the session.
+
+### §PW652 the remap kit in a longer language
+
+Spinhold, RK166, 2026-10-26: the remap kit (`addons/polyweave/remap`, installed by
+kit.install) on Spinhold's Controls tab, in pt-BR at 1280x720 (shot: spinhold
+art/review/ptbr-small/options_0.png). Its option labels keep one width that English
+fits: "Zona morta do analógico" runs into the deadzone slider, "Nomes dos botões"
+touches its value "Automático", and "Mapa de botões" its "< Padrão >". The kit is also
+taller than the options panel's rows, so the game scales it to about 0.64, which leaves
+its text near 11 px tall at 1280x720.
+
+Expected: the kit sizes its label column to the longest label in the locale set, and can
+lay itself out in the width it is given (two columns, or a shorter row height) so a host
+need not scale it below a readable size. The game cannot change the kit's layout from
+outside, so nothing was worked round; the shot is on the owner's sitting.
+
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs
