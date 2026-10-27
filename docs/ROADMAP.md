@@ -4,6 +4,8 @@
 
 ## Block B — Seeing the result cheaply
 
+- 📋 **PW654** (deps: —) **no operation enlarges a corner of a capture, so a HUD icon a few pixels wide cannot be judged** — Checking small UI parts falls to a hand-run crop script on every retake. → §PW654
+
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise
@@ -37,6 +39,7 @@
 ## Block L — What a run leaves as evidence
 
 - 📋 **PW643** (deps: —) **capture.run answers ok true when the picture it was asked for was never written, the reason only in why_unrecorded** — An agent reads ok and goes on to a missing or stale picture, as Spinhold's salvage capture did into a folder not yet made. → §PW643
+- 📋 **PW653** (deps: —) **capture.run calls a retake 'differs, something undeclared' when only the project's own code changed between runs** — An edit-and-capture loop reads as nondeterminism, so the honest fix is to switch the record off and lose provenance. → §PW653
 
 ## Block M — What a game needs beyond the look
 

@@ -4,6 +4,25 @@
 
 ## Block B — Seeing the result cheaply
 
+### §PW654 Enlarged boxes of a capture
+
+Spinhold, RK302 (the run's HUD redrawn in the menu kit), 2026-10-27. The HUD's new icons
+(a Holder's face rendered in a 60x58 SubViewport, a row of the tender's own model at
+60x44 per icon) sit in the corners of a 1920x1080 capture. Read whole, the picture shows
+each as a few pixels: whether the Holder faced the camera or showed the back of its
+head, and whether the tender pointed left or right, could not be told.
+
+What was done instead: a one-off PIL line run by hand, `Image.open(png).crop((1650, 8,
+1890, 86)).resize((960, 312), Image.NEAREST).save(...)`, into the session scratchpad,
+three times over the iteration, once per corner.
+
+What polyweave should do: an operation that takes a picture, one or more named boxes (in
+the picture's pixels, or as a fraction, or by a Control's path when the capture logged
+its rects), and an enlargement, and writes one sheet of the boxes side by side at
+nearest-neighbour scale, with a record naming the source picture and each box. A capture
+should be able to declare its inspection boxes, so the same corners come back enlarged
+on every retake without the boxes being typed again.
+
 ## Block C — The asset compiler
 
 ### §PW582 A mesh prepared by declared steps
@@ -330,6 +349,31 @@ on to read a stale file or none. polyweave should answer `ok: false` with the re
 `why` whenever the expected picture does not exist after the run, and could make the
 folder an `--out` under the project names before it starts the engine, since a capture's
 out folder is its to make.
+
+### §PW653 A retake after an edit is a change, not a mystery
+
+Spinhold, RK302 (the run's HUD redrawn in the menu kit), 2026-10-27. The loop was: edit
+`game/ui/hud.gd`, then `capture.run --script dev/shot.gd --expect SHOT --args
+["--out=res://.polyweave/rk302/hud_en.png", "--frames=420", "--hold=fire_right"]
+--environment {"locale": "en", "resolution": "1920x1080"}`, look, edit again.
+
+The second capture came back `ok: true` with `reproduced.holds: false` and the verdict
+"the same declared settings produced different bytes ... so something this picture
+depends on is not declared". Nothing was undeclared: the HUD's own script had changed
+between the two runs, which is the whole point of capturing again. The wording says the
+picture is nondeterministic, and a reader who trusts it goes looking for an unpinned
+seed.
+
+What was done instead: `record: false` on every later capture of the iteration, so no
+comparison was made at all. That also drops provenance, which is the opposite of what
+the project wants.
+
+What polyweave should do: before calling a difference unexplained, compare what the run
+loaded (it already lists `loaded`) against the record's state, by content hash of each
+`res://` file the engine read. Where a loaded source changed since the recorded run, the
+answer is `changed` with the files named ("game/ui/hud.gd changed since 13:20"), not
+`differs`. Only where every loaded input is byte-identical is a difference evidence of
+something undeclared.
 
 ## Block M — What a game needs beyond the look
 
