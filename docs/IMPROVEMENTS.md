@@ -219,6 +219,31 @@ expect line names a path under a folder that does not exist, the answer names th
 folder. Better still, capture.run makes the folder of a `--out=res://...` argument
 before the run, as `icons.build` makes its `out`.
 
+### §PW655 A sweep of captures
+
+Spinhold, RK298 (the Neon fight's legibility), 2026-10-27. The task measures five
+habitat variants on three seeds each: fifteen runs of one capture script,
+`dev/legibility.gd`, which saves a frame and a `.targets` log that `contrast_median`
+reads.
+
+The call was `engine.sweep --script dev/legibility.gd --pattern SHOT --frames 2000
+--args ["--world=waist", "--wave=4", "--out=.polyweave/rk298/{habitat}-{seed}.png"]
+--grid {"habitat": [five res:// paths], "seed": ["LEGIBLEA", "LEGIBLEB", "LEGIBLEC"]}`.
+Every run came back `script-error`: "Cannot call method 'save_png' on a null value". The
+sweep flies headless, where the root viewport has no texture, so no capture script can
+save a picture under it, and nothing in `describe` says so.
+
+What was done instead: a PowerShell loop in the session scratchpad calling `python -m
+polyweave capture.run` fifteen times, one `--args=` per item, judging each run by
+whether its `.targets` file appeared (the CLI's text answer carries no `"ok"` to match).
+
+What polyweave should do: `engine.sweep` takes `display: true` (as `game.open` does),
+and then flies each run through `capture.run`'s offscreen route, with its environment
+and record; or `capture.run` takes a `grid` of its own. Either way a run's produced
+files are listed per combination, so a sweep of captures is one call. Until then, a
+sweep whose script reads the root texture should be refused up front with that remedy,
+not flown fifteen times to fail.
+
 ## Block I — Voxel models from a declaration
 
 ### §PW642 A text symbol that fills its icon

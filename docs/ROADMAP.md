@@ -23,6 +23,7 @@
 - 📋 **PW646** (deps: —) **icons.build draws an unknown symbol as text, ignores an unknown key, nests out under the set, and sits off art/review** — Each answers passed while the icon or its folder came out wrong, and finding out took reading icons.py. → §PW646
 - 📋 **PW647** (deps: —) **game.text_fit counts text a ScrollContainer clips away as lying over the panel below, and text off the screen as fitting** — A clean screen fails the check, so its findings are read by eye again, as before PW336. → §PW647
 - 📋 **PW648** (deps: —) **capture.run answers ok, verdict ok and an empty why when no picture was made, its out folder missing** — A capture that made nothing reads as one that worked, so a sitting is laid out over a picture that is not there. → §PW648
+- 📋 **PW655** (deps: —) **engine.sweep flies headless, so a capture script saves no picture and every combination ends in a script error** — Measuring variants over seeds falls to a hand-written loop of capture.run calls. → §PW655
 
 ## Block I — Voxel models from a declaration
 
