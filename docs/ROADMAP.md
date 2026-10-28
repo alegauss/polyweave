@@ -31,7 +31,7 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW637** (deps: —) **a picture has no operation that writes its first acceptance spec, so an agent picks each bound and writes the file** — A bound an agent computes by hand reads as polyweave's in the spec, which is the bar a person is meant to set. → §PW637
+- 📋 **PW656** (deps: PW637 ✅) **a first spec's bound on a value near zero is a share of almost nothing, so the same picture redrawn fails it** — Spinhold's dark glass got a max of 0.006 where its own hand-written spec held 0.1049, and calibrate.run cannot widen a picture it did not render. → §PW656
 
 ## Block K — Reached without reading the source
 

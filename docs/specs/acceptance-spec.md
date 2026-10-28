@@ -118,6 +118,19 @@ any of the three (`search.noise-axis`), because that would pick whichever sample
 noise happened to favour. A project's own producer's seed is its own parameter, a
 layout, and may be searched (PW621).
 
+**A first spec is written from what the picture measures** (§PW637). `accept.first(artefact,
+predicates)` takes each predicate without its bounds — `measure`, `region`, `id`, the
+measure's arguments, and `bound`, which side to hold: `min`, `max` or `both`, the default.
+It measures the picture, sets each bound `room` of the value away (a tenth unless stated,
+rounded outward at four places), and writes `<specs>/<asset>.accept.toml` naming the
+picture as its `artefact`. Each bound is `origin = "margin"` with `measured` beside it:
+room set by a rule is a guess until `calibrate.run` measures it, and never a person's bar.
+A predicate's `id` defaults to its measure and named region (`luma_p50-frame`), and the
+asset to the picture's name before its first dot. A spec already there is refused
+(`spec.exists`), as are a `min` or `max` asked for (`spec.unknown-field`) and a picture not
+under the project (`spec.no-artefact`). `geometry.kit` writes a model's first spec through
+the same writer, its triangle budget a margin over the triangles it measured.
+
 **A person's verdict is one sheet and one call** (§PW109). `verdict.sheet(members, out=)`
 puts a whole family on one PNG. A member is `name`, `spec`, `new`, and optionally `old`,
 `capture` with a crop `box`, and `shown`, the size the game draws it. A bare path is read

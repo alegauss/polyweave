@@ -24,6 +24,22 @@ export interface AcceptCheckScreenArgs {
   root?: string
 }
 
+/** Measure a picture and write its first spec, never over one (§PW637). */
+export interface AcceptFirstArgs {
+  /** the picture to measure, under the project */
+  artefact: string
+  /** predicates without min or max: {"measure": "luma_p99", "bound": "max"}, bound min, max or both */
+  predicates: unknown[]
+  /** the asset; the picture's name if unset */
+  asset?: string
+  /** the share of each value a bound leaves; from 0 to …; default 0.1 */
+  room?: number
+  /** where the spec goes; [paths] specs if unset */
+  specs?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Every spec under `[paths] specs` against the artefact it names (§PW111). */
 export interface AcceptVerifyArgs {
   /** the project the specs and artefacts are under; default "." */
@@ -2704,6 +2720,7 @@ export interface WorldValidateArgs {
 export interface Operations {
   "accept.check": AcceptCheckArgs
   "accept.check_screen": AcceptCheckScreenArgs
+  "accept.first": AcceptFirstArgs
   "accept.verify": AcceptVerifyArgs
   "asset.brief": AssetBriefArgs
   "calibrate.apply": CalibrateApplyArgs
@@ -2923,6 +2940,7 @@ export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engi
 export const OPERATIONS = [
   "accept.check",
   "accept.check_screen",
+  "accept.first",
   "accept.verify",
   "asset.brief",
   "calibrate.apply",

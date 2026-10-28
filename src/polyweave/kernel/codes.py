@@ -1156,6 +1156,21 @@ KERNEL_CODES: dict[str, Code] = {
         when="a proposal given the accepted picture and no variant of it (§PW107)",
         doors=("render the accepted request again under a harmless change",),
     ),
+    "spec.exists": Code(
+        means="the asset already has a spec, so a first one is not written over it",
+        when="accept.first asked for an asset whose spec a person may have tightened "
+        "(§PW637)",
+        doors=(
+            "move its bounds with calibrate.run and calibrate.apply",
+            "delete the spec to start it again",
+        ),
+    ),
+    "spec.no-artefact": Code(
+        means="there is no picture at the path a first spec was to be measured on",
+        when="accept.first given a picture not yet made, or a path not under the "
+        "project",
+        doors=("make the picture first", "name it as a path under the project"),
+    ),
     "spec.stale-proposal": Code(
         means="the spec moved after the calibration it is being given was measured",
         when="a bound edited, or a predicate renamed or removed, between calibrating "

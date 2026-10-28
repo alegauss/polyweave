@@ -10,7 +10,7 @@
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.kit` (a folder built, rendered, specced, checked and sat in one call), `geometry.describe`, `geometry.variants`, `geometry.fit`, `geometry.compare` |
 | Render | `render.plan`, `render.bake` |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest`, `measure.contrast`, `measure.pressure`, `measure.level`, `measure.flashes` |
-| Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `reference.concept`, `cost.read`, `sound.measure`, `sound.speech`, `sound.declared` (what is missing) |
+| Judge against the bar | `accept.first` (a picture's first spec), `accept.check`, `accept.verify`, `accept.check_screen`, `reference.concept`, `cost.read`, `sound.measure`, `sound.speech`, `sound.declared` (what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector`, `picture.copies` |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |

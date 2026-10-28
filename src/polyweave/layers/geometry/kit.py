@@ -20,7 +20,6 @@ says which ones it wrote. Whether the pieces look right stays the person's verdi
 
 from __future__ import annotations
 
-import json
 import math
 from pathlib import Path
 from typing import Annotated
@@ -35,23 +34,24 @@ HEADROOM = 0.25
 
 def _first_spec(name: str, mesh: str, render: str, triangles: int, headroom: float,
                 bounds: dict) -> str:
-    """A piece's first spec as TOML: its triangle budget and the bounds asked for."""
-    lines = [
-        "# Written by geometry.kit from what the piece measured; tighten it",
-        f"asset    = {json.dumps(name)}",
-        f"artefact = {json.dumps(render)}",
-        "",
-        "[[predicate]]",
-        'id      = "triangles"',
-        'measure = "triangles"',
-        f"of      = {json.dumps(mesh)}",
-        f"max     = {math.ceil(triangles * (1.0 + headroom))}",
+    """A piece's first spec as TOML: its triangle budget and the bounds asked for.
+
+    The budget is recorded as a margin over the triangles measured; a bound the caller
+    named is its own number and is written as given.
+    """
+    from polyweave.loop.accept import _spec_text
+
+    budget = {"value": math.ceil(triangles * (1.0 + headroom)), "origin": "margin",
+              "measured": triangles}
+    predicates = [{"id": "triangles", "measure": "triangles", "of": mesh,
+                   "max": budget}]
+    predicates += [
+        {"id": measure, "measure": measure, "of": mesh,
+         **{side: float(value) for side, value in bound.items()}}
+        for measure, bound in bounds.items()
     ]
-    for measure, bound in bounds.items():
-        lines += ["", "[[predicate]]", f"id      = {json.dumps(measure)}",
-                  f"measure = {json.dumps(measure)}", f"of      = {json.dumps(mesh)}"]
-        lines += [f"{side:<7} = {float(value):g}" for side, value in bound.items()]
-    return "\n".join(lines) + "\n"
+    return _spec_text(name, render, predicates,
+                      by="geometry.kit from what the piece measured")
 
 
 def _bounds(stated: dict | None) -> dict:

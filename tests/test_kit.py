@@ -77,7 +77,7 @@ def test_a_spec_already_written_is_the_projects_and_is_left_alone(tmp_path):
 def test_a_first_spec_allows_its_headroom_over_the_triangles():
     text = K._first_spec("post", "built/post.glb", "docs/renders/post.png", 100, 0.25,
                          {"sharp_edge_share": {"max": 0.02}})
-    assert "max     = 125" in text
+    assert 'max     = { value = 125, origin = "margin", measured = 100 }' in text
     assert "max     = 0.02" in text
 
 

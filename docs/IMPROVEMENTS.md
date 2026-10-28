@@ -294,29 +294,28 @@ game draws the built textures modulated by its colour. On ship, `record move PW6
 
 ## Block J — A bar a person sets once
 
-### §PW637 A picture's first spec, written from its measurements
+### §PW656 A first bound's room near zero
 
-Met in Spinhold, RK184 (2026-10-25). The menu kit's holo panel became polyweave's
-(`panel.build` from `art/panels/holo.panel.toml`), and its design asked for a spec that
-holds the built still. No operation writes one. `geometry.kit` writes a first spec for a
-model, with its `bounds` parameter, but a picture gets nothing: the agent ran
-`measure.take --subject game/ui/kit/holo/holo.normal.png --measures [...]`, read the
-values, worked out each bound by hand in the project's `margin` convention (min at 0.8
-of the measured value, max at the measured value plus 0.1, copied from other specs), and
-wrote `art/accept/holo-panel.accept.toml` itself, `measured` and `origin` included.
+Found shipping PW637 (2026-10-28). `accept.first` sets each bound `room` of the measured
+value away, a share, and that is scale-free only away from zero. Re-writing Spinhold's
+holo panel spec with it, the glass's `luma_p99` measured 0.0049 and its max came out
+0.006 at a fifth of room: a hair. Spinhold's own spec, written by hand, put it at
+0.1049, the value plus a tenth of the measure's whole range. The panel redrawn with one
+more scan line would fail the first.
 
-That is the step a person's bar is meant to be spared: a number an agent picks, written
-in a file that then reads as polyweave's. `calibrate.apply` (PW107) sets room from how
-far a measure moves on its own, but only in a spec that exists.
+`calibrate.run` is the honest room, but only for a picture `render.bake` made: it
+renders the accepted request again. A panel, an icon or a capture has no request to
+repeat, so its first spec keeps the rule's room for good.
 
-polyweave should write a picture's first spec the way `geometry.kit` writes a model's:
-given the artefact, the measures and a region each, it measures, sets each bound with
-its origin from PW107's margin, and writes `<specs>/<asset>.accept.toml` with the
-measured values recorded, refusing to overwrite one that exists. A `panel.build` could
-offer it for its normal state. Done when Spinhold's holo spec could have been written by
-that call and `accept.verify` passes on it. The seam is `_first_spec`
-(`layers/geometry/kit.py:36`), which today passes `bounds` through: one writer for both,
-the bounds recorded as measured, never as a person's verdict.
+What to build: the room a first bound leaves is the larger of the share of the value and
+a share of the measure's own range, where the vocabulary declares one. `measurements.md`
+already gives each measure a range column (0–1 for luma, saturation, edge and coverage,
+0–100 for `delta_e`); the registry should carry it, and a measure without one keeps the
+share alone, and the answer names each bound whose room came from the range. Done when
+the holo glass gets a max near Spinhold's 0.1049 from `accept.first` without a
+per-predicate number, and `geometry.kit`'s triangle budget is unchanged. The seam is
+`accept.first` and the measure registry in `loop/measure.py`; a per-predicate `room` an
+agent types is the guess PW637 removed, so it is not the fix.
 
 ## Block K — Reached without reading the source
 

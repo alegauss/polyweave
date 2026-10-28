@@ -50,7 +50,8 @@ TOOL_BUDGET = 4500
 #: Each layer's figure is its own, in its `layer.py`, beside the code that grows it
 #: (§PW510): measured at 37,550 here when the figure moved.
 #: 39,740 with verdict.target (§PW620), a person's bar, which is the loop's own.
-CORE_TOOLS = 40_200
+#: 40,965 with accept.first (§PW637), a picture's first spec, the loop's own too.
+CORE_TOOLS = 41_400
 
 #: What the heaviest session a real consumer opens may cost, every layer on: Spinhold's,
 #: which declares no [layers]. 129,979 when this was set. It is not raised by a line
@@ -79,7 +80,8 @@ CORE_TOOLS = 40_200
 #: whose geometry layer's figure rose by 300 for it.
 #: 143,715 with render.bake's masks and mesh.budget (§PW630, §PW634), whose geometry
 #: layer's figure rose by 1,000 for them.
-SESSION_BUDGET = 144_000
+#: 144,625 with accept.first (§PW637), whose core figure rose by 1,200 for it.
+SESSION_BUDGET = 145_000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

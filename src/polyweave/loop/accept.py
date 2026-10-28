@@ -853,6 +853,183 @@ def check_screen(
     return found
 
 
+# -- a first spec ----------------------------------------------------------------------
+
+#: The share of its measured value a first spec's bound leaves either side, so the
+#: same picture made again passes and a different one does not. A rule, stated in the
+#: answer, until `calibrate.run` measures the room from the noise (§PW107).
+ROOM = 0.1
+
+#: What a first spec's predicate is asked as: a predicate without its bounds, which
+#: are measured, plus which side of the value to bound.
+FIRST = ("id", "measure", "region", "weight", "of", "bound", *ARGUMENTS)
+SIDES = {"min": ("min",), "max": ("max",), "both": ("min", "max")}
+
+
+def _spec_text(asset: str, artefact: str | None, predicates: list[dict], *,
+              by: str) -> str:
+    """A spec as TOML, one key a line, written by `by` (§PW637).
+
+    The one writer for a first spec, a model's (`geometry.kit`) and a picture's
+    (`accept.first`) alike, so both record a bound the same way. A predicate is a dict
+    as `Predicate.as_dict` gives it: a bound is a number, or a table with its origin.
+    """
+    lines = [f"# Written by {by}; tighten it", f"asset    = {_toml(asset)}"]
+    if artefact:
+        lines.append(f"artefact = {_toml(artefact)}")
+    for one in predicates:
+        lines += ["", "[[predicate]]"]
+        lines += [f"{key:<7} = {_toml(value)}" for key, value in one.items()]
+    return "\n".join(lines) + "\n"
+
+
+def _toml(value: Any) -> str:
+    """One value as TOML on one line; a bound's table keeps the order a spec reads."""
+    import json
+
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return f"{value:g}"
+    if isinstance(value, list | tuple):
+        return "[" + ", ".join(_toml(v) for v in value) + "]"
+    if isinstance(value, dict):
+        keys = [k for k in BOUND_KEYS if k in value] if "value" in value else []
+        keys += [k for k in value if k not in keys]
+        return "{ " + ", ".join(f"{k} = {_toml(value[k])}" for k in keys) + " }"
+    # A JSON string is a TOML basic string for everything a path or a sentence holds.
+    return json.dumps(str(value))
+
+
+@operation("accept.first")
+def first(
+    artefact: Annotated[str, Param("the picture to measure, under the project")],
+    predicates: Annotated[list, Param(
+        'predicates without min or max: {"measure": "luma_p99", "bound": "max"}, '
+        "bound min, max or both")],
+    *,
+    asset: Annotated[str, Param("the asset; the picture's name if unset")] = "",
+    room: Annotated[float, Param("the share of each value a bound leaves", lo=0.0)
+                    ] = ROOM,
+    specs: Annotated[str, Param("where the spec goes; [paths] specs if unset")] = "",
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Measure a picture and write its first spec, never over one (§PW637).
+
+    Each bound is `room` of its value away, as a margin with the value measured.
+    """
+    from polyweave.kernel import provenance
+    from polyweave.kernel.config import load as load_config
+    from polyweave.kernel.doors import door
+
+    from .calibrate import placed
+
+    here = Path(root).resolve()
+    picture = Path(artefact) if Path(artefact).is_absolute() else here / artefact
+    if not picture.is_file() or not picture.resolve().is_relative_to(here):
+        raise PolyweaveError(
+            "spec.no-artefact",
+            f"there is no picture under the project at {artefact}",
+            "make the picture first, and name it as a path under the project",
+            given=artefact,
+        )
+    named = provenance.relative(picture, here)
+    name = asset or picture.name.split(".")[0]
+    folder = Path(specs) if specs else load_config(here).path("paths.specs")
+    folder = folder if folder.is_absolute() else here / folder
+    where = folder / f"{name}{SUFFIX}"
+    if where.exists():
+        raise PolyweaveError(
+            "spec.exists",
+            f"{name} already has a spec at {provenance.relative(where, here)}",
+            "move its bounds with calibrate.run and calibrate.apply, or delete it to "
+            "start it again",
+            call=door("calibrate.run", spec=provenance.relative(where, here),
+                      accepted=named),
+        )
+    asked = [_first_entry(one, index) for index, one in enumerate(predicates or ())]
+    if not asked:
+        raise PolyweaveError(
+            "spec.no-predicates",
+            "a first spec with no predicates checks nothing",
+            'name what to hold, as [{"measure": "contrast_p50", "bound": "min"}]',
+        )
+    # Measured against a bound nothing reaches, so every value comes back as it is.
+    probe = parse({"asset": name, "predicate": [
+        {k: v for k, v in entry.items() if k != "bound"} | {"max": 1e300}
+        for entry, _ in asked
+    ]}, where)
+    try:
+        made_at = provenance.read(picture, here).get("rung")
+    except PolyweaveError:
+        made_at = None
+    taken = check(probe, picture, rung=made_at, root=here)["predicates"]
+    written, found = [], []
+    for (entry, sides), p, result in zip(asked, probe.predicates, taken, strict=True):
+        value = _scalar(result["value"], p)
+        held = max(abs(value) * room, 1e-4)
+        bounds = {side: {"value": placed(value, held, side), "origin": "margin",
+                         "measured": round(value, 6)} for side in sides}
+        written.append({k: v for k, v in entry.items() if k != "bound"} | bounds)
+        found.append({"id": p.id, "measure": p.measure, "measured": round(value, 6),
+                      **{side: bound["value"] for side, bound in bounds.items()}})
+    where.parent.mkdir(parents=True, exist_ok=True)
+    by = "accept.first from what the picture measured"
+    where.write_text(_spec_text(name, named, written, by=by), encoding="utf-8",
+                     newline="\n")
+    spec = provenance.relative(where, here)
+    return {
+        "spec": spec,
+        "asset": name,
+        "artefact": named,
+        "room": room,
+        "predicates": found,
+        "passed": check(read(where), picture, rung=made_at, root=here)["passed"],
+        "says": (f"wrote {spec}: {len(found)} bounds {room:g} of each measured value "
+                 "away, as margins; tighten them, or measure their room from the noise "
+                 "with calibrate.run where the picture was rendered"),
+        "next": door("accept.verify"),
+    }
+
+
+def _first_entry(one: Any, index: int) -> tuple[dict, tuple[str, ...]]:
+    """A first spec's predicate as asked, and the sides it bounds; refused before any
+    picture is measured."""
+    if not isinstance(one, dict) or "measure" not in one:
+        raise PolyweaveError(
+            "spec.no-measure",
+            f"the predicate at position {index + 1} names no measure",
+            'give each one as {"measure": "<name>", "bound": "min"}',
+        )
+    unknown = sorted(set(one) - set(FIRST))
+    if unknown:
+        raise PolyweaveError(
+            "spec.unknown-field",
+            f"the predicate at position {index + 1} has no {', '.join(unknown)}",
+            "a first spec measures its bounds, so leave min and max out; it takes "
+            f"{', '.join(FIRST)}",
+            given=unknown[0],
+            allowed=FIRST,
+        )
+    bound = one.get("bound", "both")
+    if bound not in SIDES:
+        raise PolyweaveError(
+            "spec.bad-bound",
+            f"the predicate at position {index + 1} asks for a {bound!r} bound",
+            "say min, max or both",
+            given=bound,
+            allowed=tuple(SIDES),
+        )
+    region = one.get("region")
+    named = one.get("id") or "-".join(
+        str(part) for part in (one["measure"], region) if isinstance(part, str)
+    )
+    entry = {"id": str(named), **{k: v for k, v in one.items() if k != "id"}}
+    return entry, SIDES[bound]
+
+
 def _scalar(value: Any, p: Predicate) -> float:
     if isinstance(value, int | float) and not isinstance(value, bool):
         return float(value)

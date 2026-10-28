@@ -182,7 +182,9 @@ from polyweave.surface.capabilities import capabilities
 #: 164,551 with render.bake's masks (§PW630) and mesh.budget, a bought mesh brought to
 #: a game's triangle and texture budget, which a project otherwise scripted in Blender
 #: outside the record (§PW634).
-DESCRIBE = 165_000
+#: 165,561 with accept.first, a picture's first spec measured and written, where an
+#: agent picked each bound by hand and wrote the file (§PW637).
+DESCRIBE = 166_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -328,7 +330,8 @@ DESCRIBE = 165_000
 #: mesh.buy's texture (§PW625-§PW627).
 #: 181,003 with render.bake's masks, render.unknown-mask, mesh.budget and
 #: mesh.no-budget (§PW630, §PW634).
-CAPABILITIES = 181_400
+#: 182,048 with accept.first, spec.exists and spec.no-artefact (§PW637).
+CAPABILITIES = 182_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
