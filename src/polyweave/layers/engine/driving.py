@@ -519,7 +519,11 @@ def text_fit(
     """
     if locale:
         send(session, "locale", root=root, locale=locale)
-    nodes = send(session, "text_fit", root=root)["result"]
+    return _fitted(send(session, "text_fit", root=root)["result"], locale)
+
+
+def _fitted(nodes: list, locale: str = "") -> dict:
+    """A text_fit's answer, the same from game.text_fit and from a batch (§PW650)."""
     unfit = [one for one in nodes if one.get("findings")]
     return {
         "locale": locale or None,
@@ -775,7 +779,10 @@ def _shot_to(out: Any, root: str | Path) -> str:
 
 
 #: The commands a batch may send: the session's own, each journalled as its tool's is.
-BATCHED = ("query", "input", "step", "wait", "call", "set", "expect", "shot")
+#: A screen's language pass is one batch: move to it, settle, switch the language, read
+#: its fit and shoot it (§PW650).
+BATCHED = ("query", "input", "step", "wait", "call", "set", "expect", "shot", "locale",
+           "text_fit")
 
 
 @operation("game.batch")
@@ -818,16 +825,27 @@ def batched(
         try:
             if cmd == "shot":
                 fields["out"] = _shot_to(fields.get("out"), root)
+            if cmd == "text_fit":
+                # Answered as game.text_fit answers, its own locale switched first.
+                spoken = str(fields.get("locale") or "")
+                if spoken:
+                    send(session, "locale", root=root, locale=spoken)
+                found = send(session, "text_fit", root=root)
+                answers.append({"index": index, **_fitted(found["result"], spoken)})
+                continue
             answers.append({"index": index, **send(session, cmd, root=root, **fields)})
         except PolyweaveError as refused:
             answers.append({"index": index, "refused": refused.as_dict()})
             if not keep_going:
                 stopped = index
                 break
+    fits = [one for one in answers if "unfit" in one]
     return {
         "answers": answers,
         "sent": len(answers),
         "stopped": stopped,
+        # Every text_fit the batch read, held together: one screen pass, one verdict.
+        **({"fit_passed": all(one["passed"] for one in fits)} if fits else {}),
         "frame": next(
             (a.get("frame") for a in reversed(answers) if "frame" in a), None
         ),

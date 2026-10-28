@@ -212,7 +212,12 @@ between connections.
   `keep_going`. A flow that starts deep in a game reaches it with a `call` to a method
   the game exposes for setup, such as starting a level, rather than winning the ones
   before it; where a game has none, `driver.no-method` says so, and adding one is the
-  game's change.
+  game's change. **A screen's language pass is one batch** (§PW650): `locale` and
+  `text_fit` are commands a batch sends. A `text_fit` with a `locale` switches the game
+  first, and its answer is `game.text_fit`'s (`nodes`, `unfit`, `passed`, `says`). The
+  batch answers `fit_passed`, whether every fit it read passed. Spinhold's ten-screen
+  pass in pt-BR had become a Python loop of CLI calls; it is one batch a screen: move,
+  settle, read the fit, shoot.
 - `game.text_fit` reads the held screen for text that does not fit (§PW336): every
   visible Label and Button with text, its key (the `text` property) and the text shown,
   its box on screen, a Label's lines against those it shows, and `findings`: text wider

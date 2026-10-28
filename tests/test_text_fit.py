@@ -179,3 +179,40 @@ def test_text_is_judged_as_it_is_drawn(screen):
     assert "Over" not in bad
     assert not any("Over" in one for one in bad.get("Left", ()))
     assert not any(Path(one["path"]).name == "Ghost" for one in found["nodes"])
+
+def test_a_batch_reads_a_screen_s_fit_as_text_fit_does(monkeypatch, tmp_path):
+    # Spinhold's ten-screen pass became a throwaway loop of CLI calls (§PW650).
+    sent = []
+
+    def send(session, cmd, *, root, **fields):
+        sent.append((cmd, fields))
+        if cmd == "text_fit":
+            return {"result": [{"path": "/root/A", "key": "A", "findings": ["wide"]}],
+                    "step": len(sent)}
+        return {"step": len(sent)}
+
+    monkeypatch.setattr(driving, "send", send)
+    said = driving.batched("s", [{"cmd": "step", "frames": 2},
+                                 {"cmd": "text_fit", "locale": "pt_BR"},
+                                 {"cmd": "locale", "locale": "en"}],
+                           root=str(tmp_path))
+    assert [cmd for cmd, _ in sent] == ["step", "locale", "text_fit", "locale"]
+    fit = said["answers"][1]
+    assert fit["locale"] == "pt_BR" and fit["passed"] is False
+    assert fit["unfit"] == [{"path": "/root/A", "key": "A", "findings": ["wide"]}]
+    assert said["fit_passed"] is False
+
+
+def test_a_screen_s_language_pass_is_one_batch(screen):
+    session, root = screen
+    said = driving.batched(session, [
+        {"cmd": "step"},
+        {"cmd": "text_fit", "locale": "pt_BR"},
+        {"cmd": "step"},
+        {"cmd": "text_fit", "locale": "en"},
+    ], root=root)
+    assert said["stopped"] is None, said["answers"]
+    assert any("leaves its container" in one
+               for one in unfit(said["answers"][1])["Start"])
+    assert "Start" not in unfit(said["answers"][3])
+    assert said["fit_passed"] is False

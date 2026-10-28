@@ -603,24 +603,6 @@ when the lull counts no new track and RK198's re-count matches the owner's sheet
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW650 text_fit inside a batch
-
-Spinhold, RK166, 2026-10-26: checking ten screens meant, for each, a game.batch (input,
-step, shot) and then a game.text_fit of its own, since `game.batch` refuses it: "command
-2 is {'cmd': 'text_fit'}, not one a batch sends; make each a table with cmd, one of
-query, input, step, wait, call, set, expect, shot".
-
-A screen-by-screen language pass is exactly a batch: move to a screen, let it settle,
-read its fit, shoot it. The project wrote a throwaway driver for it (scratchpad
-`ptbr_screens.py`, a Python loop over CLI calls), which is the workaround this should
-remove.
-
-What polyweave should do: let a batch carry `text_fit` (answered in the batch's answers
-like any query), or give `game.text_fit` a list of moments ({inputs, frames, shot}) and
-answer each screen's fit and shot together. `locale` is missing from a batch too. The
-`passed` and `unfit` summary lives in the Python wrapper (`driving.py:520`), so it moves
-to one helper both answers share.
-
 ### §PW651 an MCP server on a stale copy
 
 Spinhold, 2026-10-26. The polyweave plugin's MCP server (enabled from the
