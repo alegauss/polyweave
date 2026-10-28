@@ -115,6 +115,30 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
+### §PW660 Every artefact's source and licence, owed or not
+
+Met in the Shio repository, `marketplace/quilhara/` (Shio SH1254). The package's spec
+requires `assets/CREDITS.json`: one entry per shipped image naming its source and
+licence, whether or not the licence obliges a credit, because a package is redistributed
+and a reviewer asks where every picture came from.
+
+```
+python -m polyweave provenance.credits --root . --json
+```
+
+answered `{"owed": [], "notes": [], "people": []}`, correct for its question (the ten
+Ideogram pictures owe no credit) and no help for this one. The records hold what the
+manifest needs (model, prompt, seed, date, artefact digest) in
+`assets/source/*.png.prov.json`, so the project read them with a one-off script. The
+records also carry no licence field for these purchases, so the licence sentence was
+typed by hand.
+
+What polyweave should do: `provenance.credits` takes `all=true` (or a sibling
+`provenance.manifest`) that lists every recorded artefact with its source, model,
+prompt, seed, date and licence, owed or not, written to `out` as JSON and checked with
+`check`, the way the owed list already is. Where the service's terms are known (the
+declared plan, PW448), the licence comes from them rather than from the caller.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion

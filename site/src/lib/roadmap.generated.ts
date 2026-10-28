@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 1 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 3 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -71,6 +71,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning",
     why: "The caller pays for a 16x9 picture, gets 3x2 unannounced, and crops by hand after the spend.",
+    deps: [],
+  },
+  {
+    id: "PW660",
+    block: "D",
+    symptom: "provenance.credits lists only owed credits, so a per-asset source and licence manifest is built from .prov.json by hand",
+    why: "A package that must name every image's source and licence reads polyweave's records with its own script and types the licence.",
     deps: [],
   },
   {

@@ -12,6 +12,7 @@
 
 - 📋 **PW658** (deps: —) **picture.buy writes only PNG, so a web project re-encodes to WebP outside polyweave and ships a file with no provenance** — A site needing WebP under a byte bound converts by hand, and credits name a file the release does not carry. → §PW658
 - 📋 **PW659** (deps: —) **picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning** — The caller pays for a 16x9 picture, gets 3x2 unannounced, and crops by hand after the spend. → §PW659
+- 📋 **PW660** (deps: —) **provenance.credits lists only owed credits, so a per-asset source and licence manifest is built from .prov.json by hand** — A package that must name every image's source and licence reads polyweave's records with its own script and types the licence. → §PW660
 
 ## Block E — One world with the engine
 
