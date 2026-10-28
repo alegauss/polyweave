@@ -21,7 +21,10 @@ the picture's pixels, or as a fraction, or by a Control's path when the capture 
 its rects), and an enlargement, and writes one sheet of the boxes side by side at
 nearest-neighbour scale, with a record naming the source picture and each box. A capture
 should be able to declare its inspection boxes, so the same corners come back enlarged
-on every retake without the boxes being typed again.
+on every retake without the boxes being typed again. The seam exists: `compose.sheet`
+takes tiles but no box, while `verdict.sheet` and `reference.regions` each crop and
+enlarge already. A tile `{path, box, scale}` there, with boxes read from the `region:`
+lines a capture record keeps, covers it.
 
 ## Block C — The asset compiler
 
@@ -132,7 +135,9 @@ hairline_width * 0.5`), and the nine-patch is drawn four times larger and brough
 so a fraction of a pixel is drawable on both. Widths that are a line's thickness (the
 hairline, the edge, the bracket, the tick, the piping) should take any number from a
 small floor, say 0.5, while the sizes and margins a nine-patch cuts on stay whole. Done
-when the 1.2 declaration builds and both routes draw the same width.
+when the 1.2 declaration builds and both routes draw the same width. The check that a
+bracket's reach fits its corner (`panel.py:240`, `:250`) compares whole margins, so it
+must round a fractional width up, with a test holding it.
 
 ### §PW639 Moving one Control between a panel's states
 
@@ -152,72 +157,62 @@ polyweave should ship the switch with the build: a small GDScript (in the kit's 
 or written beside the shader) that holds a panel's states and moves one Control between
 them, keeping per-instance overrides, with the state precedence declared (disabled over
 pressed over focus). And `tint` should say whether it replaces or multiplies, or offer
-both. Done when HoloPanel's copy loop can be deleted for it.
+both. Done when HoloPanel's copy loop can be deleted for it. Today `tint` reaches only
+`bracket_colour`, on the shader and the still route alike; the edge, tick and fill
+ignore it, which `describe` should say until it is declared.
 
 ### §PW646 icons.build says what it did with a symbol and a folder
 
-Met in spinhold (RK294), adding `[icon.view_free]` to `art/editor/tools.icons.toml` and
-running `icons.build --source art/editor/tools.icons.toml`. Four things went wrong, each
-silently:
+Met in Spinhold, RK266 and RK294 (2026-10-26), adding icons to
+`art/editor/tools.icons.toml`, a set already built into `game/editor/icons/tools/` (its
+records say so). Each run answered `passed: true`:
 
-1. `symbol = "camera"` is no glyph (`GLYPHS` in `layers/store/icons.py`), so the word was
-   drawn as text and the answer said `passed: true`, a low `symbol_share` (0.066) the only
-   hint. A word suits a keycap; on a `circle` or `rounded` icon an unknown symbol should be
-   refused with `allowed` and `did_you_mean`, or the answer should say it was drawn as text.
-2. A top-level `out = "game/editor/icons/tools"` was ignored without a refusal, and the
-   set landed in `art/editor/tools/`. A declaration should carry where its set lives, and
-   an unknown top-level key be refused as `[icon.*]` keys are.
-3. `--out game/editor/icons/tools` wrote to `game/editor/icons/tools/tools/`: `out` is the
-   parent the set's name is appended to, which `describe` ("the folder it lands in") and
-   the answer do not say.
-4. With `sitting` on, the sitting went to `icons/tools/` at the project root, not under
-   `art/review/` with the project's other sittings.
+1. `symbol = "camera"` is no glyph (`GLYPHS`, `layers/store/icons.py:70`), so the word
+   was drawn as text (`:330`), a low `symbol_share` the only hint. A word suits a
+   keycap; on any other shape an unknown symbol should be refused with `allowed` and
+   `did_you_mean`.
+2. A top-level `out` was ignored: `read()` checks `[icon.*]` and `[accept]` keys but
+   neither the top level nor `[style]` (`:112-143`).
+3. With no `out`, the set lands beside the declaration (`:494`), not where its records
+   say it was built (PW645, folded here). `--out game/editor/icons/tools` wrote
+   `.../tools/tools/`: `out` is the parent the set's name is appended to, while
+   `describe` says "the folder it lands in" (`:460`). Each wrong run left a copy to
+   delete.
+4. The sitting went to polyweave's work folder, away from the project's other
+   sittings. No config key says where sittings go: `art/review` is Spinhold's own
+   convention, and `geometry.kit` takes a `sitting` folder that icons does not.
 
-Workaround: the stray folders deleted by hand and the set rebuilt with `out =
-game/editor/icons`, no sitting; the icon uses `view` in a circle.
+What polyweave should do: refuse unknown keys at every level; let the declaration carry
+`out`, and with none, build where the records say, refusing with the choice where they
+disagree; make `out` the folder itself, as `panel.build` does, or name the path written
+in `describe` and the answer; and add a `paths.sittings` key that every operation
+opening a sitting honours.
 
-### §PW647 game.text_fit judges only the text that is drawn
+### §PW647 game.text_fit judges only the text that is drawn, as it is drawn
 
-Met in spinhold (RK295), holding the stage editor's Portuguese text to the screen:
-`game.open --scene res://game/editor/editor.tscn --locale pt_BR --resolution [1920,1080]
---args ["--phase=1","--pick=1:1"]`, then `game.text_fit`.
+Met in Spinhold, in pt-BR. RK295: five inspector rows "lie over" the panel below, though
+a ScrollContainer clips them away, and rows off the screen get no finding. RK166 (PW649,
+folded here): a Label drawn through `label_settings` reads "397 px wide in a 344 px box"
+yet shows whole, the remap kit scaled to 0.64 is unfit on all 15 labels by that factor,
+and a modal's labels "lie over" the HUD it covers.
 
-It answered `passed: false`, "42 text node(s), 5 that do not fit": the inspector's rows
-`on_line`, its toggle, `on_loss`, its list, and the PROBLEMS heading of the panel under
-it, each "lies over" the other. Those rows are inside a ScrollContainer (the inspector's
-panel), which clips them at the panel's foot: on screen they are not drawn, and the
-captures show the inspector ending cleanly above the Problems panel. `text_fit` reads
-each node's global rect without the clip of the container it sits in, so text scrolled
-out of sight counts as lying over whatever is below it, and the rows further down (at y
-1320, off a 1080 screen) are listed with no finding at all.
+All of it is one function: the driver's `_text_fit` and `_screen_rect`
+(`addons/polyweave_driver/driver.gd:357-424`).
 
-What polyweave should do: intersect each node's box with the clip rects of its ancestors
-(`clip_contents`, a ScrollContainer, a SubViewport's bounds, as PW589 did for
-viewports), leave out what is clipped away entirely and say it was clipped, and judge
-only the part drawn. Text that runs past the screen's edge should be its own finding
-rather than none.
+- No ancestor's clip is applied: only the direct parent is checked, and a
+  ScrollContainer parent is skipped. PW589 names a SubViewport but does not map its box.
+- Nothing tests the box against the visible rect, though `driver.off-screen` does for
+  input targets (`:717`).
+- The width is measured with the theme font (`:364`), never `label_settings`' font,
+  size or outline, nor a Button's icon and margins.
+- The box is scaled (`:424`), the text width is not.
+- Overlap is any two texts in one viewport; what is drawn over them is not asked.
 
-Workaround: none; the finding was read against the capture by eye and set aside, which
-is the judging by eye PW336 was meant to end.
-
-### §PW648 capture.run is ok only with a picture
-
-Met in spinhold (RK268), capturing the stage editor for a new sitting: `python -m
-polyweave capture.run --script dev/shot.gd --expect SHOT --args
-'["--scene=res://game/editor/editor.tscn",
-"--out=res://art/review/editor-palette/palette.png", ...]'` with
-`art/review/editor-palette/` not yet made.
-
-The answer was `ok: true`, `verdict: ok`, `why: ""`, `artefacts: []`, and only a
-`why_unrecorded` line further down said that nothing named a picture. The script could
-not save into a folder that did not exist, so there was no picture at all, and the first
-three fields said all was well. Making the folder and running again gave the picture.
-
-What polyweave should do: a run whose `expect` line names no picture that exists is not
-`ok`; `verdict` says so and `why` carries what `why_unrecorded` says now, and where the
-expect line names a path under a folder that does not exist, the answer names that
-folder. Better still, capture.run makes the folder of a `--out=res://...` argument
-before the run, as `icons.build` makes its `out`.
+What polyweave should do: one visible-rect function that transforms the box, intersects
+every clipping ancestor and the viewport, scales the text width with it and leaves out
+text an opaque Control or a higher CanvasLayer covers. Wholly clipped text is reported
+as clipped, and text past the screen edge gets a finding of its own. Tests: rotated
+Controls, a hidden CanvasLayer, a nested SubViewport.
 
 ### §PW655 A sweep of captures
 
@@ -242,7 +237,9 @@ and then flies each run through `capture.run`'s offscreen route, with its enviro
 and record; or `capture.run` takes a `grid` of its own. Either way a run's produced
 files are listed per combination, so a sweep of captures is one call. Until then, a
 sweep whose script reads the root texture should be refused up front with that remedy,
-not flown fifteen times to fail.
+not flown fifteen times to fail. `engine.perf` already switches between headless and a
+drawing route (`frame_cost.py:139`). The sweep's cache key holds only script and build,
+so it must take the route and the loaded inputs too.
 
 ## Block I — Voxel models from a declaration
 
@@ -263,7 +260,10 @@ What polyweave should do: draw a text symbol to fill the face as a glyph does, i
 height fitted to the face's inner box whatever the characters are, with a declared
 `symbol_scale` to change it; and say in `measured` when a symbol's share is far under
 the set's median, even with no `symbol_share_min` declared, since a speck is never what
-was meant. A `plus` and a `minus` glyph would also serve editors and menus.
+was meant. A `plus` and a `minus` glyph would also serve editors and menus. Today a text
+symbol is sized as a share of the whole canvas, not the face's inner box
+(`layers/store/icons.py:333`), and nothing checks the font can draw it. Icons shipped
+under H (PW331), so this ship is followed by `record move PW642 --to-block H`.
 
 ### §PW644 Icons a game tints, with a filled and an empty state
 
@@ -288,27 +288,9 @@ it is given. It also draws the flare (a ring and six rays) as a mark lights.
 What polyweave should do: let an icon set declare a `tint` placeholder that the game
 sets at runtime (a white mask plus a facet layer, say), declare states per icon
 (`filled`, `empty`) with how each reads, and grow the symbol vocabulary with star,
-figure and shield. `[accept]`'s legibility bounds would then check both states, and
-spinhold would draw the built textures, modulated by the world's colour.
-
-### §PW645 A set rebuilt lands where it was built
-
-Met in Spinhold, RK266 (2026-10-26), adding two icons to `art/editor/tools.icons.toml`,
-a set already built into `game/editor/icons/tools/` (its records say so).
-
-- `icons.build --source art/editor/tools.icons.toml --sitting false` wrote the whole set
-  to `art/editor/tools/`, beside the declaration, not where the set was last built.
-- `--out game/editor/icons/tools` wrote it to `game/editor/icons/tools/tools/`: `out` is
-  the parent of a folder named after the set, which `describe` does not say ("the folder
-  it lands in").
-- `--out game/editor/icons` put it where it belongs. Each wrong run left a full copy of
-  the set to delete by hand, and the answer was `passed: true` every time.
-
-What polyweave should do: with no `out`, build where the set's existing records say it
-was built (or where the declaration names, if it can carry an `out`), and refuse with
-the choice where those disagree; and either make `out` the folder itself or say in
-`describe` and in the answer that the set's own folder is made under it, naming the path
-written.
+figure and shield. `[accept]`'s legibility bounds would then check both states, and a
+game draws the built textures modulated by its colour. On ship, `record move PW644
+--to-block H`, where icons live.
 
 ## Block J — A bar a person sets once
 
@@ -324,15 +306,17 @@ of the measured value, max at the measured value plus 0.1, copied from other spe
 wrote `art/accept/holo-panel.accept.toml` itself, `measured` and `origin` included.
 
 That is the step a person's bar is meant to be spared: a number an agent picks, written
-in a file that then reads as polyweave's. PW107 derives a margin from how far a measure
-moves on its own, but nothing applies it to a new picture spec.
+in a file that then reads as polyweave's. `calibrate.apply` (PW107) sets room from how
+far a measure moves on its own, but only in a spec that exists.
 
 polyweave should write a picture's first spec the way `geometry.kit` writes a model's:
 given the artefact, the measures and a region each, it measures, sets each bound with
 its origin from PW107's margin, and writes `<specs>/<asset>.accept.toml` with the
 measured values recorded, refusing to overwrite one that exists. A `panel.build` could
 offer it for its normal state. Done when Spinhold's holo spec could have been written by
-that call and `accept.verify` passes on it.
+that call and `accept.verify` passes on it. The seam is `_first_spec`
+(`layers/geometry/kit.py:36`), which today passes `bounds` through: one writer for both,
+the bounds recorded as measured, never as a person's verdict.
 
 ## Block K — Reached without reading the source
 
@@ -362,43 +346,54 @@ verdict, and each gap it met is a filed line.
 
 ### §PW643 A capture with no picture is not ok
 
-Met in Spinhold, RK292 (2026-10-26). `capture.run --script dev/shot.gd --expect "^SHOT
-(?P<shot>\S+) " --args [..., "--out=res://.polyweave/salvage/lab.png", ...]` where the
-folder `.polyweave/salvage/` did not exist yet. The game's `image.save_png` failed, no
-picture was written, and the answer was `ok: true` with an empty `why`; only a third
-field, `why_unrecorded`, said that no line named a picture that exists. Run again after
-a `mkdir`, the same call wrote the picture.
+Met in Spinhold twice: RK292 (2026-10-26), `capture.run --script dev/shot.gd` with
+`--out=res://.polyweave/salvage/lab.png`, and RK268, an `--out` under
+`res://art/review/editor-palette/` (PW648, folded here). Each time the out folder did
+not exist, the game's `save_png` failed, and the answer was `ok: true`, `verdict: ok`,
+an empty `why` and `artefacts: []`; only `why_unrecorded` said no line named a picture
+that exists. After a `mkdir` the same call wrote the picture.
 
-An `ok` that holds when the one thing asked for, the picture, is missing sends an agent
-on to read a stale file or none. polyweave should answer `ok: false` with the reason in
-`why` whenever the expected picture does not exist after the run, and could make the
-folder an `--out` under the project names before it starts the engine, since a capture's
-out folder is its to make.
+The cause: `capture._once` (`layers/engine/capture.py`) passes no `produces` to
+`engine.run`, so `engine._verdict`'s one existence check (`missing-artefact`) never
+runs, and `capture.pictures()` drops a named path that is not a file (`:429`). A
+`user://` name is skipped the same way (`:425`), and with `record: false` not even
+`why_unrecorded` is written, so nothing at all says the picture is missing.
 
-### §PW653 A retake after an edit is a change, not a mystery
+What polyweave should do, at `_once` where `pictures()` runs: compare the names the
+expect line matched with the files that exist, and answer `ok: false`, verdict
+`missing-artefact`, with the missing paths in `why`, whatever `record` says. Before the
+engine starts, make the folder of an `--out=res://...` argument under the project, as
+`game.shot` already does (`_shot_to` in `driving.py`), since a capture's out folder is
+its to make. `capture.again` and `capture.run`'s strict mode go through `_once` and
+inherit it; `capture.movie` and `game.shot` already refuse a missing picture. Tests: a
+missing folder, a `user://` name, `record: false`, and a script that names two pictures
+and writes one.
+
+### §PW653 A retake after an edit hashes the script that was edited
 
 Spinhold, RK302 (the run's HUD redrawn in the menu kit), 2026-10-27. The loop was: edit
-`game/ui/hud.gd`, then `capture.run --script dev/shot.gd --expect SHOT --args
-["--out=res://.polyweave/rk302/hud_en.png", "--frames=420", "--hold=fire_right"]
---environment {"locale": "en", "resolution": "1920x1080"}`, look, edit again.
+`game/ui/hud.gd`, `capture.run --script dev/shot.gd --expect SHOT` into
+`.polyweave/rk302/hud_en.png`, look, edit again. The second capture came back
+`reproduced.holds: false`, "the same declared settings produced different bytes ... so
+something this picture depends on is not declared". The workaround was `record: false`
+on every later capture, which drops provenance.
 
-The second capture came back `ok: true` with `reproduced.holds: false` and the verdict
-"the same declared settings produced different bytes ... so something this picture
-depends on is not declared". Nothing was undeclared: the HUD's own script had changed
-between the two runs, which is the whole point of capturing again. The wording says the
-picture is nondeterministic, and a reader who trusts it goes looking for an unpinned
-seed.
+The record does hash what the run loaded (`capture.inputs`, PW622's class scripts
+included), so an edit should have read as different work. It did not because the record
+hashed the wrong file: `hud_en.png.prov.json` lists `hud.gd` as
+`.polyweave/cost/trees/0dfd6457f0fa/game/ui/hud.gd`, a copy `engine.cost` left behind.
+`capture.reached` (`layers/engine/capture.py:129`) indexes every `class_name` with
+`rglob("*.gd")`, skipping only `.godot`, and `setdefault` keeps the first in sorted
+order, where `.polyweave/` comes before `game/`. The edited script was never hashed.
 
-What was done instead: `record: false` on every later capture of the iteration, so no
-comparison was made at all. That also drops provenance, which is the opposite of what
-the project wants.
-
-What polyweave should do: before calling a difference unexplained, compare what the run
-loaded (it already lists `loaded`) against the record's state, by content hash of each
-`res://` file the engine read. Where a loaded source changed since the recorded run, the
-answer is `changed` with the files named ("game/ui/hud.gd changed since 13:20"), not
-`differs`. Only where every loaded input is byte-identical is a difference evidence of
-something undeclared.
+The class: three walks over a project's scripts each skip a different set, `capture`
+only `.godot`, `engine/states.py` its `_SKIP`, `words.py` hidden folders. What polyweave
+should do: one walk of the project's own files, skipping what Godot skips (a folder
+whose name starts with a dot, one holding `.gdignore`), used by all three; a
+`class_name` declared twice named in the answer rather than resolved by sort order; and
+the unexplained-difference verdict saying how many inputs matched and which were
+`unread`, rather than concluding a setting is undeclared. Done when Spinhold's
+edit-and-capture loop reads as different work naming `game/ui/hud.gd`.
 
 ## Block M — What a game needs beyond the look
 
@@ -709,32 +704,13 @@ recorder's tick (score, ship, enemies, shots) and names the first tick they diff
 run takes minutes, and it was run by hand several at once, since the drift was
 intermittent and showed under load.
 
-polyweave's game layer should own it: given a scene, a recording driver and a sampler
-(node paths and properties), fly it at two frame rates, repeated N times, and answer the
-first tick and fields that differ. `engine.find` could flag the hazards statically:
-`_process` writing what `_physics_process` reads, `time_scale` set inside a physics
-step, play waiting on an idle-mode AnimationPlayer or Tween.
-
-### §PW649 text_fit misreads three kinds of label
-
-Spinhold, RK166 (every screen in pt-BR at 1280x720), 2026-10-26. `python -m polyweave
-game.text_fit --session <s>` on screens a person sees fitting reported them unfit, three
-ways, so every finding had to be checked by eye against a shot:
-
-1. A Label drawn through `label_settings` (font_size 26, outline 6), ship_select's
-   `Text/Stats/OVERDRIVE/Label`, "RAJADA DA LINHA DO SOL": "its text is 397 px wide in a
-   344 px box", although the shot shows it whole and its own `get_combined_minimum_size()`
-   is the box. The width seems measured with another size or outline than the label's.
-2. A Control scaled down by its parent: options.tscn scales the remap kit to 0.64 to fit
-   the rows' height; all 15 of its labels came back unfit by the same factor (249 in
-   160, 209 in 134 ...). The text is measured unscaled and the box scaled.
-3. A modal screen over the HUD: the status screen's labels each "lie over" the HUD's
-   Score, Humans and Banner it covers, and the draft's "NOVO TRIPULANTE" over the banner.
-   Text a panel hides is not text overlapping.
-
-Expected: the width the label draws with (its label_settings, its outline, its global
-scale), and overlap counted only between texts both drawn in front, a covered layer left
-out. The project's workaround is reading every shot by eye; no script was written.
+polyweave's game layer should own it, starting with the recorder, which stores no tick
+rate today (`determinism/core/recorder.gd`): given a scene, a recording driver and a
+sampler (node paths and properties), fly it at two frame rates, repeated N times, and
+answer the first tick and fields that differ. A static check, new work since
+`engine.find` only locates Godot, could flag the hazards: `_process` writing what
+`_physics_process` reads, `time_scale` set inside a physics step, play waiting on an
+idle-mode AnimationPlayer or Tween.
 
 ### §PW650 text_fit inside a batch
 
@@ -750,7 +726,9 @@ remove.
 
 What polyweave should do: let a batch carry `text_fit` (answered in the batch's answers
 like any query), or give `game.text_fit` a list of moments ({inputs, frames, shot}) and
-answer each screen's fit and shot together.
+answer each screen's fit and shot together. `locale` is missing from a batch too. The
+`passed` and `unfit` summary lives in the Python wrapper (`driving.py:520`), so it moves
+to one helper both answers share.
 
 ### §PW651 an MCP server on a stale copy
 
@@ -768,6 +746,12 @@ Expected: the server says which copy of polyweave it runs and refuses with a rem
 ("restart the MCP server; it runs <path>, the CLI runs <path>") when the two differ, or
 it reloads. The workaround was to use the CLI for every call in the session.
 
+The stale copy answers every tool, not only `game_open`, and `serverInfo` carries a
+fixed `__version__` of 0.1.0 that cannot tell two copies apart. It should carry the
+package path and its newest file time, reusing `review.staleness()`, which already
+refuses a page whose code changed under it. And `_driver_for` (`driving.py:71`) should
+check that the driver it falls back on exists before Godot starts.
+
 ### §PW652 the remap kit in a longer language
 
 Spinhold, RK166, 2026-10-26: the remap kit (`addons/polyweave/remap`, installed by
@@ -782,6 +766,11 @@ Expected: the kit sizes its label column to the longest label in the locale set,
 lay itself out in the width it is given (two columns, or a shorter row height) so a host
 need not scale it below a readable size. The game cannot change the kit's layout from
 outside, so nothing was worked round; the shot is on the owner's sitting.
+
+The cause is in `layers/kits/remap/core/remap_menu.gd:228-241`: each row is its own
+HBoxContainer with a 160 px label, so rows share no column and a longer label pushes its
+controls out of line. One shared column, a GridContainer sized to the longest label in
+the locale set, fixes both; `pad_screen.gd:233` hardcodes its sizes the same way.
 
 ## Block T — Adopting polyweave in a project
 

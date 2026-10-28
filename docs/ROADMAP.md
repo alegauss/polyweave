@@ -20,16 +20,14 @@
 
 - 📋 **PW638** (deps: —) **a panel's hairline, edge or bracket width must be whole pixels, so a 1.2-pixel line a person accepted cannot be declared** — The declared panel draws a thinner line than the look the owner accepted, though both routes can draw a fraction. → §PW638
 - 📋 **PW639** (deps: —) **a Control switching panel states has to copy every uniform from the state's material by hand, and tint multiplies** — Each game rewrites the same state switch round shared materials, and a tint over the kit's colour comes out a third colour. → §PW639
-- 📋 **PW646** (deps: —) **icons.build draws an unknown symbol as text, ignores an unknown key, nests out under the set, and sits off art/review** — Each answers passed while the icon or its folder came out wrong, and finding out took reading icons.py. → §PW646
-- 📋 **PW647** (deps: —) **game.text_fit counts text a ScrollContainer clips away as lying over the panel below, and text off the screen as fitting** — A clean screen fails the check, so its findings are read by eye again, as before PW336. → §PW647
-- 📋 **PW648** (deps: —) **capture.run answers ok, verdict ok and an empty why when no picture was made, its out folder missing** — A capture that made nothing reads as one that worked, so a sitting is laid out over a picture that is not there. → §PW648
+- 📋 **PW646** (deps: —) **icons.build draws an unknown symbol as text, ignores unknown keys, nests out under the set and has no sittings folder** — Each answer passed while the icon or its folder came out wrong, and finding out took reading icons.py. → §PW646
+- 📋 **PW647** (deps: —) **game.text_fit measures a label without its clip, label_settings, scale or covering layer, so text that fits reads unfit** — A clean screen fails the check, so its findings are read by eye again, as before PW336. → §PW647
 - 📋 **PW655** (deps: —) **engine.sweep flies headless, so a capture script saves no picture and every combination ends in a script error** — Measuring variants over seeds falls to a hand-written loop of capture.run calls. → §PW655
 
 ## Block I — Voxel models from a declaration
 
 - 📋 **PW642** (deps: —) **an icon's text symbol such as + or - is drawn a speck of its face, and nothing declares how large it is drawn** — Spinhold's editor gave up a plus and a minus for unrelated glyphs, since its set passed on contrast alone. → §PW642
 - 📋 **PW644** (deps: —) **an icon set has no star, figure or shield, and no filled and empty state a game tints per use** — A count of marks in each world's colour is drawn by hand in the game, outside every legibility check. → §PW644
-- 📋 **PW645** (deps: —) **icons.build writes a set beside its declaration, not where it was built, and its out is the parent of the set's folder** — A set rebuilt to add one icon lands in the wrong folder twice, each copy left to delete by hand, the answer passed every time. → §PW645
 
 ## Block J — A bar a person sets once
 
@@ -40,7 +38,7 @@
 ## Block L — What a run leaves as evidence
 
 - 📋 **PW643** (deps: —) **capture.run answers ok true when the picture it was asked for was never written, the reason only in why_unrecorded** — An agent reads ok and goes on to a missing or stale picture, as Spinhold's salvage capture did into a folder not yet made. → §PW643
-- 📋 **PW653** (deps: —) **capture.run calls a retake 'differs, something undeclared' when only the project's own code changed between runs** — An edit-and-capture loop reads as nondeterminism, so the honest fix is to switch the record off and lose provenance. → §PW653
+- 📋 **PW653** (deps: —) **a capture hashes a class_name script from a stale copy under .polyweave, so an edited script reads as undeclared** — An edit-and-capture loop reads as nondeterminism, so the honest fix is to switch the record off and lose provenance. → §PW653
 
 ## Block M — What a game needs beyond the look
 
@@ -67,9 +65,8 @@
 ## Block S — Playing the game, not only rendering it
 
 - 📋 **PW640** (deps: —) **a recorded run is never flown back at another frame rate, so play that reads frames instead of ticks passes every proof** — Spinhold's replays drifted from four frame-timed causes that a fixed-fps proof could never show, found by a hand-run project script. → §PW640
-- 📋 **PW649** (deps: —) **game.text_fit reports labels that fit as unfit: label_settings, a scaled parent and a covered layer** — Every finding has to be checked by eye against a shot, so the fit read cannot gate a language pass. → §PW649
 - 📋 **PW650** (deps: —) **game.batch refuses text_fit, so a screen's move, settle, fit and shot take two calls** — A pass over ten screens became a throwaway driver looping CLI calls instead of one batch per screen. → §PW650
-- 📋 **PW651** (deps: —) **the plugin's MCP server keeps a stale installed copy whose driver is gone, and game_open fails** — Every call had to go through the CLI, and the refusal never said two copies of polyweave were in play. → §PW651
+- 📋 **PW651** (deps: —) **the MCP server runs a stale installed copy of polyweave, and no answer says which copy replied** — Every call had to go through the CLI, and the refusal never said two copies of polyweave were in play. → §PW651
 - 📋 **PW652** (deps: —) **the remap kit keeps an English-wide label column, so pt-BR labels run into their controls** — A game in Portuguese ships a Controls screen whose words collide, and the host cannot fix the kit's layout. → §PW652
 
 ## Block T — Adopting polyweave in a project
@@ -140,6 +137,24 @@
 - **Cottony keeps no mesh preparation of its own** tools/art/prep.py and export_props,
   export_boosters and export_friends are gone from Cottony, its families name prepare
   steps through fixes, and project.adoption lists none of them as kept.
+
+## Done when — PW643
+
+- **capture.run answers ok and an empty why when its out folder is missing** Same bug as
+  PW643, met a day later: capture.run never checks that the picture its expect line
+  names exists.
+
+## Done when — PW647
+
+- **text_fit misreads label_settings, a scaled parent and a covered layer** Both are
+  text_fit's one box function in driver.gd, which ignores clips, label_settings, scale
+  and covering layers.
+
+## Done when — PW646
+
+- **a rebuilt icon set lands beside its declaration, and out is the set's parent** PW646
+  already covers where icons.build lands a set and what its out means; this is the same
+  folder resolution.
 
 ## Non-goals
 

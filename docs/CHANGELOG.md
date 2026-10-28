@@ -286,6 +286,7 @@
 - ✅ **PW633** **a capture at a window resolution sizes the viewport to its pixels and ignores the project's stretch** — capture.run works out the viewport the project's stretch gives a window, hands it to the script and records it, so a wide capture is the layout a player sees.
 - ✅ **PW634** **a bought mesh cannot be brought down to a game's triangle and texture budget; no operation decimates or downsizes** — mesh.budget welds, reduces a bought mesh to a triangle count and its textures to an edge, and records the costs either side, so a toy fits a game's build.
 - ✅ **PW636** **vfx.preview films only in 3D, so an effect drawn on a 2D canvas has no sitting of its own** — vfx.preview films a canvas effect on its own with a still 2D camera framing what it emits from, so a drift is judged beside the drift as it was.
+- 🗑 **PW648** **capture.run answers ok and an empty why when its out folder is missing** — superseded by PW643: Same bug as PW643, met a day later: capture.run never checks that the picture its expect line names exists.
 
 ## Block I — Voxel models from a declaration
 
@@ -311,6 +312,7 @@
 - ✅ **PW326** **geometry.fit scores a whole alpha silhouette, so a part inside a picture, like the V on a badge's disc, cannot be fitted** — geometry.fit takes a region, a drawing's colours scored against named materials in their whole, so a part fits in place and at scale (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW596** **a voxel model's grid spans the uncarved primitives and the cutters, so a model centred on its box sits off its middle** — A voxel build trims its grid to the cells it keeps, so size and origin are the carved model's (design recorded in `src/polyweave/layers/geometry/representations/voxels/model.py`).
 - ✅ **PW610** **a built model cannot be made into a small picture of itself, so a palette tile or bestiary entry is cropped by hand** — An icon may name a model: icons.build renders it at a declared view and background, records the mesh, and outdated names it after an edit (design recorded in `docs/specs/panel.md`).
+- 🗑 **PW645** **a rebuilt icon set lands beside its declaration, and out is the set's parent** — superseded by PW646: PW646 already covers where icons.build lands a set and what its out means; this is the same folder resolution.
 
 ## Block J — A bar a person sets once
 
@@ -531,6 +533,7 @@
 - ✅ **PW339** **game.open ignores the resolution and locale [capture] declares, and game.shot does not say what it took** — game.open runs in [capture]'s resolution and locale unless the call names its own, and game.shot answers the size and locale it took, naming a gap (design recorded in `docs/specs/driving.md`).
 - ✅ **PW599** **game.set given a vector as a JSON list writes it as zero and answers as if it worked** — game.set turns a JSON list or a spelt vector into the property's vector, colour, rect or quaternion, and refuses one it cannot, naming the shape it wants.
 - ✅ **PW607** **game.input can only click; it cannot drag, hold a modifier, press another button, turn the wheel or type text** — game.input drags through Godot's drop, clicks right, middle and double, turns the wheel, types and holds modifiers; a kept drag replays (design recorded in `docs/specs/driving.md`).
+- 🗑 **PW649** **text_fit misreads label_settings, a scaled parent and a covered layer** — superseded by PW647: Both are text_fit's one box function in driver.gd, which ignores clips, label_settings, scale and covering layers.
 
 ## Block T — Adopting polyweave in a project
 
