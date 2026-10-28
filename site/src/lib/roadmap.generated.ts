@@ -36,7 +36,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 0 },
-  { block: "L", title: "What a run leaves as evidence", open: 1 },
+  { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
@@ -92,13 +92,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "J",
     symptom: "a first spec's bound on a value near zero is a share of almost nothing, so the same picture redrawn fails it",
     why: "Spinhold's dark glass got a max of 0.006 where its own hand-written spec held 0.1049, and calibrate.run cannot widen a picture it did not render.",
-    deps: [],
-  },
-  {
-    id: "PW653",
-    block: "L",
-    symptom: "a capture hashes a class_name script from a stale copy under .polyweave, so an edited script reads as undeclared",
-    why: "An edit-and-capture loop reads as nondeterminism, so the honest fix is to switch the record off and lose provenance.",
     deps: [],
   },
   {

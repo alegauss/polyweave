@@ -31,7 +31,10 @@ from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 
 _ENUM = re.compile(r"^enum\s+(?P<name>\w+)\s*\{(?P<body>[^}]*)\}", re.MULTILINE)
-_SKIP = {".godot", ".git", ".polyweave", "addons", "node_modules"}
+#: What the engine imports and is still not the game's own state machines: the plugins'
+#: and the kits' code under addons, and a JavaScript toolchain's. Hidden folders and
+#: .gdignore are the shared walk's (§PW653).
+_SKIP = {"addons", "node_modules"}
 
 
 def _members(body: str) -> tuple[list[str], set[str]]:
@@ -144,8 +147,10 @@ def states(
             f"there is no project.godot at {here}, so no game scripts to read",
             "read the Godot project's own folder",
         )
+    from polyweave.kernel.files import project_files
+
     found, read = [], []
-    for path in sorted(here.rglob("*.gd")):
+    for path in project_files(here, "*.gd"):
         parts = path.relative_to(here).parts
         if any(p in _SKIP for p in parts):
             continue

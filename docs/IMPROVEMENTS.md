@@ -289,32 +289,6 @@ verdict, and each gap it met is a filed line.
 
 ## Block L — What a run leaves as evidence
 
-### §PW653 A retake after an edit hashes the script that was edited
-
-Spinhold, RK302 (the run's HUD redrawn in the menu kit), 2026-10-27. The loop was: edit
-`game/ui/hud.gd`, `capture.run --script dev/shot.gd --expect SHOT` into
-`.polyweave/rk302/hud_en.png`, look, edit again. The second capture came back
-`reproduced.holds: false`, "the same declared settings produced different bytes ... so
-something this picture depends on is not declared". The workaround was `record: false`
-on every later capture, which drops provenance.
-
-The record does hash what the run loaded (`capture.inputs`, PW622's class scripts
-included), so an edit should have read as different work. It did not because the record
-hashed the wrong file: `hud_en.png.prov.json` lists `hud.gd` as
-`.polyweave/cost/trees/0dfd6457f0fa/game/ui/hud.gd`, a copy `engine.cost` left behind.
-`capture.reached` (`layers/engine/capture.py:129`) indexes every `class_name` with
-`rglob("*.gd")`, skipping only `.godot`, and `setdefault` keeps the first in sorted
-order, where `.polyweave/` comes before `game/`. The edited script was never hashed.
-
-The class: three walks over a project's scripts each skip a different set, `capture`
-only `.godot`, `engine/states.py` its `_SKIP`, `words.py` hidden folders. What polyweave
-should do: one walk of the project's own files, skipping what Godot skips (a folder
-whose name starts with a dot, one holding `.gdignore`), used by all three; a
-`class_name` declared twice named in the answer rather than resolved by sort order; and
-the unexplained-difference verdict saying how many inputs matched and which were
-`unread`, rather than concluding a setting is undeclared. Done when Spinhold's
-edit-and-capture loop reads as different work naming `game/ui/hud.gd`.
-
 ## Block M — What a game needs beyond the look
 
 ## Block N — Pictures held to a canon

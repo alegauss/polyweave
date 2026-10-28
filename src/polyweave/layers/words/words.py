@@ -638,11 +638,10 @@ def unlisted(root: Annotated[str, _ROOT] = ".") -> dict:
         if refused.code != "words.no-table":
             raise
         keys = set()
-    scenes = sorted(
-        s
-        for s in here.rglob("*.tscn")
-        if not any(p.startswith(".") for p in s.relative_to(here).parts[:-1])
-    )
+    from polyweave.kernel.files import project_files
+
+    # The scenes the engine imports, the walk every reader of a game shares (§PW653).
+    scenes = project_files(here, "*.tscn")
     literals = []
     for scene in scenes:
         text = read_text_retrying(scene) or ""

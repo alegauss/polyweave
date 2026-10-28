@@ -386,6 +386,7 @@
 - ✅ **PW612** **two runs of the same level cannot be compared, so no one can say which entity diverged first, or when** — game.compare_runs holds two runs' entity traces together within declared tolerances and names the first entity, field and time to part (design recorded in `docs/specs/engine.md`).
 - ✅ **PW643** **capture.run answers ok true when the picture it was asked for was never written, the reason only in why_unrecorded** — capture.run answers ok false, missing-artefact, for a picture named and not written, user:// included, and makes the out folder first (design recorded in `docs/specs/engine.md`).
   checked **capture.run answers ok and an empty why when its out folder is missing** Same bug as PW643, met a day later: capture.run never checks that the picture its expect line names exists.
+- ✅ **PW653** **a capture hashes a class_name script from a stale copy under .polyweave, so an edited script reads as undeclared** — A capture hashes the game's own scripts, read as Godot reads the project, names a class declared twice; a differs says what it could not hash (design recorded in `docs/specs/engine.md`).
 
 ## Block M — What a game needs beyond the look
 

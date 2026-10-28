@@ -1,15 +1,18 @@
-"""Writing a file that another process may be reading at the same time.
+"""Writing a file that another process may be reading at the same time, and walking a
+game's own files.
 
-Two things here, and both exist because state this plugin keeps is read across
-processes: a job record polled from another session, a cache entry read while a worker
-writes one.
-
+The first two exist because state this plugin keeps is read across processes: a job
+record polled from another session, a cache entry read while a worker writes one.
 Neither is interesting. Both are wrong often enough on Windows to be worth having in one
 place rather than in each of the modules that needs them.
+
+The walk exists because three readers of a game's scripts each skipped a different set
+of folders, and one of them hashed a stale copy under `.polyweave` (§PW653).
 """
 
 from __future__ import annotations
 
+import fnmatch
 import os
 import secrets
 import time
@@ -49,6 +52,24 @@ def write_atomic(path: Path, text: str | bytes, attempts: int = 10) -> None:
     except BaseException:
         tmp.unlink(missing_ok=True)
         raise
+
+
+def project_files(here: Path, pattern: str) -> list[Path]:
+    """Every file under a Godot project matching `pattern`, as the engine sees it,
+    sorted.
+
+    A folder whose name starts with a dot (`.godot`, `.git`, `.polyweave`) and one
+    holding a `.gdignore` are skipped, as Godot skips them: a copy `engine.cost` left
+    under `.polyweave` declared the same `class_name` as the script it copied, and a
+    capture hashed the copy where the edited script stood (§PW653).
+    """
+    found = []
+    for folder, dirs, names in os.walk(here):
+        dirs[:] = sorted(d for d in dirs if not d.startswith(".")
+                         and not (Path(folder) / d / ".gdignore").exists())
+        found += [Path(folder) / name for name in names
+                  if fnmatch.fnmatch(name, pattern)]
+    return sorted(found)
 
 
 def read_text_retrying(path: Path, attempts: int = 5) -> str | None:

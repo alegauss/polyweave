@@ -34,8 +34,6 @@
 
 ## Block L — What a run leaves as evidence
 
-- 📋 **PW653** (deps: —) **a capture hashes a class_name script from a stale copy under .polyweave, so an edited script reads as undeclared** — An edit-and-capture loop reads as nondeterminism, so the honest fix is to switch the record off and lose provenance. → §PW653
-
 ## Block M — What a game needs beyond the look
 
 ## Block N — Pictures held to a canon

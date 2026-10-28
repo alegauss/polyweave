@@ -668,7 +668,8 @@ def test_it_names_the_settings_the_picture_was_held_at(tmp_path):
     """Cottony's message said the settings matched and never which ones they were."""
     found = differing(tmp_path)
     assert "form and light were pinned" in found["why"]
-    assert "something this picture depends on is not declared" in found["why"]
+    assert "something this picture depends on was neither declared nor hashed" in (
+        found["why"])
 
 
 def test_one_setting_is_named_in_the_singular(tmp_path):
@@ -678,6 +679,12 @@ def test_one_setting_is_named_in_the_singular(tmp_path):
 def test_three_settings_read_as_a_list_and_not_a_chain_of_ands(tmp_path):
     found = differing(tmp_path, params={"locale": "pt_BR", "scale": 2, "theme": "dark"})
     assert "locale, scale and theme were pinned" in found["why"]
+
+
+def test_it_names_what_the_run_could_not_hash(tmp_path):
+    """§PW653: a differs named no input, so an edited script read as a setting."""
+    found = differing(tmp_path, extra={"unread": ["res://art/gone.png"]})
+    assert "it could not hash res://art/gone.png" in found["why"]
 
 
 def test_a_picture_held_at_nothing_says_that_rather_than_naming_none(tmp_path):

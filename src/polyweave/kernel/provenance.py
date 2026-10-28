@@ -550,12 +550,21 @@ def _boundary(record: dict) -> str:
     project's setting, and a run that recorded none did not pin even the instant.
     """
     held = _naming(pinned(record))
+    # The key holds every input hashed, so a `differs` means each of those matched too;
+    # what the run named and could not hash is where a difference may lie (§PW653).
+    hashed = len(record.get("inputs") or ())
+    matched = f" and its {hashed} hashed input{'s' if hashed != 1 else ''} matched" \
+        if hashed else ""
     said = (
-        f"{held} {'was' if len(pinned(record)) == 1 else 'were'} pinned, so something "
-        f"this picture depends on is not declared"
+        f"{held} {'was' if len(pinned(record)) == 1 else 'were'} pinned{matched}, so "
+        "something this picture depends on was neither declared nor hashed"
         if held
         else "nothing was declared, so every difference here is unaccounted for"
     )
+    unread = record.get("unread") or []
+    if unread:
+        said += f"; it could not hash {', '.join(map(str, unread[:5]))}" + (
+            f" and {len(unread) - 5} more" if len(unread) > 5 else "")
     if record.get("frames") in (None, ""):
         said += ", and no frame was recorded"
     return said

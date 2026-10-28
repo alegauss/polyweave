@@ -108,13 +108,30 @@ def inputs(script: str | Path, opened: list[str], root: str | Path) -> dict:
     found += [provenance.source("class", path, root=where)
               for path in reached(found, where)
               if provenance.relative(path, where) not in held]
-    return {"inputs": found, "unread": unread}
+    # Named, not settled by sort order: which one the engine loads is its to say.
+    twice = {name: [provenance.relative(p, where) for p in paths]
+             for name, paths in declared_classes(where).items() if len(paths) > 1}
+    return {"inputs": found, "unread": unread, **({"twice": twice} if twice else {})}
 
 
 #: A script's own name for itself, which any other script may use without a path.
 CLASS_NAME = re.compile(r"^[ \t]*class_name[ \t]+(?P<name>[A-Za-z_]\w*)", re.MULTILINE)
 #: A word that could be a class's name where a script uses it.
 WORD = re.compile(r"\b[A-Za-z_]\w*\b")
+
+
+def declared_classes(where: Path) -> dict[str, list[Path]]:
+    """Every `class_name` the game's own scripts declare, and the scripts declaring it,
+    read as the engine reads the project (§PW653): a folder starting with a dot or
+    holding a `.gdignore` is not the game's."""
+    from polyweave.kernel.files import project_files
+
+    classes: dict[str, list[Path]] = {}
+    for path in project_files(where, "*.gd"):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for one in CLASS_NAME.finditer(text):
+            classes.setdefault(one.group("name"), []).append(path)
+    return classes
 
 
 def reached(found: list[dict], where: Path) -> list[Path]:
@@ -125,13 +142,7 @@ def reached(found: list[dict], where: Path) -> list[Path]:
     (§PW622). The names are read off the project's own `class_name` lines; the engine's
     cache under `.godot/` is not needed for that and may not be there.
     """
-    classes = {}
-    for path in sorted(where.rglob("*.gd")):
-        if ".godot" in path.relative_to(where).parts:
-            continue
-        text = path.read_text(encoding="utf-8", errors="replace")
-        for one in CLASS_NAME.finditer(text):
-            classes.setdefault(one.group("name"), path)
+    classes = {name: paths[0] for name, paths in declared_classes(where).items()}
     if not classes:
         return []
     seen: set[Path] = set()
@@ -401,12 +412,14 @@ def _once(
     if record:
         read = inputs(found["script"], answer["loaded"], root)
         answer["unread"] = read["unread"]
+        if read.get("twice"):
+            answer["declared_twice"] = read["twice"]
         made = [
             _record(
                 one,
                 asked,
                 {**found, "regions": answer["regions"], "inputs": read["inputs"],
-                 "args": own, "call": call, "layout": laid},
+                 "unread": read["unread"], "args": own, "call": call, "layout": laid},
                 root,
             )
             for one in found["artefacts"]
@@ -724,6 +737,9 @@ def _record(
             # The window and the viewport it was laid out in, which differ under a
             # stretch (§PW633).
             **({"layout": found["layout"]} if found.get("layout") else {}),
+            # What the run named and the record could not hash, so a later difference
+            # says where it may lie (§PW653).
+            **({"unread": found["unread"]} if found.get("unread") else {}),
         },
         root=root,
     )

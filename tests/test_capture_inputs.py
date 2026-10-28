@@ -139,4 +139,51 @@ def test_with_every_input_unchanged_it_still_blames_what_is_undeclared(tmp_path)
     found = take(tmp_path, script, shot, b"two")
     (verdict,) = found["reproduced"]["artefacts"]
     assert verdict["verdict"] == "differs"
-    assert "not declared" in verdict["why"]
+    assert "neither declared nor hashed" in verdict["why"]
+    # What the run named and could not hash is said, where the difference may lie.
+    assert "it could not hash res://art/gone.png" in verdict["why"]
+
+
+# -- the game's own scripts, as the engine reads the project (§PW653) ------------------
+
+
+def scripts(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    (tmp_path / "shot.gd").write_text("extends SceneTree\nvar hud := Hud.new()\n",
+                                      encoding="utf-8")
+    own = tmp_path / "game" / "ui" / "hud.gd"
+    own.parent.mkdir(parents=True)
+    own.write_text("class_name Hud\nextends Node\n", encoding="utf-8")
+    # The copy engine.cost leaves under the work area, sorting first.
+    stale = tmp_path / ".polyweave/cost/trees/0dfd/game/ui/hud.gd"
+    stale.parent.mkdir(parents=True)
+    stale.write_text("class_name Hud\nextends Node\n# old\n", encoding="utf-8")
+    return own
+
+
+def test_a_class_is_hashed_from_the_game_s_own_script_not_a_stale_copy(tmp_path):
+    # Spinhold's HUD edit read as undeclared: the record hashed .polyweave's copy.
+    scripts(tmp_path)
+    read = capture.inputs("shot.gd", [], tmp_path)
+    classes = [one["path"] for one in read["inputs"] if one["role"] == "class"]
+    assert classes == ["game/ui/hud.gd"]
+    assert "twice" not in read
+
+
+def test_a_class_two_of_the_game_s_scripts_declare_is_named(tmp_path):
+    scripts(tmp_path)
+    other = tmp_path / "game" / "old_hud.gd"
+    other.write_text("class_name Hud\n", encoding="utf-8")
+    read = capture.inputs("shot.gd", [], tmp_path)
+    assert read["twice"] == {"Hud": ["game/old_hud.gd", "game/ui/hud.gd"]}
+
+
+def test_the_walk_skips_what_godot_skips(tmp_path):
+    from polyweave.kernel.files import project_files
+
+    own = scripts(tmp_path)
+    ignored = tmp_path / "tools" / "lab.gd"
+    ignored.parent.mkdir()
+    ignored.write_text("extends Node\n", encoding="utf-8")
+    (tmp_path / "tools" / ".gdignore").write_text("", encoding="utf-8")
+    assert project_files(tmp_path, "*.gd") == [own, tmp_path / "shot.gd"]

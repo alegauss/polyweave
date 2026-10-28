@@ -460,6 +460,16 @@ are read off the project's own `class_name` lines, not the engine's cache under
 `.godot/`. Cottony's changed tray then reads as `different-work` naming
 `scripts/tray_mesh.gd`, not as an undeclared setting.
 
+**The project's own scripts are those the engine imports** (§PW653). A folder whose name
+starts with a dot, and one holding a `.gdignore`, are skipped, as Godot skips them. The
+class walk, `engine.states` and `words.unlisted` read the project through that one walk.
+Spinhold's capture had hashed `hud.gd` from a copy `engine.cost` left under
+`.polyweave/cost/trees/`, which sorted ahead of `game/ui/hud.gd`, so an edited HUD read
+as undeclared. A `class_name` two of the game's scripts declare is named in the answer as
+`declared_twice` rather than settled by sort order. A `differs` now says how many hashed
+inputs matched and which named resources could not be hashed (`unread`, kept in the
+record), not only that a setting is undeclared.
+
 **A script can say where it drew each asset** (§PW112). A line `region: star_dim=412,96,508,192`
 names a rectangle of the picture in pixels, `[x0, y0, x1, y1]`, and the script can print one
 per asset it placed, since it knows where it put each one. The run keeps them as `regions`
