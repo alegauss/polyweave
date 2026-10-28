@@ -122,28 +122,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW639 Moving one Control between a panel's states
-
-Met in Spinhold, RK184 (2026-10-25). `panel.build(shader=true)` writes one
-`<name>.<state>.material.tres` per state, each `resource_local_to_scene`. A Control
-whose state changes at run time (a card gaining focus, a button disabled) cannot simply
-assign one: a loaded material is shared by every panel that loads it, so a per-instance
-`set_shader_parameter` (a tint, a cut) would leak to all of them. Spinhold's
-`game/ui/kit/holo_panel.gd` works round it by keeping its own `ShaderMaterial` and, on
-every state change, looping over `SHADER.get_shader_uniform_list()` to copy each uniform
-from the chosen state's material, then reapplying its tint.
-
-`tint` also surprised: it multiplies `bracket_colour`, so a crew family's gold over the
-kit's cyan comes out green. Spinhold sets `bracket_colour` itself instead.
-
-polyweave should ship the switch with the build: a small GDScript (in the kit's addon,
-or written beside the shader) that holds a panel's states and moves one Control between
-them, keeping per-instance overrides, with the state precedence declared (disabled over
-pressed over focus). And `tint` should say whether it replaces or multiplies, or offer
-both. Done when HoloPanel's copy loop can be deleted for it. Today `tint` reaches only
-`bracket_colour`, on the shader and the still route alike; the edge, tick and fill
-ignore it, which `describe` should say until it is declared.
-
 ### §PW646 icons.build says what it did with a symbol and a folder
 
 Met in Spinhold, RK266 and RK294 (2026-10-26), adding icons to

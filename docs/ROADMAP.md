@@ -18,7 +18,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW639** (deps: —) **a Control switching panel states has to copy every uniform from the state's material by hand, and tint multiplies** — Each game rewrites the same state switch round shared materials, and a tint over the kit's colour comes out a third colour. → §PW639
 - 📋 **PW646** (deps: —) **icons.build draws an unknown symbol as text, ignores unknown keys, nests out under the set and has no sittings folder** — Each answer passed while the icon or its folder came out wrong, and finding out took reading icons.py. → §PW646
 - 📋 **PW647** (deps: —) **game.text_fit measures a label without its clip, label_settings, scale or covering layer, so text that fits reads unfit** — A clean screen fails the check, so its findings are read by eye again, as before PW336. → §PW647
 - 📋 **PW655** (deps: —) **engine.sweep flies headless, so a capture script saves no picture and every combination ends in a script error** — Measuring variants over seeds falls to a hand-written loop of capture.run calls. → §PW655

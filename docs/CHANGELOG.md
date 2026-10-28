@@ -288,6 +288,7 @@
 - ✅ **PW636** **vfx.preview films only in 3D, so an effect drawn on a 2D canvas has no sitting of its own** — vfx.preview films a canvas effect on its own with a still 2D camera framing what it emits from, so a drift is judged beside the drift as it was.
 - 🗑 **PW648** **capture.run answers ok and an empty why when its out folder is missing** — superseded by PW643: Same bug as PW643, met a day later: capture.run never checks that the picture its expect line names exists.
 - ✅ **PW638** **a panel's hairline, edge or bracket width must be whole pixels, so a 1.2-pixel line a person accepted cannot be declared** — A panel's edge, hairline, piping, bracket and tick widths take any pixels from 0.5, drawn on both routes, so the 1.2 hairline builds (design recorded in `docs/specs/panel.md`).
+- ✅ **PW639** **a Control switching panel states has to copy every uniform from the state's material by hand, and tint multiplies** — panel.build(shader) writes <name>.panel.gd, a Control switching states on its own material, overrides kept; tint is said to tint brackets (design recorded in `docs/specs/panel.md`).
 
 ## Block I — Voxel models from a declaration
 

@@ -1255,6 +1255,81 @@ shader = ExtResource("1")
 """
 
 
+#: The order a set flag wins in, the first one set that the panel declares (§PW639).
+PRECEDENCE = (("disabled", "disabled"), ("pressed", "pressed"), ("focused", "focus"),
+              ("hovered", "hover"))
+
+_SWITCH = """extends ColorRect
+## Panel %(name)s, as panel.build wrote it from %(source)s (§PW639). Its look is one
+## material a state; this Control keeps a material of its own and copies the state's
+## onto it, so what it overrides stays on this one panel. Of the flags set, the first in
+## %(order)s wins, and with none set it is normal.
+## Not edited by hand: panel.build writes it again with the materials.
+
+const SHADER := preload("%(shader)s")
+const STATES := {
+%(states)s
+}
+
+%(flags)s
+## uniforms this panel holds through every state, by name: `cut`, `bracket_length`,
+## `tick_from`. The shader's `tint` multiplies the brackets' colour and nothing else;
+## `bracket_colour` replaces it.
+@export var overrides := {}:
+\tset(value):
+\t\toverrides = value
+\t\t_state()
+
+
+func _init() -> void:
+\tcolor = Color.WHITE
+\tmouse_filter = Control.MOUSE_FILTER_IGNORE
+\tvar drawn := ShaderMaterial.new()
+\tdrawn.shader = SHADER
+\tmaterial = drawn
+\t_state()
+
+
+## the state this panel is drawn in
+func state() -> StringName:
+%(order_body)s
+\treturn &"normal"
+
+
+func _state() -> void:
+\tvar drawn := material as ShaderMaterial
+\tif drawn == null:
+\t\treturn
+\tvar look := STATES[state()] as ShaderMaterial
+\tfor uniform: Dictionary in SHADER.get_shader_uniform_list():
+\t\tvar named: String = uniform["name"]
+\t\tdrawn.set_shader_parameter(named, look.get_shader_parameter(named))
+\tfor uniform: String in overrides:
+\t\tdrawn.set_shader_parameter(uniform, overrides[uniform])
+"""
+
+
+def _switch(name: str, source: str, shader: str, materials: dict[str, str]) -> str:
+    """The GDScript that moves one Control between a panel's built states."""
+    flags, order = [], []
+    for flag, state in PRECEDENCE:
+        if state not in materials:
+            continue
+        flags.append(f"## the panel is drawn {state} while this is set\n"
+                     f"@export var {flag} := false:\n\tset(value):\n"
+                     f"\t\t{flag} = value\n\t\t_state()\n")
+        order.append((flag, state))
+    return _SWITCH % {
+        "name": name, "source": source, "shader": shader,
+        "order": " over ".join(state for _, state in order) or "normal only",
+        "states": "\n".join(f'\t&"{state}": preload("{path}"),'
+                            for state, path in materials.items()),
+        "flags": "".join(flags),
+        "order_body": "".join(f'\tif {flag}:\n\t\treturn &"{state}"\n'
+                              for flag, state in order),
+    }
+
+
 def _gd(value: Any) -> str:
     """A value as a .tres writes it: a colour from 0-255 parts, a vector, a number."""
     if isinstance(value, list) and value and isinstance(value[0], tuple):
@@ -1391,7 +1466,8 @@ def build(
     <name>.<state>.tres styleboxes; one with an `outline` of its own is no nine-patch,
     so it has no stylebox and says `stretch: none`. With `shader`, a panel is also
     <name>.gdshader and a <name>.<state>.material.tres a state, which draws the accent
-    tick a nine-patch would stretch. A wipe is always <name>.gdshader and
+    tick a nine-patch would stretch, and <name>.panel.gd, the Control that moves between
+    them (`switches`). A wipe is always <name>.gdshader and
     <name>.material.tres, its `progress` uniform covering the screen from 0 to 1.
     """
     from polyweave.kernel import provenance
@@ -1422,6 +1498,7 @@ def build(
         ), config.root)
 
     made: dict[str, dict] = {}
+    switches: dict[str, str] = {}
     for name, drawn in states.items():
         made[name] = {}
         program = folder / f"{name}.gdshader"
@@ -1465,6 +1542,13 @@ def build(
                 made[name][state]["shader"] = provenance.relative(program, config.root)
                 made[name][state]["material"] = provenance.relative(material,
                                                                     config.root)
+        if shader:
+            switch = folder / f"{name}.panel.gd"
+            switch.write_text(_switch(
+                name, provenance.relative(where, config.root), res(program),
+                {state: res(folder / f"{name}.{state}.material.tres")
+                 for state in drawn}), encoding="utf-8", newline="\n")
+            switches[name] = provenance.relative(switch, config.root)
     swept: dict[str, dict] = {}
     for name, own in wiped.items():
         program = folder / f"{name}.gdshader"
@@ -1480,6 +1564,8 @@ def build(
         }
     answer: dict[str, Any] = {"source": provenance.relative(where, config.root),
                               "panels": made}
+    if switches:
+        answer["switches"] = switches
     if swept:
         answer["wipes"] = swept
     return answer

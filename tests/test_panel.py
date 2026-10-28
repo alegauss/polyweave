@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 import numpy as np
 import pytest
 from PIL import Image
 
 from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import engine
 from polyweave.layers.picture import panel
 
 HOLO = """\
@@ -828,3 +832,49 @@ def test_a_fractional_line_needs_the_whole_pixel_past_it_in_the_margin(tmp_path)
     assert "reaches 11 px" in refused.value.message
     panel.build(panels(tmp_path, tight.replace("margin = 10", "margin = 11")),
                 root=str(tmp_path))
+
+
+SWITCHED = """extends SceneTree
+
+func _process(_delta: float) -> bool:
+\tvar one: ColorRect = load("res://ui/holo.panel.gd").new()
+\tvar two: ColorRect = load("res://ui/holo.panel.gd").new()
+\troot.add_child(one)
+\troot.add_child(two)
+\tone.overrides = {"bracket_colour": Color(1, 0.8, 0, 1)}
+\tone.focused = true
+\tprint("panel: focus=%s edge=%s marks=%s other=%s/%s" % [one.state(),
+\t\tone.material.get_shader_parameter("edge_colour").to_html(false),
+\t\tone.material.get_shader_parameter("bracket_colour").to_html(false), two.state(),
+\t\ttwo.material.get_shader_parameter("edge_colour").to_html(false)])
+\tone.disabled = true
+\tprint("panel: over=%s pressed=%s" % [one.state(), "pressed" in one])
+\treturn true
+"""
+
+
+def test_a_panel_built_as_a_shader_ships_the_control_that_switches_it(tmp_path):
+    made = panel.build(panels(tmp_path), shader=True, root=str(tmp_path))
+    assert made["switches"] == {"holo": "ui/holo.panel.gd"}
+    script = (tmp_path / "ui/holo.panel.gd").read_text("utf-8")
+    assert 'preload("res://ui/holo.focus.material.tres")' in script
+    # Only the states the panel declares get a flag, in the order they win.
+    assert "var focused" in script and "var pressed" not in script
+    assert "disabled over focus" in script
+
+
+def test_the_switch_moves_one_control_and_keeps_its_own_overrides(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    panel.build(panels(tmp_path), shader=True, root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="panel"\n', encoding="utf-8")
+    (tmp_path / "switched.gd").write_text(SWITCHED, encoding="utf-8")
+    ran = engine.run("switched.gd", expect=r"^panel: over", root=tmp_path,
+                     headless=True)
+    assert ran["ok"] is True, ran
+    said = Path(ran["log"]).read_text("utf-8")
+    # Focused, its edge goes white and its own bracket colour holds; the other panel,
+    # loaded from the same materials, stays normal and cyan (§PW639).
+    assert "panel: focus=focus edge=ffffff marks=ffcc00 other=normal/3fe0ff" in said
+    assert "panel: over=disabled pressed=false" in said

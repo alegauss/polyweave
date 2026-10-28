@@ -109,9 +109,9 @@ grey and fades it by up to 30%. Spinhold's focus is `glow = 1.9`, pressed
 `glass_lift = 0.35` and disabled `drain = 1`. A `sweep = { colour, strength, speed,
 width, slant }` is a faint diagonal light crossing the glass on `TIME`, which only the
 shader draws, so the nine-patch says `not_drawn: ["sweep"]`. `tint` multiplies the
-brackets' colour, and every material is local to its scene, so a game sets `tint`,
-`cut` or `bracket_length` on one Control (`set_shader_parameter`) without touching the
-others.
+brackets' colour and nothing else: the edge, the tick and the fill ignore it, on the
+shader and the nine-patch alike, so a gold tint over cyan brackets comes out green. To
+replace the brackets' colour, set `bracket_colour` itself.
 
 A `seam` sews the panel, where a flat dashed stroke only paints a line on it:
 
@@ -189,6 +189,18 @@ length = 20
 width = 2
 colour = "#ff4fd8"
 ```
+
+A material loaded with `preload` is shared by every Control that loads it, so setting a
+uniform on one state's material changes every panel drawn in that state. The build
+therefore also writes `<name>.panel.gd`, named in the answer's `switches` (§PW639): a
+`ColorRect` that keeps a `ShaderMaterial` of its own and, whenever its state changes,
+copies every uniform from that state's material onto it. A game preloads it and calls
+`.new()`, or extends it. It has a flag for each state the panel declares (`disabled`,
+`pressed`, `focused`, `hovered`), and the first one set in that order wins, with
+`normal` when none is set. Its `overrides`, uniforms by name such as `cut`,
+`bracket_length` or `bracket_colour`, are applied after every switch, so they hold on
+that one panel through every state. It has no `class_name`, so it cannot collide with a
+game's own. It is written again with the materials, and nobody edits it by hand.
 
 Built without the shader, a panel with a `tick` says `not_drawn: ["tick"]` for each state
 rather than dropping it unannounced. Every number is written to the material with a

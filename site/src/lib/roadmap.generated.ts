@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 4 },
+  { block: "H", title: "Proof on a real game", open: 3 },
   { block: "I", title: "Voxel models from a declaration", open: 2 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -57,13 +57,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "no operation enlarges a corner of a capture, so a HUD icon a few pixels wide cannot be judged",
     why: "Checking small UI parts falls to a hand-run crop script on every retake.",
-    deps: [],
-  },
-  {
-    id: "PW639",
-    block: "H",
-    symptom: "a Control switching panel states has to copy every uniform from the state's material by hand, and tint multiplies",
-    why: "Each game rewrites the same state switch round shared materials, and a tint over the kit's colour comes out a third colour.",
     deps: [],
   },
   {
