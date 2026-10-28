@@ -410,6 +410,8 @@ export interface EngineSweepArgs {
   frames?: number
   /** fly it again though this build was swept; default false */
   again?: boolean
+  /** draw each run, as capture.run does; default false */
+  display?: boolean
 }
 
 /** Send several commands to a held game in one call, answering each (§PW271). */

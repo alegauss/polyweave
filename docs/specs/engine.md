@@ -331,6 +331,19 @@ the script's hash, the grid, the pattern, the arguments and the build (the git c
 a hash of what is uncommitted, polyweave's own work folder left out), so the same sweep of
 the same build answers from the record with `cached` true, and `again` flies it anyway.
 
+**A sweep of captures is one call** (§PW655). Headless, the root viewport has no
+texture. Spinhold's fifteen-run legibility sweep, five habitats on three seeds, ended
+every run in `save_png` on null and fell back to a hand-written loop of `capture.run`
+calls. So a sweep whose script saves a picture (`save_png`, or reading
+`get_viewport().get_texture()`) is refused before it flies, as
+`engine.headless-picture`. With `display=true` each combination is flown through
+`capture.run` instead, with its route, environment and record. The runs fly one at a
+time, since windows drawn at once gave a guest's driver out. Each run answers the
+pictures it wrote as `produced`, and any it named and did not write as `missing`. A
+`{name}` in `args` becomes that run's value, so `--out=res://shots/{habitat}-{seed}.png`
+gives each combination a picture of its own. A drawn sweep is keyed apart from a
+headless one.
+
 **What a change costs a frame is one call** (§PW258). A design that must hold the frame
 rate needs its change's cost, and a timing table recorded a day earlier is about a build
 that no longer exists: Starship's `Graphics.MEASURED` said 2.03 ms where the same wave

@@ -20,8 +20,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW655** (deps: —) **engine.sweep flies headless, so a capture script saves no picture and every combination ends in a script error** — Measuring variants over seeds falls to a hand-written loop of capture.run calls. → §PW655
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

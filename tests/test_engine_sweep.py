@@ -116,3 +116,82 @@ def test_a_grid_without_values_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         engine.sweep("scan.gd", grid={"seed": 3}, pattern="x", root=str(tmp_path))
     assert refused.value.code == "engine.bad-grid"
+
+
+# -- a sweep of captures (§PW655) ------------------------------------------------------
+
+DRAWS = """extends SceneTree
+
+var frames := 0
+var out := ""
+
+func _initialize() -> void:
+\tfor arg in OS.get_cmdline_user_args():
+\t\tif arg.begins_with("--out="):
+\t\t\tout = arg.get_slice("=", 1)
+
+func _process(_delta: float) -> bool:
+\tframes += 1
+\tif frames < 3:
+\t\treturn false
+\tvar image := root.get_viewport().get_texture().get_image()
+\timage.save_png(out)
+\tprint("captured: %s %d x %d" % [out, image.get_width(), image.get_height()])
+\treturn true
+"""
+
+
+def drawing(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("[capture]\ndeclared = []\n",
+                                             encoding="utf-8")
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="draws"\n', encoding="utf-8")
+    (tmp_path / "draws.gd").write_text(DRAWS, encoding="utf-8")
+    return tmp_path
+
+
+def test_a_headless_sweep_of_a_script_that_saves_a_picture_is_refused(tmp_path):
+    # Spinhold's fifteen legibility runs each ended in save_png on null.
+    root = drawing(tmp_path)
+    with pytest.raises(PolyweaveError) as refused:
+        engine.sweep("draws.gd", grid={"seed": [1]}, pattern="captured",
+                     root=str(root))
+    assert refused.value.code == "engine.headless-picture"
+
+
+def test_a_drawn_sweep_flies_each_run_as_a_capture(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from polyweave.layers.engine import capture
+
+    root = drawing(tmp_path)
+    flown = []
+
+    def taken(script, *, expect, root, frames, args):
+        out = next(a.split("=", 1)[1] for a in args if a.startswith("--out="))
+        flown.append(out)
+        (Path(root) / out).parent.mkdir(parents=True, exist_ok=True)
+        (Path(root) / out).write_bytes(b"png")
+        log = Path(root) / f"{len(flown)}.log"
+        log.write_text(f"captured: {out} 8 x 8\n", encoding="utf-8")
+        return {"ok": True, "verdict": "ok", "log": str(log), "seconds": 1.0,
+                "artefacts": [str(Path(root) / out)]}
+
+    monkeypatch.setattr(capture, "run", taken)
+    found = engine.sweep("draws.gd", grid={"seed": ["a", "b"]}, pattern="captured",
+                         args=["--out=shots/{seed}.png"], display=True,
+                         root=str(root))
+    assert flown == ["shots/a.png", "shots/b.png"]
+    assert [r["produced"] for r in found["runs"]] == [["shots/a.png"], ["shots/b.png"]]
+    assert len(found["hits"]) == 2
+
+
+def test_a_sweep_of_captures_draws_every_picture_in_one_call(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = drawing(tmp_path)
+    found = engine.sweep("draws.gd", grid={"seed": [1, 2]}, pattern="captured",
+                         args=["--out=res://shots/{seed}.png"], display=True,
+                         root=str(root))
+    assert [r["verdict"] for r in found["runs"]] == ["ok", "ok"], found["runs"]
+    assert (root / "shots" / "1.png").is_file() and (root / "shots" / "2.png").is_file()

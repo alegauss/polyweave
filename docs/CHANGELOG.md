@@ -295,6 +295,7 @@
 - ✅ **PW646** **icons.build draws an unknown symbol as text, ignores unknown keys, nests out under the set and has no sittings folder** — A project's [paths] sittings holds every sitting, icons, kit and clip, each under its own name, and empty keeps each where it was (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW647** **game.text_fit measures a label without its clip, label_settings, scale or covering layer, so text that fits reads unfit** — game.text_fit judges text as drawn: its own font and units, clipped text set aside, the screen edge named, a higher layer on top (design recorded in `docs/specs/driving.md`).
   checked **text_fit misreads label_settings, a scaled parent and a covered layer** Both are text_fit's one box function in driver.gd, which ignores clips, label_settings, scale and covering layers.
+- ✅ **PW655** **engine.sweep flies headless, so a capture script saves no picture and every combination ends in a script error** — engine.sweep with display flies each run through capture.run with its own picture, and a headless sweep of a script that saves one is refused (design recorded in `docs/specs/engine.md`).
 
 ## Block I — Voxel models from a declaration
 

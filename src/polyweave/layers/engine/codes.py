@@ -60,6 +60,11 @@ CODES: dict[str, Code] = {
         "[trace] time that is neither frame nor t (§PW612)",
         doors=("write each line as {frame, id, kind, fields}",),
     ),
+    "engine.headless-picture": Code(
+        means="a headless sweep was given a script that saves a picture",
+        when="engine.sweep without display on a script calling save_png (§PW655)",
+        doors=("pass display=true",),
+    ),
     "game.no-driver": Code(
         means="the driver a game is launched with is not where this copy of polyweave "
         "says it is",

@@ -427,6 +427,26 @@ def _build(root: Path) -> str:
     return head + ":" + hashlib.sha256(dirty.encode("utf-8")).hexdigest()[:16]
 
 
+#: A script that saves what it drew, which a headless run has nothing of (§PW655).
+_DRAWS = re.compile(r"\bsave_(?:png|jpg|webp|exr)\s*\(|get_viewport\(\)\.get_texture\(")
+
+
+def _filled(arg: str, combo: dict) -> str:
+    """An argument with each `{name}` the combination names put in, so each run writes
+    its own picture: `--out=shots/{habitat}-{seed}.png`."""
+    for name, value in combo.items():
+        arg = arg.replace("{" + str(name) + "}", str(value))
+    return arg
+
+
+def _named(path: Any, here: Path) -> str:
+    one = Path(str(path))
+    try:
+        return one.resolve().relative_to(here.resolve()).as_posix()
+    except ValueError:
+        return str(one)
+
+
 @operation("engine.sweep")
 def sweep(
     script: Annotated[str, Param("the scene script, as a path under the project")],
@@ -441,11 +461,12 @@ def sweep(
     lanes: Annotated[int, Param("how many runs at once", lo=1, hi=16)] = 4,
     frames: Annotated[int, Param("each run's frame budget; the project's")] = None,
     again: Annotated[bool, Param("fly it again though this build was swept")] = False,
+    display: Annotated[bool, Param("draw each run, as capture.run does")] = False,
 ) -> dict:
     """Run one script over every combination of arguments, and keep the runs that show
     a pattern (§PW250).
 
-    Each run gets `--<name>=<value>` for its combination after `--`, headless. A hit
+    Each run gets `--<name>=<value>` for its combination after `--`. A hit
     is a run whose output has a line matching `pattern`; the answer lists each hit's
     arguments and its matching lines, and every run's verdict. The sweep is recorded
     under `.polyweave/sweeps/`, keyed by the script, the grid, the pattern and the
@@ -476,6 +497,16 @@ def sweep(
     wanted = re.compile(pattern, re.MULTILINE)
     combos = [dict(zip(names, one, strict=True)) for one in itertools.product(
         *(grid[n] for n in names))]
+    source = path.read_text(encoding="utf-8", errors="replace")
+    if not display and _DRAWS.search(source):
+        # Refused before fifteen runs fail alike: headless, the root viewport has no
+        # texture, so Spinhold's legibility sweep ended every run in save_png on null.
+        raise PolyweaveError(
+            "engine.headless-picture",
+            f"{path.name} saves a picture, and a sweep flies headless, where nothing "
+            "is drawn to save",
+            "pass display=true, which flies each run through capture.run",
+        )
     build = _build(here)
     key = hashlib.sha256(
         json.dumps(
@@ -485,6 +516,8 @@ def sweep(
                 "pattern": pattern,
                 "args": list(args),
                 "build": build,
+                # A drawn run is another run than a headless one (§PW655).
+                **({"display": True} if display else {}),
             },
             sort_keys=True,
         ).encode("utf-8")
@@ -495,22 +528,24 @@ def sweep(
 
     def one_run(combo: dict) -> dict:
         printed: dict[str, str] = {}
+        given = ("--", *(_filled(str(a), combo) for a in args),
+                 *(f"--{n}={v}" for n, v in combo.items()))
+        if display:
+            # Drawn as a capture is, with its environment and record (§PW655).
+            from . import capture
 
-        def launch(command, *, cwd, timeout, **extra):
-            output, code = _launch(command, cwd=cwd, timeout=timeout, **extra)
-            printed["output"] = output
-            return output, code
+            found = capture.run(path, expect=wanted, root=here, frames=frames,
+                                args=given)
+            output = Path(found["log"]).read_text(encoding="utf-8", errors="replace")
+        else:
+            def launch(command, *, cwd, timeout, **extra):
+                output, code = _launch(command, cwd=cwd, timeout=timeout, **extra)
+                printed["output"] = output
+                return output, code
 
-        found = run(
-            path,
-            expect=wanted,
-            root=here,
-            frames=frames,
-            headless=True,
-            args=("--", *map(str, args), *(f"--{n}={v}" for n, v in combo.items())),
-            launch=launch,
-        )
-        output = printed.get("output", "")
+            found = run(path, expect=wanted, root=here, frames=frames, headless=True,
+                        args=given, launch=launch)
+            output = printed.get("output", "")
         matched = list(wanted.finditer(output))
         # The whole line each hit printed, where the numbers a run measured are: the
         # matched text alone dropped every one of Cottony's (§PW487).
@@ -523,11 +558,17 @@ def sweep(
             "verdict": "ok" if lines else found["verdict"],
             "why": "" if lines else found.get("why", ""),
             "seconds": found.get("seconds"),
+            # What a drawn run wrote, and what it named and did not (§PW655).
+            **({"produced": [_named(one, here) for one in found.get("artefacts", [])],
+                **({"missing": found["missing"]} if found.get("missing") else {})}
+               if display else {}),
         }
 
     runs: list[dict] = []
     hits = 0
-    with ThreadPoolExecutor(max_workers=int(lanes)) as pool:
+    # Windows drawn at once are where a guest's driver gave out, so a drawn sweep flies
+    # one run at a time.
+    with ThreadPoolExecutor(max_workers=1 if display else int(lanes)) as pool:
         pending = {pool.submit(one_run, combo): combo for combo in combos}
         for done in as_completed(pending):
             result = done.result()

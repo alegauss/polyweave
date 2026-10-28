@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 1 },
+  { block: "H", title: "Proof on a real game", open: 0 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -71,13 +71,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "provenance.credits lists only owed credits, so a per-asset source and licence manifest is built from .prov.json by hand",
     why: "A package that must name every image's source and licence reads polyweave's records with its own script and types the licence.",
-    deps: [],
-  },
-  {
-    id: "PW655",
-    block: "H",
-    symptom: "engine.sweep flies headless, so a capture script saves no picture and every combination ends in a script error",
-    why: "Measuring variants over seeds falls to a hand-written loop of capture.run calls.",
     deps: [],
   },
   {
