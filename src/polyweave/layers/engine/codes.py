@@ -60,6 +60,11 @@ CODES: dict[str, Code] = {
         "[trace] time that is neither frame nor t (§PW612)",
         doors=("write each line as {frame, id, kind, fields}",),
     ),
+    "engine.frame-timed": Code(
+        means="a script times play by frames where it should by ticks",
+        when="engine.check reads frame-timed play in a script (§PW657)",
+        doors=("move it onto the physics clock",),
+    ),
     "engine.headless-picture": Code(
         means="a headless sweep was given a script that saves a picture",
         when="engine.sweep without display on a script calling save_png (§PW655)",

@@ -43,7 +43,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
-  { block: "S", title: "Playing the game, not only rendering it", open: 2 },
+  { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
@@ -128,13 +128,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand",
     why: "Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed.",
     deps: ["PW203"],
-  },
-  {
-    id: "PW657",
-    block: "S",
-    symptom: "nothing reads a game's scripts for play timed by frames, so a drift is found only after a replay parts",
-    why: "Spinhold's four frame-timed causes were each a pattern a check could name at its line before any run, and game.replay_rates sees only the state kit's names.",
-    deps: [],
   },
   {
     id: "PW661",

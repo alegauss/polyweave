@@ -305,7 +305,14 @@ def check(
     if fixed:
         read = scan(here)
     findings = list(read["findings"])
-    answer: dict = {"parsed": None}
+    # Play timed by frames, named where it is written (§PW657).
+    from .frame_timing import hazards
+
+    timed = hazards(here)
+    findings += timed["findings"]
+    answer: dict = {"parsed": None, "frame_timing": {
+        "scripts": timed["scripts"], **({"unread": timed["unread"]}
+                                         if timed["unread"] else {})}}
     if parse:
         try:
             godot = engine.find(here)

@@ -76,6 +76,8 @@ LAYER = Layer(
         "polyweave.layers.engine.testing:read": (
             "internal", "one test run's counts and failures"),
         "polyweave.layers.engine.integrity:scan": ("internal", "the tree read as text"),
+        "polyweave.layers.engine.frame_timing:hazards": (
+            "internal", "engine.check's read of frame-timed play"),
         "polyweave.layers.engine.runs:declared": (
             "internal", "each [run.<name>], checked"),
         "polyweave.layers.engine.runs:after": (

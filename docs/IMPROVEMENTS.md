@@ -505,28 +505,6 @@ when the lull counts no new track and RK198's re-count matches the owner's sheet
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW657 Frame-timed play named in the scripts
-
-Split from PW640 (2026-10-28). `game.replay_rates` now flies the determinism kit's run
-at several frame rates and names the first tick and state name that part. That finds a
-drift the state kit can see, but only after the run has drifted, and only in what the
-kit's `STATE` names. Spinhold's four causes were each a pattern in a script:
-
-- `_process` writing what `_physics_process` reads (a hit stop counted down per frame);
-- `Engine.time_scale` set inside a physics step, which reaches the next tick only if that
-  tick starts a new frame;
-- a camera held in `_process` whose view decides what the physics culls;
-- play waiting on an AnimationPlayer or Tween in its idle process mode.
-
-What to build: a pass in `engine.check` over each `.gd` that flags a member a `_process`
-body assigns and a `_physics_process` body reads, `Engine.time_scale =` inside a physics
-step, and an `await` on an AnimationPlayer or Tween left in idle process mode. Each
-finding names the file, line and member, and says to move the write into
-`_physics_process` or set the player's process callback to physics. Done when Spinhold's
-four hazards, restored in a fixture, are each named and `game.replay_rates` parts on the
-same run. The parse is pattern work, so the check says what it could not read rather
-than calling a file clean.
-
 ### §PW661 The remap screen in the room it is given
 
 Split from PW652 (2026-10-28), which gave the remap screen's labels one shared column so

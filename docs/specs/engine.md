@@ -538,6 +538,24 @@ another's `class_name` needs, and parses every script with
 error is left. `project.check` adds the text half for any adopted project holding a
 `project.godot`, so a project's gate holds its references with no engine at all.
 
+**Play timed by frames is named where it is written** (§PW657). `game.replay_rates`
+finds a drift only once a run at another frame rate has parted, and only in what the
+state kit names. Spinhold's causes were each a pattern in a script. So `engine.check`
+also reads the game's own scripts (the PW653 walk, `addons` left out) and names, as the
+warning `engine.frame-timed` with its line:
+
+- a member `_process` writes and `_physics_process` reads, such as a hit stop counted
+  down per frame and read per tick;
+- `Engine.time_scale` set inside `_physics_process`, which reaches the next tick only
+  where that tick starts a new frame;
+- an `await` on an AnimationPlayer's or Tween's `finished` where nothing in the script
+  puts it on the physics clock (`ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS`,
+  `TWEEN_PROCESS_PHYSICS`).
+
+It is pattern work, not a parse, so a finding is a place to look and never an error.
+`frame_timing` says how many scripts it read and names any it could not read, rather
+than counting them clean.
+
 ## A performance budget the gate holds
 
 Cottony's `tools/perf/` scripts are started by hand, and each leaves the comparison with
