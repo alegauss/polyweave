@@ -322,7 +322,14 @@ both answers.
   dotted or as its tool's name, answers `describe(name)` as the command line does,
   `declares` included, so what a `*.vfx.toml` may hold is read over MCP with no shell
   (§PW430); the list carries no declaration itself, which would cost every session its
-  tokens. Anything the work prints goes to stderr,
+  tokens. **The server says which copy of polyweave answers** (§PW651): `initialize`
+  carries the package's folder in `serverInfo.copy` and `instructions`, since a pinned
+  install and an editable one share a version. Every call first asks whether that copy
+  is still the one installed and unchanged since it loaded: one installed over it (an
+  editable install after the server started) or edited since is `op.stale-server`,
+  naming both paths and saying to restart the server, where Spinhold's server had kept
+  answering from a copy whose driver no longer existed. A game launched with a driver
+  that is not there is `game.no-driver` before Godot starts. Anything the work prints goes to stderr,
   since stdout is the protocol. A tool whose work needs Blender is listed only where
   `bpy` imports or a binary is on `PATH`. Two budgets hold from the first day,
   `TOOL_BUDGET` for one tool and `LIST_BUDGET` for the list, set from what was measured

@@ -603,28 +603,6 @@ when the lull counts no new track and RK198's re-count matches the owner's sheet
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW651 an MCP server on a stale copy
-
-Spinhold, 2026-10-26. The polyweave plugin's MCP server (enabled from the
-alegauss/polyweave marketplace, `python -m polyweave serve`) answered `game_open` with
-code `game.not-listening`: the game failed to load
-`.../Python313/site-packages/polyweave/layers/engine/godot/addons/polyweave_driver/driver.gd`,
-"File not found". The same call through the CLI (`python -m polyweave game.open`), which
-imports the editable checkout (`pip install -e D:\Git\alegauss\polyweave`), works. The
-server was started before the editable install and keeps the old installed copy, whose
-driver path no longer exists; earlier in the session its icons.build also refused
-`model` keys the checkout takes.
-
-Expected: the server says which copy of polyweave it runs and refuses with a remedy
-("restart the MCP server; it runs <path>, the CLI runs <path>") when the two differ, or
-it reloads. The workaround was to use the CLI for every call in the session.
-
-The stale copy answers every tool, not only `game_open`, and `serverInfo` carries a
-fixed `__version__` of 0.1.0 that cannot tell two copies apart. It should carry the
-package path and its newest file time, reusing `review.staleness()`, which already
-refuses a page whose code changed under it. And `_driver_for` (`driving.py:71`) should
-check that the driver it falls back on exists before Godot starts.
-
 ### §PW652 the remap kit in a longer language
 
 Spinhold, RK166, 2026-10-26: the remap kit (`addons/polyweave/remap`, installed by

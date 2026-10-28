@@ -81,6 +81,16 @@ def _driver_for(here: Path) -> tuple[str, Path]:
     from .godot import ADDONS
 
     carried = ADDONS["polyweave_driver"] / installed.name
+    if not carried.is_file():
+        # Said before Godot starts, not as the engine's "File not found" afterwards: a
+        # stale copy of polyweave had a driver path that no longer existed (§PW651).
+        raise PolyweaveError(
+            "game.no-driver",
+            f"polyweave's own driver is not at {carried.as_posix()}",
+            "this copy of polyweave is stale or broken: restart the MCP server, or "
+            "install polyweave again",
+            given=carried.as_posix(),
+        )
     return carried.resolve().as_posix(), carried
 
 

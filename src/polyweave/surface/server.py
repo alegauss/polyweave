@@ -312,6 +312,10 @@ def call(name: str, arguments: dict | None) -> dict:
 
     by_tool = {tool_name(op): op for op in D.operations()}
     try:
+        # Before anything else: a stale copy's every answer is suspect (§PW651).
+        stale = staleness()
+        if stale is not None:
+            raise stale
         if name == DESCRIBE["name"]:
             return _content(_described(dict(arguments or {})), error=False)
         project = {tool_name(one): one for one in _project()}
@@ -354,6 +358,76 @@ def call(name: str, arguments: dict | None) -> dict:
     return _content(answer, error=False)
 
 
+def copy() -> Path:
+    """The folder of the polyweave package this process imported."""
+    import polyweave
+
+    return Path(polyweave.__file__).resolve().parent
+
+
+def installed() -> Path | None:
+    """The folder of the polyweave package installed now, read off its metadata afresh:
+    the checkout an editable install points at, else the installed files' own. None
+    where no distribution says (a tree run from source)."""
+    from importlib import metadata
+
+    try:
+        dist = metadata.distribution("polyweave")
+    except metadata.PackageNotFoundError:
+        return None
+    pointed = dist.read_text("direct_url.json")
+    if pointed:
+        found = json.loads(pointed)
+        if (found.get("dir_info") or {}).get("editable") and str(
+                found.get("url", "")).startswith("file:"):
+            from urllib.parse import unquote, urlparse
+
+            raw = unquote(urlparse(found["url"]).path).lstrip("/") \
+                if sys.platform == "win32" else unquote(urlparse(found["url"]).path)
+            for under in (Path(raw) / "src" / "polyweave", Path(raw) / "polyweave"):
+                if under.is_dir():
+                    return under.resolve()
+    located = Path(str(dist.locate_file("polyweave/__init__.py")))
+    return located.parent.resolve() if located.is_file() else None
+
+
+#: The newest Python of the copy this server loaded, when it loaded it (§PW651).
+_LOADED: float | None = None
+
+
+def staleness() -> PolyweaveError | None:
+    """Why this server's copy of polyweave is not the one to answer, or None (§PW651).
+
+    Spinhold's server was started before `pip install -e` moved polyweave to its
+    checkout, and kept answering from a copy whose driver no longer existed, saying
+    nothing of it. So every call asks: is the copy installed now the one loaded, and has
+    the loaded one changed since it was loaded?
+    """
+    global _LOADED
+    from polyweave.loop.review import newest
+
+    here = copy()
+    if _LOADED is None:
+        _LOADED = newest(here)
+    now = installed()
+    if now is not None and now != here:
+        return PolyweaveError(
+            "op.stale-server",
+            f"this MCP server runs polyweave from {here.as_posix()}, and the copy "
+            f"installed now is {now.as_posix()}",
+            "restart the MCP server, which loads the copy installed now; the CLI "
+            "already imports it",
+        )
+    if newest(here) > _LOADED:
+        return PolyweaveError(
+            "op.stale-server",
+            f"polyweave at {here.as_posix()} changed after this MCP server loaded it, "
+            "so it would answer with older code than the files say",
+            "restart the MCP server; the CLI already imports the changed code",
+        )
+    return None
+
+
 def _content(data: Any, *, error: bool) -> dict:
     return {
         "content": [{"type": "text", "text": json.dumps(data, indent=1)}],
@@ -372,10 +446,15 @@ def handle(message: dict) -> dict | None:
     reply: dict[str, Any] = {"jsonrpc": "2.0", "id": message["id"]}
     params = message.get("params") or {}
     if method == "initialize":
+        staleness()  # what is loaded now is what a later call is held to
+        here = copy().as_posix()
         reply["result"] = {
             "protocolVersion": params.get("protocolVersion", PROTOCOL),
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "polyweave", "version": __version__},
+            # Which copy answers, since a pinned and an editable install are two
+            # copies and the version cannot tell them apart (§PW651).
+            "serverInfo": {"name": "polyweave", "version": __version__, "copy": here},
+            "instructions": f"polyweave {__version__} from {here}",
         }
     elif method == "tools/list":
         reply["result"] = {"tools": tools()}

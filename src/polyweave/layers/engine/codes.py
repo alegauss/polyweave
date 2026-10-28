@@ -60,6 +60,13 @@ CODES: dict[str, Code] = {
         "[trace] time that is neither frame nor t (§PW612)",
         doors=("write each line as {frame, id, kind, fields}",),
     ),
+    "game.no-driver": Code(
+        means="the driver a game is launched with is not where this copy of polyweave "
+        "says it is",
+        when="a copy of polyweave installed over, or removed, under a running server "
+        "(§PW651)",
+        doors=("restart the MCP server", "install polyweave again"),
+    ),
     "game.no-determinism": Code(
         means="the project has no determinism kit, so there is no run to fly again",
         when="game.replay_rates in a game the kit was never installed in (§PW640)",

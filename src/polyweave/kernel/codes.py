@@ -766,6 +766,11 @@ KERNEL_CODES: dict[str, Code] = {
         doors=("let a person accept it on the review page first",),
     ),
     # -- review: the page a person answers on, and its server ---------------------
+    "op.stale-server": Code(
+        means="the MCP server runs another copy of polyweave, or older code (§PW651)",
+        when="polyweave installed again, or edited, after `polyweave serve` started",
+        doors=("restart the MCP server", "call through the CLI meanwhile"),
+    ),
     "review.stale-server": Code(
         means="the review server runs older code than the plugin it was started from",
         when="polyweave changed after `polyweave review` started, so a spec using a "
@@ -1158,12 +1163,8 @@ KERNEL_CODES: dict[str, Code] = {
     ),
     "spec.exists": Code(
         means="the asset already has a spec, so a first one is not written over it",
-        when="accept.first asked for an asset whose spec a person may have tightened "
-        "(§PW637)",
-        doors=(
-            "move its bounds with calibrate.run and calibrate.apply",
-            "delete the spec to start it again",
-        ),
+        when="accept.first asked for an asset whose spec a person may have tightened",
+        doors=("move its bounds with calibrate.run", "delete the spec to start again"),
     ),
     "spec.no-artefact": Code(
         means="there is no picture at the path a first spec was to be measured on",

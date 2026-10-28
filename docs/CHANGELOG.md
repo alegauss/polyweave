@@ -546,6 +546,7 @@
 - 🗑 **PW649** **text_fit misreads label_settings, a scaled parent and a covered layer** — superseded by PW647: Both are text_fit's one box function in driver.gd, which ignores clips, label_settings, scale and covering layers.
 - ✅ **PW640** **a recorded run is never flown back at another frame rate, so play that reads frames instead of ticks passes every proof** — game.replay_rates flies the determinism kit's run at several frame rates and names the first tick and name to part; records keep a rate (design recorded in `docs/specs/engine.md`).
 - ✅ **PW650** **game.batch refuses text_fit, so a screen's move, settle, fit and shot take two calls** — game.batch sends locale and text_fit, each fit answered as game.text_fit answers it, and fit_passed holds the batch's fits together (design recorded in `docs/specs/driving.md`).
+- ✅ **PW651** **the MCP server runs a stale installed copy of polyweave, and no answer says which copy replied** — The MCP server names its copy of polyweave and refuses every call as op.stale-server once another copy is installed or its code changed (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block T — Adopting polyweave in a project
 

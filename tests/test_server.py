@@ -179,3 +179,45 @@ def test_the_server_runs_over_stdio_from_the_command_line():
     (reply,) = [json.loads(line) for line in done.stdout.splitlines()]
     assert reply["id"] == 7
     assert any(t["name"] == "accept_check" for t in reply["result"]["tools"])
+
+
+# -- which copy answers (§PW651) -------------------------------------------------------
+
+
+def test_the_server_says_which_copy_of_polyweave_answers():
+    said = server.handle({"jsonrpc": "2.0", "id": 1, "method": "initialize",
+                          "params": {}})["result"]
+    assert said["serverInfo"]["copy"] == server.copy().as_posix()
+    assert server.copy().as_posix() in said["instructions"]
+
+
+def test_a_server_whose_copy_is_no_longer_the_installed_one_refuses(monkeypatch,
+                                                                     tmp_path):
+    # Spinhold's server kept a copy installed over by `pip install -e` (§PW651).
+    monkeypatch.setattr(server, "installed", lambda: tmp_path / "polyweave")
+    refused = server.call("describe", {})["structuredContent"]["refused"]
+    assert refused["code"] == "op.stale-server"
+    assert (tmp_path / "polyweave").as_posix() in refused["message"]
+    assert server.copy().as_posix() in refused["message"]
+
+
+def test_a_server_whose_code_changed_since_it_loaded_refuses(monkeypatch):
+    monkeypatch.setattr(server, "installed", server.copy)
+    monkeypatch.setattr(server, "_LOADED", -1.0)
+    refused = server.call("describe", {})["structuredContent"]["refused"]
+    assert refused["code"] == "op.stale-server"
+    assert "changed after" in refused["message"]
+
+
+def test_a_driver_that_is_not_there_is_refused_before_the_game_starts(monkeypatch,
+                                                                      tmp_path):
+    from polyweave.kernel.errors import PolyweaveError
+    from polyweave.layers.engine import driving, godot
+
+    monkeypatch.setitem(godot.ADDONS, "polyweave_driver", tmp_path / "gone")
+    try:
+        driving._driver_for(tmp_path)
+    except PolyweaveError as refused:
+        assert refused.code == "game.no-driver"
+    else:
+        raise AssertionError("a missing driver was handed to Godot")
