@@ -330,6 +330,7 @@ def _once(
     }
     # Taken again until the script says its subject was on screen (§PW242): a moment in
     # play spawns differently each run, and a fixed frame count cannot wait on that.
+    _out_folders(given, root)
     attempt = 0
     while True:
         attempt += 1
@@ -354,8 +355,22 @@ def _once(
 
     # The pictures the run named, where the caller did not say which group holds them
     # (§PW246): the MCP answer came back with no artefacts for five written pictures.
+    exist, missing = named_pictures(log, expect, root)
     if not found.get("artefacts"):
-        found = {**found, "artefacts": pictures(log, expect, root)}
+        found = {**found, "artefacts": exist}
+    if found["ok"] and missing:
+        # A picture named and not written is a failed capture, said at the top whatever
+        # `record` says (§PW643): `ok` with only why_unrecorded sent an agent on to a
+        # missing or stale picture.
+        found = {
+            **found,
+            "ok": False,
+            "verdict": "missing-artefact",
+            "why": "the script named " + ", ".join(missing) + ", which "
+            + ("is" if len(missing) == 1 else "are") + " not there to read: write "
+            "each picture under res://, and check the game's save returned OK",
+            "missing": missing,
+        }
     # The picture is the authority on its size, not the script's line (§PW245): a script
     # that set root.size and printed it said 1920x1080 over a 1280x720 picture.
     claimed, measured = applied(log), _measured(asked, found["artefacts"])
@@ -415,20 +430,51 @@ _PICTURE = re.compile(r"(?:res://|user://)?[^\s'\"]+\.(?:png|jpe?g|webp)\b", re.
 
 def pictures(log: str, expect: str | re.Pattern, root: str | Path) -> list[str]:
     """Every picture the lines matching `expect` name, as paths that exist."""
+    return named_pictures(log, expect, root)[0]
+
+
+def named_pictures(log: str, expect: str | re.Pattern,
+                   root: str | Path) -> tuple[list[str], list[str]]:
+    """The pictures the lines matching `expect` name: those that exist, and those named
+    and not there (§PW643). A `user://` name is the engine's own folder, which this
+    side cannot read, so it is among the missing."""
     named = re.compile(expect, re.MULTILINE) if isinstance(expect, str) else expect
     here = load(root).root
     found: list[str] = []
+    missing: list[str] = []
     for match in named.finditer(log or ""):
         line_end = log.find("\n", match.start())
         line = log[match.start() : line_end if line_end >= 0 else len(log)]
         for spelled in _PICTURE.findall(line):
             if spelled.startswith("user://"):
-                continue  # the engine's own folder: not a path this side can read
+                if spelled not in missing:
+                    missing.append(spelled)
+                continue
             where = Path(spelled.removeprefix("res://"))
             where = where if where.is_absolute() else here / where
-            if where.is_file() and str(where) not in found:
-                found.append(str(where))
-    return found
+            if where.is_file():
+                if str(where) not in found:
+                    found.append(str(where))
+            elif spelled not in missing:
+                missing.append(spelled)
+    return found, missing
+
+
+#: A picture's path the caller hands the script, `--out=res://...` or `out=res://...`.
+_OUT = re.compile(r"^(?:--)?out=res://(\S+)$")
+
+
+def _out_folders(args: tuple, root: str | Path) -> None:
+    """Make the folder of every `out=res://` the script is handed (§PW643): a capture's
+    out folder is its to make, as game.shot makes a shot's, and a game's save_png into
+    a folder not there fails without a word the engine counts as an error."""
+    here = load(root).root
+    for one in args:
+        found = _OUT.match(str(one))
+        if found:
+            where = (here / found[1]).parent
+            if where.resolve().is_relative_to(here.resolve()):
+                where.mkdir(parents=True, exist_ok=True)
 
 
 def _environment_cause(against: dict) -> str:

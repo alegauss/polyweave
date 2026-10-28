@@ -389,6 +389,16 @@ either way, and each is recorded (§PW260): a project path or `res://` on the li
 enough, and nothing has to be passed for it. A run whose lines name no picture that
 exists says so in `why_unrecorded` rather than answering an empty `records` alone.
 
+**A picture named and not written fails the capture** (§PW643). Where a line matching
+`expect` names a picture that is not there, `ok` is false, `verdict` is
+`missing-artefact`, `missing` lists the names and `why` says them, whatever `record`
+says. A `user://` name is among them, being the engine's own folder, which polyweave
+cannot read. Spinhold's salvage capture had answered `ok` into a folder that did not
+exist, the game's `save_png` having failed without an error the engine counts. So the
+folder of every `out=res://...` or `--out=res://...` the script is handed is made before
+the engine starts, as `game.shot` makes a shot's. `capture.again` and a strict capture
+go through the same take and answer the same.
+
 **A script takes its own arguments too** (§PW238). A capture of a moment in play names
 the moment: Spinhold's boss was `--boss --frames=420 --hold=fire_right`. `capture.run`
 takes them as `args`, a list of strings, and passes them after `--` and ahead of the

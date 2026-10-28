@@ -380,6 +380,8 @@
 - ✅ **PW269** **compose.place writes its picture with no record, so a composed capsule cannot say which pictures it came from** — compose.place and compose.sheet write a record naming the pictures they were made from, so provenance_dependents on a key art finds what was composed from it.
 - ✅ **PW444** **nothing totals what the records already hold per asset, so polyweave's own effect on a game cannot be stated as a number** — loop.report totals each asset's runs, verdicts, purchases and gate refusals from the records, each naming its file (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW612** **two runs of the same level cannot be compared, so no one can say which entity diverged first, or when** — game.compare_runs holds two runs' entity traces together within declared tolerances and names the first entity, field and time to part (design recorded in `docs/specs/engine.md`).
+- ✅ **PW643** **capture.run answers ok true when the picture it was asked for was never written, the reason only in why_unrecorded** — capture.run answers ok false, missing-artefact, for a picture named and not written, user:// included, and makes the out folder first (design recorded in `docs/specs/engine.md`).
+  checked **capture.run answers ok and an empty why when its out folder is missing** Same bug as PW643, met a day later: capture.run never checks that the picture its expect line names exists.
 
 ## Block M — What a game needs beyond the look
 

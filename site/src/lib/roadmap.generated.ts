@@ -36,7 +36,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "I", title: "Voxel models from a declaration", open: 1 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 0 },
-  { block: "L", title: "What a run leaves as evidence", open: 2 },
+  { block: "L", title: "What a run leaves as evidence", open: 1 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
@@ -92,13 +92,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "J",
     symptom: "a first spec's bound on a value near zero is a share of almost nothing, so the same picture redrawn fails it",
     why: "Spinhold's dark glass got a max of 0.006 where its own hand-written spec held 0.1049, and calibrate.run cannot widen a picture it did not render.",
-    deps: [],
-  },
-  {
-    id: "PW643",
-    block: "L",
-    symptom: "capture.run answers ok true when the picture it was asked for was never written, the reason only in why_unrecorded",
-    why: "An agent reads ok and goes on to a missing or stale picture, as Spinhold's salvage capture did into a folder not yet made.",
     deps: [],
   },
   {

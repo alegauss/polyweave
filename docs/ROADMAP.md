@@ -34,7 +34,6 @@
 
 ## Block L — What a run leaves as evidence
 
-- 📋 **PW643** (deps: —) **capture.run answers ok true when the picture it was asked for was never written, the reason only in why_unrecorded** — An agent reads ok and goes on to a missing or stale picture, as Spinhold's salvage capture did into a folder not yet made. → §PW643
 - 📋 **PW653** (deps: —) **a capture hashes a class_name script from a stale copy under .polyweave, so an edited script reads as undeclared** — An edit-and-capture loop reads as nondeterminism, so the honest fix is to switch the record off and lose provenance. → §PW653
 
 ## Block M — What a game needs beyond the look
@@ -133,12 +132,6 @@
 - **Cottony keeps no mesh preparation of its own** tools/art/prep.py and export_props,
   export_boosters and export_friends are gone from Cottony, its families name prepare
   steps through fixes, and project.adoption lists none of them as kept.
-
-## Done when — PW643
-
-- **capture.run answers ok and an empty why when its out folder is missing** Same bug as
-  PW643, met a day later: capture.run never checks that the picture its expect line
-  names exists.
 
 ## Done when — PW647
 

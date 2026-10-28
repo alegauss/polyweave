@@ -282,31 +282,6 @@ verdict, and each gap it met is a filed line.
 
 ## Block L — What a run leaves as evidence
 
-### §PW643 A capture with no picture is not ok
-
-Met in Spinhold twice: RK292 (2026-10-26), `capture.run --script dev/shot.gd` with
-`--out=res://.polyweave/salvage/lab.png`, and RK268, an `--out` under
-`res://art/review/editor-palette/` (PW648, folded here). Each time the out folder did
-not exist, the game's `save_png` failed, and the answer was `ok: true`, `verdict: ok`,
-an empty `why` and `artefacts: []`; only `why_unrecorded` said no line named a picture
-that exists. After a `mkdir` the same call wrote the picture.
-
-The cause: `capture._once` (`layers/engine/capture.py`) passes no `produces` to
-`engine.run`, so `engine._verdict`'s one existence check (`missing-artefact`) never
-runs, and `capture.pictures()` drops a named path that is not a file (`:429`). A
-`user://` name is skipped the same way (`:425`), and with `record: false` not even
-`why_unrecorded` is written, so nothing at all says the picture is missing.
-
-What polyweave should do, at `_once` where `pictures()` runs: compare the names the
-expect line matched with the files that exist, and answer `ok: false`, verdict
-`missing-artefact`, with the missing paths in `why`, whatever `record` says. Before the
-engine starts, make the folder of an `--out=res://...` argument under the project, as
-`game.shot` already does (`_shot_to` in `driving.py`), since a capture's out folder is
-its to make. `capture.again` and `capture.run`'s strict mode go through `_once` and
-inherit it; `capture.movie` and `game.shot` already refuse a missing picture. Tests: a
-missing folder, a `user://` name, `record: false`, and a script that names two pictures
-and writes one.
-
 ### §PW653 A retake after an edit hashes the script that was edited
 
 Spinhold, RK302 (the run's HUD redrawn in the menu kit), 2026-10-27. The loop was: edit

@@ -12,9 +12,11 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.engine import capture
@@ -70,12 +72,21 @@ def project(tmp_path, body="", *, script=HONEST):
     return tmp_path / "shot.gd"
 
 
-def taking(output, *, ok=True, artefacts=(), verdict="ok"):
-    """A capture that produced this log, standing in for one that ran."""
+def taking(output, *, ok=True, artefacts=(), verdict="ok", writes=True):
+    """A capture that produced this log, standing in for one that ran.
+
+    It writes each picture its log names under res://, at the size the line says, as a
+    run that worked would have (§PW643); `writes=False` is the run whose save failed.
+    """
 
     def take(script, *, expect, root, args, **how):
         log = Path(root) / "run.log"
         log.write_text(output, encoding="utf-8")
+        for path, wide, tall in re.findall(r"res://(\S+\.png) (\d+) x (\d+)", output):
+            where = Path(root) / path
+            if writes and ok and not where.exists():
+                where.parent.mkdir(parents=True, exist_ok=True)
+                Image.new("RGBA", (int(wide), int(tall))).save(where)
         return {
             "ok": ok,
             "verdict": verdict,
@@ -923,3 +934,53 @@ def test_a_key_that_moved_is_not_a_picture_that_moved(tmp_path):
     """The record already explains a different-work, so it is not this gate's."""
     moved = {"verdict": "different-work", "artefact": "a.png", "why": ""}
     assert capture.again([moved])["holds"] is True
+
+
+# -- a picture named and not written (§PW643) -----------------------------------------
+
+#: A project that asks for no setting, so a capture is held to its pictures alone.
+NOTHING = "[capture]\ndeclared = []\n"
+
+
+@pytest.mark.parametrize("record", [True, False])
+def test_a_picture_into_a_folder_not_there_is_not_ok(tmp_path, record):
+    # Spinhold's salvage capture: save_png failed and the answer said ok.
+    script = project(tmp_path, NOTHING)
+    found = capture.run(
+        script, expect=SHOT, root=tmp_path, record=record,
+        take=taking("captured: res://salvage/lab.png 24 x 24\n", writes=False),
+    )
+    assert found["ok"] is False
+    assert found["verdict"] == "missing-artefact"
+    assert found["missing"] == ["res://salvage/lab.png"]
+    assert "res://salvage/lab.png" in found["why"]
+
+
+def test_a_picture_in_the_engine_s_own_folder_cannot_be_read_and_is_said(tmp_path):
+    script = project(tmp_path, NOTHING)
+    found = capture.run(script, expect=SHOT, root=tmp_path,
+                        take=taking("captured: user://lab.png 24 x 24\n"))
+    assert found["ok"] is False
+    assert found["missing"] == ["user://lab.png"]
+
+
+def test_a_script_that_names_two_pictures_and_writes_one_names_the_other(tmp_path):
+    script = project(tmp_path, NOTHING)
+    written = tmp_path / "one.png"
+    Image.new("RGBA", (24, 24)).save(written)
+    found = capture.run(
+        script, expect=SHOT, root=tmp_path, record=False,
+        take=taking("captured: res://one.png 24 x 24\n"
+                    "captured: res://two.png 24 x 24\n", writes=False),
+    )
+    assert found["ok"] is False
+    assert found["missing"] == ["res://two.png"]
+    assert found["artefacts"] == [str(written)]
+
+
+def test_the_folder_a_script_is_told_to_write_into_is_made_first(tmp_path):
+    script = project(tmp_path, NOTHING)
+    capture.run(script, expect=SHOT, root=tmp_path, record=False,
+                args=("--", "--out=res://salvage/deep/lab.png"),
+                take=taking("captured: res://salvage/deep/lab.png 24 x 24\n"))
+    assert (tmp_path / "salvage" / "deep").is_dir()
