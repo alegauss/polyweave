@@ -63,7 +63,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW646",
     block: "H",
     symptom: "icons.build draws an unknown symbol as text, ignores unknown keys, nests out under the set and has no sittings folder",
-    why: "Each answer passed while the icon or its folder came out wrong, and finding out took reading icons.py.",
+    why: "No paths.sittings key says where a sitting is laid out, so icons and every other sitting land in the work area.",
     deps: [],
   },
   {

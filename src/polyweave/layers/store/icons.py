@@ -122,6 +122,14 @@ def read(source: Path) -> dict:
     except (OSError, tomllib.TOMLDecodeError) as exc:
         raise _refuse(source, "the declaration cannot be read as TOML",
                       "fix the syntax the detail points at", detail=str(exc)) from exc
+    # Every level is checked (§PW646): a top-level `out` that was ignored built the set
+    # in the wrong folder and answered passed.
+    _known(source, "the declaration", declared, _TOP)
+    _known(source, "[style]", declared.get("style") or {}, _ICON_KEYS)
+    out = declared.get("out")
+    if out is not None and (not isinstance(out, str) or not out.strip()):
+        raise _refuse(source, f"out is {out!r}",
+                      'write out = "game/ui/icons/tools", the folder the set lands in')
     sizes = declared.get("sizes") or [64]
     if not all(isinstance(n, int) and 8 <= n <= 1024 for n in sizes):
         raise _refuse(source, f"sizes are {sizes!r}, and a size is 8 to 1024 pixels",
@@ -165,7 +173,24 @@ def read(source: Path) -> dict:
                       f"use some of {', '.join(sorted(_ACCEPT_KEYS))}")
     return {"name": str(declared.get("name") or source.name.split(".")[0]),
             "sizes": sizes, "atlas": bool(declared.get("atlas")), "icons": icons,
-            "accept": accept}
+            "accept": accept, "out": out}
+
+
+#: What a declaration's top level takes.
+_TOP = {"name", "sizes", "atlas", "out", "style", "icon", "accept"}
+
+
+def _known(source: Path, where: str, table: dict, allowed) -> None:
+    """Refuse a key `table` does not take, with the nearest one it does."""
+    import difflib
+
+    for key in table:
+        if key not in allowed:
+            near = difflib.get_close_matches(key, sorted(allowed), n=1)
+            raise _refuse(source, f"{where} declares {key!r}, which nothing reads",
+                          f"did you mean {near[0]!r}?" if near
+                          else f"use some of {', '.join(sorted(allowed))}",
+                          given=key, allowed=sorted(allowed))
 
 
 def _checked(source: Path, name: str, icon: dict) -> dict:
@@ -179,6 +204,19 @@ def _checked(source: Path, name: str, icon: dict) -> dict:
         raise _refuse(source, f"[icon.{name}] is shaped {icon.get('shape')!r}",
                       f"make it one of {', '.join(SHAPES)}",
                       given=str(icon.get("shape")), allowed=SHAPES)
+    said = str(icon.get("symbol") or "")
+    if (len(said) > 3 and said not in GLYPHS and said not in _AS_GLYPH
+            and icon["shape"] != "keycap"):
+        # A word suits a keycap; anywhere else it was a glyph misnamed, drawn as text
+        # and passed (§PW646).
+        import difflib
+
+        near = difflib.get_close_matches(said, GLYPHS, n=1)
+        raise _refuse(source, f"[icon.{name}] has symbol {said!r}, which is no glyph",
+                      (f"did you mean {near[0]!r}? " if near else "")
+                      + f"name a glyph, one of {', '.join(GLYPHS)}; a word of more "
+                      "than three letters is drawn on a keycap only",
+                      given=said, allowed=list(GLYPHS))
     tints = icon.get("tints") or []
     if not isinstance(tints, list) or not all(
             isinstance(t, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", t) for t in tints):
@@ -597,9 +635,8 @@ def _failed(found: dict, accept: dict) -> list[str]:
 def build(
     source: Annotated[str, Param("the *.icons.toml declaration under the project")],
     *,
-    out: Annotated[str, Param("the folder it lands in; the declaration's if unset")] = (
-        None
-    ),
+    out: Annotated[str, Param("the folder the set lands in; else its declaration's "
+                              "out, or where its records say")] = None,
     sitting: Annotated[
         bool, Param("lay the set out for a person's verdict on the review page")
     ] = True,
@@ -631,8 +668,7 @@ def build(
             given=str(source),
         )
     declared = read(where)
-    base = config.path("paths.work", out) if out else where.parent
-    folder = base / declared["name"]
+    folder = _folder(where, declared, out, config)
     folder.mkdir(parents=True, exist_ok=True)
     made: dict[Path, list[str]] = {}
     modelled = {name: icon for name, icon in declared["icons"].items()
@@ -681,6 +717,7 @@ def build(
     _specks(measured)
     answer = {
         "set": declared["name"],
+        "folder": provenance.relative(folder, here),
         "files": [provenance.relative(one, here) for one in made],
         "measured": measured,
         "failed": failed,
@@ -713,6 +750,36 @@ def build(
         )
         answer["sitting"] = list(laid["sheets"].values())[0].get("sheet")
     return answer
+
+
+def _folder(where: Path, declared: dict, out: str | None, config) -> Path:
+    """Where the set lands (§PW646): `out` is that folder itself, as panel.build's is;
+    else the declaration's own `out`; else where the set's records say it was built;
+    else beside the declaration, in a folder named for the set. Records that put the
+    set in two places are refused, naming them, since which one is meant is not this
+    call's to guess."""
+    from polyweave.kernel import provenance
+
+    here = config.root
+    if out:
+        return config.path("paths.work", out)
+    if declared["out"]:
+        return here / declared["out"]
+    named = provenance.relative(where, here)
+    built = sorted({
+        Path(record["artefact"]["path"]).parent.as_posix()
+        for record in provenance._records(here)
+        if (record.get("engine") or {}).get("name") == "icons.build"
+        and any(one.get("role") == "icons" and one.get("path") == named
+                for one in record.get("inputs") or ())
+    })
+    if len(built) > 1:
+        raise _refuse(where, f"its records put the set in {', '.join(built)}",
+                      'write out = "<folder>" in the declaration, or pass out, naming '
+                      "the one it belongs in", allowed=built)
+    if built:
+        return here / built[0]
+    return where.parent / declared["name"]
 
 
 def _atlas(drawn: dict, size: int, folder: Path, name: str) -> list[Path]:

@@ -303,3 +303,61 @@ def test_a_tint_or_a_state_that_cannot_be_drawn_is_refused(tmp_path, change):
         icons.build(declared(tmp_path, MARKS.replace(*change)), sitting=False,
                     root=str(tmp_path))
     assert refused.value.code == "compose.bad-icons"
+
+
+# -- what a build did with a symbol and a folder (§PW646) -----------------------------
+
+
+def test_a_symbol_that_is_no_glyph_is_refused_with_the_nearest(tmp_path):
+    body = SET.replace('symbol = "menu"', 'symbol = "sheild"')
+    with pytest.raises(PolyweaveError) as refused:
+        icons.build(declared(tmp_path, body), sitting=False, root=str(tmp_path))
+    assert refused.value.code == "compose.bad-icons"
+    assert refused.value.as_dict()["did_you_mean"] == "shield"
+
+
+def test_a_word_is_drawn_on_a_keycap(tmp_path):
+    body = SET.replace('shape = "rounded"\nsymbol = "menu"',
+                       'shape = "keycap"\nsymbol = "SHIFT"')
+    found = icons.build(declared(tmp_path, body), sitting=False, root=str(tmp_path))
+    assert found["measured"]["menu"]["symbol_share"] > 0
+
+
+@pytest.mark.parametrize("change", [
+    ('name = "pad"', 'name = "pad"\noutt = "x"'),
+    ("[accept]", '[style]\nfil = "#000000"\n\n[accept]'),
+])
+def test_a_key_nothing_reads_is_refused_at_every_level(tmp_path, change):
+    with pytest.raises(PolyweaveError) as refused:
+        icons.build(declared(tmp_path, SET.replace(*change)), sitting=False,
+                    root=str(tmp_path))
+    assert refused.value.code == "compose.bad-icons"
+    assert refused.value.as_dict()["did_you_mean"] in {"out", "fill"}
+
+
+def test_out_is_the_folder_the_set_lands_in(tmp_path):
+    found = icons.build(declared(tmp_path), out="game/icons/pad", sitting=False,
+                        root=str(tmp_path))
+    assert found["folder"] == "game/icons/pad"
+    assert (tmp_path / "game" / "icons" / "pad" / "a_32.png").is_file()
+    assert not (tmp_path / "game" / "icons" / "pad" / "pad").exists()
+
+
+def test_the_declaration_names_its_own_folder(tmp_path):
+    body = SET.replace('name = "pad"', 'name = "pad"\nout = "game/ui/pad"')
+    found = icons.build(declared(tmp_path, body), sitting=False, root=str(tmp_path))
+    assert found["folder"] == "game/ui/pad"
+
+
+def test_a_set_built_again_lands_where_its_records_say(tmp_path):
+    # Spinhold's tools set was built into game/editor/icons/tools; a rebuild with no
+    # out landed beside the declaration instead (PW645).
+    source = declared(tmp_path)
+    icons.build(source, out="game/editor/icons/pad", sitting=False, root=str(tmp_path))
+    again = icons.build(source, sitting=False, root=str(tmp_path))
+    assert again["folder"] == "game/editor/icons/pad"
+    icons.build(source, out="elsewhere/pad", sitting=False, root=str(tmp_path))
+    with pytest.raises(PolyweaveError) as refused:
+        icons.build(source, sitting=False, root=str(tmp_path))
+    assert set(refused.value.as_dict()["allowed"]) == {"game/editor/icons/pad",
+                                                       "elsewhere/pad"}

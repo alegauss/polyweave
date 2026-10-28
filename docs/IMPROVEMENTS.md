@@ -124,30 +124,25 @@ stays a test.
 
 ### §PW646 icons.build says what it did with a symbol and a folder
 
-Met in Spinhold, RK266 and RK294 (2026-10-26), adding icons to
-`art/editor/tools.icons.toml`, a set already built into `game/editor/icons/tools/` (its
-records say so). Each run answered `passed: true`:
+Met in Spinhold, RK266 and RK294 (2026-10-26). Three of the four faults shipped on
+2026-10-28 (a word that is no glyph and a key nothing reads are refused, and `out` is
+the folder, else the declaration's, else the records'; `docs/specs/panel.md`). What is
+left is where a sitting is laid out.
 
-1. `symbol = "camera"` is no glyph (`GLYPHS`, `layers/store/icons.py:70`), so the word
-   was drawn as text (`:330`), a low `symbol_share` the only hint. A word suits a
-   keycap; on any other shape an unknown symbol should be refused with `allowed` and
-   `did_you_mean`.
-2. A top-level `out` was ignored: `read()` checks `[icon.*]` and `[accept]` keys but
-   neither the top level nor `[style]` (`:112-143`).
-3. With no `out`, the set lands beside the declaration (`:494`), not where its records
-   say it was built (PW645, folded here). `--out game/editor/icons/tools` wrote
-   `.../tools/tools/`: `out` is the parent the set's name is appended to, while
-   `describe` says "the folder it lands in" (`:460`). Each wrong run left a copy to
-   delete.
-4. The sitting went to polyweave's work folder, away from the project's other
-   sittings. No config key says where sittings go: `art/review` is Spinhold's own
-   convention, and `geometry.kit` takes a `sitting` folder that icons does not.
+`icons.build` lays its sitting in polyweave's work folder, under `<[paths]
+work>/icons/<set>`, away from the project's other sittings. Spinhold keeps its sittings
+under `art/review`, which is its own convention, and nothing in the project config says
+so. `geometry.kit` takes a `sitting` folder that `icons.build` does not, and the other
+operations that open a sitting (`verdict.sitting` itself, `kit`, the review page's own)
+each pick their folder their own way.
 
-What polyweave should do: refuse unknown keys at every level; let the declaration carry
-`out`, and with none, build where the records say, refusing with the choice where they
-disagree; make `out` the folder itself, as `panel.build` does, or name the path written
-in `describe` and the answer; and add a `paths.sittings` key that every operation
-opening a sitting honours.
+What to build: a `[paths] sittings` key in the project config, with the work area's
+`sittings/` as its default, which `verdict.sitting` reads when no `out` is passed. Then
+every operation that opens a sitting goes through it: `icons.build`, `geometry.kit` (its
+`sitting` argument still wins), and any other caller of `verdict.sitting`. The spec in
+`docs/specs/project-config.md` gains the key, and
+`test_the_config_example_declares_every_key` holds the example to it. Done when Spinhold
+can set `sittings = "art/review"` once and every sitting lands there.
 
 ### §PW647 game.text_fit judges only the text that is drawn, as it is drawn
 

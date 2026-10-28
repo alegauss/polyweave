@@ -832,7 +832,7 @@ export interface GodotInstallArgs {
 export interface IconsBuildArgs {
   /** the *.icons.toml declaration under the project */
   source: string
-  /** the folder it lands in; the declaration's if unset */
+  /** the folder the set lands in; else its declaration's out, or where its records say */
   out?: string
   /** lay the set out for a person's verdict on the review page; default true */
   sitting?: boolean

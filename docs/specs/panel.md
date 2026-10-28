@@ -298,7 +298,23 @@ icon keeps smooth edges: the dark outline that reads over a bright scene, the fi
 lighter at its top than its foot, a lit rim inside the outline, and the symbol in its
 colour. Each lands as `<set>/<icon>_<size>.png`, or with `atlas = true` each size as
 `<set>/<set>_<size>.png` and a JSON map of names to `[x, y, w, h]`; every file's record
-(`picture`) has the declaration as an input. `out` sets the folder.
+(`picture`) has the declaration as an input.
+
+**Where the set lands, and what a build refuses** (§PW646). Spinhold's tools set
+answered `passed` four times while its icons or its folder came out wrong. So:
+
+- `out` is the folder itself, as `panel.build`'s is; the answer says it as `folder`.
+- With no `out`, the declaration's own top-level `out` decides. Without one, the set
+  lands where its records say it was built. If its records put it in two folders, the
+  build is refused, naming both. With none of these, it lands beside the declaration in
+  `<set>/`.
+- A key nothing reads is refused at every level (the top, `[style]`, an icon, a state,
+  `[accept]`), with the nearest key that exists as `did_you_mean`.
+- A symbol that is no glyph and longer than three letters is refused, with the nearest
+  glyph, unless the icon is a `keycap`. A word suits a key's cap, and anywhere else it
+  was a glyph misnamed, drawn as text and passed.
+
+Where a sitting is laid out stays the work area's for now.
 
 `[accept]` holds every icon at the smallest size: `symbol_contrast_min`, the WCAG ratio
 of the symbol against its face; `background_contrast_min`, the worse of the outline
