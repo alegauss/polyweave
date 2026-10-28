@@ -290,6 +290,7 @@
 - ✅ **PW638** **a panel's hairline, edge or bracket width must be whole pixels, so a 1.2-pixel line a person accepted cannot be declared** — A panel's edge, hairline, piping, bracket and tick widths take any pixels from 0.5, drawn on both routes, so the 1.2 hairline builds (design recorded in `docs/specs/panel.md`).
 - ✅ **PW639** **a Control switching panel states has to copy every uniform from the state's material by hand, and tint multiplies** — panel.build(shader) writes <name>.panel.gd, a Control switching states on its own material, overrides kept; tint is said to tint brackets (design recorded in `docs/specs/panel.md`).
 - ✅ **PW642** **an icon's text symbol such as + or - is drawn a speck of its face, and nothing declares how large it is drawn** — An icon's text is fitted by its ink and + and - are drawn as glyphs, with symbol_scale to size it and a speck named in measured (design recorded in `docs/specs/panel.md`).
+- ✅ **PW644** **an icon set has no star, figure or shield, and no filled and empty state a game tints per use** — An icon declares states and the tints a game gives it, built as a white face and an overlay held at each tint, with hexagon, star, figure and shield (design recorded in `docs/specs/panel.md`).
 
 ## Block I — Voxel models from a declaration
 

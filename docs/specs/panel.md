@@ -249,10 +249,11 @@ A game's prompts draw each button as the pad shows it (§PW331), and the project
 draw them by hand, so a set of small icons is a declaration, `*.icons.toml`: `name`,
 `sizes` (8 to 1024 pixels), `atlas`, a `[style]` every icon inherits, and one
 `[icon.<name>]` each. An icon is a `shape` (`circle`, `rounded`, `pill`, `trigger`,
-`keycap`, `dpad`, `stick`), a `fill`, a `symbol` with its `symbol_colour`, and the
+`keycap`, `dpad`, `stick`, `hexagon`), a `fill`, a `symbol` with its `symbol_colour`, and the
 style's `outline`, `outline_width` (a share of the size), `rim` and `shade`, any of which
 it may override. A symbol is text, or a glyph: `cross`, `ring`, `square`, `triangle`, the
-four arrows, `menu` (three bars), `view`, `plus` and `minus`, or a compass point,
+four arrows, `menu` (three bars), `view`, `plus`, `minus`, `star`, `figure` (a head
+over shoulders) and `shield`, or a compass point,
 `north`, `south`, `east` or `west`: four dots in a diamond, that one filled, drawn wider
 than a letter so the dots read at 64 pixels (§PW431). A `dpad` with a `direction` lights
 that arm and puts its arrow in it.
@@ -265,6 +266,32 @@ font's "+" is still a hairline beside the set's strokes (0.046 against a ring's 
 the text "+" and "-" are drawn as the `plus` and `minus` glyphs.
 `symbol_scale`, from 0.2 to 2 and 1 by default, a style key an icon may override, grows
 or shrinks that box for text and glyphs alike.
+
+**States and tints** (§PW644). Spinhold's world map shows each world's three marks as a
+hexagonal pip, filled in the world's colour once earned and a dark socket before, in five
+world colours. It had to draw them at run time, outside every check. An icon now declares
+both:
+
+```toml
+[icon.star]
+shape = "hexagon"
+symbol = "star"
+tints = ["#e85d4a", "#4ab0e8", "#f2c14e"]   # the colours the game tints it with
+
+[icon.star.states.empty]                    # what the empty state changes
+fill = "#1c1f27"
+symbol_colour = "#3a3f4c"
+tints = []
+```
+
+A state is the icon with what it changes, built and measured as an icon of its own,
+`<icon>_<state>_<size>.png`. A state key no icon takes is refused. An icon with `tints`
+is built as two pictures. `<icon>_<size>.png` is its face in white, with its shading
+kept as light and dark, which the game modulates by its colour. Over it,
+`<icon>_over_<size>.png` holds the outline and the symbol in their own colours, which no
+tint touches. Its legibility is measured at every declared tint: `measured` keeps the
+worst of each figure and names the colour in `worst_tint`. The sitting shows it once in
+each tint, not as the white face. A tint that is not `#rrggbb` is `compose.bad-icons`.
 
 `icons.build(source)` draws each icon four times over and brings it down, so a 32-pixel
 icon keeps smooth edges: the dark outline that reads over a bright scene, the fill

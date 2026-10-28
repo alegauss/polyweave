@@ -24,8 +24,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW644** (deps: —) **an icon set has no star, figure or shield, and no filled and empty state a game tints per use** — A count of marks in each world's colour is drawn by hand in the game, outside every legibility check. → §PW644
-
 ## Block J — A bar a person sets once
 
 - 📋 **PW656** (deps: PW637 ✅) **a first spec's bound on a value near zero is a share of almost nothing, so the same picture redrawn fails it** — Spinhold's dark glass got a max of 0.006 where its own hand-written spec held 0.1049, and calibrate.run cannot widen a picture it did not render. → §PW656

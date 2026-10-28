@@ -58,6 +58,8 @@ has none.
 from __future__ import annotations
 
 import json
+import math
+import re
 import tomllib
 from pathlib import Path
 from typing import Annotated
@@ -68,9 +70,10 @@ from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 
 #: What an icon may be shaped as, and what a glyph symbol may be.
-SHAPES = ("circle", "rounded", "pill", "trigger", "keycap", "dpad", "stick")
+SHAPES = ("circle", "rounded", "pill", "trigger", "keycap", "dpad", "stick", "hexagon")
 GLYPHS = ("cross", "ring", "square", "triangle", "up", "down", "left", "right", "menu",
-          "view", "north", "south", "east", "west", "plus", "minus")
+          "view", "north", "south", "east", "west", "plus", "minus", "star", "figure",
+          "shield")
 
 #: Text a glyph already draws, drawn as that glyph: a font's "+" is a hairline beside
 #: the set's strokes, at any size it is fitted to (§PW642).
@@ -93,7 +96,7 @@ _STYLE = {"outline": "#101014", "outline_width": 0.07, "rim": 0.35, "shade": 0.3
           "fill": "#5A5F6A", "symbol_colour": "#FFFFFF", "symbol_scale": 1.0}
 
 #: Every key an icon, the style and `[accept]` may carry.
-_ICON_KEYS = {"shape", "symbol", "direction", *_STYLE}
+_ICON_KEYS = {"shape", "symbol", "direction", "tints", *_STYLE}
 _ACCEPT_KEYS = {"symbol_contrast_min", "background_contrast_min", "symbol_share_min",
                 "coverage_min", "silhouette_kept_min"}
 
@@ -129,22 +132,29 @@ def read(source: Path) -> dict:
         if "model" in own:
             icons[name] = _modelled(source, name, own)
             continue
-        unknown = sorted(set(own) - _ICON_KEYS)
+        unknown = sorted(set(own) - _ICON_KEYS - {"states"})
         if unknown:
             raise _refuse(source, f"[icon.{name}] declares {', '.join(unknown)}",
-                          f"use some of {', '.join(sorted(_ICON_KEYS))}",
-                          given=unknown[0], allowed=sorted(_ICON_KEYS))
-        icon = {**style, **own}
-        scale = icon["symbol_scale"]
-        if isinstance(scale, bool) or not isinstance(scale, int | float) or not (
-                0.2 <= scale <= 2):
-            raise _refuse(source, f"[icon.{name}] has symbol_scale {scale!r}",
-                          "write symbol_scale from 0.2 to 2, 1 filling its box")
-        if icon.get("shape") not in SHAPES:
-            raise _refuse(source, f"[icon.{name}] is shaped {icon.get('shape')!r}",
-                          f"make it one of {', '.join(SHAPES)}",
-                          given=str(icon.get("shape")), allowed=SHAPES)
-        icons[name] = icon
+                          f"use some of {', '.join(sorted(_ICON_KEYS | {'states'}))}",
+                          given=unknown[0], allowed=sorted(_ICON_KEYS | {"states"}))
+        states = own.get("states") or {}
+        base = {**style, **{k: v for k, v in own.items() if k != "states"}}
+        icons[name] = _checked(source, name, base)
+        # A state is the icon with what it changes, built and measured as an icon of
+        # its own: a mark earned and one still to earn, from one declaration (§PW644).
+        if not isinstance(states, dict):
+            raise _refuse(source, f"[icon.{name}] has states {states!r}",
+                          f"write [icon.{name}.states.empty] with what it changes")
+        for state, changed in states.items():
+            unknown = sorted(set(changed) - _ICON_KEYS) if isinstance(
+                changed, dict) else ["(not a table)"]
+            if unknown:
+                raise _refuse(source, f"[icon.{name}.states.{state}] declares "
+                              f"{', '.join(unknown)}",
+                              f"use some of {', '.join(sorted(_ICON_KEYS))}",
+                              given=unknown[0], allowed=sorted(_ICON_KEYS))
+            icons[f"{name}_{state}"] = _checked(source, f"{name}.states.{state}",
+                                                {**base, **changed})
     if not icons:
         raise _refuse(source, "the set declares no [icon.<name>]",
                       'declare each as [icon.a] with shape = "circle"')
@@ -156,6 +166,26 @@ def read(source: Path) -> dict:
     return {"name": str(declared.get("name") or source.name.split(".")[0]),
             "sizes": sizes, "atlas": bool(declared.get("atlas")), "icons": icons,
             "accept": accept}
+
+
+def _checked(source: Path, name: str, icon: dict) -> dict:
+    """One drawn icon's keys, refused where they cannot be drawn."""
+    scale = icon["symbol_scale"]
+    if isinstance(scale, bool) or not isinstance(scale, int | float) or not (
+            0.2 <= scale <= 2):
+        raise _refuse(source, f"[icon.{name}] has symbol_scale {scale!r}",
+                      "write symbol_scale from 0.2 to 2, 1 filling its box")
+    if icon.get("shape") not in SHAPES:
+        raise _refuse(source, f"[icon.{name}] is shaped {icon.get('shape')!r}",
+                      f"make it one of {', '.join(SHAPES)}",
+                      given=str(icon.get("shape")), allowed=SHAPES)
+    tints = icon.get("tints") or []
+    if not isinstance(tints, list) or not all(
+            isinstance(t, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", t) for t in tints):
+        raise _refuse(source, f"[icon.{name}] has tints {tints!r}",
+                      'write tints = ["#e85d4a", "#4ab0e8"], the colours the game '
+                      "tints it with")
+    return {**icon, "tints": list(tints)}
 
 
 def _modelled(source: Path, name: str, own: dict) -> dict:
@@ -232,6 +262,12 @@ def _mask(shape: str, size: int, inset: float, direction: str | None):
         third = span / 3
         draw.rectangle((a + third, a, b - third, b), fill=255)
         draw.rectangle((a, a + third, b, b - third), fill=255)
+    elif shape == "hexagon":
+        # Point up, as a pip on a map card stands (§PW644).
+        middle, radius = (a + b) / 2, span / 2
+        draw.polygon([(middle + radius * math.cos(math.radians(90 + 60 * k)),
+                       middle - radius * math.sin(math.radians(90 + 60 * k)))
+                      for k in range(6)], fill=255)
     return np.asarray(mask, dtype=np.float64) / 255.0
 
 
@@ -252,6 +288,25 @@ def _glyph(draw, glyph: str, box, colour, width: int) -> None:
     elif glyph == "menu":
         for y in (top + (bottom - top) * f for f in (0.2, 0.5, 0.8)):
             draw.line((left, y, right, y), fill=colour, width=width)
+    elif glyph == "star":
+        side = min(right - left, bottom - top) / 2
+        draw.polygon([(cx + (side if k % 2 == 0 else side * 0.42)
+                       * math.cos(math.radians(90 + 36 * k)),
+                       cy - (side if k % 2 == 0 else side * 0.42)
+                       * math.sin(math.radians(90 + 36 * k)) + side * 0.06)
+                      for k in range(10)], fill=colour)
+    elif glyph == "figure":
+        # A head over a pair of shoulders: a person, a crew member, a holder.
+        side = right - left
+        head = side * 0.2
+        draw.ellipse((cx - head, top, cx + head, top + 2 * head), fill=colour)
+        draw.chord((left + side * 0.08, top + side * 0.5, right - side * 0.08,
+                    bottom + side * 0.42), 180, 360, fill=colour)
+    elif glyph == "shield":
+        side = right - left
+        shoulder, waist = top + side * 0.12, top + side * 0.5
+        draw.polygon([(left, shoulder), (cx, top), (right, shoulder), (right, waist),
+                      (cx, bottom), (left, waist)], fill=colour)
     elif glyph in ("plus", "minus"):
         # As thick as the glyphs beside it, so a toolbar's add and remove match them.
         draw.line((left, cy, right, cy), fill=colour, width=round(width * 1.4))
@@ -381,6 +436,24 @@ def draw(icon: dict, size: int):
     return small, face_small, symbol_small
 
 
+def _tinted_layers(icon: dict, size: int):
+    """A tinted icon as the two pictures a game draws (§PW644): its face in white, which
+    the game modulates by the colour it is given, its shading kept as light and dark;
+    and over it the outline and symbol in their own colours, which no tint touches."""
+    from PIL import Image
+
+    whole, face, symbol = draw(icon, size)
+    white, _, _ = draw({**icon, "fill": "#FFFFFF", "symbol": "", "direction": None},
+                       size)
+    base = np.asarray(white, dtype=np.float64).copy()
+    base[..., 3] = face * 255
+    over = np.asarray(whole, dtype=np.float64).copy()
+    outline = np.clip(over[..., 3] / 255 - face, 0, 1)
+    over[..., 3] = np.maximum(outline, symbol) * 255
+    return (Image.fromarray(base.clip(0, 255).astype(np.uint8), "RGBA"),
+            Image.fromarray(over.clip(0, 255).astype(np.uint8), "RGBA"))
+
+
 def _luminance(rgb: np.ndarray) -> np.ndarray:
     from polyweave.loop.measure import srgb_to_linear
 
@@ -389,6 +462,21 @@ def _luminance(rgb: np.ndarray) -> np.ndarray:
 
 def _wcag(one: float, other: float) -> float:
     return (max(one, other) + 0.05) / (min(one, other) + 0.05)
+
+
+def _held(icon: dict, size: int) -> dict:
+    """An icon's legibility, and for one a game tints, the worst over every colour it
+    declares it will be tinted with, naming that colour (§PW644)."""
+    if not icon.get("tints"):
+        return legibility(icon, size)
+    each = {tint: legibility({**icon, "fill": tint}, size) for tint in icon["tints"]}
+    worst = {key: min(found[key] for found in each.values() if key in found)
+             for key in {k for found in each.values() for k in found}}
+    if "symbol_contrast" in worst:
+        worst["worst_tint"] = min(
+            (t for t in each if "symbol_contrast" in each[t]),
+            key=lambda t: each[t]["symbol_contrast"])
+    return worst
 
 
 def legibility(icon: dict, size: int) -> dict:
@@ -556,8 +644,15 @@ def build(
                            here)
            for name, icon in modelled.items()}
     for size in declared["sizes"]:
-        drawn = {name: _shrunk(big[name], size, icon) if name in big
-                 else draw(icon, size)[0] for name, icon in declared["icons"].items()}
+        drawn = {}
+        for name, icon in declared["icons"].items():
+            if name in big:
+                drawn[name] = _shrunk(big[name], size, icon)
+            elif icon.get("tints"):
+                # The face to tint, and over it what keeps its own colour (§PW644).
+                drawn[name], drawn[f"{name}_over"] = _tinted_layers(icon, size)
+            else:
+                drawn[name] = draw(icon, size)[0]
         if declared["atlas"]:
             for one in _atlas(drawn, size, folder, declared["name"]):
                 made[one] = list(modelled)
@@ -579,7 +674,7 @@ def build(
     measured, failed = {}, {}
     for name, icon in declared["icons"].items():
         measured[name] = (model_legibility(big[name], icon, smallest) if name in big
-                          else legibility(icon, smallest))
+                          else _held(icon, smallest))
         broken = _failed(measured[name], declared["accept"])
         if broken:
             failed[name] = broken
@@ -594,6 +689,19 @@ def build(
     if sitting:
         shown = [provenance.relative(one, here) for one in made
                  if one.stem.endswith(f"_{max(declared['sizes'])}")]
+        # A tinted icon's own files are a white face and what lies over it, which a
+        # person cannot judge, so it is shown once in each colour it declares.
+        previews = config.path("paths.work", f"icons/{declared['name']}/previews")
+        for name, icon in declared["icons"].items():
+            if icon.get("tints") and name not in big:
+                previews.mkdir(parents=True, exist_ok=True)
+                dropped = {f"{name}_{max(declared['sizes'])}",
+                           f"{name}_over_{max(declared['sizes'])}"}
+                shown = [one for one in shown if Path(one).stem not in dropped]
+                for tint in icon["tints"]:
+                    target = previews / f"{name}_{tint.lstrip('#').lower()}.png"
+                    draw({**icon, "fill": tint}, max(declared["sizes"]))[0].save(target)
+                    shown.append(provenance.relative(target, here))
         laid = verdict.sitting(
             {declared["name"]: shown},
             out=str(config.path("paths.work", f"icons/{declared['name']}")),

@@ -241,3 +241,65 @@ def test_a_symbol_scale_out_of_range_is_refused(tmp_path, scale):
     with pytest.raises(PolyweaveError) as refused:
         icons.build(declared(tmp_path, body), sitting=False, root=str(tmp_path))
     assert refused.value.code == "compose.bad-icons"
+
+
+MARKS = """name = "marks"
+sizes = [32, 64]
+
+[style]
+shape = "hexagon"
+
+[icon.star]
+symbol = "star"
+tints = ["#e85d4a", "#4ab0e8", "#f2c14e"]
+
+[icon.star.states.empty]
+fill = "#1c1f27"
+symbol_colour = "#3a3f4c"
+tints = []
+
+[icon.crew]
+symbol = "figure"
+
+[icon.guard]
+symbol = "shield"
+"""
+
+
+def test_a_mark_has_a_filled_and_an_empty_state_from_one_declaration(tmp_path):
+    # Spinhold's world marks: a pip earned in the world's colour, a dark socket to earn.
+    found = icons.build(declared(tmp_path, MARKS), sitting=False, root=str(tmp_path))
+    assert set(found["measured"]) == {"star", "star_empty", "crew", "guard"}
+    folder = tmp_path / "marks"
+    assert (folder / "star_empty_32.png").is_file()
+    # The empty socket is no tinted layer pair: it is drawn whole.
+    assert not (folder / "star_empty_over_32.png").exists()
+
+
+def test_an_icon_a_game_tints_is_a_white_face_and_what_lies_over_it(tmp_path):
+    found = icons.build(declared(tmp_path, MARKS), sitting=False, root=str(tmp_path))
+    with Image.open(tmp_path / "marks" / "star_64.png") as base:
+        middle = base.convert("RGBA").getpixel((32, 54))
+    # Its face is white to be tinted, and holds no symbol of its own.
+    assert middle[3] > 200 and min(middle[:3]) > 180, middle
+    with Image.open(tmp_path / "marks" / "star_over_64.png") as over:
+        assert over.convert("RGBA").getpixel((32, 30))[3] > 200
+    # Held at every colour the game tints it with, and the worst one named.
+    assert found["measured"]["star"]["worst_tint"] in {"#e85d4a", "#4ab0e8", "#f2c14e"}
+
+
+@pytest.mark.parametrize("glyph", ["star", "figure", "shield"])
+def test_a_star_a_figure_and_a_shield_fill_their_face(glyph):
+    found = icons.legibility({**icons._STYLE, "shape": "hexagon", "symbol": glyph}, 64)
+    assert found["symbol_share"] > 0.08, found
+
+
+@pytest.mark.parametrize("change", [
+    ('tints = ["#e85d4a", "#4ab0e8", "#f2c14e"]', 'tints = ["red"]'),
+    ("[icon.star.states.empty]", "[icon.star.states.empty]\nglow = 2"),
+])
+def test_a_tint_or_a_state_that_cannot_be_drawn_is_refused(tmp_path, change):
+    with pytest.raises(PolyweaveError) as refused:
+        icons.build(declared(tmp_path, MARKS.replace(*change)), sitting=False,
+                    root=str(tmp_path))
+    assert refused.value.code == "compose.bad-icons"
