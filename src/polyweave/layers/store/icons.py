@@ -20,8 +20,10 @@ draw them by hand, so a set is a declaration, `*.icons.toml`:
     shape  = "circle"          # circle, rounded, pill, trigger, keycap, dpad, stick
     fill   = "#3BA935"
     symbol = "A"               # text, or a glyph: cross, ring, square, triangle,
-    symbol_colour = "#FFFFFF"  # up, down, left, right, menu (three bars), view, or
-                               # north, south, east, west (four dots, that one filled)
+    symbol_colour = "#FFFFFF"  # up, down, left, right, menu (three bars), view, plus,
+                               # minus, or north, south, east, west (four dots, that
+                               # one filled); text is fitted by its ink as a glyph is
+    symbol_scale = 1.0         # how much of the symbol's box it fills, 0.2 to 2
 
     [icon.dpad_up]
     shape = "dpad"
@@ -68,7 +70,15 @@ from polyweave.kernel.errors import PolyweaveError
 #: What an icon may be shaped as, and what a glyph symbol may be.
 SHAPES = ("circle", "rounded", "pill", "trigger", "keycap", "dpad", "stick")
 GLYPHS = ("cross", "ring", "square", "triangle", "up", "down", "left", "right", "menu",
-          "view", "north", "south", "east", "west")
+          "view", "north", "south", "east", "west", "plus", "minus")
+
+#: Text a glyph already draws, drawn as that glyph: a font's "+" is a hairline beside
+#: the set's strokes, at any size it is fitted to (§PW642).
+_AS_GLYPH = {"+": "plus", "-": "minus", "−": "minus"}
+
+#: A symbol whose share of its face is under this share of the set's median is named in
+#: what was measured, bound or no bound: a speck is never what was meant (§PW642).
+SPECK = 1 / 3
 
 #: The compass glyphs: four buttons in a diamond, the one named filled, as a pad that
 #: prints nothing on its face buttons is told which one to press (§PW431).
@@ -80,7 +90,7 @@ _OVER = 4
 
 #: The set's look where it says nothing of its own.
 _STYLE = {"outline": "#101014", "outline_width": 0.07, "rim": 0.35, "shade": 0.3,
-          "fill": "#5A5F6A", "symbol_colour": "#FFFFFF"}
+          "fill": "#5A5F6A", "symbol_colour": "#FFFFFF", "symbol_scale": 1.0}
 
 #: Every key an icon, the style and `[accept]` may carry.
 _ICON_KEYS = {"shape", "symbol", "direction", *_STYLE}
@@ -125,6 +135,11 @@ def read(source: Path) -> dict:
                           f"use some of {', '.join(sorted(_ICON_KEYS))}",
                           given=unknown[0], allowed=sorted(_ICON_KEYS))
         icon = {**style, **own}
+        scale = icon["symbol_scale"]
+        if isinstance(scale, bool) or not isinstance(scale, int | float) or not (
+                0.2 <= scale <= 2):
+            raise _refuse(source, f"[icon.{name}] has symbol_scale {scale!r}",
+                          "write symbol_scale from 0.2 to 2, 1 filling its box")
         if icon.get("shape") not in SHAPES:
             raise _refuse(source, f"[icon.{name}] is shaped {icon.get('shape')!r}",
                           f"make it one of {', '.join(SHAPES)}",
@@ -237,6 +252,11 @@ def _glyph(draw, glyph: str, box, colour, width: int) -> None:
     elif glyph == "menu":
         for y in (top + (bottom - top) * f for f in (0.2, 0.5, 0.8)):
             draw.line((left, y, right, y), fill=colour, width=width)
+    elif glyph in ("plus", "minus"):
+        # As thick as the glyphs beside it, so a toolbar's add and remove match them.
+        draw.line((left, cy, right, cy), fill=colour, width=round(width * 1.4))
+        if glyph == "plus":
+            draw.line((cx, top, cx, bottom), fill=colour, width=round(width * 1.4))
     elif glyph in _COMPASS:
         side = right - left
         radius = side * 0.16
@@ -261,6 +281,25 @@ def _glyph(draw, glyph: str, box, colour, width: int) -> None:
             "right": [(left, top), (right, cy), (left, bottom)],
         }[glyph]
         draw.polygon(points, fill=colour)
+
+
+def _text(pen, said: str, box, fonts) -> None:
+    """Text fitted by its ink to `box`, as a glyph fills it (§PW642).
+
+    A font's size is its line, not its ink: at half the icon a "+" inked a twentieth of
+    the face and a "-" a speck. So the text is measured at one size and scaled until its
+    ink meets the box on its longer side, then centred on that ink.
+    """
+    left, top, right, bottom = box
+    trial = 100.0
+    ink = pen.textbbox((0, 0), said, font=fonts.load_default(size=trial), anchor="lt")
+    wide, tall = max(ink[2] - ink[0], 1), max(ink[3] - ink[1], 1)
+    size = trial * min((right - left) / wide, (bottom - top) / tall)
+    font = fonts.load_default(size=size)
+    ink = pen.textbbox((0, 0), said, font=font, anchor="lt")
+    at = ((left + right) / 2 - (ink[0] + ink[2]) / 2,
+          (top + bottom) / 2 - (ink[1] + ink[3]) / 2)
+    pen.text(at, said, fill=255, font=font, anchor="lt")
 
 
 #: Where each D-pad arm sits, as the share of the icon each side of it reaches.
@@ -320,9 +359,10 @@ def draw(icon: dict, size: int):
     symbol = Image.new("L", (big, big), 0)
     pen = ImageDraw.Draw(symbol)
     said = str(icon.get("symbol") or icon.get("direction") or "")
+    said = _AS_GLYPH.get(said, said)
     if said:
-        box_side = big * (0.62 if said in _COMPASS
-                          else 0.42 if icon["shape"] != "pill" else 0.3)
+        box_side = big * float(icon["symbol_scale"]) * (
+            0.62 if said in _COMPASS else 0.42 if icon["shape"] != "pill" else 0.3)
         box = ((big - box_side) / 2, (big - box_side) / 2,
                (big + box_side) / 2, (big + box_side) / 2)
         if arm is not None:
@@ -330,10 +370,7 @@ def draw(icon: dict, size: int):
         if said in GLYPHS:
             _glyph(pen, said, box, 255, max(1, round(big * 0.07)))
         else:
-            text_size = big * (0.5 if len(said) == 1 else 0.36 if len(said) == 2
-                               else 0.26)
-            font = ImageFont.load_default(size=text_size)
-            pen.text((big / 2, big / 2), said, fill=255, font=font, anchor="mm")
+            _text(pen, said, box, ImageFont)
     colour = Image.new("RGBA", (big, big), (*_colour(icon["symbol_colour"]), 255))
     image.paste(colour, (0, 0), symbol)
     small = image.resize((size, size), Image.Resampling.LANCZOS)
@@ -444,6 +481,21 @@ def model_legibility(big, icon: dict, size: int) -> dict:
     return found
 
 
+def _specks(measured: dict) -> None:
+    """Each symbol far under the set's median share of its face, said in what it
+    measured whether or not a bound asks (§PW642)."""
+    shares = {name: found["symbol_share"] for name, found in measured.items()
+              if found.get("symbol_share")}
+    if len(shares) < 3:
+        return
+    middle = float(np.median(list(shares.values())))
+    for name, share in shares.items():
+        if share < middle * SPECK:
+            measured[name]["speck"] = (
+                f"its symbol fills {share:g} of its face, under a third of the set's "
+                f"median {middle:g}: raise symbol_scale or name a glyph")
+
+
 def _failed(found: dict, accept: dict) -> list[str]:
     said = []
     for key, bound in accept.items():
@@ -531,6 +583,7 @@ def build(
         broken = _failed(measured[name], declared["accept"])
         if broken:
             failed[name] = broken
+    _specks(measured)
     answer = {
         "set": declared["name"],
         "files": [provenance.relative(one, here) for one in made],

@@ -24,7 +24,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW642** (deps: —) **an icon's text symbol such as + or - is drawn a speck of its face, and nothing declares how large it is drawn** — Spinhold's editor gave up a plus and a minus for unrelated glyphs, since its set passed on contrast alone. → §PW642
 - 📋 **PW644** (deps: —) **an icon set has no star, figure or shield, and no filled and empty state a game tints per use** — A count of marks in each world's colour is drawn by hand in the game, outside every legibility check. → §PW644
 
 ## Block J — A bar a person sets once

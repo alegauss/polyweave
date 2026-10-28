@@ -252,10 +252,19 @@ draw them by hand, so a set of small icons is a declaration, `*.icons.toml`: `na
 `keycap`, `dpad`, `stick`), a `fill`, a `symbol` with its `symbol_colour`, and the
 style's `outline`, `outline_width` (a share of the size), `rim` and `shade`, any of which
 it may override. A symbol is text, or a glyph: `cross`, `ring`, `square`, `triangle`, the
-four arrows, `menu` (three bars) and `view`, or a compass point, `north`, `south`,
-`east` or `west`: four dots in a diamond, that one filled, drawn wider than a letter so
-the dots read at 64 pixels (§PW431). A `dpad` with a `direction` lights that arm and puts
-its arrow in it.
+four arrows, `menu` (three bars), `view`, `plus` and `minus`, or a compass point,
+`north`, `south`, `east` or `west`: four dots in a diamond, that one filled, drawn wider
+than a letter so the dots read at 64 pixels (§PW431). A `dpad` with a `direction` lights
+that arm and puts its arrow in it.
+
+Text is fitted by its ink, not its font size (§PW642). It is measured at one size, then
+scaled until its ink meets the symbol's box on its longer side and centred on that ink,
+as a glyph fills the same box. Before this, a "+" drawn at half the icon inked 0.024 of
+the face and a "-" 0.004, where the glyphs beside them reached 0.11 to 0.18. Fitted, a
+font's "+" is still a hairline beside the set's strokes (0.046 against a ring's 0.12), so
+the text "+" and "-" are drawn as the `plus` and `minus` glyphs.
+`symbol_scale`, from 0.2 to 2 and 1 by default, a style key an icon may override, grows
+or shrinks that box for text and glyphs alike.
 
 `icons.build(source)` draws each icon four times over and brings it down, so a 32-pixel
 icon keeps smooth edges: the dark outline that reads over a bright scene, the fill
@@ -268,6 +277,9 @@ colour. Each lands as `<set>/<icon>_<size>.png`, or with `atlas = true` each siz
 of the symbol against its face; `background_contrast_min`, the worse of the outline
 against white and the face against black; `symbol_share_min`, the symbol's share of the
 face. `measured` gives each icon's three, and `failed` names each one under a bound.
+Bound or no bound, an icon whose symbol fills under a third of the set's median share
+says so in its `measured` as `speck`, where the set has three symbols or more: a speck is
+never what was meant.
 With `sitting`, on by default, the set waits on the review page at its largest size,
 since whether it reads as the pad's own button is a person's to say. A declaration that
 cannot be drawn (an unknown shape or key, a size out of range, no icon) is

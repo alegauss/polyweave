@@ -188,3 +188,56 @@ def test_an_icon_rendered_from_a_model_goes_stale_with_it(tmp_path):
     stale = {one["artefact"] for one in provenance.outdated(root=str(tmp_path))
              ["outdated"]}
     assert not {one for one in stale if one.startswith("palette/")}
+
+
+TOOLS = """name = "tools"
+sizes = [32, 64]
+
+[style]
+shape = "rounded"
+
+[icon.add]
+symbol = "+"
+
+[icon.remove]
+symbol = "-"
+
+[icon.left]
+symbol = "left"
+
+[icon.ring]
+symbol = "ring"
+
+[icon.speck]
+symbol = "square"
+symbol_scale = 0.2
+"""
+
+
+def test_a_text_symbol_fills_its_face_as_a_glyph_does(tmp_path):
+    # Spinhold's toolbar measured "+" at 0.024 and "-" at 0.004 of the face (§PW642).
+    found = icons.build(declared(tmp_path, TOOLS), sitting=False, root=str(tmp_path))
+    shares = {name: one["symbol_share"] for name, one in found["measured"].items()}
+    assert shares["add"] > 0.06 and shares["remove"] > 0.02, shares
+    assert shares["add"] >= shares["ring"] * 0.5, shares
+    # Text no glyph draws is fitted by its ink, larger than its font size drew it.
+    letter = icons.legibility({**icons._STYLE, "shape": "rounded", "symbol": "?"}, 64)
+    assert letter["symbol_share"] > 0.04, letter
+    # Bound or no bound, a symbol far under the set's median is named.
+    assert "speck" in found["measured"]["speck"]
+    assert "speck" not in found["measured"]["add"]
+
+
+def test_a_plus_and_a_minus_are_glyphs_too():
+    plus = icons.legibility({**icons._STYLE, "shape": "rounded", "symbol": "plus"}, 64)
+    minus = icons.legibility({**icons._STYLE, "shape": "rounded", "symbol": "minus"},
+                             64)
+    assert plus["symbol_share"] > minus["symbol_share"] > 0.03
+
+
+@pytest.mark.parametrize("scale", ["0.1", "3", "true"])
+def test_a_symbol_scale_out_of_range_is_refused(tmp_path, scale):
+    body = TOOLS.replace("symbol_scale = 0.2", f"symbol_scale = {scale}")
+    with pytest.raises(PolyweaveError) as refused:
+        icons.build(declared(tmp_path, body), sitting=False, root=str(tmp_path))
+    assert refused.value.code == "compose.bad-icons"

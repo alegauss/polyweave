@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 3 },
-  { block: "I", title: "Voxel models from a declaration", open: 2 },
+  { block: "I", title: "Voxel models from a declaration", open: 1 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 2 },
@@ -78,13 +78,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "engine.sweep flies headless, so a capture script saves no picture and every combination ends in a script error",
     why: "Measuring variants over seeds falls to a hand-written loop of capture.run calls.",
-    deps: [],
-  },
-  {
-    id: "PW642",
-    block: "I",
-    symptom: "an icon's text symbol such as + or - is drawn a speck of its face, and nothing declares how large it is drawn",
-    why: "Spinhold's editor gave up a plus and a minus for unrelated glyphs, since its set passed on contrast alone.",
     deps: [],
   },
   {
