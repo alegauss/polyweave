@@ -34,6 +34,7 @@
 - ✅ **PW145** **a bake after `preview_size` changed is served the old-size picture from the cache, as a hit** — Every bake keys on the frame it draws, so a changed preview_size misses and renders at the new size; every existing key changed once (design recorded in `docs/specs/engine.md`).
 - ✅ **PW161** **a look digest's palette is one mean colour, so restyling the small slot of a two-material asset may not move it** — A bake paints each slot flat in a one-sample pass at its rig, so the look palette is a colour per slot and a recoloured rim moves it (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW292** **no measure says how tall a silhouette is for its width, so a spec cannot hold an enemy tall enough to hit** — silhouette_aspect says how tall a subject stands; Starship's enemy spec holds it at 0.6, refusing four flat Lancers and passing the Mote (design recorded in `docs/specs/measurements.md`).
+- ✅ **PW654** **no operation enlarges a corner of a capture, so a HUD icon a few pixels wide cannot be judged** — compose.sheet takes a tile's box, in pixels, shares or a capture's named region, enlarged pixel for pixel at the scale asked (design recorded in `docs/specs/engine.md`).
 
 ## Block C — The asset compiler
 

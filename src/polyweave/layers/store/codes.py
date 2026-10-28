@@ -22,6 +22,12 @@ CODES: dict[str, Code] = {
         when="an empty list of assets",
         doors=("pass the asset and the siblings it is seen beside",),
     ),
+    "compose.bad-tile": Code(
+        means="a sheet's tile names no picture, or a box or enlargement it cannot cut",
+        when="a tile table with keys nothing reads, a box outside its picture, or a "
+        "region the capture's record does not carry (§PW654)",
+        doors=("give a tile as a path or {path, box, scale}",),
+    ),
     "compose.unknown-anchor": Code(
         means="the anchor named is not one an asset can be placed by",
         when="a placement asking for something other than footprint or centre",

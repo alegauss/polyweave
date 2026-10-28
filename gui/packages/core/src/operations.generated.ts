@@ -270,7 +270,7 @@ export interface ComposePlaceArgs {
 
 /** Several pictures laid out on one sheet, in order, written with its record. */
 export interface ComposeSheetArgs {
-  /** the pictures to lay out, by path */
+  /** the pictures, each a path or {"path", "box", "scale"}: box [x0, y0, x1, y1] pixels, shares of 1 or a region the capture printed */
   tiles: unknown[]
   /** where the sheet is written */
   out: string

@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
-  { block: "B", title: "Seeing the result cheaply", open: 1 },
+  { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 3 },
   { block: "E", title: "One world with the engine", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW654",
-    block: "B",
-    symptom: "no operation enlarges a corner of a capture, so a HUD icon a few pixels wide cannot be judged",
-    why: "Checking small UI parts falls to a hand-run crop script on every retake.",
-    deps: [],
-  },
   {
     id: "PW658",
     block: "D",

@@ -4,28 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-### §PW654 Enlarged boxes of a capture
-
-Spinhold, RK302 (the run's HUD redrawn in the menu kit), 2026-10-27. The HUD's new icons
-(a Holder's face rendered in a 60x58 SubViewport, a row of the tender's own model at
-60x44 per icon) sit in the corners of a 1920x1080 capture. Read whole, the picture shows
-each as a few pixels: whether the Holder faced the camera or showed the back of its
-head, and whether the tender pointed left or right, could not be told.
-
-What was done instead: a one-off PIL line run by hand, `Image.open(png).crop((1650, 8,
-1890, 86)).resize((960, 312), Image.NEAREST).save(...)`, into the session scratchpad,
-three times over the iteration, once per corner.
-
-What polyweave should do: an operation that takes a picture, one or more named boxes (in
-the picture's pixels, or as a fraction, or by a Control's path when the capture logged
-its rects), and an enlargement, and writes one sheet of the boxes side by side at
-nearest-neighbour scale, with a record naming the source picture and each box. A capture
-should be able to declare its inspection boxes, so the same corners come back enlarged
-on every retake without the boxes being typed again. The seam exists: `compose.sheet`
-takes tiles but no box, while `verdict.sheet` and `reference.regions` each crop and
-enlarge already. A tile `{path, box, scale}` there, with boxes read from the `region:`
-lines a capture record keeps, covers it.
-
 ## Block C — The asset compiler
 
 ### §PW582 A mesh prepared by declared steps

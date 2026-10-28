@@ -43,12 +43,13 @@ def _as_image(pil: PILImage.Image, path: Path | None = None) -> Image:
     return Image(path=path, rgba=np.asarray(pil, dtype=np.uint8), had_alpha=True)
 
 
-def fit(pil: PILImage.Image, box: tuple[int, int]) -> PILImage.Image:
+def fit(pil: PILImage.Image, box: tuple[int, int],
+        resample: int = PILImage.LANCZOS) -> PILImage.Image:
     """Scale to fit inside `box` without distorting it."""
     width, height = box
     scale = min(width / pil.width, height / pil.height)
     size = (max(1, round(pil.width * scale)), max(1, round(pil.height * scale)))
-    return pil.resize(size, PILImage.LANCZOS)
+    return pil.resize(size, resample)
 
 
 def sheet(
@@ -59,11 +60,14 @@ def sheet(
     gap: int = 12,
     background: Sequence[int] = (0, 0, 0, 0),
     out: str | Path | None = None,
+    resample: int = PILImage.LANCZOS,
 ) -> Image:
     """Lay assets out side by side, so the one that does not belong stands out.
 
     Every tile gets the same cell and is anchored on its footprint, because a prop that
     floats is exactly the failure this is for and a centred layout would hide it.
+    `resample` is how a tile is brought to its cell: nearest for pixels enlarged to be
+    judged, which a smoothing filter would blur back into the specks they were.
     """
     if not tiles:
         raise PolyweaveError(
@@ -78,7 +82,7 @@ def sheet(
     canvas = PILImage.new("RGBA", (width, height), tuple(background))
 
     for index, tile in enumerate(tiles):
-        scaled = fit(_as_pil(tile), (cell, cell))
+        scaled = fit(_as_pil(tile), (cell, cell), resample)
         row, column = divmod(index, across)
         left = gap + column * (cell + gap) + (cell - scaled.width) // 2
         # Sitting on the bottom of its cell, so a missing shadow reads as a gap.
@@ -201,18 +205,103 @@ def placed(
 
 @operation("compose.sheet")
 def sheeted(
-    tiles: Annotated[list, Param("the pictures to lay out, by path")],
+    tiles: Annotated[list, Param(
+        'the pictures, each a path or {"path", "box", "scale"}: box [x0, y0, x1, y1] '
+        "pixels, shares of 1 or a region the capture printed")],
     *,
     out: Annotated[str, Param("where the sheet is written")],
     columns: Annotated[int, Param("how many across; square if unset")] = None,
     cell: Annotated[int, Param("each tile's cell", lo=8, unit="px")] = 256,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
-    """Several pictures laid out on one sheet, in order, written with its record."""
-    tiles = [_under(root, one) for one in tiles]
+    """Several pictures laid out on one sheet, in order, written with its record.
+
+    A tile with a `box` is that part of its picture, enlarged `scale` times pixel for
+    pixel, so a HUD icon a few pixels wide can be judged (§PW654).
+    """
+    pictures, sources, said = [], [], []
+    for index, one in enumerate(tiles):
+        path, box, scale = _tile(one, index)
+        full = _under(root, path)
+        picture = _as_pil(full)
+        if box is not None:
+            cut = _cut(box, picture, full, root, index)
+            picture = picture.crop(cut)
+            box = list(cut)
+        if scale > 1:
+            picture = picture.resize((picture.width * scale, picture.height * scale),
+                                     PILImage.NEAREST)
+        pictures.append(_as_image(picture))
+        sources.append((f"tile {index}", full))
+        said.append({"path": path, **({"box": box} if box is not None else {}),
+                     **({"scale": scale} if scale > 1 else {})})
     target = _under(root, out)
-    made = sheet(tiles, columns=columns, cell=cell, out=target)
-    return _recorded(
-        _landed(made, target), [(f"tile {i}", one) for i, one in enumerate(tiles)],
-        {"columns": columns, "cell": cell}, root,
-    )
+    enlarged = any("scale" in one for one in said)
+    # An enlarged tile is drawn at the scale asked, so the cell is the largest enlarged
+    # tile's side, never stretched to a default, and nothing smooths it.
+    sides = [max(p.width, p.height) for p, one in
+             zip((_as_pil(i) for i in pictures), said, strict=True) if "scale" in one]
+    held = max(sides) if enlarged else cell
+    made = sheet(pictures, columns=columns, cell=held, out=target,
+                 resample=PILImage.NEAREST if enlarged else PILImage.LANCZOS)
+    return _recorded(_landed(made, target), sources,
+                     {"columns": columns, "cell": held, "tiles": said}, root)
+
+
+#: What a tile table takes.
+_TILE = ("path", "box", "scale")
+
+
+def _tile(one: Any, index: int) -> tuple[str, Any, int]:
+    """A tile as its picture's path, its box if it names one, and its enlargement."""
+    if isinstance(one, str):
+        return one, None, 1
+    if not isinstance(one, dict) or not one.get("path") or set(one) - set(_TILE):
+        raise PolyweaveError(
+            "compose.bad-tile",
+            f"tile {index} is {one!r}",
+            'give a tile as a path, or {"path": "<picture>", "box": [x0, y0, x1, y1], '
+            '"scale": 4}',
+            allowed=_TILE,
+        )
+    scale = one.get("scale", 1)
+    if isinstance(scale, bool) or not isinstance(scale, int) or not 1 <= scale <= 16:
+        raise PolyweaveError("compose.bad-tile",
+                             f"tile {index} has scale {scale!r}",
+                             "write scale as a whole number from 1 to 16")
+    return str(one["path"]), one.get("box"), scale
+
+
+def _cut(box: Any, picture: PILImage.Image, path: str, root, index: int) -> tuple:
+    """A tile's box as whole pixels inside its picture: pixels as given, shares of 1 of
+    its size, or a region its capture's record names."""
+    if isinstance(box, str):
+        from polyweave.kernel import provenance
+
+        try:
+            named = provenance.read(path, root=Path(root)).get("regions") or {}
+        except PolyweaveError:
+            named = {}
+        if box not in named:
+            raise PolyweaveError(
+                "compose.bad-tile",
+                f"tile {index} names region {box!r}, which its capture's record lacks",
+                "name a region the capture script printed as `region: <name>=x0,y0,x1,"
+                "y1`, or give the box in pixels",
+                given=box, allowed=sorted(named))
+        box = named[box]
+    numbers = isinstance(box, list | tuple) and len(box) == 4 and all(
+        isinstance(v, int | float) and not isinstance(v, bool) for v in box)
+    if numbers and all(0 <= v <= 1 for v in box) and any(isinstance(v, float)
+                                                         for v in box):
+        box = [box[0] * picture.width, box[1] * picture.height,
+               box[2] * picture.width, box[3] * picture.height]
+    cut = tuple(round(v) for v in box) if numbers else None
+    if (cut is None or not 0 <= cut[0] < cut[2] <= picture.width
+            or not 0 <= cut[1] < cut[3] <= picture.height):
+        raise PolyweaveError(
+            "compose.bad-tile",
+            f"tile {index} has box {box!r}, which is not inside its "
+            f"{picture.width}x{picture.height} picture",
+            "write box as [x0, y0, x1, y1] in its pixels, or as shares from 0 to 1")
+    return cut

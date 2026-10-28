@@ -478,6 +478,19 @@ in its answer and in the capture's record. They sit outside the cache key, like 
 the same bar is held to what the player sees as well as to the bake (see
 [acceptance-spec.md](acceptance-spec.md)).
 
+**A region can be looked at enlarged** (§PW654). Spinhold's HUD icons sit in the corners
+of a 1920x1080 capture, a few pixels each, and were checked with a hand-run crop on every
+retake. `compose.sheet` takes a tile as a path or as `{path, box, scale}`, which is
+that part of its picture enlarged `scale` times (1 to 16) pixel for pixel. The `box` is
+`[x0, y0, x1, y1]` in the picture's pixels, shares of 1 of its size, or the name of a
+region the capture's record keeps. So a script that prints `region: holder=1650,8,1890,86`
+has its corners enlarged on every retake by name, with no box typed again. A sheet with
+an enlarged tile takes the largest enlarged tile's side as its cell, so each is drawn at
+exactly the scale asked, and fits every tile by nearest neighbour, so nothing is
+smoothed back into a speck. Its record keeps each tile's box and
+scale. A tile with a key nothing reads, a box outside its picture, or a region the record
+lacks is `compose.bad-tile`.
+
 ## A project that imports and parses clean
 
 Godot 4 refers to a resource by UID, and since 4.4 a script carries a `.uid` file beside

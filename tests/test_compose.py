@@ -221,3 +221,61 @@ def test_luma_bands_carries_its_region_and_rung(tmp_path):
     )[0]
     assert taken["measure"] == "luma_bands"
     assert taken["rung"] == "final"
+
+
+# -- a corner of a capture, enlarged (§PW654) -----------------------------------------
+
+
+def hud(tmp_path):
+    """A 200x100 capture with a 4x4 red icon at (180, 8), as a HUD corner holds one."""
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    pixels = np.zeros((100, 200, 4), np.uint8)
+    pixels[..., 3] = 255
+    pixels[8:12, 180:184] = (255, 0, 0, 255)
+    PILImage.fromarray(pixels, "RGBA").save(tmp_path / "hud.png")
+    return "hud.png"
+
+
+def red_share(path) -> float:
+    with PILImage.open(path) as sheet:
+        rgba = np.asarray(sheet.convert("RGBA")).astype(int)
+    red = (rgba[..., 0] == 255) & (rgba[..., 1] == 0) & (rgba[..., 3] == 255)
+    return float(red.sum())
+
+
+@pytest.mark.parametrize("box", [[176, 4, 188, 16], [0.88, 0.04, 0.94, 0.16]])
+def test_a_box_of_a_capture_is_enlarged_pixel_for_pixel(tmp_path, box):
+    # Spinhold's HUD icons were a few pixels of a 1920x1080 capture, cropped by hand.
+    made = compose.sheeted([{"path": hud(tmp_path), "box": box, "scale": 8}],
+                           out="corners.png", cell=32, root=str(tmp_path))
+    # Four by four pixels, eight times over, and never smoothed.
+    assert red_share(tmp_path / "corners.png") == 32 * 32
+    assert made["size"][0] >= 12 * 8
+
+
+def test_a_box_named_by_the_capture_s_own_region(tmp_path):
+    from polyweave.kernel import provenance
+
+    picture = hud(tmp_path)
+    provenance.write(provenance.build(
+        "capture", tmp_path / picture, engine={"name": "test"},
+        extra={"regions": {"icon": [176, 4, 188, 16]}}, root=tmp_path), tmp_path)
+    compose.sheeted([{"path": picture, "box": "icon", "scale": 8}], out="corners.png",
+                    root=str(tmp_path))
+    assert red_share(tmp_path / "corners.png") == 32 * 32
+    record = provenance.read("corners.png", root=str(tmp_path))
+    assert record["params"]["tiles"] == [
+        {"path": picture, "box": [176, 4, 188, 16], "scale": 8}]
+
+
+@pytest.mark.parametrize("tile", [
+    {"path": "hud.png", "box": [190, 4, 260, 16], "scale": 2},
+    {"path": "hud.png", "box": "nowhere"},
+    {"path": "hud.png", "zoom": 4},
+    {"path": "hud.png", "scale": 40},
+])
+def test_a_tile_that_cannot_be_cut_is_refused(tmp_path, tile):
+    hud(tmp_path)
+    with pytest.raises(PolyweaveError) as refused:
+        compose.sheeted([tile], out="corners.png", root=str(tmp_path))
+    assert refused.value.code == "compose.bad-tile"

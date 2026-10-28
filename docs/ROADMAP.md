@@ -4,8 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-- 📋 **PW654** (deps: —) **no operation enlarges a corner of a capture, so a HUD icon a few pixels wide cannot be judged** — Checking small UI parts falls to a hand-run crop script on every retake. → §PW654
-
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise
