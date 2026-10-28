@@ -10,6 +10,9 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+- 📋 **PW658** (deps: —) **picture.buy writes only PNG, so a web project re-encodes to WebP outside polyweave and ships a file with no provenance** — A site needing WebP under a byte bound converts by hand, and credits name a file the release does not carry. → §PW658
+- 📋 **PW659** (deps: —) **picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning** — The caller pays for a 16x9 picture, gets 3x2 unannounced, and crops by hand after the spend. → §PW659
+
 ## Block E — One world with the engine
 
 ## Block F — Motion

@@ -52,6 +52,69 @@ before and after for each family, as PW76 to PW81 did, before deleting anything.
 
 ## Block D — Fetching from a paid service without surprise
 
+### §PW658 A bought picture in the format the project ships
+
+Met in the Shio repository (D:\Git\viglet\shio\2026.3), building the Quilhara showcase
+package (Shio SH1254) under `marketplace/quilhara/`, with a `polyweave.toml` declaring
+`[service.ideogram]` and an owner-set `[budget.ideogram]`.
+
+The call, ten times:
+
+```
+python -m polyweave picture.buy --root . --out assets/source/home-coast.png \
+  --transparent false --aspect_ratio 16x9 --prompt "..."
+```
+
+Each answer was right about the purchase and wrote a PNG of about 6.8 MB at 1312x736.
+The package's spec allows WebP only, under 300 KB each and at most 1600 px wide, because
+the pictures ship inside a web package with a 32 MB asset bound. No operation produces
+that: `picture.buy` takes no output format, and `picture.fit` places a sprite on a
+family's grid (defringe, trim, anchor), which is not a re-encode. So the project
+converts each PNG with Pillow outside polyweave, and the WebP it ships has no record
+linking it to the purchase: `provenance.read` on the shipped file finds nothing, and the
+credits a release writes from the ledger name a file the release does not carry.
+
+What polyweave should do, either shape:
+
+- `picture.buy` takes an output encoding: `format` (png, webp, jpeg), `quality`, `max_width` and
+  `max_bytes`, re-encoding down the quality ladder until the bound holds and refusing by name when
+  it cannot. The record keeps the bought bytes' digest beside the written file's.
+- or a `picture.encode` operation that derives a web copy from a bought picture with the same four
+  parameters and writes a `.prov.json` naming its parent, so `provenance.credits` follows the
+  derivation to the purchase.
+
+Either way the source PNG need not be committed by a project that ships only the derived
+file.
+
+### §PW659 The aspect ratio a 4.0 buy asked for
+
+Met in the Shio repository, `marketplace/quilhara/` (Shio SH1254), buying ten
+photographs on Ideogram 4.0 through `picture.buy`.
+
+```
+python -m polyweave picture.buy --root . --out assets/source/home-coast.png \
+  --transparent false --aspect_ratio 16x9 --prompt "..."
+python -m polyweave picture.buy --root . --out assets/source/about-map.png \
+  --transparent false --aspect_ratio 3x2 --prompt "..."
+```
+
+The answers were `credits: 0.06` and no warning. The files are 2496x1664 (3:2) for the
+16x9 request and 1792x2240 (4:5) for the 3x2 one; the record says `details.aspect_ratio:
+"3x2"` beside `details.resolution: "1792x2240"`, two fields that contradict each other
+with nothing saying so. The same 16x9 request sent straight to the 3.0 endpoint earlier
+in the session came back 1312x736, so either 4.0 spells the parameter differently (or
+takes `resolution` instead), or it treats the ratio as a hint and the prompt overrides
+it.
+
+What polyweave should do: send the ratio in whatever form 4.0 honours (schema.read for
+the service would settle which), and compare the returned resolution with the ratio
+asked. A mismatch is a named finding on the answer (`picture.aspect-differs`, asked and
+got), not a silent record, because the caller has already paid and a crop is a decision
+about the picture.
+
+Workaround in the project: the bought pictures are centre-cropped to the asked ratio
+with Pillow in the same one-off re-encode that PW658 covers.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
