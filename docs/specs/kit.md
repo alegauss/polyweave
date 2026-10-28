@@ -309,7 +309,11 @@ kept beside them in `user://polyweave_bindings.cfg`. The actions are the game's 
 every project action but the `ui_` ones unless the screen names them. Its scene, a
 remap screen, draws each binding as the prompts kit's icon for the device in use,
 listens on the half pressed for the next input, says a swap, and holds a deadzone
-slider, the inverted vertical and a reset. Its proof script rebinds, swaps, restarts
+slider, the inverted vertical and a reset. Every row's label, the options' and the
+actions', shares one column as wide as the widest label shown, at least 160 pixels, and
+measured again when the language changes (§PW652, since 0.12.1). So a longer language
+moves every row's controls together: Spinhold's pt-BR "Zona morta do analógico" had run
+into its slider in a column English fitted. Its proof script rebinds, swaps, restarts
 the store from the file, resets, and drives the screen with a pad button, all on three
 actions of its own declared at run time (since 0.2.1), so it holds in a game whatever
 actions that game has. A pad binding the store puts in force answers every pad, as the

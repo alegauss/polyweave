@@ -59,8 +59,8 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW652** (deps: —) **the remap kit keeps an English-wide label column, so pt-BR labels run into their controls** — A game in Portuguese ships a Controls screen whose words collide, and the host cannot fix the kit's layout. → §PW652
 - 📋 **PW657** (deps: PW640 ✅) **nothing reads a game's scripts for play timed by frames, so a drift is found only after a replay parts** — Spinhold's four frame-timed causes were each a pattern a check could name at its line before any run, and game.replay_rates sees only the state kit's names. → §PW657
+- 📋 **PW661** (deps: PW652 ✅) **the remap kit cannot lay itself out in less height, so a host scales it until its text is too small to read** — Spinhold scales the kit to 0.64 to fit its options panel, leaving its text near 11 px at 1280x720. → §PW661
 
 ## Block T — Adopting polyweave in a project
 

@@ -603,26 +603,6 @@ when the lull counts no new track and RK198's re-count matches the owner's sheet
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW652 the remap kit in a longer language
-
-Spinhold, RK166, 2026-10-26: the remap kit (`addons/polyweave/remap`, installed by
-kit.install) on Spinhold's Controls tab, in pt-BR at 1280x720 (shot: spinhold
-art/review/ptbr-small/options_0.png). Its option labels keep one width that English
-fits: "Zona morta do analógico" runs into the deadzone slider, "Nomes dos botões"
-touches its value "Automático", and "Mapa de botões" its "< Padrão >". The kit is also
-taller than the options panel's rows, so the game scales it to about 0.64, which leaves
-its text near 11 px tall at 1280x720.
-
-Expected: the kit sizes its label column to the longest label in the locale set, and can
-lay itself out in the width it is given (two columns, or a shorter row height) so a host
-need not scale it below a readable size. The game cannot change the kit's layout from
-outside, so nothing was worked round; the shot is on the owner's sitting.
-
-The cause is in `layers/kits/remap/core/remap_menu.gd:228-241`: each row is its own
-HBoxContainer with a 160 px label, so rows share no column and a longer label pushes its
-controls out of line. One shared column, a GridContainer sized to the longest label in
-the locale set, fixes both; `pad_screen.gd:233` hardcodes its sizes the same way.
-
 ### §PW657 Frame-timed play named in the scripts
 
 Split from PW640 (2026-10-28). `game.replay_rates` now flies the determinism kit's run
@@ -644,6 +624,26 @@ finding names the file, line and member, and says to move the write into
 four hazards, restored in a fixture, are each named and `game.replay_rates` parts on the
 same run. The parse is pattern work, so the check says what it could not read rather
 than calling a file clean.
+
+### §PW661 The remap screen in the room it is given
+
+Split from PW652 (2026-10-28), which gave the remap screen's labels one shared column so
+a longer language moves every row's controls together. The other half of Spinhold's
+report (RK166, 2026-10-26, its Controls tab in pt-BR at 1280x720) is left: the kit is
+taller than the options panel's rows, so the game scales it to about 0.64, which leaves
+its text near 11 px tall. A host cannot change the kit's layout from outside, so scaling
+it down is the only thing it can do.
+
+What to build: the remap screen lays itself out in the height and width it is given,
+before anyone scales it. Its action rows are 56 px buttons each, and the option rows
+(deadzone, invert, map, button names, reset, the pad) follow them in one column. Where
+the screen is given less height than one column needs, the rows go into two columns,
+actions on the left and options on the right. Where even that does not fit, the buttons
+shrink towards a floor (40 px), keeping the text at the theme's size. The screen answers
+the size it laid itself out at, so a host reads it rather than guessing. The proof gives
+the screen a box 0.64 of its natural height and holds every label at the theme's font
+size and every row inside the box. Done when Spinhold's Controls tab shows the kit
+unscaled in its options panel at 1280x720, in pt-BR.
 
 ## Block T — Adopting polyweave in a project
 

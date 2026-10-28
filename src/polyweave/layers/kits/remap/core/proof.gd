@@ -285,6 +285,21 @@ func _process(_delta: float) -> bool:
 	# Said in whatever words the game's table gives it, it names both actions.
 	if not (said.contains(menu.bindings.label(P)) and said.contains(menu.bindings.label(F))):
 		failed.append("the screen did not say the swap: %s" % said)
+	# One label column, as wide as its widest label (§PW652): Spinhold's pt-BR "Zona morta
+	# do analógico" ran into its slider in a column English fitted.
+	var longest: Label = menu._labels[0]
+	var was := longest.text
+	longest.text = "Zona morta do analógico, mais longa que a coluna"
+	menu._fit_column()
+	var column: float = longest.custom_minimum_size.x
+	for label: Label in menu._labels:
+		var shown := label.get_theme_font("font").get_string_size(label.text,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, label.get_theme_font_size("font_size")).x
+		if label.custom_minimum_size.x != column or shown > column:
+			failed.append("the labels share no column the longest fits: %s" % label.text)
+			break
+	longest.text = was
+	menu._fit_column()
 	# A host game hears when the screen listens and when it stops, and the button a pad
 	# focused is still the one focused once it binds (§PW541).
 	var heard: Array[String] = []

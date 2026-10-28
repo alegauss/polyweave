@@ -547,6 +547,7 @@
 - ✅ **PW640** **a recorded run is never flown back at another frame rate, so play that reads frames instead of ticks passes every proof** — game.replay_rates flies the determinism kit's run at several frame rates and names the first tick and name to part; records keep a rate (design recorded in `docs/specs/engine.md`).
 - ✅ **PW650** **game.batch refuses text_fit, so a screen's move, settle, fit and shot take two calls** — game.batch sends locale and text_fit, each fit answered as game.text_fit answers it, and fit_passed holds the batch's fits together (design recorded in `docs/specs/driving.md`).
 - ✅ **PW651** **the MCP server runs a stale installed copy of polyweave, and no answer says which copy replied** — The MCP server names its copy of polyweave and refuses every call as op.stale-server once another copy is installed or its code changed (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW652** **the remap kit keeps an English-wide label column, so pt-BR labels run into their controls** — The remap screen's labels share one column as wide as the widest shown, so a longer language moves every row's controls together (design recorded in `docs/specs/kit.md`).
 
 ## Block T — Adopting polyweave in a project
 

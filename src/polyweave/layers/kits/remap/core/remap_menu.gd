@@ -64,6 +64,10 @@ var _prompts: Node
 ## action -> [its key button, its pad button], built once and painted in place, so the
 ## button a pad focused is still there once it binds (§PW541)
 var _buttons := {}
+## every row's label, the option rows' and the actions', sharing one column (§PW652)
+var _labels: Array[Label] = []
+## the narrowest the label column is, which English fits
+const COLUMN := 160.0
 
 
 ## one of the screen's words, as the game's table says it under REMAP_, else English;
@@ -225,11 +229,34 @@ func _row(named: String, control: Control) -> void:
 	var row := HBoxContainer.new()
 	var label := Label.new()
 	label.text = named
-	label.custom_minimum_size.x = 160
+	_labels.append(label)
 	row.add_child(label)
-	control.custom_minimum_size.x = 160
+	control.custom_minimum_size.x = COLUMN
 	row.add_child(control)
 	add_child(row)
+	_fit_column()
+
+
+## every label as wide as the widest one shown, at least COLUMN, so a longer language
+## moves every row's controls together and none runs into its label (§PW652): Spinhold's
+## "Zona morta do analógico" ran into its slider in a column English fitted
+func _fit_column() -> void:
+	# A row freed since, rebuilt by its host, has no label to hold to the column.
+	_labels.assign(_labels.filter(func(one: Label) -> bool: return is_instance_valid(one)))
+	var widest := COLUMN
+	for label in _labels:
+		var font := label.get_theme_font("font")
+		var points := label.get_theme_font_size("font_size")
+		widest = max(widest, font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT,
+			-1, points).x + 8.0)
+	for label in _labels:
+		label.custom_minimum_size.x = widest
+
+
+func _notification(what: int) -> void:
+	# A language switched under the screen widens or narrows the column with it.
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
+		_fit_column.call_deferred()
 
 
 ## a row per action, built once; `_paint` fills them
@@ -238,7 +265,7 @@ func _draw_rows() -> void:
 		var row := HBoxContainer.new()
 		var label := Label.new()
 		label.name = "label"
-		label.custom_minimum_size.x = 160
+		_labels.append(label)
 		row.add_child(label)
 		var pair := []
 		for pad in [false, true]:
@@ -268,6 +295,7 @@ func _paint() -> void:
 			if _listening == action and _listening_pad == pad:
 				button.icon = _own("listening")
 				button.text = "" if button.icon != null else "..."
+	_fit_column()
 
 
 ## whether the screen is listening for a binding now

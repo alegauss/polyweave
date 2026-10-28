@@ -158,17 +158,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW203"],
   },
   {
-    id: "PW652",
-    block: "S",
-    symptom: "the remap kit keeps an English-wide label column, so pt-BR labels run into their controls",
-    why: "A game in Portuguese ships a Controls screen whose words collide, and the host cannot fix the kit's layout.",
-    deps: [],
-  },
-  {
     id: "PW657",
     block: "S",
     symptom: "nothing reads a game's scripts for play timed by frames, so a drift is found only after a replay parts",
     why: "Spinhold's four frame-timed causes were each a pattern a check could name at its line before any run, and game.replay_rates sees only the state kit's names.",
+    deps: [],
+  },
+  {
+    id: "PW661",
+    block: "S",
+    symptom: "the remap kit cannot lay itself out in less height, so a host scales it until its text is too small to read",
+    why: "Spinhold scales the kit to 0.64 to fit its options panel, leaving its text near 11 px at 1280x720.",
     deps: [],
   },
 ];
