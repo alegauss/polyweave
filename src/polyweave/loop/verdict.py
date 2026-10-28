@@ -342,6 +342,15 @@ def sitting(
     }
 
 
+def _sitting_folder(config, name: str, default: Path) -> Path:
+    """Where an operation lays out its sitting (§PW646): `<[paths] sittings>/<name>`
+    where the project names a folder for its sittings, as Spinhold keeps them under
+    `art/review`; else the operation's own place in the work area, `default`."""
+    if str(config.get("paths.sittings") or "").strip():
+        return config.path("paths.sittings") / name
+    return default
+
+
 def _with_model(members: list[dict], here: Path) -> list[dict]:
     """Each member whose still's record names a .glb it was drawn from, carrying it as
     `model`, so the page turns it beside the still (§PW601). A member naming its own, or

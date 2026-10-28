@@ -185,28 +185,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW646 icons.build says what it did with a symbol and a folder
-
-Met in Spinhold, RK266 and RK294 (2026-10-26). Three of the four faults shipped on
-2026-10-28 (a word that is no glyph and a key nothing reads are refused, and `out` is
-the folder, else the declaration's, else the records'; `docs/specs/panel.md`). What is
-left is where a sitting is laid out.
-
-`icons.build` lays its sitting in polyweave's work folder, under `<[paths]
-work>/icons/<set>`, away from the project's other sittings. Spinhold keeps its sittings
-under `art/review`, which is its own convention, and nothing in the project config says
-so. `geometry.kit` takes a `sitting` folder that `icons.build` does not, and the other
-operations that open a sitting (`verdict.sitting` itself, `kit`, the review page's own)
-each pick their folder their own way.
-
-What to build: a `[paths] sittings` key in the project config, with the work area's
-`sittings/` as its default, which `verdict.sitting` reads when no `out` is passed. Then
-every operation that opens a sitting goes through it: `icons.build`, `geometry.kit` (its
-`sitting` argument still wins), and any other caller of `verdict.sitting`. The spec in
-`docs/specs/project-config.md` gains the key, and
-`test_the_config_example_declares_every_key` holds the example to it. Done when Spinhold
-can set `sittings = "art/review"` once and every sitting lands there.
-
 ### §PW647 game.text_fit judges only the text that is drawn, as it is drawn
 
 Met in Spinhold, in pt-BR. RK295: five inspector rows "lie over" the panel below, though

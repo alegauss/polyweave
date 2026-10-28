@@ -741,7 +741,9 @@ def build(
                     shown.append(provenance.relative(target, here))
         laid = verdict.sitting(
             {declared["name"]: shown},
-            out=str(config.path("paths.work", f"icons/{declared['name']}")),
+            out=str(verdict._sitting_folder(
+                config, declared["name"],
+                config.path("paths.work", f"icons/{declared['name']}"))),
             root=str(here),
             about=("a set of icons rendered from models: does each read as its own "
                    "model at a glance?" if modelled else

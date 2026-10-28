@@ -127,7 +127,8 @@ def kit(
     drawn = Path(renders) if renders else config.path("paths.renders")
     held = Path(specs) if specs else config.path("paths.specs")
     drawn, held = (p if p.is_absolute() else here / p for p in (drawn, held))
-    laid = Path(sitting) if sitting else config.path("paths.work") / "kit" / family
+    laid = Path(sitting) if sitting else verdict._sitting_folder(
+        config, family, config.path("paths.work") / "kit" / family)
     laid = laid if laid.is_absolute() else here / laid
 
     def named(path: Path) -> str:

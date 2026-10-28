@@ -121,6 +121,10 @@ KERNEL_DEFAULTS: dict[str, Any] = {
         # declaration out: a scene the shipped game cannot load passes every editor
         # check.
         "vfx": "",
+        # Where every sitting is laid out, each in a folder of its own name (§PW646).
+        # Empty is each operation's own place in the work area; Spinhold keeps its
+        # sittings beside its other review pictures, under art/review.
+        "sittings": "",
         # What a score renders through (§PW187). Engines and instrument libraries are
         # configuration and never bundled: FluidSynth plays a General MIDI SoundFont,
         # and Surge XT is a VST3, found in the usual plug-in folders where it is empty.

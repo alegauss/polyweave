@@ -560,7 +560,9 @@ def shots(
         members.insert(0, {"name": "the whole clip", "new": taken[0]["picture"],
                            "motion": provenance.relative(played, config.root)})
     laid = verdict.sitting(
-        {declared["name"]: members}, out=str(folder), root=str(config.root),
+        {declared["name"]: members},
+        out=str(verdict._sitting_folder(config, declared["name"], folder)),
+        root=str(config.root),
         about=f"Each shot of {source}, framed in the running game "
               f"{into:.0%} of the way through its hold.",
     )

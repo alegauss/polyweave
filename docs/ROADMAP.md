@@ -21,7 +21,6 @@
 
 ## Block H — Proof on a real game
 
-- ⏳ **PW646** (deps: —) **icons.build draws an unknown symbol as text, ignores unknown keys, nests out under the set and has no sittings folder** — No paths.sittings key says where a sitting is laid out, so icons and every other sitting land in the work area. → §PW646
 - 📋 **PW647** (deps: —) **game.text_fit measures a label without its clip, label_settings, scale or covering layer, so text that fits reads unfit** — A clean screen fails the check, so its findings are read by eye again, as before PW336. → §PW647
 - 📋 **PW655** (deps: —) **engine.sweep flies headless, so a capture script saves no picture and every combination ends in a script error** — Measuring variants over seeds falls to a hand-written loop of capture.run calls. → §PW655
 
@@ -139,12 +138,6 @@
 - **text_fit misreads label_settings, a scaled parent and a covered layer** Both are
   text_fit's one box function in driver.gd, which ignores clips, label_settings, scale
   and covering layers.
-
-## Done when — PW646
-
-- **a rebuilt icon set lands beside its declaration, and out is the set's parent** PW646
-  already covers where icons.build lands a set and what its out means; this is the same
-  folder resolution.
 
 ## Non-goals
 

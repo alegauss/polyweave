@@ -291,7 +291,7 @@
 - ✅ **PW639** **a Control switching panel states has to copy every uniform from the state's material by hand, and tint multiplies** — panel.build(shader) writes <name>.panel.gd, a Control switching states on its own material, overrides kept; tint is said to tint brackets (design recorded in `docs/specs/panel.md`).
 - ✅ **PW642** **an icon's text symbol such as + or - is drawn a speck of its face, and nothing declares how large it is drawn** — An icon's text is fitted by its ink and + and - are drawn as glyphs, with symbol_scale to size it and a speck named in measured (design recorded in `docs/specs/panel.md`).
 - ✅ **PW644** **an icon set has no star, figure or shield, and no filled and empty state a game tints per use** — An icon declares states and the tints a game gives it, built as a white face and an overlay held at each tint, with hexagon, star, figure and shield (design recorded in `docs/specs/panel.md`).
-- ✅ **PW646 (symbol, keys and folder)** **icons.build draws an unknown symbol as text, ignores unknown keys, nests out under the set and has no sittings folder** — icons.build refuses an unknown key or a word that is no glyph, and out is the folder, else the declaration's or the records'.
+- ✅ **PW646** **icons.build draws an unknown symbol as text, ignores unknown keys, nests out under the set and has no sittings folder** — A project's [paths] sittings holds every sitting, icons, kit and clip, each under its own name, and empty keeps each where it was (design recorded in `docs/specs/project-config.md`).
 
 ## Block I — Voxel models from a declaration
 

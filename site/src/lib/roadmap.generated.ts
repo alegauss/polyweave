@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 3 },
+  { block: "H", title: "Proof on a real game", open: 2 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -71,13 +71,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning",
     why: "The caller pays for a 16x9 picture, gets 3x2 unannounced, and crops by hand after the spend.",
-    deps: [],
-  },
-  {
-    id: "PW646",
-    block: "H",
-    symptom: "icons.build draws an unknown symbol as text, ignores unknown keys, nests out under the set and has no sittings folder",
-    why: "No paths.sittings key says where a sitting is laid out, so icons and every other sitting land in the work area.",
     deps: [],
   },
   {

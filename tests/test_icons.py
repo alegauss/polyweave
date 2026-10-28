@@ -361,3 +361,12 @@ def test_a_set_built_again_lands_where_its_records_say(tmp_path):
         icons.build(source, sitting=False, root=str(tmp_path))
     assert set(refused.value.as_dict()["allowed"]) == {"game/editor/icons/pad",
                                                        "elsewhere/pad"}
+
+
+def test_a_project_s_sittings_folder_holds_the_set_s_sitting(tmp_path):
+    # Spinhold keeps its sittings under art/review, and moved each there by hand.
+    (tmp_path / "polyweave.toml").write_text('[paths]\nsittings = "art/review"\n',
+                                             encoding="utf-8")
+    found = icons.build(declared(tmp_path), root=str(tmp_path))
+    assert "art/review/pad" in str(found["sitting"]).replace("\\", "/")
+    assert (tmp_path / "art" / "review" / "pad").is_dir()

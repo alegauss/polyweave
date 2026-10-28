@@ -44,6 +44,7 @@ purchases  = "polyweave.purchases.json"
 loop       = "polyweave.loop.json"      # what one asset cost, made each way
 audio      = "docs/design/audio"        # where a game's declared sounds land
 vfx        = "game/vfx"                 # where vfx.build writes scenes; empty is beside each source
+sittings   = "art/review"               # where every sitting is laid out; empty is each one's own place
 fluidsynth = "fluidsynth"               # plays a score's General MIDI parts
 soundfont  = "${SOUNDFONT}"             # the General MIDI library it plays; never bundled
 surge      = ""                         # Surge XT's .vst3; empty finds the usual install
@@ -295,6 +296,13 @@ they are installed per machine, and a 30 MB SoundFont does not belong in a game'
 
 **Nothing is written outside the tree.** `[paths] work` is the only writable location the
 plugin chooses for itself, and it belongs in `.gitignore`.
+
+**Where a person looks is the project's to say** (§PW646). `[paths] sittings` names the
+folder every sitting is laid out in, each under a folder of its own name:
+`icons.build`'s set, `geometry.kit`'s family and `clip.shots`' clip. Spinhold keeps its
+sittings beside its other review pictures, under `art/review`, and had to move each one
+there by hand. Empty, the default, leaves each where it always was, in its operation's
+own place. A call's own folder, `geometry.kit`'s `sitting`, still wins.
 
 **`[budget]` is a person's decision, written down.** The plugin spends against it without
 asking and refuses the call that would exceed it (§PW18). An expired or absent budget means
