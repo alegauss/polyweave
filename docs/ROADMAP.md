@@ -21,7 +21,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW647** (deps: —) **game.text_fit measures a label without its clip, label_settings, scale or covering layer, so text that fits reads unfit** — A clean screen fails the check, so its findings are read by eye again, as before PW336. → §PW647
 - 📋 **PW655** (deps: —) **engine.sweep flies headless, so a capture script saves no picture and every combination ends in a script error** — Measuring variants over seeds falls to a hand-written loop of capture.run calls. → §PW655
 
 ## Block I — Voxel models from a declaration
@@ -132,12 +131,6 @@
 - **Cottony keeps no mesh preparation of its own** tools/art/prep.py and export_props,
   export_boosters and export_friends are gone from Cottony, its families name prepare
   steps through fixes, and project.adoption lists none of them as kept.
-
-## Done when — PW647
-
-- **text_fit misreads label_settings, a scaled parent and a covered layer** Both are
-  text_fit's one box function in driver.gd, which ignores clips, label_settings, scale
-  and covering layers.
 
 ## Non-goals
 

@@ -353,19 +353,21 @@ func _command(asked: Dictionary) -> Dictionary:
 
 
 ## Every visible Label and Button, and whether its text fits where it is drawn (§PW336):
-## wider than its box, more lines than it shows, out of its container, or over another.
+## wider than its box, more lines than it shows, out of its container, past the screen's
+## edge, or over another. Only text as it is drawn is judged (§PW647): its width is the
+## font it draws with, in its own units, so a scaled parent changes nothing; text a
+## clipping ancestor hides entirely is `clipped` and judged no further; and two texts on
+## different canvas layers never lie over each other, the higher one covering the lower.
 func _text_fit() -> Dictionary:
 	var texts := []
 	_texts(get_root(), texts)
 	var found := []
+	var seen := []
 	for node: Control in texts:
 		var box := _screen_rect(node)
 		var shown: String = node.tr(node.text) if node.auto_translate_mode != Node.AUTO_TRANSLATE_MODE_DISABLED else node.text
-		var font: Font = node.get_theme_font("font")
-		var font_size: int = node.get_theme_font_size("font_size")
-		var widest := 0.0
-		for line in shown.split("\n"):
-			widest = max(widest, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
+		var widest := _text_width(node, shown)
+		var room := _text_room(node)
 		var entry := {"path": str(node.get_path()), "class": node.get_class(), "key": node.text,
 			"text": shown, "box": [box.position.x, box.position.y, box.size.x, box.size.y],
 			"findings": []}
@@ -373,6 +375,16 @@ func _text_fit() -> Dictionary:
 		# viewport's coordinates and never the screen's (§PW589): it is named with it.
 		if node.get_viewport() != get_root():
 			entry["viewport"] = str(node.get_viewport().get_path())
+		var drawn := _visible_rect(node, box)
+		entry["overlaps"] = []
+		if drawn.size.x <= 0.5 or drawn.size.y <= 0.5:
+			# Scrolled out of its container, or past the screen: not drawn, so not judged.
+			entry["clipped"] = true
+			if _clip_of(node) == null:
+				entry["findings"].append("it is past the screen's edge")
+			found.append(entry)
+			seen.append(Rect2())
+			continue
 		if node is Label:
 			var label := node as Label
 			var lines := label.get_line_count()
@@ -381,28 +393,37 @@ func _text_fit() -> Dictionary:
 			entry["visible_lines"] = visible_lines
 			if lines > visible_lines:
 				entry["findings"].append("shows %d of its %d lines" % [visible_lines, lines])
-			if label.autowrap_mode == TextServer.AUTOWRAP_OFF and widest > box.size.x + 0.5:
-				entry["findings"].append("its text is %d px wide in a %d px box" % [widest, box.size.x])
-		elif widest > box.size.x + 0.5:
-			entry["findings"].append("its text is %d px wide in a %d px box" % [widest, box.size.x])
+			if label.autowrap_mode == TextServer.AUTOWRAP_OFF and widest > room + 0.5:
+				entry["findings"].append("its text is %d px wide in a %d px box" % [widest, room])
+		elif widest > room + 0.5:
+			entry["findings"].append("its text is %d px wide in a %d px box" % [widest, room])
+		var screen := node.get_viewport().get_visible_rect()
+		if node.get_viewport() == get_root() and not screen.grow(0.5).encloses(box) \
+				and _clip_of(node) == null:
+			entry["findings"].append("it runs past the screen's edge")
 		var parent := node.get_parent()
 		if parent is Control and not (parent is Container and parent is ScrollContainer):
 			var outer := _screen_rect(parent as Control)
 			if outer.size.x > 0 and outer.size.y > 0 and not outer.grow(0.5).encloses(box):
 				entry["findings"].append("it leaves its container %s" % str(parent.get_path()))
-		entry["overlaps"] = []
 		found.append(entry)
+		seen.append(drawn)
 	for i in found.size():
 		for j in range(i + 1, found.size()):
 			var a: Control = texts[i]
 			var b: Control = texts[j]
+			if found[i].get("clipped", false) or found[j].get("clipped", false):
+				continue
 			if a.is_ancestor_of(b) or b.is_ancestor_of(a):
 				continue
 			# Two boxes in two viewports share no coordinates, so neither lies over the
 			# other: Spinhold's map tags each overlapped every other tag and the HUD.
 			if a.get_viewport() != b.get_viewport():
 				continue
-			if _screen_rect(a).grow(-0.5).intersects(_screen_rect(b).grow(-0.5)):
+			# A modal on a higher layer covers the HUD under it; neither text is hurt.
+			if _layer_of(a) != _layer_of(b):
+				continue
+			if (seen[i] as Rect2).grow(-0.5).intersects((seen[j] as Rect2).grow(-0.5)):
 				found[i]["overlaps"].append(found[j]["path"])
 				found[j]["overlaps"].append(found[i]["path"])
 	for entry in found:
@@ -411,7 +432,69 @@ func _text_fit() -> Dictionary:
 	return {"result": found}
 
 
+## The widest line as the control draws it, in its own units: a Label's label_settings
+## font, size and outline where it has them, else its theme's font.
+func _text_width(node: Control, shown: String) -> float:
+	var font: Font = node.get_theme_font("font")
+	var font_size: int = node.get_theme_font_size("font_size")
+	var outline := 0
+	if node is Label and (node as Label).label_settings != null:
+		var settings := (node as Label).label_settings
+		if settings.font != null:
+			font = settings.font
+		font_size = settings.font_size
+		outline = settings.outline_size
+	var widest := 0.0
+	for line in shown.split("\n"):
+		widest = max(widest, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
+	return widest + outline
+
+
+## The width a control's text has, in its own units: a Button's less its style's margins
+## and its icon.
+func _text_room(node: Control) -> float:
+	var room := node.size.x
+	if node is Button:
+		var style: StyleBox = node.get_theme_stylebox("normal")
+		if style != null:
+			room -= style.get_margin(SIDE_LEFT) + style.get_margin(SIDE_RIGHT)
+		var icon: Texture2D = (node as Button).icon
+		if icon != null:
+			room -= icon.get_width() + node.get_theme_constant("h_separation")
+	return room
+
+
+## The part of a control's box that is drawn: inside every ancestor that clips, and
+## inside its viewport.
+func _visible_rect(node: Control, box: Rect2) -> Rect2:
+	var drawn := box.intersection(node.get_viewport().get_visible_rect())
+	var up := node.get_parent()
+	while up != null:
+		if up is Control and ((up as Control).clip_contents or up is ScrollContainer):
+			drawn = drawn.intersection(_screen_rect(up as Control))
+		up = up.get_parent()
+	return drawn
+
+
+## The nearest ancestor that clips its children, or null.
+func _clip_of(node: Control) -> Control:
+	var up := node.get_parent()
+	while up != null:
+		if up is Control and ((up as Control).clip_contents or up is ScrollContainer):
+			return up as Control
+		up = up.get_parent()
+	return null
+
+
+## The canvas layer a control draws on, 0 for the viewport's own.
+func _layer_of(node: CanvasItem) -> int:
+	var layer := node.get_canvas_layer_node()
+	return layer.layer if layer != null else 0
+
+
 func _texts(node: Node, out: Array) -> void:
+	if node is CanvasLayer and not (node as CanvasLayer).visible:
+		return  # a hidden layer draws nothing in it
 	if (node is Label or node is Button) and (node as CanvasItem).is_visible_in_tree() \
 			and str(node.text) != "":
 		out.append(node)

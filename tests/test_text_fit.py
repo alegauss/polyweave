@@ -45,6 +45,44 @@ func _ready() -> void:
 \tcard.size = Vector2i(320, 120)
 \tadd_child(card)
 \tcard.add_child(_label("Tag", "NORTH", Vector2(30, 30), Vector2(160, 30)))
+\t# A list scrolled to its top: its last row is clipped away, not lying over anything.
+\tvar scroll := ScrollContainer.new()
+\tscroll.name = "Scroll"
+\tscroll.position = Vector2(300, 20)
+\tscroll.size = Vector2(200, 100)
+\tadd_child(scroll)
+\tvar rows := Control.new()
+\trows.name = "Rows"
+\trows.custom_minimum_size = Vector2(180, 400)
+\tscroll.add_child(rows)
+\trows.add_child(_label("Shown", "FIRST", Vector2(0, 10), Vector2(160, 30)))
+\trows.add_child(_label("Hidden", "LAST", Vector2(0, 300), Vector2(160, 30)))
+\t# A panel scaled down whole: its label fits its own box at any scale.
+\tvar small := Control.new()
+\tsmall.name = "Small"
+\tsmall.position = Vector2(300, 150)
+\tsmall.scale = Vector2(0.64, 0.64)
+\tadd_child(small)
+\tsmall.add_child(_label("Scaled", "SCALED TEXT HERE", Vector2(0, 0), Vector2(200, 30)))
+\t# Drawn small through label_settings: the theme's font would not fit it.
+\tvar tiny := _label("Tiny", "TINY PRINT ON A LINE", Vector2(300, 200),
+\t\tVector2(100, 30))
+\ttiny.label_settings = LabelSettings.new()
+\ttiny.label_settings.font_size = 8
+\tadd_child(tiny)
+\t# Past the right edge of a 640-wide screen.
+\tadd_child(_label("Edge", "EDGE", Vector2(600, 260), Vector2(100, 30)))
+\t# A modal over the menu covers it, on a layer of its own.
+\tvar modal := CanvasLayer.new()
+\tmodal.name = "Modal"
+\tmodal.layer = 5
+\tadd_child(modal)
+\tmodal.add_child(_label("Over", "OK", Vector2(30, 140), Vector2(100, 30)))
+\tvar gone := CanvasLayer.new()
+\tgone.name = "Gone"
+\tgone.visible = false
+\tadd_child(gone)
+\tgone.add_child(_label("Ghost", "UNSEEN", Vector2(30, 30), Vector2(100, 30)))
 
 func _label(named: String, said: String, at: Vector2, size: Vector2,
 \t\tclip := false) -> Label:
@@ -120,3 +158,24 @@ def test_a_longer_translation_is_caught_in_its_own_language(screen):
     assert start["key"] == "START"
     assert start["text"].startswith("COMEÇAR")
     assert any("leaves its container" in one for one in unfit(found)["Start"])
+
+
+def node(found, name: str) -> dict:
+    return next(one for one in found["nodes"] if Path(one["path"]).name == name)
+
+
+def test_text_is_judged_as_it_is_drawn(screen):
+    # Spinhold, in pt-BR (§PW647): scrolled rows, a scaled kit, label_settings and a
+    # modal over the HUD each read as unfit, and a row off the screen read as nothing.
+    session, root = screen
+    found = driving.text_fit(session, root=root)
+    bad = unfit(found)
+    hidden = node(found, "Hidden")
+    assert hidden["clipped"] is True and hidden["findings"] == []
+    assert "Shown" not in bad
+    assert "Scaled" not in bad, bad.get("Scaled")
+    assert "Tiny" not in bad, bad.get("Tiny")
+    assert any("past the screen's edge" in one for one in bad["Edge"])
+    assert "Over" not in bad
+    assert not any("Over" in one for one in bad.get("Left", ()))
+    assert not any(Path(one["path"]).name == "Ghost" for one in found["nodes"])

@@ -185,32 +185,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW647 game.text_fit judges only the text that is drawn, as it is drawn
-
-Met in Spinhold, in pt-BR. RK295: five inspector rows "lie over" the panel below, though
-a ScrollContainer clips them away, and rows off the screen get no finding. RK166 (PW649,
-folded here): a Label drawn through `label_settings` reads "397 px wide in a 344 px box"
-yet shows whole, the remap kit scaled to 0.64 is unfit on all 15 labels by that factor,
-and a modal's labels "lie over" the HUD it covers.
-
-All of it is one function: the driver's `_text_fit` and `_screen_rect`
-(`addons/polyweave_driver/driver.gd:357-424`).
-
-- No ancestor's clip is applied: only the direct parent is checked, and a
-  ScrollContainer parent is skipped. PW589 names a SubViewport but does not map its box.
-- Nothing tests the box against the visible rect, though `driver.off-screen` does for
-  input targets (`:717`).
-- The width is measured with the theme font (`:364`), never `label_settings`' font,
-  size or outline, nor a Button's icon and margins.
-- The box is scaled (`:424`), the text width is not.
-- Overlap is any two texts in one viewport; what is drawn over them is not asked.
-
-What polyweave should do: one visible-rect function that transforms the box, intersects
-every clipping ancestor and the viewport, scales the text width with it and leaves out
-text an opaque Control or a higher CanvasLayer covers. Wholly clipped text is reported
-as clipped, and text past the screen edge gets a finding of its own. Tests: rotated
-Controls, a hidden CanvasLayer, a nested SubViewport.
-
 ### §PW655 A sweep of captures
 
 Spinhold, RK298 (the Neon fight's legibility), 2026-10-27. The task measures five

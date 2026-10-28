@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 2 },
+  { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -71,13 +71,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning",
     why: "The caller pays for a 16x9 picture, gets 3x2 unannounced, and crops by hand after the spend.",
-    deps: [],
-  },
-  {
-    id: "PW647",
-    block: "H",
-    symptom: "game.text_fit measures a label without its clip, label_settings, scale or covering layer, so text that fits reads unfit",
-    why: "A clean screen fails the check, so its findings are read by eye again, as before PW336.",
     deps: [],
   },
   {

@@ -222,7 +222,18 @@ between connections.
   SubViewport is held to its own viewport** (§PW589): drawn as a texture on a quad or a
   rect, its box is in that viewport's coordinates, so it names the viewport under
   `viewport` and is checked for overlap only against text in the same one. Spinhold's
-  map tags had each lain over every other tag and the HUD's score. `locale`
+  map tags had each lain over every other tag and the HUD's score. **Only text as it is
+  drawn is judged** (§PW647). The width is measured with the font the control draws
+  with, a Label's `label_settings` font, size and outline where it has them, against
+  its own box, in its own units. A Button's box is narrowed by its style's margins and
+  its icon. A parent scaled whole changes nothing: Spinhold's remap kit at 0.64 had read
+  unfit on all fifteen labels. Text a clipping ancestor (`clip_contents`, a
+  ScrollContainer) hides entirely is `clipped: true` and judged no further, so rows
+  scrolled away no longer lie over the panel below. Text past the screen's edge is a
+  finding of its own, "it runs past the screen's edge", or "it is past the screen's
+  edge" when none of it shows. Two texts on different canvas layers never lie over each
+  other, since the higher one covers the lower, as a modal covers the HUD. A hidden
+  CanvasLayer's text is left out. `locale`
   switches the game's TranslationServer first and lets two frames pass, so a project
   sweeps each screen in each language and a finding names the key; the driver's
   commands are `locale` and `text_fit`. `unfit` lists the nodes with findings, and
