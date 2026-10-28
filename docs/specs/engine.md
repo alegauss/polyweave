@@ -570,6 +570,22 @@ one cause it is and not as fifty failures.
 With neither trace named, every pair `[trace] pairs` declares is compared and `passed` is
 whether all agree, which is the form a gate runs.
 
+**A run flown at several frame rates** (§PW640). The determinism kit's proof runs at one
+tick a frame, so play that counts frames where it should count physics ticks agrees with
+itself and still drifts for a player at another rate: a hit stop counted down in
+`_process`, `Engine.time_scale` set inside a tick, a camera held in `_process`. Spinhold's
+replays drifted from all three. `game.replay_rates(rates=[60, 24, 144])` plays the kit's
+run (its `RUN`, `SEED`, `RECORD` and `RUN_TICKS`) once at each rate under `--fixed-fps`.
+Each play writes the state kit's snapshot at every tick as a trace under
+`<[paths] work>/rates/<fps>fps.jsonl`, one line a name and a tick, its `value` spelled as
+Godot spells it. Each later rate is held to the first by `game.compare_runs`'s rules, so
+the answer names the first tick and name that differ. Each rate also says the `ticks` and
+`frames` it ran, which shows frames and ticks really parted. A fixed frame rate makes the
+run repeatable at that rate, so the rates replace running one wall-clock replay many times
+over and hoping to catch the drift. A record keeps the `ticks_per_second` it was made at,
+and the proof plays it back at that rate. A game without the kit is
+`game.no-determinism`, and fewer than two distinct whole rates is `game.bad-rates`.
+
 ## Still to come in this block
 
 Baking at the size a unit declaration gives (PW47).

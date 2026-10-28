@@ -537,6 +537,7 @@
 - ✅ **PW599** **game.set given a vector as a JSON list writes it as zero and answers as if it worked** — game.set turns a JSON list or a spelt vector into the property's vector, colour, rect or quaternion, and refuses one it cannot, naming the shape it wants.
 - ✅ **PW607** **game.input can only click; it cannot drag, hold a modifier, press another button, turn the wheel or type text** — game.input drags through Godot's drop, clicks right, middle and double, turns the wheel, types and holds modifiers; a kept drag replays (design recorded in `docs/specs/driving.md`).
 - 🗑 **PW649** **text_fit misreads label_settings, a scaled parent and a covered layer** — superseded by PW647: Both are text_fit's one box function in driver.gd, which ignores clips, label_settings, scale and covering layers.
+- ✅ **PW640** **a recorded run is never flown back at another frame rate, so play that reads frames instead of ticks passes every proof** — game.replay_rates flies the determinism kit's run at several frame rates and names the first tick and name to part; records keep a rate (design recorded in `docs/specs/engine.md`).
 
 ## Block T — Adopting polyweave in a project
 

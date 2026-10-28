@@ -10,7 +10,7 @@
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.kit` (a folder built, rendered, specced, checked and sat in one call), `geometry.describe`, `geometry.variants`, `geometry.fit`, `geometry.compare` |
 | Render | `render.plan`, `render.bake` |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest`, `measure.contrast`, `measure.pressure`, `measure.level`, `measure.flashes` |
-| Judge against the bar | `accept.first` (a picture's first spec), `accept.check`, `accept.verify`, `accept.check_screen`, `reference.concept`, `cost.read`, `sound.measure`, `sound.speech`, `sound.declared` (what is missing) |
+| Judge against the bar | `accept.first`, `accept.check`, `accept.verify`, `accept.check_screen`, `reference.concept`, `cost.read`, `sound.measure`, `sound.speech`, `sound.declared` (what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector`, `picture.copies` |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
@@ -21,7 +21,7 @@
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds`, `loop.report` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated`, `provenance.borrow` |
 | The game side | `engine.check`, `engine.states`, `game.test`, `game.boot`, `game.pack`, `tables.check`, `capture.run`, `capture.again`, `capture.movie`, `capture.declared`, `engine.run`, `engine.run_declared`, `engine.sweep`, `engine.cost`, `engine.perf`, `engine.preset_search`, `godot.install` |
-| Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.text_fit`, `game.close`, `game.batch`, `game.keep`, `game.record_flow`, `game.crash_read`, `game.rekey`, `game.replay`, `game.compare_runs`, `game.release_check`, `game.export_smoke` |
+| Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.text_fit`, `game.close`, `game.batch`, `game.keep`, `game.record_flow`, `game.crash_read`, `game.rekey`, `game.replay`, `game.compare_runs`, `game.replay_rates`, `game.release_check`, `game.export_smoke` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
 | Music | `music.validate`, `music.to_midi`, `music.from_midi` (a MIDI as a score), `music.from_audio` (a recording as a score), `music.render`, `music.track`, `sound.synth`, `sound.loop`, `sound.stems` (a recorded track), `sound.buy`, `sound.speak` (paid) |

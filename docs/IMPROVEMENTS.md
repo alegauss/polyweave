@@ -646,32 +646,6 @@ this reference, and RK198's re-count and its comparison with `phase_poc` stay de
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW640 A run flown back at another frame rate
-
-Met in Spinhold, RK263 (2026-10-25). A player's kept run did not fly back to its score.
-Spinhold's proof (`dev/replay.gd`) runs under `--fixed-fps 60`, one tick a frame, so it
-passed over four causes of drift that show only when frames and ticks part:
-
-- `Engine.time_scale` is read once per frame, so a scale set during a tick reaches the
-  next tick only if that tick starts a new frame;
-- a hit stop counted down in `_process`;
-- a camera held in `_process` whose view culled the ship's shots;
-- a map flight (an idle-mode AnimationPlayer) the run waited on.
-
-The workaround is in the project: `dev/replay.gd --scene --fps=<recorded>,<watched>`
-records on the real clock at one `max_fps`, watches at another, samples both on the
-recorder's tick (score, ship, enemies, shots) and names the first tick they differ. Each
-run takes minutes, and it was run by hand several at once, since the drift was
-intermittent and showed under load.
-
-polyweave's game layer should own it, starting with the recorder, which stores no tick
-rate today (`determinism/core/recorder.gd`): given a scene, a recording driver and a
-sampler (node paths and properties), fly it at two frame rates, repeated N times, and
-answer the first tick and fields that differ. A static check, new work since
-`engine.find` only locates Godot, could flag the hazards: `_process` writing what
-`_physics_process` reads, `time_scale` set inside a physics step, play waiting on an
-idle-mode AnimationPlayer or Tween.
-
 ### §PW650 text_fit inside a batch
 
 Spinhold, RK166, 2026-10-26: checking ten screens meant, for each, a game.batch (input,
@@ -731,6 +705,28 @@ The cause is in `layers/kits/remap/core/remap_menu.gd:228-241`: each row is its 
 HBoxContainer with a 160 px label, so rows share no column and a longer label pushes its
 controls out of line. One shared column, a GridContainer sized to the longest label in
 the locale set, fixes both; `pad_screen.gd:233` hardcodes its sizes the same way.
+
+### §PW657 Frame-timed play named in the scripts
+
+Split from PW640 (2026-10-28). `game.replay_rates` now flies the determinism kit's run
+at several frame rates and names the first tick and state name that part. That finds a
+drift the state kit can see, but only after the run has drifted, and only in what the
+kit's `STATE` names. Spinhold's four causes were each a pattern in a script:
+
+- `_process` writing what `_physics_process` reads (a hit stop counted down per frame);
+- `Engine.time_scale` set inside a physics step, which reaches the next tick only if that
+  tick starts a new frame;
+- a camera held in `_process` whose view decides what the physics culls;
+- play waiting on an AnimationPlayer or Tween in its idle process mode.
+
+What to build: a pass in `engine.check` over each `.gd` that flags a member a `_process`
+body assigns and a `_physics_process` body reads, `Engine.time_scale =` inside a physics
+step, and an `await` on an AnimationPlayer or Tween left in idle process mode. Each
+finding names the file, line and member, and says to move the write into
+`_physics_process` or set the player's process callback to physics. Done when Spinhold's
+four hazards, restored in a fixture, are each named and `game.replay_rates` parts on the
+same run. The parse is pattern work, so the check says what it could not read rather
+than calling a file clean.
 
 ## Block T — Adopting polyweave in a project
 

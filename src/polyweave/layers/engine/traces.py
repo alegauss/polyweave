@@ -216,3 +216,96 @@ def compare_runs(
         answers.append({"one": pair["one"], "other": pair["other"], **found})
     return {"pairs": answers, "passed": all(a["agree"] for a in answers),
             "says": "; ".join(f"{a['other']}: {a['says']}" for a in answers)}
+
+
+#: The frame rates a run is flown at when none are named: one tick a frame, then fewer
+#: frames than ticks and more, so frames and ticks part both ways (§PW640).
+RATES = (60, 24, 144)
+
+#: The determinism kit's proof, where kit.install puts it.
+PROOF = "addons/polyweave/determinism/proof.gd"
+
+#: What the proof prints once it has written a run's trace.
+TRACED = r"^KIT TRACED ticks=(?P<ticks>\d+) frames=(?P<frames>\d+)$"
+
+
+@operation("game.replay_rates")
+def replay_rates(
+    rates: Annotated[list, Param("frame rates, the first the one the rest are held to")
+                     ] = None,
+    *,
+    root: Annotated[str, Param("the game, with the determinism kit installed")] = ".",
+) -> dict:
+    """The determinism kit's run flown at several frame rates, each held tick by tick
+    to the first, naming the first tick and name that differ (§PW640)."""
+    from polyweave.kernel.doors import door
+
+    from . import engine
+
+    config = load(root)
+    here = config.root
+    if not (here / PROOF).is_file():
+        raise PolyweaveError(
+            "game.no-determinism",
+            f"{here.name} has no {PROOF}, so there is no run to fly again",
+            "install the determinism kit, and declare RUN in res://polyweave_random.gd",
+            call=door("kit.install", name="determinism"),
+        )
+    rates = list(RATES if rates is None else rates)
+    whole = all(isinstance(r, int) and not isinstance(r, bool) and r >= 1
+                for r in rates)
+    if len(rates) < 2 or len(set(rates)) != len(rates) or not whole:
+        raise PolyweaveError(
+            "game.bad-rates",
+            f"the frame rates {rates!r} cannot be held against one another",
+            "name two or more distinct whole frame rates, the first the reference, as "
+            "[60, 24, 144]",
+            given=str(rates),
+        )
+    folder = config.path("paths.work") / "rates"
+    folder.mkdir(parents=True, exist_ok=True)
+    flown, traces = [], {}
+    for rate in rates:
+        trace = folder / f"{rate}fps.jsonl"
+        trace.unlink(missing_ok=True)
+        # The proof quits once it has its ticks, so the budget only has to outlast it.
+        ran = engine.run(PROOF, expect=TRACED, root=here, fixed_fps=rate, headless=True,
+                         frames=10**6, args=("--", f"--trace={trace.as_posix()}"))
+        one = {"fps": rate, "trace": _relative(trace, here), "log": ran["log"]}
+        if not ran["ok"]:
+            said = Path(ran["log"]).read_text("utf-8", "replace")
+            failed = next((line for line in said.splitlines()
+                           if line.startswith("KIT FAILED")), "")
+            flown.append({**one, "ok": False, "why": failed or ran["why"]})
+            continue
+        one.update(ok=True, ticks=int(ran["found"]["ticks"]),
+                   frames=int(ran["found"]["frames"]))
+        flown.append(one)
+        traces[rate] = read(trace, "frame")
+    if len(traces) < len(rates):
+        broke = [one for one in flown if not one["ok"]]
+        return {"rates": flown, "passed": False,
+                "says": f"the run did not finish at {broke[0]['fps']} fps: "
+                        f"{broke[0]['why']}"}
+    reference, compared = rates[0], []
+    for rate in rates[1:]:
+        found = compare(traces[reference], traces[rate], {})
+        compared.append({"fps": rate, **found})
+    parted = [one for one in compared if not one["agree"]]
+    return {
+        "rates": flown,
+        "against": reference,
+        "compared": compared,
+        "passed": not parted,
+        "says": (f"the run agrees tick by tick at {', '.join(map(str, rates))} fps"
+                 if not parted else
+                 "; ".join(f"at {one['fps']} fps against {reference}: {one['says']}"
+                           for one in parted)),
+    }
+
+
+def _relative(path: Path, here: Path) -> str:
+    try:
+        return path.resolve().relative_to(here.resolve()).as_posix()
+    except ValueError:
+        return str(path)

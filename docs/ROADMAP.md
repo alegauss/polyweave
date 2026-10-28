@@ -62,10 +62,10 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW640** (deps: —) **a recorded run is never flown back at another frame rate, so play that reads frames instead of ticks passes every proof** — Spinhold's replays drifted from four frame-timed causes that a fixed-fps proof could never show, found by a hand-run project script. → §PW640
 - 📋 **PW650** (deps: —) **game.batch refuses text_fit, so a screen's move, settle, fit and shot take two calls** — A pass over ten screens became a throwaway driver looping CLI calls instead of one batch per screen. → §PW650
 - 📋 **PW651** (deps: —) **the MCP server runs a stale installed copy of polyweave, and no answer says which copy replied** — Every call had to go through the CLI, and the refusal never said two copies of polyweave were in play. → §PW651
 - 📋 **PW652** (deps: —) **the remap kit keeps an English-wide label column, so pt-BR labels run into their controls** — A game in Portuguese ships a Controls screen whose words collide, and the host cannot fix the kit's layout. → §PW652
+- 📋 **PW657** (deps: PW640 ✅) **nothing reads a game's scripts for play timed by frames, so a drift is found only after a replay parts** — Spinhold's four frame-timed causes were each a pattern a check could name at its line before any run, and game.replay_rates sees only the state kit's names. → §PW657
 
 ## Block T — Adopting polyweave in a project
 

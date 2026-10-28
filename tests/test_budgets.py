@@ -184,7 +184,9 @@ from polyweave.surface.capabilities import capabilities
 #: outside the record (§PW634).
 #: 165,561 with accept.first, a picture's first spec measured and written, where an
 #: agent picked each bound by hand and wrote the file (§PW637).
-DESCRIBE = 166_000
+#: 166,112 with game.replay_rates, a run flown at several frame rates, which Spinhold
+#: ran as a hand-run project script several at once (§PW640).
+DESCRIBE = 166_600
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -331,7 +333,8 @@ DESCRIBE = 166_000
 #: 181,003 with render.bake's masks, render.unknown-mask, mesh.budget and
 #: mesh.no-budget (§PW630, §PW634).
 #: 182,048 with accept.first, spec.exists and spec.no-artefact (§PW637).
-CAPABILITIES = 182_500
+#: 182,640 with game.replay_rates, game.no-determinism and game.bad-rates (§PW640).
+CAPABILITIES = 183_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -406,7 +409,8 @@ HELP_VERB = 5_100
 #: 33,313 with game.compare_runs (§PW612).
 #: 33,464 with verdict.target (§PW620).
 #: 33,602 with mesh.budget (§PW634).
-HELP_TOP = 33_800
+#: 33,999 with accept.first and game.replay_rates (§PW637, §PW640).
+HELP_TOP = 34_200
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

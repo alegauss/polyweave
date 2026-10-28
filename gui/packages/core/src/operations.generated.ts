@@ -632,6 +632,14 @@ export interface GameReplayArgs {
   root?: string
 }
 
+/** The determinism kit's run flown at several frame rates, each held tick by tick to the first, naming the first tick and name that differ (§PW640). */
+export interface GameReplayRatesArgs {
+  /** frame rates, the first the one the rest are held to */
+  rates?: unknown[]
+  /** the game, with the determinism kit installed; default "." */
+  root?: string
+}
+
 /** Set a property for setup, such as the seed of a generator the game made itself. */
 export interface GameSetArgs {
   /** the session game.open answered */
@@ -2766,6 +2774,7 @@ export interface Operations {
   "game.rekey": GameRekeyArgs
   "game.release_check": GameReleaseCheckArgs
   "game.replay": GameReplayArgs
+  "game.replay_rates": GameReplayRatesArgs
   "game.set": GameSetArgs
   "game.shot": GameShotArgs
   "game.step": GameStepArgs
@@ -2934,7 +2943,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -2986,6 +2995,7 @@ export const OPERATIONS = [
   "game.rekey",
   "game.release_check",
   "game.replay",
+  "game.replay_rates",
   "game.set",
   "game.shot",
   "game.step",

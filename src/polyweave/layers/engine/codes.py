@@ -60,6 +60,17 @@ CODES: dict[str, Code] = {
         "[trace] time that is neither frame nor t (§PW612)",
         doors=("write each line as {frame, id, kind, fields}",),
     ),
+    "game.no-determinism": Code(
+        means="the project has no determinism kit, so there is no run to fly again",
+        when="game.replay_rates in a game the kit was never installed in (§PW640)",
+        doors=("install the determinism kit with kit.install",),
+    ),
+    "game.bad-rates": Code(
+        means="the frame rates asked for cannot be held against one another",
+        when="fewer than two rates, a repeated one, or one that is not a whole number "
+        "of frames a second from 1 (§PW640)",
+        doors=("name two or more distinct frame rates, the first the reference",),
+    ),
     "game.flow-broke": Code(
         means="a flow being re-keyed broke on a step, so nothing was written",
         when="game.rekey on a flow the game no longer follows",

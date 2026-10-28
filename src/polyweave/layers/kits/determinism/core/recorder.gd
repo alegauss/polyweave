@@ -31,10 +31,12 @@ func start() -> void:
 	_start = Engine.get_physics_frames()
 
 
-## the record: the seed and every event, as a file holds it
+## the record: the seed, the tick rate its frames count in, and every event, as a file
+## holds it (§PW640)
 func stop() -> Dictionary:
 	recording = false
-	return {"format": 1, "seed": _PwRandom.seed_of(), "events": events.duplicate(true)}
+	return {"format": 1, "seed": _PwRandom.seed_of(),
+		"ticks_per_second": Engine.physics_ticks_per_second, "events": events.duplicate(true)}
 
 
 ## keep the record, and say where it went

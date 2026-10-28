@@ -81,7 +81,8 @@ CORE_TOOLS = 41_400
 #: 143,715 with render.bake's masks and mesh.budget (§PW630, §PW634), whose geometry
 #: layer's figure rose by 1,000 for them.
 #: 144,625 with accept.first (§PW637), whose core figure rose by 1,200 for it.
-SESSION_BUDGET = 145_000
+#: 145,112 with game.replay_rates (§PW640), whose engine figure rose by 600 for it.
+SESSION_BUDGET = 145_600
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

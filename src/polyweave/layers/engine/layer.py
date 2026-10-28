@@ -46,7 +46,8 @@ LAYER = Layer(
     codes="polyweave.layers.engine.codes",
     config="polyweave.layers.engine.settings",
     # 29,481 with game.compare_runs, two runs' traces held together (§PW612).
-    tools=29_800,
+    # 29,966 with game.replay_rates, one run flown at several frame rates (§PW640).
+    tools=30_400,
     census={
         "polyweave.layers.engine.contrast:targets_in": (
             "internal", "the targets a log's lines name"),
