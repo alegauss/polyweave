@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 0 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 1 },
+  { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
@@ -71,13 +71,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "provenance.credits lists only owed credits, so a per-asset source and licence manifest is built from .prov.json by hand",
     why: "A package that must name every image's source and licence reads polyweave's records with its own script and types the licence.",
-    deps: [],
-  },
-  {
-    id: "PW656",
-    block: "J",
-    symptom: "a first spec's bound on a value near zero is a share of almost nothing, so the same picture redrawn fails it",
-    why: "Spinhold's dark glass got a max of 0.006 where its own hand-written spec held 0.1049, and calibrate.run cannot widen a picture it did not render.",
     deps: [],
   },
   {

@@ -191,29 +191,6 @@ stays a test.
 
 ## Block J — A bar a person sets once
 
-### §PW656 A first bound's room near zero
-
-Found shipping PW637 (2026-10-28). `accept.first` sets each bound `room` of the measured
-value away, a share, and that is scale-free only away from zero. Re-writing Spinhold's
-holo panel spec with it, the glass's `luma_p99` measured 0.0049 and its max came out
-0.006 at a fifth of room: a hair. Spinhold's own spec, written by hand, put it at
-0.1049, the value plus a tenth of the measure's whole range. The panel redrawn with one
-more scan line would fail the first.
-
-`calibrate.run` is the honest room, but only for a picture `render.bake` made: it
-renders the accepted request again. A panel, an icon or a capture has no request to
-repeat, so its first spec keeps the rule's room for good.
-
-What to build: the room a first bound leaves is the larger of the share of the value and
-a share of the measure's own range, where the vocabulary declares one. `measurements.md`
-already gives each measure a range column (0–1 for luma, saturation, edge and coverage,
-0–100 for `delta_e`); the registry should carry it, and a measure without one keeps the
-share alone, and the answer names each bound whose room came from the range. Done when
-the holo glass gets a max near Spinhold's 0.1049 from `accept.first` without a
-per-predicate number, and `geometry.kit`'s triangle budget is unchanged. The seam is
-`accept.first` and the measure registry in `loop/measure.py`; a per-predicate `room` an
-agent types is the guess PW637 removed, so it is not the fix.
-
 ## Block K — Reached without reading the source
 
 ### §PW449 Driven from a second MCP client

@@ -123,7 +123,13 @@ predicates)` takes each predicate without its bounds — `measure`, `region`, `i
 measure's arguments, and `bound`, which side to hold: `min`, `max` or `both`, the default.
 It measures the picture, sets each bound `room` of the value away (a tenth unless stated,
 rounded outward at four places), and writes `<specs>/<asset>.accept.toml` naming the
-picture as its `artefact`. Each bound is `origin = "margin"` with `measured` beside it:
+picture as its `artefact`. A share of the value leaves almost no room near zero:
+Spinhold's dark glass measured 0.0049 and got a max of 0.006 (§PW656). So where the
+measure has a range in [measurements.md](measurements.md) (luma, saturation, edge and
+coverage 0 to 1, `fringe_delta_e` 0 to 100; a distribution's percentiles and mean, not
+its deviation or a spread), the room is at least `room` of that range, and a bound
+stays inside it. Each predicate in the answer says `room_from`, `range` or `value`.
+Each bound is `origin = "margin"` with `measured` beside it:
 room set by a rule is a guess until `calibrate.run` measures it, and never a person's bar.
 A predicate's `id` defaults to its measure and named region (`luma_p50-frame`), and the
 asset to the picture's name before its first dot. A spec already there is refused

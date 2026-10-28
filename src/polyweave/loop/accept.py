@@ -969,12 +969,24 @@ def first(
     written, found = [], []
     for (entry, sides), p, result in zip(asked, probe.predicates, taken, strict=True):
         value = _scalar(result["value"], p)
-        held = max(abs(value) * room, 1e-4)
-        bounds = {side: {"value": placed(value, held, side), "origin": "margin",
-                         "measured": round(value, 6)} for side in sides}
+        # A share of the value is scale-free only away from zero: Spinhold's dark glass
+        # measured 0.0049 and got a hair of room. Where the measure has a declared
+        # range, the room is at least that share of it, and a bound stays inside it.
+        span = M.range_of(p.measure)
+        by_value = max(abs(value) * room, 1e-4)
+        by_range = (span[1] - span[0]) * room if span else 0.0
+        held = max(by_value, by_range)
+        bounds = {}
+        for side in sides:
+            at = placed(value, held, side)
+            if span:
+                at = min(max(at, span[0]), span[1])
+            bounds[side] = {"value": at, "origin": "margin",
+                            "measured": round(value, 6)}
         written.append({k: v for k, v in entry.items() if k != "bound"} | bounds)
         found.append({"id": p.id, "measure": p.measure, "measured": round(value, 6),
-                      **{side: bound["value"] for side, bound in bounds.items()}})
+                      **{side: bound["value"] for side, bound in bounds.items()},
+                      "room_from": "range" if by_range > by_value else "value"})
     where.parent.mkdir(parents=True, exist_ok=True)
     by = "accept.first from what the picture measured"
     where.write_text(_spec_text(name, named, written, by=by), encoding="utf-8",

@@ -49,6 +49,25 @@ def base_measure(measure: str) -> str:
     return asked["base"] if asked else measure
 
 
+#: Each measure's range as `measurements.md` declares it, where it declares one: what a
+#: first bound's room is a share of near zero (§PW656). A measure not here, a count or
+#: pixels, has no range to be a share of.
+RANGES: dict[str, tuple[float, float]] = {
+    "saturation": (0.0, 1.0), "saturation_hsv": (0.0, 1.0), "luma": (0.0, 1.0),
+    "edge": (0.0, 1.0), "hue_spread": (0.0, 1.0), "alpha_coverage": (0.0, 1.0),
+    "fringe_luma": (-1.0, 1.0), "fringe_delta_e": (0.0, 100.0),
+}
+
+
+def range_of(measure: str) -> tuple[float, float] | None:
+    """The range a measure's values fall in, or None. A distribution's percentiles and
+    mean fall in its base's range; its deviation and a spread do not, being a scatter
+    and a ratio."""
+    if measure.endswith("_std") or "_spread_" in measure:
+        return None
+    return RANGES.get(base_measure(measure))
+
+
 def _statistic(values: np.ndarray, name: str) -> float | None:
     """One statistic a name asks of a distribution beyond the five, or None where the
     name asks for none of them: a percentile from 0 to 100, or a spread, the distance
