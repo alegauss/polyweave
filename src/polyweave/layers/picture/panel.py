@@ -98,6 +98,26 @@ def _whole(name: str, at: str, value: Any, least: int = 0) -> int:
     return value
 
 
+#: The thinnest line a panel draws: a fraction of a pixel finer is lost in the
+#: nine-patch's four-times drawing and in the shader's own antialiasing alike.
+THINNEST = 0.5
+
+
+def _thickness(name: str, at: str, value: Any, least: int = 0) -> int | float:
+    """A line's thickness, in pixels: any number from THINNEST, or 0 where `least` is.
+
+    Both routes draw a fraction (§PW638): the shader sums in floats and the nine-patch
+    is drawn SUPER times larger. A whole number stays an int, so its uniform reads the
+    same as before.
+    """
+    fine = _number(value) and (value >= THINNEST or (value == 0 and least == 0))
+    if not fine:
+        raise _bad(name, f"{at} is {value!r}",
+                   f"write {at} in pixels from {THINNEST:g}"
+                   + (", or 0 for none" if least == 0 else ""))
+    return int(value) if float(value).is_integer() else float(value)
+
+
 def _keys(name: str, at: str, table: Any, allowed) -> dict:
     if not isinstance(table, dict):
         raise _bad(name, f"{at} is not a table", f"write {at} as a table")
@@ -202,7 +222,7 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
         "pill": pill,
         "outline": ring,
         "stretch": _stretch(ring, pill, width, height),
-        "edge": {"width": _whole(name, "edge.width", edge.get("width", 0)),
+        "edge": {"width": _thickness(name, "edge.width", edge.get("width", 0)),
                  "colour": _colour(name, "edge.colour",
                                    edge.get("colour", "#00000000")),
                  "lit": _lit(name, edge.get("lit", [1.0, 1.0]))},
@@ -228,7 +248,7 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
     if brackets:
         out["brackets"] = {
             "length": _whole(name, "brackets.length", brackets.get("length", 0), 1),
-            "width": _whole(name, "brackets.width", brackets.get("width", 1), 1),
+            "width": _thickness(name, "brackets.width", brackets.get("width", 1), 1),
             "colour": _colour(name, "brackets.colour", brackets.get("colour")),
             "inset": _whole(name, "brackets.inset", brackets.get("inset", 0)),
         }
@@ -247,6 +267,8 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
     # which for a pill is only across its length.
     held = {"none": (), "width": (left, right), "height": (top, bottom),
             "both": (left, top, right, bottom)}[out["stretch"]]
+    # A margin is whole pixels, so a corner part's fractional pixel needs the next one.
+    reach = math.ceil(reach)
     if held and reach > min(held):
         raise _bad(
             name,
@@ -282,7 +304,7 @@ def _hairline(name: str, table: dict) -> dict | None:
                    "write hairline.strength from 0 to 1")
     return {
         "inset": _whole(name, "hairline.inset", table.get("inset", 0)),
-        "width": _whole(name, "hairline.width", table.get("width", 1), 1),
+        "width": _thickness(name, "hairline.width", table.get("width", 1), 1),
         "colour": _colour(name, "hairline.colour", table.get("colour")),
         "strength": float(strength),
     }
@@ -303,7 +325,7 @@ def _tick(name: str, table: dict) -> dict | None:
                                                 table.get("length", 0), 1)
     return {
         "length": length,
-        "width": _whole(name, "tick.width", table.get("width", 1), 1),
+        "width": _thickness(name, "tick.width", table.get("width", 1), 1),
         "colour": _colour(name, "tick.colour", table.get("colour")),
         "from": start if placed else None,
     }
@@ -361,7 +383,7 @@ def _piping(name: str, piping: dict) -> dict | None:
         raise _bad(name, f"piping.raise is {rise!r}",
                    "write piping.raise from 0, flat, to 1, lit to white")
     return {
-        "width": _whole(name, "piping.width", piping.get("width", 0), 1),
+        "width": _thickness(name, "piping.width", piping.get("width", 0), 1),
         "colour": _colour(name, "piping.colour", piping.get("colour")),
         "raise": float(rise),
     }
@@ -679,7 +701,8 @@ def _drawn_plain(panel: dict):
         else:
             pen.polygon(outline(inset), fill=fill)
 
-    edge = panel["edge"]["width"] * SUPER
+    # A fractional width is drawn to the nearest quarter pixel, in whole big pixels.
+    edge = round(panel["edge"]["width"] * SUPER)
     shape = Image.new("L", big, 0)
     inside(ImageDraw.Draw(shape), 0, 255)
     picture = Image.new("RGBA", big, (0, 0, 0, 0))
@@ -701,7 +724,7 @@ def _drawn_plain(panel: dict):
         # Ring by ring from the outline in, each shaded where it sits across the tube.
         rings = Image.new("RGBA", big, (0, 0, 0, 0))
         pen = ImageDraw.Draw(rings)
-        across = panel["piping"]["width"] * SUPER
+        across = round(panel["piping"]["width"] * SUPER)
         for step in range(across):
             inside(pen, step, _tube(panel["piping"]["colour"], panel["piping"]["raise"],
                                     (step + 0.5) / across))
@@ -725,12 +748,14 @@ def _drawn_plain(panel: dict):
         picture = Image.alpha_composite(picture, clipped)
     if panel["hairline"]:
         line = panel["hairline"]
-        middle, half = line["inset"] * SUPER, line["width"] * SUPER / 2
+        middle, across = line["inset"] * SUPER, round(line["width"] * SUPER)
+        # Rounded once, as a band, so a fraction of a pixel is not lost at both sides.
+        outer = max(0, round(middle - line["width"] * SUPER / 2))
         hair = Image.new("RGBA", big, (0, 0, 0, 0))
-        inside(ImageDraw.Draw(hair), max(0, round(middle - half)),
+        inside(ImageDraw.Draw(hair), outer,
                (*line["colour"][:3], round(line["colour"][3] * line["strength"])))
         hole = Image.new("L", big, 0)
-        inside(ImageDraw.Draw(hole), round(middle + half), 255)
+        inside(ImageDraw.Draw(hole), outer + across, 255)
         hair.paste((0, 0, 0, 0), (0, 0), hole)
         picture = Image.alpha_composite(picture, hair)
     if edge:
@@ -757,7 +782,7 @@ def _drawn_plain(panel: dict):
     if panel["brackets"]:
         marks = Image.new("RGBA", big, (0, 0, 0, 0))
         pen = ImageDraw.Draw(marks)
-        thick = panel["brackets"]["width"] * SUPER
+        thick = round(panel["brackets"]["width"] * SUPER)
         # Set in from the corner on both axes, or on the outer edge past the corner.
         off = panel["brackets"]["inset"] * SUPER
         start = off or corner

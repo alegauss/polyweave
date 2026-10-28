@@ -122,23 +122,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW638 Line widths in a panel are not whole pixels
-
-Met in Spinhold, RK184 (2026-10-25), declaring the holo panel the owner accepted. The
-hand-written shader drew its inner hairline where `abs(depth - 9.0) < 0.6`, a line 1.2
-pixels wide. `panel.build` refused `hairline = { inset = 9, width = 1.2, ... }` with
-`compose.bad-panel: hairline.width is 1.2`, remedy "write hairline.width as a whole
-number from 1". The panel was declared at 1, a thinner line than the look accepted.
-
-The shader route already does the sum in floats (`abs(dist - hairline_inset) <
-hairline_width * 0.5`), and the nine-patch is drawn four times larger and brought down,
-so a fraction of a pixel is drawable on both. Widths that are a line's thickness (the
-hairline, the edge, the bracket, the tick, the piping) should take any number from a
-small floor, say 0.5, while the sizes and margins a nine-patch cuts on stay whole. Done
-when the 1.2 declaration builds and both routes draw the same width. The check that a
-bracket's reach fits its corner (`panel.py:240`, `:250`) compares whole margins, so it
-must round a fractional width up, with a test holding it.
-
 ### §PW639 Moving one Control between a panel's states
 
 Met in Spinhold, RK184 (2026-10-25). `panel.build(shader=true)` writes one

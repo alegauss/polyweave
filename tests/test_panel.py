@@ -787,3 +787,44 @@ def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
     assert at(taken["sweep"]["02"], 160, 90) == (5, 7, 12)
     record = provenance.read(str(tmp_path / taken["sweep"]["02"]), root=tmp_path)
     assert record["params"] == {"wipe": "sweep", "progress": 1.0}
+
+
+HAIR = """\
+[panel.glass]
+size = [64, 48]
+margin = 12
+fill = "#000000ff"
+hairline = { inset = 9, width = WIDTH, colour = "#ffffffff" }
+"""
+
+
+def test_a_hairline_a_fraction_of_a_pixel_wide_is_drawn_on_both_routes(tmp_path):
+    # Spinhold's holo glass was accepted with a 1.2-pixel hairline (§PW638).
+    def drawn(width: str) -> int:
+        panel.build(panels(tmp_path, HAIR.replace("WIDTH", width)), root=str(tmp_path))
+        return int(pixels(tmp_path, "ui/glass.normal.png")[24, :, 0].sum())
+
+    assert drawn("1") < drawn("1.2") < drawn("2")
+    made = panel.build(panels(tmp_path, HAIR.replace("WIDTH", "1.2")), shader=True,
+                       root=str(tmp_path))
+    material = (tmp_path / made["panels"]["glass"]["normal"]["material"]).read_text(
+        "utf-8")
+    assert "shader_parameter/hairline_width = 1.2" in material
+
+
+@pytest.mark.parametrize("width", ["0.4", "0", "-1"])
+def test_a_line_thinner_than_half_a_pixel_is_refused(tmp_path, width):
+    with pytest.raises(PolyweaveError) as refused:
+        panel.build(panels(tmp_path, HAIR.replace("WIDTH", width)), root=str(tmp_path))
+    assert refused.value.code == "compose.bad-panel"
+    assert "from 0.5" in refused.value.remedy
+
+
+def test_a_fractional_line_needs_the_whole_pixel_past_it_in_the_margin(tmp_path):
+    # Inset 9 plus 1.2 reaches 10.2 pixels, so a margin of 10 would bend it.
+    tight = HAIR.replace("WIDTH", "1.2").replace("margin = 12", "margin = 10")
+    with pytest.raises(PolyweaveError) as refused:
+        panel.build(panels(tmp_path, tight), root=str(tmp_path))
+    assert "reaches 11 px" in refused.value.message
+    panel.build(panels(tmp_path, tight.replace("margin = 10", "margin = 11")),
+                root=str(tmp_path))

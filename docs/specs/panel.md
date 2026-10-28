@@ -93,6 +93,14 @@ reach. `tick.from` and `tick.to` place the accent along the top edge, in pixels 
 left, in place of a centred `length`. All four are drawn the same on the nine-patch and
 on the shader, but for the tick, which only the shader draws.
 
+A line's thickness — the `width` of the edge, hairline, piping, brackets and tick — is
+any number of pixels from 0.5 (§PW638), so a 1.2-pixel hairline a person accepted is
+declared as it was drawn; an edge or piping may also be 0, for none. The shader draws the
+fraction exactly and the nine-patch to the nearest quarter pixel, being drawn four times
+larger. Sizes, margins, insets, cuts and lengths stay whole, since the nine-patch cuts on
+them, and a corner whose parts reach a fraction of a pixel needs the whole pixel past it
+in the margin.
+
 **States change by amounts, not only colours.** Three keys of a panel, which a state
 overrides like any other: `glow` (0 to 4, default 1) multiplies the edge, the brackets
 and the tick, after the edge's `lit`, so a glowing bevel keeps its hue; `glass_lift` (0
