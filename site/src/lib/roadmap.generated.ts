@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 9 },
+  { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 4 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -172,13 +172,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW203"],
   },
   {
-    id: "PW641",
-    block: "R",
-    symptom: "after PW480, reference.objects still counts a parallax city as moving enemies, so Resogun's phase 1 cannot be counted",
-    why: "Between the settings that keep every tower edge and those that keep nothing there is no step, so RK198's re-count and comparison stay stuck.",
-    deps: [],
-  },
-  {
     id: "PW650",
     block: "S",
     symptom: "game.batch refuses text_fit, so a screen's move, settle, fit and shot take two calls",
@@ -244,4 +237,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW582", "PW495", "PW57", "PW36", "PW449", "PW450", "PW201", "PW480", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW582", "PW495", "PW57", "PW36", "PW449", "PW450", "PW201", "PW480", "PW641", "PW311", "PW368"];

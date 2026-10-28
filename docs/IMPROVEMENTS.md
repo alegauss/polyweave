@@ -622,27 +622,24 @@ their corrected value, and a row nobody answered is refused, not guessed.
 
 ### §PW641 Enemies told from a city that moves by parallax
 
-Met in Spinhold, RK198 (2026-10-25), after PW480 shipped. Resogun's phase 1
-(`.polyweave/references/resogun_p1`, 170 frames at 2 a second), area `[0, 180, 1920,
-1080]`. The pod kind came from the new `reference.sample` (4.5 s, box `[503, 698, 587,
-762]`, colour `#846ea8`, body share 0.726), and `reference.objects` was called with it:
+Met in Spinhold, RK198 (2026-10-25), after PW480. Resogun's phase 1
+(`.polyweave/references/resogun_p1`, 2 frames a second, area `[0, 180, 1920, 1080]`, the
+pod kind from `reference.sample`): `reference.objects` keeps 1485 to 2756 tracks, or 2,
+and the 15.5 to 18.5 s lull the owner's sheet calls empty is full of tower edges. The
+towers stand at many depths, so parallax moves them as much as an enemy moves.
 
-- tol 0.12, match 0.25, motion 0.15: 2756 tracks; motion 0.3: 1857;
-- tol 0.08, match 0.5, motion 0.5: 1485 tracks;
-- tol 0.10, match 0.6, motion 0.7: 2 tracks.
+Measured 2026-10-28, and not kept: three track filters, dropping a track that moved with
+a patch of the scene round it, one whose area varied, and one seen in too few frames. At
+2 fps all three together still left 28 tracks born in the lull against 1295 elsewhere.
+The 11 to 23 s window was read again at 10 fps, and the best setting gave 9 to 32 tracks
+born every second with no dip at the lull. Where its colour and size match, a tower edge
+moves against its local patch as an enemy does, so these filters do not separate them.
 
-The sheets (`objects_002.png`) show the 15.5 to 18.5 s lull, which the owner's accepted
-sheet says has nothing new, full of tracks on tower edges and the ring. The city is not
-a flat scrolling backdrop: its towers stand at many depths, so parallax moves them
-against the scroll as much as an enemy moves, and the motion filter keeps them. Between
-the settings that keep the city and the ones that keep nothing there is no step.
-
-What polyweave should do: tell an enemy from the scene by what parallax cannot fake.
-Each Resogun enemy warps in with a white flash a second before it is live and dies in a
-burst; it keeps its shape while it moves, where a tower's edge changes as the view
-turns; and it moves independently of its neighbours, where a building moves with the
-buildings beside it. Until then `reference.objects` and `reference.compare` cannot count
-this reference, and RK198's re-count and its comparison with `phase_poc` stay deferred.
+What is left untried is what the city never does. A Resogun enemy warps in with a small
+white flash a second before it is live, and dies in a burst. `reference.events` finds
+flashes over the whole frame only. A local flash, a bright island that appears and fades
+within a few frames, would gate a track's birth, keeping only tracks born at one. Done
+when the lull counts no new track and RK198's re-count matches the owner's sheet.
 
 ## Block S — Playing the game, not only rendering it
 
