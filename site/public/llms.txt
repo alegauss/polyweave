@@ -80,9 +80,9 @@ game's story for it.
 Sponsored by **Viglet** (https://www.viglet.org). Open source search and content tools for
 organisations with a lot to publish. Run on your own servers, with no per-user licence.
 
-- **Viglet Turing** (https://turing.viglet.org), so visitors find what they came for,
+- **Viglet Turing** (https://openviglet.github.io/turing/), so visitors find what they came for,
   with AI answers drawn only from your own content.
-- **Viglet Shio** (https://shio.viglet.org), so a new page goes live the same day,
+- **Viglet Shio** (https://openviglet.github.io/shio/), so a new page goes live the same day,
   reviewed and approved by your own team.
 
 ## Links

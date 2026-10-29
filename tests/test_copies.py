@@ -112,3 +112,55 @@ def test_a_jpeg_of_a_source_with_transparency_is_refused(tree):
     with pytest.raises(PolyweaveError) as refused:
         cut(tree)
     assert refused.value.code == "copies.no-alpha"
+
+
+# -- a copy held to a byte bound, and owing what its source owes (§PW658) -------------
+
+
+def noisy(tree):
+    import numpy as np
+
+    pixels = np.random.default_rng(7).integers(0, 255, (300, 300, 3), dtype=np.uint8)
+    Image.fromarray(pixels, "RGB").save(tree / "art" / "photo.png")
+
+
+def bounded(tree, out: str, bound: int | None):
+    row = f'[[copy]]\nsource = "art/photo.png"\nout = "{out}"\nquality = 90\n'
+    if bound is not None:
+        row += f"max_bytes = {bound}\n"
+    (tree / "site" / "photo.copies.toml").write_text(f'into = "site/assets"\n\n{row}',
+                                                     encoding="utf-8")
+    return copies("site/photo.copies.toml", root=str(tree))
+
+
+def test_a_webp_steps_its_quality_down_until_it_fits_its_bound(tree):
+    # Shio's package allows 300 KB a picture, and its PNGs were 6.8 MB each.
+    noisy(tree)
+    whole = bounded(tree, "photo.webp", None)["written"][0]["bytes"]
+    [made] = bounded(tree, "photo.webp", int(whole * 0.7))["written"]
+    assert made["bytes"] <= int(whole * 0.7)
+    assert made["quality"] < 90
+    record = provenance.read("site/assets/photo.webp", root=str(tree))
+    assert record["params"]["max_bytes"] == int(whole * 0.7)
+
+
+def test_a_png_over_its_bound_is_refused_and_not_left(tree):
+    noisy(tree)
+    with pytest.raises(PolyweaveError) as refused:
+        bounded(tree, "photo.png", 1000)
+    assert refused.value.code == "copies.over-bytes"
+    assert not (tree / "site" / "assets" / "photo.png").exists()
+
+
+def test_a_copy_owes_what_the_picture_it_was_cut_from_owes(tree):
+    noisy(tree)
+    provenance.write(provenance.build(
+        "picture", tree / "art" / "photo.png",
+        engine={"name": "ideogram", "tier": "free"},
+        extra={"credit": "Pictures by Ideogram"}, root=tree), tree)
+    bounded(tree, "photo.webp", None)
+    said = provenance.credits(root=str(tree))
+    [owed] = said["owed"]
+    assert "site/assets/photo.webp" in owed["files"]
+    free = {one["file"]: one for one in said["non_commercial"]}
+    assert free["site/assets/photo.webp"]["via"] == "art/photo.png"

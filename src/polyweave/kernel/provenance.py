@@ -895,6 +895,21 @@ def _made_by(record: dict) -> str:
     return f"{kind} by {script}" if script else kind
 
 
+def _made_from(record: dict, by_path: dict[str, dict]) -> list[dict]:
+    """Every recorded file a record's file was made from, its inputs' inputs too."""
+    found, seen = [], {record["artefact"]["path"]}
+    waiting = [one.get("path") for one in record.get("inputs") or ()]
+    while waiting:
+        path = waiting.pop()
+        if path in seen or path not in by_path:
+            continue
+        seen.add(path)
+        parent = by_path[path]
+        found.append(parent)
+        waiting += [one.get("path") for one in parent.get("inputs") or ()]
+    return found
+
+
 @operation("provenance.credits")
 def credits(
     root: Annotated[str, ROOT] = ".",
@@ -925,17 +940,26 @@ def credits(
     owed: dict[str, dict] = {}
     notes: dict[str, dict] = {}
     unlicensed: list[dict] = []
-    for record in _records(where):
+    records = list(_records(where))
+    by_path = {r["artefact"]["path"]: r for r in records}
+    for record in records:
         made = record["artefact"]["path"]
-        engine = record.get("engine") or {}
-        if not licensed_to_sell(engine):
-            unlicensed.append({"file": made, "service": engine.get("name", ""),
-                               "tier": engine.get("plan") or engine.get("tier", "")})
-        if record.get("credit"):
-            entry = owed.setdefault(record["credit"], {
-                "name": record["credit"], "licence": record.get("licence", ""),
-                "credit": record["credit"], "files": []})
-            entry["files"].append(made)
+        # A file made from recorded files owes what they owe (§PW658): a WebP copy of a
+        # bought picture is the file a release carries, and its credits name it.
+        for one in [record, *_made_from(record, by_path)]:
+            engine = one.get("engine") or {}
+            if not licensed_to_sell(engine) and not any(
+                    u["file"] == made for u in unlicensed):
+                unlicensed.append({
+                    "file": made, "service": engine.get("name", ""),
+                    "tier": engine.get("plan") or engine.get("tier", ""),
+                    **({"via": one["artefact"]["path"]} if one is not record else {})})
+            if one.get("credit"):
+                entry = owed.setdefault(one["credit"], {
+                    "name": one["credit"], "licence": one.get("licence", ""),
+                    "credit": one["credit"], "files": []})
+                if made not in entry["files"]:
+                    entry["files"].append(made)
         if record.get("kind") != "sound":
             continue
         for one in record.get("instruments") or ():

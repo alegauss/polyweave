@@ -145,3 +145,15 @@ Pillow encoding a level differently changes nothing. A source that is not there 
 does not take, a row with no source or out, an extension no format is picked by, or a
 side, box or quality that is not a whole number in range is `copies.bad-table`. A JPEG
 of a source with transparent pixels is `copies.no-alpha`, never filled.
+
+**A copy can be held to a byte bound** (§PW658). Shio's showcase package allows WebP
+only, under 300 KB a picture, and its ten bought PNGs of 6.8 MB each were converted with
+Pillow outside polyweave, the shipped files recorded by nothing. `max_bytes`, on the table
+or a row, steps a WebP or JPEG down from its quality by 8 at a time, to no lower than 30,
+until the copy fits. The quality it settled on is in the record and the answer. A copy
+still over at the floor, or a PNG over, which has no quality to give, is
+`copies.over-bytes`, naming its size, and nothing is left at `out`. And a copy owes what
+its source owes: `provenance.credits` follows each record's inputs to the recorded files
+it was made from, so a copy of a bought picture carries the purchase's credit and its
+tier, and the credits name the file a release carries. The same holds for any file made
+from recorded files, such as a composed sheet.

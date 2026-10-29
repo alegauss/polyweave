@@ -36,8 +36,11 @@ FORMATS = {".webp": "WEBP", ".jpg": "JPEG", ".jpeg": "JPEG", ".png": "PNG"}
 #: The quality a WebP or JPEG is written at where neither the row nor the table says.
 QUALITY = 90
 
-_TABLE_KEYS = ("into", "quality", "copy")
-_ROW_KEYS = ("source", "out", "side", "box", "quality")
+#: The lowest quality a byte bound steps a WebP or JPEG down to before it is refused.
+FLOOR = 30
+
+_TABLE_KEYS = ("into", "quality", "max_bytes", "copy")
+_ROW_KEYS = ("source", "out", "side", "box", "quality", "max_bytes")
 
 
 def _bad(what: str, remedy: str, **extra: Any) -> PolyweaveError:
@@ -97,8 +100,12 @@ def _rows(table: Path, here: Path) -> list[dict]:
         kept = row.get("quality", quality)
         if not (_whole(kept) and 1 <= kept <= 100):
             raise _bad(f"{name} has quality {kept!r}", "write quality from 1 to 100")
+        bound = row.get("max_bytes", said.get("max_bytes"))
+        if bound is not None and not (_whole(bound) and bound > 0):
+            raise _bad(f"{name} has max_bytes {bound!r}",
+                       "write max_bytes as a whole number of bytes, as 300000")
         checked.append({"source": here / str(row["source"]), "out": out, "side": side,
-                        "box": box, "quality": kept})
+                        "box": box, "quality": kept, "max_bytes": bound})
     return checked
 
 
@@ -127,14 +134,32 @@ def _cut(row: dict) -> Any:
 
 
 def _save(image: Any, row: dict) -> None:
+    """The copy written, stepping its quality down until it fits `max_bytes` (§PW658):
+    a web package that allows 300 KB a picture had converted each by hand."""
     kind = FORMATS[row["out"].suffix.lower()]
     row["out"].parent.mkdir(parents=True, exist_ok=True)
-    if kind == "WEBP":
-        image.save(row["out"], kind, quality=row["quality"], method=6)
-    elif kind == "JPEG":
-        image.save(row["out"], kind, quality=row["quality"])
-    else:
-        image.save(row["out"], kind)
+    bound = row.get("max_bytes")
+    while True:
+        if kind == "WEBP":
+            image.save(row["out"], kind, quality=row["quality"], method=6)
+        elif kind == "JPEG":
+            image.save(row["out"], kind, quality=row["quality"])
+        else:
+            image.save(row["out"], kind, optimize=True)
+        size = row["out"].stat().st_size
+        if bound is None or size <= bound:
+            return
+        if kind == "PNG" or row["quality"] <= FLOOR:
+            row["out"].unlink(missing_ok=True)
+            raise PolyweaveError(
+                "copies.over-bytes",
+                f"{row['out'].name} is {size} bytes at its "
+                + (f"quality {row['quality']}" if kind != "PNG" else "smallest PNG")
+                + f", over its max_bytes of {bound}",
+                "give it a smaller side, a crop, or write it as .webp",
+                given=str(size),
+            )
+        row["quality"] = max(FLOOR, row["quality"] - 8)
 
 
 @operation("picture.copies")
@@ -181,7 +206,8 @@ def copies(
             inputs=[provenance.source("picture", row["source"], here),
                     provenance.source("table", table, here)],
             params={"made_by": "picture.copies", "side": row["side"],
-                    "box": row["box"], "quality": row["quality"]},
+                    "box": row["box"], "quality": row["quality"],
+                    **({"max_bytes": row["max_bytes"]} if row["max_bytes"] else {})},
             root=here,
         ), root=here)
         written.append({
@@ -189,5 +215,7 @@ def copies(
             "source": provenance.relative(row["source"], here),
             "size": list(image.size),
             "bytes": row["out"].stat().st_size,
+            # The quality the byte bound settled on, where it stepped down (§PW658).
+            **({"quality": row["quality"]} if row["max_bytes"] else {}),
         })
     return {"table": provenance.relative(table, here), "written": written}

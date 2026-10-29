@@ -334,7 +334,9 @@ DESCRIBE = 166_600
 #: mesh.no-budget (§PW630, §PW634).
 #: 182,048 with accept.first, spec.exists and spec.no-artefact (§PW637).
 #: 182,640 with game.replay_rates, game.no-determinism and game.bad-rates (§PW640).
-CAPABILITIES = 183_000
+#: 183,020 with the codes of PW643-PW658: a capture's missing picture, the stale MCP
+#: server, a headless sweep, frame-timed play, a sheet's tile and a copy's byte bound.
+CAPABILITIES = 183_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

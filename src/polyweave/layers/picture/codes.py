@@ -32,6 +32,11 @@ CODES: dict[str, Code] = {
         when="a sprite or icon with alpha cut to .jpg, which would fill them",
         doors=("write it as .webp or .png", "crop to where the source is opaque"),
     ),
+    "copies.over-bytes": Code(
+        means="a copy is over its max_bytes at the lowest quality (§PW658)",
+        when="a copy too large for its byte bound, or a PNG over it",
+        doors=("give it a smaller side or a crop", "write it as .webp"),
+    ),
     "style.references-need-3": Code(
         means="a family with style references was asked for on a model that takes none",
         when="[style.<family>] names references and the call asked 4.0",
