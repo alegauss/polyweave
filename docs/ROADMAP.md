@@ -55,6 +55,8 @@
 
 ## Block T — Adopting polyweave in a project
 
+- 📋 **PW662** (deps: —) **The repository shows no release while PyPI already has polyweave-gamekit 0.1.0, so it reads as never shipped** — A visitor from the marketplace or a list judges by the Releases page, and the tag that publishes to PyPI can create the release too. → §PW662
+
 ## Block U — A window on everything a project governs
 
 ## Block V — Parts every game repeats, installed already proved
@@ -62,6 +64,8 @@
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system
+
+- 📋 **PW663** (deps: —) **A visitor to the site never sees a part being made, only prose about it** — The promise is visual, and the channels that fit (r/gamedev, r/godot, r/blender) accept only a real before and after. → §PW663
 
 ## Done when — PW36
 

@@ -527,6 +527,24 @@ unscaled in its options panel at 1280x720, in pt-BR.
 
 ## Block T — Adopting polyweave in a project
 
+### §PW662 A GitHub release for every PyPI version
+
+`polyweave-gamekit` 0.1.0 is on PyPI since 22/10/2026, published by `publish.yml` from
+the tag `v0.1.0`. The GitHub repository shows no release at all: the workflow uploads to
+PyPI and stops. Someone who lands on the repository from the marketplace or an awesome
+list sees "no releases published" and reads it as a project that has not shipped, while
+the package it installs is right there under another name. The portfolio review of
+30/10/2026 (visibility repo, `estrategia/portfolio.md` and `produtos/polyweave.md`) asks
+for coherence in the niche tools: the release aligned with the published package.
+
+The design:
+
+- **The same tag makes both.** After the PyPI job succeeds, a job creates the GitHub Release for that tag with `GITHUB_TOKEN`, titled with the version and with the CHANGELOG entries since the previous tag as its notes, and the built wheel and sdist attached.
+- **The first release is backfilled** for `v0.1.0`, so the page lists what PyPI already has.
+- **The name is said where people look.** The README's install section already explains why the package is `polyweave-gamekit` (PW602); the release notes and the one-line install at the top of the README say it too, in one line ("`polyweave` on PyPI is an unrelated project").
+
+Done means the repository's Releases page and PyPI list the same versions.
+
 ## Block U — A window on everything a project governs
 
 ### §PW311 The window proved on Starship
@@ -574,3 +592,21 @@ take is read off that code rather than invented here.
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system
+
+### §PW663 A part going from failed to passed, on the home page
+
+The site explains polyweave with prose, a session transcript and the specs, but never
+shows a part being made. The promise is visual (a model, a sprite, a sound, held to a
+bar and searched until it passes), and a reader deciding in a few seconds whether this
+is for them gets no picture of it. The portfolio review of 30/10/2026 (visibility repo,
+`produtos/polyweave.md`) proposes a visual demonstration on the site, and the author
+confirmed polyweave may be promoted before Block H, without waiting for a measured game.
+The channels named there (r/gamedev, r/godot, r/blender) only accept a post that shows a
+real before and after.
+
+The design:
+
+- **One short loop on the home page**, above the fold or just below the hero: a real part from Cottony or Spinhold going from the first generated attempt that failed its `accept.toml` (the measure that failed shown beside it) to the attempt that passed, with the numbers.
+- **Recorded, not mocked.** The frames come from the run's own evidence (renders, `.prov.json`, the accept report), so the demo is reproducible from the repository.
+- **Light on the page.** WebM or animated WebP under ~1.5 MB with a still poster, `loading="lazy"`, and a text caption for readers who do not play it.
+- **Reused** as the image of the README's first screen and of the Reddit and Show HN posts.
