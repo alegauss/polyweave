@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW670** (deps: —) **A service out of credit answers 402 and the refusal's remedy explains only 401 and 400** — A batch learns that the account needs topping up only by reading an HTTP code, and keeps calling. → §PW670
 - 📋 **PW671** (deps: —) **video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music** — A narrated product video is built by a project script of ffmpeg calls instead of a declared cut. → §PW671
 - 📋 **PW672** (deps: PW673, PW674) **No way to fetch Pexels stock footage or photos with their licence recorded** — B-roll from Pexels is downloaded by hand; this adds Pexels to the stock seam the Pixabay lines build. → §PW672
 - 📋 **PW673** (deps: —) **No way to search Pixabay's photos, illustrations and vectors and bring one in with its page, author and licence recorded** — A picture taken from Pixabay is saved by hand, so provenance.credits and the release manifest cannot say where it came from. → §PW673

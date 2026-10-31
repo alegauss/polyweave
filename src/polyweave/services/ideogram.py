@@ -201,6 +201,9 @@ def answered(
                 detail=body[:400].decode("utf-8", "replace"),
             ) from exc
     said = body[:400].decode("utf-8", "replace")
+    unpaid = client.unpaid(status, said)
+    if unpaid is not None:
+        raise unpaid
     if status == 422:
         raise PolyweaveError(
             "fetch.prompt-refused",

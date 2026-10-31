@@ -716,7 +716,8 @@ def lines(
                         provenance.source("words", source, root=here)],
             )
         except PolyweaveError as refused:
-            if refused.code not in ("fetch.over-budget", "fetch.budget-closed"):
+            if refused.code not in ("fetch.over-budget", "fetch.budget-closed",
+                                    "fetch.no-credit"):
                 raise
             stopped = [{k: one[k] for k in ("key", "locale", "speaker", "price")}
                        for one in plan[index:]]
@@ -830,7 +831,8 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
                 inputs=[provenance.source("words", where, root=here)],
             )
         except PolyweaveError as refused:
-            if refused.code not in ("fetch.over-budget", "fetch.budget-closed"):
+            if refused.code not in ("fetch.over-budget", "fetch.budget-closed",
+                                    "fetch.no-credit"):
                 raise
             stopped = [{k: o[k] for k in ("key", "locale", "price")}
                        for o in plan[index:]]

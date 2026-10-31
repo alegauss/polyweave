@@ -550,3 +550,13 @@ def test_a_picture_drawn_at_the_shape_asked_carries_no_finding(
     entry = buy(tmp_path, aspect_ratio="16:9", transparent=False)
     assert "findings" not in entry
     assert purchase.read(tmp_path) == [entry]
+
+
+def test_a_service_out_of_credit_is_said_so_by_its_own_code(tmp_path, service):
+    """§PW670: Dumont's 15th photo met a 402, and the remedy read as a 401's."""
+    service.status, service.answer = 402, b'{"detail": "Insufficient credits"}'
+    error = refused(tmp_path, transparent=False)
+    assert error.code == "fetch.no-credit"
+    assert "top the account up" in error.remedy
+    assert "401" not in error.remedy
+    assert purchase.read(tmp_path) == []

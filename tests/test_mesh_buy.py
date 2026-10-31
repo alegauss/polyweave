@@ -175,7 +175,7 @@ def test_json_is_a_code_on_refusal(monkeypatch):
     monkeypatch.setattr("urllib.request.urlopen", refuse)
     with pytest.raises(PolyweaveError) as caught:
         S.call("POST", "https://api.meshy.ai/x", "k", {})
-    assert caught.value.code == "fetch.over-budget"
+    assert caught.value.code == "fetch.no-credit"
     assert json.dumps({}) == "{}"
 
 

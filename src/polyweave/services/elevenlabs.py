@@ -148,6 +148,9 @@ def asked_json(url: str, key: str, payload: dict) -> dict:
         said = answer.body[:400].decode("utf-8", "replace")
         if answer.status == 403:
             raise plan_lacks(said)
+        unpaid = client.unpaid(answer.status, said)
+        if unpaid is not None:
+            raise unpaid
         raise PolyweaveError(
             "fetch.service-error",
             f"the service answered {answer.status}",
@@ -197,6 +200,9 @@ def post(url: str, key: str, payload: dict) -> tuple[bytes, str, int | None]:
         )
     if answer.status == 403:
         raise plan_lacks(said)
+    unpaid = client.unpaid(answer.status, said)
+    if unpaid is not None:
+        raise unpaid
     raise PolyweaveError(
         "fetch.service-error",
         f"the service answered {answer.status}",

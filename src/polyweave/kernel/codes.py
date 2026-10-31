@@ -661,6 +661,12 @@ KERNEL_CODES: dict[str, Code] = {
         "picture in it; a refused request is not charged",
         doors=("reword the prompt",),
     ),
+    "fetch.no-credit": Code(
+        means="the service's account has no credit left for the call (§PW670)",
+        when="a 402 from the service; the project's own ceiling was not the limit, "
+        "and every call after it would be refused the same way",
+        doors=("top the account up at the service, then run again",),
+    ),
     "fetch.rate-limited": Code(
         means="the account has more requests in flight than the service allows",
         when="a 429, from calls made elsewhere on the same account",

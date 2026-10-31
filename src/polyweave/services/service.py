@@ -310,14 +310,6 @@ def waited(task: str, ask: Callable[[], Asked], report) -> Any:
         time.sleep(POLL_EVERY)
 
 
-#: What a service's 402 says when the plan, and not the balance, refuses the task.
-_PLAN_WORDS = ("plan", "nomorependingtasks", "subscription")
-
-
-def _planned(said: str) -> bool:
-    return any(word in said.lower() for word in _PLAN_WORDS)
-
-
 def call(method: str, url: str, key: str, payload: dict | None = None) -> dict:
     """One JSON call with the bearer key, a refusal turned into a code."""
     body = json.dumps(payload).encode("utf-8") if payload is not None else None
@@ -328,23 +320,9 @@ def call(method: str, url: str, key: str, payload: dict | None = None) -> dict:
     if answer.status < 400:
         return json.loads(answer.body or b"{}")
     said = answer.body[:400].decode("utf-8", "replace")
-    if answer.status == 402 and _planned(said):
-        # Meshy answered 402 with 300 credits left: "task creation on the free plan is
-        # no longer supported" is the plan, and a top-up would not help (§PW627).
-        raise PolyweaveError(
-            "fetch.plan-lacks",
-            "the service refuses this task on the account's plan, whatever its balance",
-            "move the account to a plan that takes the task, at the service; a refused "
-            "task is not charged",
-            detail=said,
-        )
-    if answer.status == 402:
-        raise PolyweaveError(
-            "fetch.over-budget",
-            "the service says the account has too few credits for this task",
-            "top the account up; the project's own ceiling was not the limit",
-            detail=said,
-        )
+    refused = client.unpaid(answer.status, said)
+    if refused is not None:
+        raise refused
     if answer.status == 429:
         raise PolyweaveError(
             "fetch.rate-limited",
@@ -381,10 +359,11 @@ def form(url: str, key: str, fields: dict, files: list) -> dict:
         "Authorization": f"Bearer {key}",
         "Content-Type": f"multipart/form-data; boundary={boundary}"})
     if answer.status >= 400:
-        raise PolyweaveError(
+        said = answer.body[:400].decode("utf-8", "replace")
+        raise client.unpaid(answer.status, said) or PolyweaveError(
             "fetch.service-error", f"the service answered {answer.status} to {url}",
             "read the detail; a 401 is a key the service does not accept",
-            detail=answer.body[:400].decode("utf-8", "replace"),
+            detail=said,
         )
     return json.loads(answer.body or b"{}")
 

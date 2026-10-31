@@ -141,7 +141,10 @@ through the same doors a mesh does, in the same order:
    from one refuses the other's payload before it is sent;
 2. `purchase.allow` is asked for the picture's price, against that service's own ceiling.
    The price comes from the project's table, never the caller (below);
-3. the request is sent. A 422 is `fetch.prompt-refused`, a 429 `fetch.rate-limited`, and
+3. the request is sent. A 422 is `fetch.prompt-refused`, a 429 `fetch.rate-limited`, a 402
+   `fetch.no-credit` (the account out of credit, a different limit from the project's
+   ceiling, so `voice.lines` stops there and names the rest as not voiced) or
+   `fetch.plan-lacks` where its words name the plan (§PW670, every service's client), and
    anything else `fetch.service-error`. None of them ledgers anything. The client holds no
    more than ten calls open at once in one process, the account's default;
 4. the picture is captured at once, because the service's links expire. The entry is

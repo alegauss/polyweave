@@ -147,6 +147,39 @@ def priced(
     )
 
 
+#: What a service's 402 says when the plan, and not the balance, refuses the task.
+_PLAN_WORDS = ("plan", "nomorependingtasks", "subscription")
+
+
+def unpaid(status: int, said: str) -> PolyweaveError | None:
+    """A 402 as the refusal it is, or None for any other status (§PW670).
+
+    The plan where the service's words name it: Meshy answered 402 with 300 credits
+    left, its free plan refusing the task, and a top-up would not help (§PW627).
+    Otherwise the account is out of credit, `fetch.no-credit`, its own code so a batch
+    stops at once: Dumont's 68 photos met a 402 on the 15th, and the remedy read as a
+    401 or a 400's.
+    """
+    if status != 402:
+        return None
+    if any(word in said.lower() for word in _PLAN_WORDS):
+        return PolyweaveError(
+            "fetch.plan-lacks",
+            "the service refuses this task on the account's plan, whatever its balance",
+            "move the account to a plan that takes the task, at the service; a refused "
+            "task is not charged",
+            detail=said,
+        )
+    return PolyweaveError(
+        "fetch.no-credit",
+        "the service's account has no credit left for this call (it answered 402)",
+        "top the account up at the service, then run again; nothing was charged for "
+        "this call, and purchase.remaining says what the project's own ceiling, a "
+        "different limit, still allows",
+        detail=said,
+    )
+
+
 def reached(name: str, about: dict) -> tuple[str, str]:
     """Where the service is and the key it takes, refused before anything is sent."""
     if not about.get("base"):

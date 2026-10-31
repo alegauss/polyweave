@@ -68,6 +68,7 @@
 - ✅ **PW667** **picture.buy cuts the background out of a picture nobody asked to be transparent** — picture.buy keeps a picture's background unless transparent asks or a style family is in force, and the answer's background says why (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW668** **sound.speech counts an eleven_v3 audio tag such as [excited] as a missing word and fails the take** — On eleven_v3 a line's [bracketed] audio tags are directions, left out of the words a take is held to and named under directions (design recorded in `docs/specs/effects.md`).
 - ✅ **PW669** **An unpriced sound model is refused as a picture, with a remedy priced per picture** — fetch.unpriced names what the call buys, and a call counted by its words is offered the row by the character beside the row by the call (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW670** **A service out of credit answers 402 and the refusal's remedy explains only 401 and 400** — A 402 from any service is fetch.no-credit, saying to top the account up, and voice.lines stops there naming the lines not voiced (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 
