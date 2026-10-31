@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 9 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 8 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW667",
-    block: "D",
-    symptom: "picture.buy cuts the background out of a picture nobody asked to be transparent",
-    why: "A photo comes back with its landscape removed and fringed edges, and the answer never says so.",
-    deps: [],
-  },
   {
     id: "PW668",
     block: "D",

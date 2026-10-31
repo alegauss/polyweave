@@ -59,25 +59,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW667 A picture keeps its background unless asked
-
-**Where.** Dumont's WordPress demo (`D:\Git\viglet\dumont\2026.3\wordpress`, task D265),
-buying realistic product and guide photos for a shop site: `python -m polyweave
-picture.buy --root . --prompt "<an outdoor scene / a studio product shot>" --model 4.0
---aspect_ratio 16x9 --out demo/photos/guide/<slug>.png --json` — no `--transparent`.
-
-**What came back.** A PNG with alpha and its background cut away: the guide's whole
-landscape (mountains, path) was removed, leaving a hiker floating on transparency; the
-product shot came back with rainbow fringes where the cut-out met the removed studio
-background. Nothing in the answer said a background had been removed.
-
-**Expected.** A picture without `--transparent` is returned as the service drew it.
-Cutting out is right for a sprite and wrong for a photo; it should be asked for, or
-follow the asset family's `[style]`, never be the silent default.
-
-**Workaround.** `bin/demo-photos.mjs` passes `--transparent false` on every call
-(comment names this line).
-
 ### §PW668 A line's audio tags are directions, not words
 
 **Where.** Dumont's WordPress demo (D246/D261), narration on ElevenLabs `eleven_v3`,

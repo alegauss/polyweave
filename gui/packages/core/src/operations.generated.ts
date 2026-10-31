@@ -1342,7 +1342,7 @@ export interface PictureBuyArgs {
   prompt?: string
   /** what it shows, structured, which 4.0 draws without rewriting */
   json_prompt?: Record<string, unknown>
-  /** a PNG with alpha, read as a drawing; default true */
+  /** cut from its background; a style family's pictures are if unset */
   transparent?: boolean
   /** the model; default "4.0" */
   model?: "4.0" | "3.0"

@@ -91,7 +91,8 @@ def test_a_bought_picture_lands_hashed_recorded_and_ledgered(tmp_path, service):
     assert entry["bought"] == "image"
     assert entry["service"] == "ideogram"
     assert entry["credits"] == 0.08
-    assert purchase.read(tmp_path) == [entry]
+    assert purchase.read(tmp_path) == [
+        {k: v for k, v in entry.items() if k != "background"}]
     record = provenance.read("refs/booster.png", root=tmp_path)
     assert record["details"]["resolution"] == "1024x1024"
     assert record["details"]["model"] == "4.0"
@@ -103,16 +104,22 @@ def test_it_is_charged_to_its_own_services_ceiling(tmp_path, service):
     assert purchase.spent(tmp_path, "meshy") == 0.0
 
 
-def test_the_transparent_endpoint_is_the_default_and_the_prompt_field_is_the_models(
-    tmp_path, service
-):
-    buy(tmp_path)
+def test_a_picture_keeps_its_background_unless_asked_and_says_so(tmp_path, service):
+    """§PW667: Dumont's photos came back with their landscape cut away, unasked."""
+    entry = buy(tmp_path)
     endpoint, key, payload = service.sent[0]
-    assert (
-        endpoint == "https://api.ideogram.ai/v1/ideogram-v4/async/generate-transparent"
-    )
+    assert endpoint == "https://api.ideogram.ai/v1/ideogram-v4/async/generate"
     assert key == "sk-picture"
     assert payload == {"text_prompt": "a plush booster"}
+    assert entry["background"]["cut"] is False
+    assert "transparent" in entry["background"]["because"]
+    assert provenance.read("refs/booster.png", root=tmp_path)["details"][
+        "transparent"] is False
+    asked = buy(tmp_path, out="refs/a.png", transparent=True)
+    endpoint, _, _ = service.sent[1]
+    assert endpoint.endswith("/v1/ideogram-v4/async/generate-transparent")
+    assert "background" not in asked
+    service.sent.clear()
 
     proved = {"required": False, "proved": True, "choices": []}
     schema.write(
@@ -120,12 +127,12 @@ def test_the_transparent_endpoint_is_the_default_and_the_prompt_field_is_the_mod
     )
     entry = buy(tmp_path, out="refs/b.png", model="3.0", transparent=False, seed=7)
     assert entry["credits"] == 0.06
-    endpoint, _, payload = service.sent[1]
+    endpoint, _, payload = service.sent[0]
     # 3.0 has no asynchronous route: sent there it answered 404 (§PW437).
     assert endpoint == "https://api.ideogram.ai/v1/ideogram-v3/generate"
     assert payload == {"prompt": "a plush booster", "seed": 7}
-    buy(tmp_path, out="refs/c.png", model="3.0")
-    endpoint, _, _ = service.sent[2]
+    buy(tmp_path, out="refs/c.png", model="3.0", transparent=True)
+    endpoint, _, _ = service.sent[1]
     assert endpoint == "https://api.ideogram.ai/v1/ideogram-v3/generate-transparent"
 
 

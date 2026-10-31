@@ -129,9 +129,12 @@ is the only proof that the probing really was free.
 
 `picture.buy` is the first call the plugin sends to a paid service on its own, rather than
 capturing what a consumer's client fetched (§PW163). It buys one picture from Ideogram,
-by default through the transparent endpoint, whose PNG carries a real alpha channel and so
-reads as a drawing to `reference.pick`. It goes through the same doors a mesh does, in the
-same order:
+through the transparent endpoint where `transparent` asks, or, unset, where a style family
+is in force, whose canon is drawings: its PNG carries a real alpha channel and so reads as
+a drawing to `reference.pick`. Otherwise the picture keeps the background it was drawn
+with, and the answer's `background` says which was chosen and why (§PW667): Dumont's
+photos had come back with their landscape cut away and fringed edges, unasked. It goes
+through the same doors a mesh does, in the same order:
 
 1. the payload is checked against `[service.<name>] schema` where one is learned. The models
    spell the prompt differently (`text_prompt` on 4.0, `prompt` on 3.0), so a schema learned

@@ -59,7 +59,9 @@ def buy(
     json_prompt: Annotated[
         dict, Param("what it shows, structured, which 4.0 draws without rewriting")
     ] = None,
-    transparent: Annotated[bool, Param("a PNG with alpha, read as a drawing")] = True,
+    transparent: Annotated[
+        bool, Param("cut from its background; a style family's pictures are if unset")
+    ] = None,
     model: Annotated[str, Param("the model", choices=tuple(MODELS))] = "4.0",
     aspect_ratio: Annotated[str, Param("as the service spells it")] = None,
     rendering_speed: Annotated[str, Param("as the service spells it")] = None,
@@ -98,6 +100,10 @@ def buy(
 
     A picture drawn at another shape than `aspect_ratio` asked is kept, and the answer
     carries a `picture.aspect-differs` finding naming both (§PW659).
+
+    It is cut from its background where `transparent` asks, or, unset, where a style
+    family is in force; otherwise it keeps the background it was drawn with, and the
+    answer's `background` says which and why (§PW667).
     """
     if model not in MODELS:
         raise PolyweaveError(
@@ -165,6 +171,18 @@ def buy(
         json_prompt = style.compose(json_prompt, held_to[1])
     else:
         _one_prompt(prompt, json_prompt, model)
+    background = None
+    if transparent is None:
+        # Cut out only where it was asked, or where the picture is a style family's,
+        # whose canon is drawings (§PW667): Dumont's photos came back with their
+        # landscape removed and fringed edges, and the answer never said so.
+        transparent = held_to is not None
+        background = {
+            "cut": transparent,
+            "because": f"the {held_to[0]} style's pictures are drawings, cut out"
+            if held_to else "no style family is in force, so it keeps the background "
+            "it was drawn with; pass transparent for a sprite",
+        }
     name = config.service(service, model=model)
     about = config.services()[name]
     base, key = _reached(name, about)
@@ -232,7 +250,8 @@ def buy(
     )
     entry = S.buy(ideogram.SERVICE, order, report)
     differs = _aspect_differs(aspect_ratio, config.root / out)
-    return {**entry, "findings": [differs]} if differs else entry
+    return {**entry, **({"background": background} if background else {}),
+            **({"findings": [differs]} if differs else {})}
 
 
 #: How far a picture's width over height may sit from the ratio asked and still be it:

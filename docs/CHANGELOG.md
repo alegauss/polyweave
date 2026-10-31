@@ -65,6 +65,7 @@
 - ✅ **PW660** **provenance.credits lists only owed credits, so a per-asset source and licence manifest is built from .prov.json by hand** — provenance.credits all=true lists every recorded file with its source, prompt, seed, date and licence, from [service] terms (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW664** **sound.speak on ElevenLabs records every take at 0 credits, surprised, so the ledger and budget never see the spend** — An ElevenLabs take is ledgered at the characters its character-cost header billed, and readings that did not move leave the quote standing (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW665** **voice.lines speaks only a Godot CSV with world speakers, so a narration script outside a game is looped by hand** — voice.lines script= speaks a plain JSON or TOML lines file with one voice and an out pattern, planning, spending and skipping current takes (design recorded in `docs/specs/world.md`).
+- ✅ **PW667** **picture.buy cuts the background out of a picture nobody asked to be transparent** — picture.buy keeps a picture's background unless transparent asks or a style family is in force, and the answer's background says why (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 
