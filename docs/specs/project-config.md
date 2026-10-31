@@ -115,6 +115,8 @@ prices  = {}                   # a quoted price per output, for a service with n
 preserves = false              # true only where an edit leaves the unmasked pixels alone
 plan    = ""                   # the key's plan where the service does not report it:
                                # "free" is non-commercial, any other name commercial
+terms   = ""                   # what the service's terms grant its files, in words: the
+                               # licence provenance.credits all=true names (§PW660)
 
 [budget]
 credits = 60

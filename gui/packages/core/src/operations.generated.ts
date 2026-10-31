@@ -1570,6 +1570,8 @@ export interface ProvenanceCreditsArgs {
   out?: string
   /** answer whether the file at `out` still matches the records; default false */
   check?: boolean
+  /** also list every recorded file with its source and licence; default false */
+  all?: boolean
 }
 
 /** Every artefact whose record names this file as an input (§PW119). */

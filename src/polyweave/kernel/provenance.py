@@ -919,6 +919,9 @@ def credits(
     check: Annotated[
         bool, Param("answer whether the file at `out` still matches the records")
     ] = False,
+    all: Annotated[  # noqa: A002 - the word the caller reads
+        bool, Param("also list every recorded file with its source and licence")
+    ] = False,
 ) -> dict:
     """The credits a game owes, and what else its licences say.
 
@@ -935,6 +938,12 @@ def credits(
     `check` as well, nothing is written: `fresh` says whether that file still matches
     the records, and `why` what moved, so an asset recorded after the last build cannot
     ship uncredited.
+
+    With `all`, `artefacts` lists every recorded file, owed or not, with what made it,
+    the service and model, prompt, seed, date and licence (§PW660): the manifest a
+    redistributed package names each picture's origin in. A licence is the record's
+    own, else the `[service.<name>] terms` of the service it, or a file it was made
+    from, was bought from; `unstated` names the files whose licence nothing states.
     """
     where = Path(root).resolve()
     owed: dict[str, dict] = {}
@@ -983,6 +992,15 @@ def credits(
             f"{len(unlicensed)} file(s) were made on a service's free tier, licensed "
             "for non-commercial use only: make them again on a paid plan before a game "
             "that sells ships them")
+    if all:
+        from .config import load
+
+        services = (load(where).services() if (where / "polyweave.toml").is_file()
+                    else {})
+        answer["artefacts"] = [_manifested(r, by_path, services) for r in records]
+        unstated = [a["file"] for a in answer["artefacts"] if not a["licence"]]
+        if unstated:
+            answer["unstated"] = unstated
     digest = hashlib.sha256(
         json.dumps(answer, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
@@ -998,8 +1016,12 @@ def credits(
                            "write it with provenance.credits out="}
         written = {c["credit"] for c in held.get("owed", ())}
         missing = [c["credit"] for c in answer["owed"] if c["credit"] not in written]
+        listed = {a.get("file") for a in held.get("artefacts", ())}
+        missing += [a["file"] for a in answer.get("artefacts", ())
+                    if a["file"] not in listed]
         fresh = held.get("digest") == digest
-        why = (f"{len(missing)} credit(s) owed are not in it: {', '.join(missing)}"
+        why = (f"{len(missing)} credit(s) or file(s) are not in it: "
+               f"{', '.join(missing)}"
                if missing else "the records moved since it was written")
         return {**answer, "fresh": fresh, "file": relative(target, where),
                 **({} if fresh else {"why": why, "missing": missing})}
@@ -1007,6 +1029,32 @@ def credits(
     target.write_text(json.dumps({**answer, "digest": digest}, indent=1) + "\n",
                       encoding="utf-8", newline="\n")
     return {**answer, "wrote": relative(target, where), "digest": digest}
+
+
+def _manifested(record: dict, by_path: dict[str, dict], services: dict) -> dict:
+    """One recorded file's origin and licence, for `credits(all=True)` (§PW660)."""
+    engine = record.get("engine") or {}
+    details = record.get("details") or {}
+    licence, via = record.get("licence") or "", None
+    for one in [record, *_made_from(record, by_path)]:
+        if licence:
+            break
+        named = (one.get("engine") or {}).get("name", "")
+        licence = one.get("licence") or (services.get(named) or {}).get("terms") or ""
+        via = one["artefact"]["path"] if licence and one is not record else None
+    return {
+        "file": record["artefact"]["path"],
+        "sha256": record["artefact"].get("sha256", ""),
+        "made_by": _made_by(record),
+        "service": engine.get("name", ""),
+        "model": engine.get("model") or details.get("model") or "",
+        "plan": engine.get("plan") or engine.get("tier", ""),
+        "prompt": record.get("prompt") or "",
+        "seed": record.get("seed", details.get("seed")),
+        "made_at": record.get("produced_at", ""),
+        "licence": licence,
+        **({"via": via} if via else {}),
+    }
 
 
 def _people(where: Path) -> list[dict]:

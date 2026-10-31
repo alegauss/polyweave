@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW660** (deps: —) **provenance.credits lists only owed credits, so a per-asset source and licence manifest is built from .prov.json by hand** — A package that must name every image's source and licence reads polyweave's records with its own script and types the licence. → §PW660
 - 📋 **PW664** (deps: —) **sound.speak on ElevenLabs records every take at 0 credits, surprised, so the ledger and budget never see the spend** — A project buying voice through polyweave cannot read what it spent, and the budget would never refuse an overspend. → §PW664
 - 📋 **PW665** (deps: —) **voice.lines speaks only a Godot CSV with world speakers, so a narration script outside a game is looped by hand** — A web project buys and refreshes takes with its own script over sound.speak, re-implementing the skip of current takes. → §PW665
 - 📋 **PW667** (deps: —) **picture.buy cuts the background out of a picture nobody asked to be transparent** — A photo comes back with its landscape removed and fringed edges, and the answer never says so. → §PW667

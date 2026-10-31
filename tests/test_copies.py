@@ -164,3 +164,32 @@ def test_a_copy_owes_what_the_picture_it_was_cut_from_owes(tree):
     assert "site/assets/photo.webp" in owed["files"]
     free = {one["file"]: one for one in said["non_commercial"]}
     assert free["site/assets/photo.webp"]["via"] == "art/photo.png"
+
+def test_every_recorded_file_is_listed_with_its_licence_owed_or_not(tree):
+    # Shio's package names every picture's origin, though none of the ten owes a credit.
+    (tree / "polyweave.toml").write_text(
+        '[service.ideogram]\nterms = "Ideogram paid plan: commercial use"\n',
+        encoding="utf-8")
+    noisy(tree)
+    provenance.write(provenance.build(
+        "picture", tree / "art" / "photo.png",
+        engine={"name": "ideogram", "model": "4.0", "plan": "basic"}, seed=7,
+        extra={"prompt": "a quiet coast"}, root=tree), tree)
+    bounded(tree, "photo.webp", None)
+    said = provenance.credits(root=str(tree), all=True)
+    assert said["owed"] == []
+    listed = {one["file"]: one for one in said["artefacts"]}
+    bought = listed["art/photo.png"]
+    assert (bought["service"], bought["model"]) == ("ideogram", "4.0")
+    assert bought["seed"] == 7
+    assert bought["prompt"] == "a quiet coast"
+    assert bought["licence"] == "Ideogram paid plan: commercial use"
+    copy = listed["site/assets/photo.webp"]
+    assert copy["licence"] == bought["licence"]
+    assert copy["via"] == "art/photo.png"
+    assert "unstated" not in said
+    assert "artefacts" not in provenance.credits(root=str(tree))
+
+    provenance.credits(root=str(tree), out="CREDITS.json", all=True)
+    assert provenance.credits(root=str(tree), out="CREDITS.json", check=True,
+                              all=True)["fresh"] is True

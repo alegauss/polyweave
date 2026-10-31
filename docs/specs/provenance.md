@@ -96,6 +96,16 @@ before this still warns. Where `[project] sells` is true, `game.release_check` r
 each file whose record says `commercial = false` as `game.part-not-licensed`, naming the
 file, the service and the plan.
 
+**A manifest names every file, owed or not** (§PW660). A redistributed package names
+each picture's source and licence although none owes a credit, and Shio's had read the
+`.prov.json` files with its own script and typed the licence. `provenance.credits
+all=true` adds `artefacts`: each recorded file with its `sha256`, `made_by`, `service`,
+`model`, `plan`, `prompt`, `seed`, `made_at` and `licence`. The licence is the record's
+own, else the `terms` the project declares under `[service.<name>]` for the service the
+file, or a recorded file it was made from (`via`), was bought from. `unstated` lists the
+files whose licence nothing states, and is absent where there are none. With `out` and
+`check`, a file the records list and the written manifest does not is in `missing`.
+
 **What a build ships that a generator made is one read** (§PW248). Steam's content survey
 asks whether a game ships generated content, and the honest answer is the lineage of every
 shipped file. `provenance.generated` takes the paths a build ships, files or folders of

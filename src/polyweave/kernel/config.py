@@ -194,6 +194,9 @@ KERNEL_DEFAULTS: dict[str, Any] = {
         # "free" licenses for non-commercial use only, any other name commercially, and
         # empty is unstated. Every bought file's record keeps it.
         "plan": "",
+        # What the service's terms grant a file made under this key, in words: the
+        # licence `provenance.credits all=true` names for each file bought (§PW660).
+        "terms": "",
     },
     "budget": {
         # No budget is no spend, never an unlimited one: the absence of a ceiling is
