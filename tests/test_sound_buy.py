@@ -426,3 +426,28 @@ def test_a_voice_the_world_says_wrong_is_found(tmp_path):
     found = world.validate(root=str(tmp_path))
     codes = sorted(one["code"] for one in found["findings"])
     assert codes == ["world.bad-value", "world.unknown-key"]
+
+
+# -- a take recorded at what it cost (§PW664) ----------------------------------------
+
+
+def test_a_usage_reading_that_did_not_move_leaves_the_quote_standing(tmp_path, counted):
+    """Dumont's 17 narration takes were each ledgered at 0, surprised."""
+    counted.extend([1000, 1000])
+    sound_buy.buy(prompt="rain on a tin roof", out="sfx/rain.mp3", root=str(tmp_path))
+    [entry] = purchase.read(tmp_path)
+    assert entry["credits"] == pytest.approx(18 * 0.001)
+    assert entry["measured"] is False
+    assert not entry.get("surprised")
+
+
+def test_the_characters_the_service_says_it_billed_are_the_cost(
+    tmp_path, counted, monkeypatch
+):
+    counted.extend([1000, 1000])
+    monkeypatch.setattr(elevenlabs, "post",
+                        lambda url, key, payload: (b"ID3fake-mp3", "req-2", 20))
+    sound_buy.buy(prompt="rain on a tin roof", out="sfx/rain.mp3", root=str(tmp_path))
+    [entry] = purchase.read(tmp_path)
+    assert entry["credits"] == pytest.approx(20 * 0.001)
+    assert entry["measured"] is True

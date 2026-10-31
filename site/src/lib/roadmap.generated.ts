@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 5 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW664",
-    block: "D",
-    symptom: "sound.speak on ElevenLabs records every take at 0 credits, surprised, so the ledger and budget never see the spend",
-    why: "A project buying voice through polyweave cannot read what it spent, and the budget would never refuse an overspend.",
-    deps: [],
-  },
   {
     id: "PW665",
     block: "D",

@@ -59,29 +59,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW664 An ElevenLabs take is recorded at what it cost
-
-**Where.** Dumont's WordPress plugin (`D:\Git\viglet\dumont\2026.3\wordpress`, task
-D246), buying the demo video's narration: 17 takes through `python -m polyweave
-sound.speak --root . --text "<line>" --voice XrExE9yKIg1WjnnlVkGX --model
-eleven_multilingual_v2 --rung paid --out demo/narration/<lang>/chapter-<n>.mp3 --json`,
-with `[service.elevenlabs] prices = { "eleven_multilingual_v2" = { per = "character",
-rate = 0.00003 } }` and a `[budget.elevenlabs]` of 2 USD.
-
-**What came back.** Every answer, and every row of `polyweave.purchases.json`, has
-`"credits": 0.0`, `"expected_credits": 0.00054` (or the line's own figure),
-`"balance_before": null`, `"balance_after": null` and `"surprised": true`. The take is
-fine; the spend is not recorded.
-
-**Expected.** ElevenLabs bills characters against the plan's quota and reports them (the
-`character-cost` response header, and `/v1/user/subscription`'s `character_count` before
-and after). A take should be recorded at what it cost — the characters, priced by the
-`[service]` row — so `purchase.spent` and the budget see it, and `surprised` is reserved
-for a cost that really differs from the quote.
-
-**Workaround.** None: the ledger in the project under-reports the narration, and the
-budget would never refuse a run that overspent it.
-
 ### §PW665 Speak a plain lines file
 
 **Where.** Dumont's WordPress plugin (`D:\Git\viglet\dumont\2026.3\wordpress`, task

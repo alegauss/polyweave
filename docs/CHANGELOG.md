@@ -63,6 +63,7 @@
 - ✅ **PW658** **picture.buy writes only PNG, so a web project re-encodes to WebP outside polyweave and ships a file with no provenance** — picture.copies writes a WebP or JPEG under max_bytes, stepping quality down, and credits follow a copy to its purchase (design recorded in `docs/specs/store.md`).
 - ✅ **PW659 (the finding half)** **picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning** — picture.buy names a picture drawn at another shape than aspect_ratio asked as picture.aspect-differs, asked beside got.
 - ✅ **PW660** **provenance.credits lists only owed credits, so a per-asset source and licence manifest is built from .prov.json by hand** — provenance.credits all=true lists every recorded file with its source, prompt, seed, date and licence, from [service] terms (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW664** **sound.speak on ElevenLabs records every take at 0 credits, surprised, so the ledger and budget never see the spend** — An ElevenLabs take is ledgered at the characters its character-cost header billed, and readings that did not move leave the quote standing (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 

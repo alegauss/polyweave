@@ -43,15 +43,31 @@ def submit(order: S.Order) -> dict:
     if asked["call"] == "design":
         answer = {"answer": asked_json(f"{base}{DESIGN}", key, asked["payload"])}
     else:
-        body, said = post(f"{base}{asked['route']}", key, asked["payload"])
-        answer = {"body": body, "request_id": said}
+        body, said, *cost = post(f"{base}{asked['route']}", key, asked["payload"])
+        answer = {"body": body, "request_id": said,
+                  "characters": next(iter(cost), None)}
     after = used(base, key) if before is not None else None
-    spent = (
-        round((after - before) * asked["rate"], 6)
-        if before is not None and after is not None and after >= before
-        else None
-    )
+    spent = _spent(asked.get("rate"), answer.get("characters"), before, after)
     return {**answer, "tier": tier_now, "spent": spent}
+
+
+def _spent(rate: float | None, characters: int | None, before: int | None,
+           after: int | None) -> float | None:
+    """What a call priced by the character cost, where the service measured it (§PW664).
+
+    The characters the answer's `character-cost` header says it billed, else the usage
+    readings either side of the call where they moved. A reading that did not move is
+    no measurement: ElevenLabs counts a take a moment after it answers, and Dumont's 17
+    narration takes were each ledgered at 0, surprised, so the budget never saw them.
+    None leaves the quote standing.
+    """
+    if rate is None:
+        return None
+    if characters is not None:
+        return round(characters * rate, 6)
+    if before is not None and after is not None and after > before:
+        return round((after - before) * rate, 6)
+    return None
 
 
 def deliver(order: S.Order, sent: dict, finished: dict) -> S.Delivery:
@@ -143,8 +159,9 @@ def asked_json(url: str, key: str, payload: dict) -> dict:
     return said if isinstance(said, dict) else {}
 
 
-def post(url: str, key: str, payload: dict) -> tuple[bytes, str]:
-    """One request with the service's key header, answered with audio and its id."""
+def post(url: str, key: str, payload: dict) -> tuple[bytes, str, int | None]:
+    """One request with the service's key header, answered with audio, its id and the
+    characters the service says it billed (`character-cost`), None where it does not."""
     try:
         answer = client.send(
             url, method="POST", data=json.dumps(payload).encode("utf-8"),
@@ -160,7 +177,9 @@ def post(url: str, key: str, payload: dict) -> tuple[bytes, str]:
             detail=exc.reason,
         ) from exc
     if answer.status < 400:
-        return answer.body, answer.headers.get("request-id", "")
+        cost = str(answer.headers.get("character-cost", "")).strip()
+        return (answer.body, answer.headers.get("request-id", ""),
+                int(cost) if cost.isdigit() else None)
     said = answer.body[:400].decode("utf-8", "replace")
     if answer.status == 422:
         raise PolyweaveError(

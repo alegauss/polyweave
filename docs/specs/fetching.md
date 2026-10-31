@@ -184,7 +184,12 @@ count is `fetch.uncounted`, never priced at zero. A refusal over the ceiling quo
 count and the rate as well as the sum. Where the service answers `/v1/user/subscription`,
 its `character_count` is read before and after the call, and the spend is the difference
 times the rate, a measurement (`measured: true`, the quote kept as `expected_credits`). A
-reading that fails leaves the quote standing, and the entry says it was quoted.
+reading that fails leaves the quote standing, and the entry says it was quoted. The
+`character-cost` header the answer carries comes first, where it is there: it is the
+service's own count of the characters it billed (§PW664). Readings that did not move are
+no measurement either, since the service counts a take a moment after it answers: they
+leave the quote standing, where Dumont's 17 narration takes had each been ledgered at 0
+and `surprised`, so the budget never saw the spend.
 
 **A plan that lacks a feature is said so** (§PW410). A 403 from the speech service is
 `fetch.plan-lacks`, not `fetch.service-error`: the account's plan does not include what
