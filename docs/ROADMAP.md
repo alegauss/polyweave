@@ -8,9 +8,8 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW672** (deps: PW673, PW674) **No way to fetch Pexels stock footage or photos with their licence recorded** — B-roll from Pexels is downloaded by hand; this adds Pexels to the stock seam the Pixabay lines build. → §PW672
-- 📋 **PW673** (deps: —) **No way to search Pixabay's photos, illustrations and vectors and bring one in with its page, author and licence recorded** — A picture taken from Pixabay is saved by hand, so provenance.credits and the release manifest cannot say where it came from. → §PW673
-- 📋 **PW674** (deps: PW673) **No way to search Pixabay's videos by length and resolution and bring a rendition in with its licence recorded** — B-roll is downloaded from the site by hand at whatever size the browser offered, and its source lives in nobody's record. → §PW674
+- 📋 **PW672** (deps: PW673 ✅, PW674) **No way to fetch Pexels stock footage or photos with their licence recorded** — B-roll from Pexels is downloaded by hand; this adds Pexels to the stock seam the Pixabay lines build. → §PW672
+- 📋 **PW674** (deps: PW673 ✅) **No way to search Pixabay's videos by length and resolution and bring a rendition in with its licence recorded** — B-roll is downloaded from the site by hand at whatever size the browser offered, and its source lives in nobody's record. → §PW674
 - 📋 **PW675** (deps: PW671 ✅, PW674) **A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write** — A fresh checkout cannot rebuild the edit from its declaration, because the B-roll it names came from calls nobody recorded. → §PW675
 
 ## Block E — One world with the engine

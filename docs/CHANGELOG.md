@@ -70,6 +70,7 @@
 - ✅ **PW669** **An unpriced sound model is refused as a picture, with a remedy priced per picture** — fetch.unpriced names what the call buys, and a call counted by its words is offered the row by the character beside the row by the call (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW670** **A service out of credit answers 402 and the refusal's remedy explains only 401 and 400** — A 402 from any service is fetch.no-credit, saying to top the account up, and voice.lines stops there naming the lines not voiced (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW671** **video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music** — A cut lays each language's voices on a track of its own over a looped music bed, and carries subtitle files (design recorded in `docs/specs/video.md`).
+- ✅ **PW673** **No way to search Pixabay's photos, illustrations and vectors and bring one in with its page, author and licence recorded** — stock.find searches Pixabay pictures, and stock.fetch brings one in recorded with its page, author and licence, at no cost (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 

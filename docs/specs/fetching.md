@@ -329,6 +329,26 @@ again. Once the picture lands it is ledgered like any other and the charge leave
 list, so it is counted once. A retry that fails again replaces its own entry. A link that
 has expired leaves the charge owed for good, because the money went either way.
 
+## A stock picture is brought in with its licence
+
+A picture found on Pixabay in a browser and saved by hand is recorded by nothing, so
+`provenance.credits all=true` lists it under `unstated` (§PW673). `stock.find(words,
+filters=, count=)` searches the photos, illustrations and vectors, safe search on, and
+downloads nothing: each hit's `id`, size, `tags`, `author`, `page` and `preview`. The
+filters are the service's own (`image_type`, `orientation`, `min_width`, `min_height`,
+`colors`, `category`, `order`), and any other is `stock.bad-filter` before anything is
+asked. `stock.fetch(id, out)` downloads the largest rendition the key may read and writes
+a record of kind `fetch` (engine `pixabay`) with `source_page`, `author`,
+`author_page`, `tags`, `licence = "Pixabay Content License"`, an empty `credit` and
+`credits = 0`: nothing is ledgered and no budget is drawn. An id the service does not
+know is `stock.no-hit`.
+
+The service's terms are the client's to keep. A search answer is kept under the work
+area's `stock/` for 24 hours and answered from there; a 429 waits for the window
+`X-RateLimit-Reset` names, at most 65 seconds, and is asked once more; a picture is
+downloaded, never linked. The key is `[service.pixabay] key_env`, `PIXABAY_API_KEY`
+where the project declares no table, and no record holds it.
+
 ## A mesh is bought through the plugin
 
 `mesh.buy` is the plugin's own Meshy client (§PW183), so a consumer keeps its prompts and

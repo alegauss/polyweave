@@ -2352,6 +2352,28 @@ export interface SpritesMatchedArgs {
   root?: string
 }
 
+/** Bring one Pixabay picture in, recorded with its page, author and licence. */
+export interface StockFetchArgs {
+  /** the hit's id, as stock.find answered it */
+  id: number
+  /** where it is written, under the project */
+  out: string
+  /** the project it is brought into; default "." */
+  root?: string
+}
+
+/** Search Pixabay's photos, illustrations and vectors, downloading nothing. */
+export interface StockFindArgs {
+  /** what the picture shows: a quiet harbour at dawn */
+  words: string
+  /** the service's own filters: image_type, orientation, min_width… */
+  filters?: Record<string, unknown>
+  /** how many hits, 3 to 200; from 3 to 200; default 20 */
+  count?: number
+  /** the project the search is kept in; default "." */
+  root?: string
+}
+
 /** Cut a store's whole capsule set from one key art and a logo, each recorded. */
 export interface StoreCapsulesArgs {
   /** the key art every capsule is cut from */
@@ -2915,6 +2937,8 @@ export interface Operations {
   "sound.stems": SoundStemsArgs
   "sound.synth": SoundSynthArgs
   "sprites.matched": SpritesMatchedArgs
+  "stock.fetch": StockFetchArgs
+  "stock.find": StockFindArgs
   "store.capsules": StoreCapsulesArgs
   "style.drift": StyleDriftArgs
   "style.read": StyleReadArgs
@@ -3136,6 +3160,8 @@ export const OPERATIONS = [
   "sound.stems",
   "sound.synth",
   "sprites.matched",
+  "stock.fetch",
+  "stock.find",
   "store.capsules",
   "style.drift",
   "style.read",

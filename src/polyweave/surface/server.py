@@ -82,7 +82,9 @@ CORE_TOOLS = 41_400
 #: layer's figure rose by 1,000 for them.
 #: 144,625 with accept.first (§PW637), whose core figure rose by 1,200 for it.
 #: 145,112 with game.replay_rates (§PW640), whose engine figure rose by 600 for it.
-SESSION_BUDGET = 145_600
+#: 146,718 with stock.find and stock.fetch (§PW673, 2026-10-31), whose picture figure
+#: rose by 1,500 for them.
+SESSION_BUDGET = 147_200
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

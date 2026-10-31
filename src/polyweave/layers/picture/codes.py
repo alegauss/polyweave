@@ -13,6 +13,7 @@ AREAS: dict[str, str] = {
     "style": "what a project's pictures look like, and the canon a person grows",
     "copies": "a picture's derived copies, cut from a declared table",
     "picture": "a bought picture held to what the call asked of it",
+    "stock": "a stock picture searched for and brought in with its licence",
 }
 
 CODES: dict[str, Code] = {
@@ -45,6 +46,17 @@ CODES: dict[str, Code] = {
         "finding on the answer, since the charge has been made",
         doors=("crop it to the asked ratio with a picture.copies box",
                "keep it as drawn"),
+    ),
+    # -- stock: a picture from Pixabay, with its licence (§PW673) ---------------
+    "stock.bad-filter": Code(
+        means="stock.find was given a filter the service does not take",
+        when="a filter key that is not one of Pixabay's image search parameters",
+        doors=("pass only the filters the refusal lists",),
+    ),
+    "stock.no-hit": Code(
+        means="the service has no picture by the id stock.fetch was given",
+        when="an id mistyped, or one from another service's search",
+        doors=("pass an id stock.find answered",),
     ),
     "style.references-need-3": Code(
         means="a family with style references was asked for on a model that takes none",

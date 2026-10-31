@@ -188,7 +188,9 @@ from polyweave.surface.capabilities import capabilities
 #: ran as a hand-run project script several at once (§PW640).
 #: 166,645 with voice.lines' script, a plain lines file spoken outside a game, which
 #: Dumont looped by hand over sound.speak (§PW665, 2026-10-31).
-DESCRIBE = 167_000
+#: 167,959 with stock.find and stock.fetch, a Pixabay picture brought in with its page,
+#: author and licence, which Dumont saved by hand (§PW673, 2026-10-31).
+DESCRIBE = 168_500
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -338,7 +340,9 @@ DESCRIBE = 167_000
 #: 182,640 with game.replay_rates, game.no-determinism and game.bad-rates (§PW640).
 #: 183,020 with the codes of PW643-PW658: a capture's missing picture, the stale MCP
 #: server, a headless sweep, frame-timed play, a sheet's tile and a copy's byte bound.
-CAPABILITIES = 183_500
+#: 184,785 with the codes of PW659-PW673 (an aspect that differs, a lines file, an
+#: account out of credit) and stock.find and stock.fetch (§PW673, 2026-10-31).
+CAPABILITIES = 185_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -414,7 +418,8 @@ HELP_VERB = 5_100
 #: 33,464 with verdict.target (§PW620).
 #: 33,602 with mesh.budget (§PW634).
 #: 33,999 with accept.first and game.replay_rates (§PW637, §PW640).
-HELP_TOP = 34_200
+#: 34,288 with stock.find and stock.fetch (§PW673, 2026-10-31).
+HELP_TOP = 34_500
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

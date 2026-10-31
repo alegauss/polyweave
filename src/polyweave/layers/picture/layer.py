@@ -12,6 +12,7 @@ LAYER = Layer(
         "polyweave.layers.picture.panel",
         "polyweave.layers.picture.picture",
         "polyweave.layers.picture.scenario",
+        "polyweave.layers.picture.stock",
         "polyweave.layers.picture.style",
         "polyweave.layers.picture.variation",
         "polyweave.layers.picture.vector",
@@ -37,7 +38,8 @@ LAYER = Layer(
     },
     codes="polyweave.layers.picture.codes",
     config="polyweave.layers.picture.settings",
-    tools=12_000,
+    #: 12,925 with stock.find and stock.fetch (§PW673, 2026-10-31).
+    tools=13_500,
     census={
         "polyweave.layers.picture.panel:declared": (
             "internal", "a panel's states, checked; panel.build"),

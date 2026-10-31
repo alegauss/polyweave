@@ -71,32 +71,10 @@ record the source page, author and licence in the `.prov.json` so `provenance.cr
 lists them.
 
 **What polyweave should do.** A `stock.find` / `stock.fetch` pair (or `reference.*`
-extended) over Pexels, keyed by `PEXELS_API_KEY`, on the seam §PW673 and §PW674 build
-for Pixabay, free so no budget, with the licence and attribution in the provenance, and
-a check that refuses a result whose licence is not one the project allows.
-
-### §PW673 Pixabay pictures with their licence
-
-**Where.** §PW672 asked for stock photos and footage from Pexels and Pixabay together.
-This is the Pixabay half for pictures, and the seam the footage line after it and Pexels
-reuse.
-
-**What is missing.** A picture from Pixabay is found in a browser and saved by hand, so
-nothing records its page, author or licence, and `provenance.credits all=true` lists it
-under `unstated`.
-
-**What polyweave should do.** `stock.find` with `service = "pixabay"`, words and the
-API's own filters (`image_type`, `orientation`, `min_width`, `colors`, `safesearch`),
-answering each hit's id, size, tags, author and preview URL without downloading
-anything. `stock.fetch` takes an id and `out`, downloads the largest rendition the key
-may read (`largeImageURL`, 1280 px, unless the account has full access), and writes a
-`fetch` record with the source page, author, `licence = "Pixabay Content License"`, an
-empty credit and zero cost, so no budget is drawn. The key is `PIXABAY_API_KEY`, read
-like any service key and never written to a record.
-
-**The API's terms are the client's to keep.** Search answers are cached for 24 hours, as
-Pixabay asks; a call past 100 a minute waits on `X-RateLimit-Reset` instead of answering
-429; a result is downloaded, never linked.
+extended) over Pexels, keyed by `PEXELS_API_KEY`, on the seam docs/specs/fetching.md
+(PW673) and §PW674 build for Pixabay, free so no budget, with the licence and
+attribution in the provenance, and a check that refuses a result whose licence is not
+one the project allows.
 
 ### §PW674 Pixabay footage by length and resolution
 
@@ -107,27 +85,28 @@ file in.
 **What is missing.** The Pixabay half of §PW672 for footage: a clip is chosen in the
 browser at whatever size it offered, and its page, author and licence are kept nowhere.
 
-**What polyweave should do.** The seam §PW673 adds, with `kind = "video"`: `stock.find`
-passes `video_type` and the minimum width and height, and answers each hit's `duration`
-and every rendition (`large`, `medium`, `small`, `tiny`) with its width, height and
-bytes, so a caller picks by length and resolution without a download. `stock.fetch`
-takes the id and either a rendition or a `height`, meaning the smallest rendition at or
-above it, since a 4K file a 1080p cut scales down is a gigabyte nobody needed. A `large`
-the API left empty falls to the next one down, and the answer says so rather than
-handing back a smaller file in silence.
+**What polyweave should do.** The seam docs/specs/fetching.md (PW673) records, in
+`layers/picture/stock.py`, with `kind = "video"`: `stock.find` passes `video_type` and
+the minimum width and height, and answers each hit's `duration` and every rendition
+(`large`, `medium`, `small`, `tiny`) with its width, height and bytes, so a caller picks
+by length and resolution without a download. `stock.fetch` takes the id and either a
+rendition or a `height`, meaning the smallest rendition at or above it, since a 4K file
+a 1080p cut scales down is a gigabyte nobody needed. A `large` the API left empty falls
+to the next one down, and the answer says so rather than handing back a smaller file in
+silence.
 
-The record is §PW673's, plus the duration, resolution and frame rate ffprobe reads, the
-same fields `reference.register` keeps, so the cut and the reference layer read one
-shape.
+The record is the picture's (PW673), plus the duration, resolution and frame rate
+ffprobe reads, the same fields `reference.register` keeps, so the cut and the reference
+layer read one shape.
 
 ### §PW675 B-roll declared by its Pixabay id
 
 **Where.** The use Dumont's demo (D261) has for stock: B-roll under narration, placed by
 docs/specs/video.md (PW671)'s `[[clip]]` from a video file or as a held or moving still.
 
-**What is missing.** With §PW673 and §PW674 alone, the cut names paths a previous
-`stock.fetch` wrote. A checkout without them, or a person changing the shot, has to know
-which call made each file and with which rendition.
+**What is missing.** With docs/specs/fetching.md (PW673) and §PW674 alone, the cut names
+paths a previous `stock.fetch` wrote. A checkout without them, or a person changing the
+shot, has to know which call made each file and with which rendition.
 
 **What polyweave should do.** A `[[clip]]` may say `stock = { service = "pixabay", id =
 123456, rendition = "medium" }` in place of `file`, and an image id works the same for a

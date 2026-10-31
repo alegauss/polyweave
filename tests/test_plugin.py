@@ -39,7 +39,9 @@ SKILL_BUDGET = 3_400
 #: voice out of a recorded track.
 #: 5,000 at 4,805 once the music row names music.track (§PW611), a track's peaks and
 #: beat grid for a game's own tools.
-REFERENCE_BUDGET = 5_000
+#: 5,200 at 5,073 once a row names stock.find and stock.fetch (§PW673), the one way to a
+#: stock picture with its licence recorded.
+REFERENCE_BUDGET = 5_200
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():
