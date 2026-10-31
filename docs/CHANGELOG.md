@@ -60,6 +60,7 @@
 - ✅ **PW446** **no mesh can be bought from Rodin, so a part that needs clean topology has only Meshy's to start from** — mesh.buy speaks Rodin's v2 API for a service on hyper3d or deemos: a quad mesh behind the same ceiling, gate and ledger, its cost quoted (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW447** **a bought mesh is oriented and scaled, but nothing holds its triangles, materials or holes to a bar before a sitting** — normalise.ingest(ready=spec) welds seams, cuts to the triangle ceiling and refuses a missed bound such as holes as mesh.not-ready (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW448** **no service's plan licence reaches the record, so a free-tier mesh or picture can ship in a sold game unwarned** — Each buy's record keeps its plan, read off the service or declared as [service] plan, and a sold game fails release_check on a free-plan part (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW658** **picture.buy writes only PNG, so a web project re-encodes to WebP outside polyweave and ships a file with no provenance** — picture.copies writes a WebP or JPEG under max_bytes, stepping quality down, and credits follow a copy to its purchase (design recorded in `docs/specs/store.md`).
 
 ## Block E — One world with the engine
 
