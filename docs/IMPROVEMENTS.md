@@ -161,6 +161,56 @@ key, locale, text, plus a voice and model for the whole file — and an output p
 with the same plan/spend split (`--spend false` answers the plan) and the same skip of
 takes already current. Then the project script goes away.
 
+### §PW667 A picture keeps its background unless asked
+
+**Where.** Dumont's WordPress demo (`D:\Git\viglet\dumont\2026.3\wordpress`, task D265),
+buying realistic product and guide photos for a shop site: `python -m polyweave
+picture.buy --root . --prompt "<an outdoor scene / a studio product shot>" --model 4.0
+--aspect_ratio 16x9 --out demo/photos/guide/<slug>.png --json` — no `--transparent`.
+
+**What came back.** A PNG with alpha and its background cut away: the guide's whole
+landscape (mountains, path) was removed, leaving a hiker floating on transparency; the
+product shot came back with rainbow fringes where the cut-out met the removed studio
+background. Nothing in the answer said a background had been removed.
+
+**Expected.** A picture without `--transparent` is returned as the service drew it.
+Cutting out is right for a sprite and wrong for a photo; it should be asked for, or
+follow the asset family's `[style]`, never be the silent default.
+
+**Workaround.** `bin/demo-photos.mjs` passes `--transparent false` on every call
+(comment names this line).
+
+### §PW668 A line's audio tags are directions, not words
+
+**Where.** Dumont's WordPress demo (D246/D261), narration on ElevenLabs `eleven_v3`,
+whose audio tags (`[excited]`, `[laughs]`, `[happy]`) direct the delivery and are not
+spoken.
+
+**What came back.** `python -m polyweave sound.speech --root . --take
+demo/narration/en/intro.mp3 --json` on a take whose prompt opens with `[excited]` and
+contains `[laughs]`: `said.missing` lists `excited` and `laughs`, `matches: false`, and
+the take is reported under `failed` — though the voice performed both correctly.
+
+**Expected.** A line's directions are not its words: for a model that takes audio tags,
+the comparison strips `[...]` from the expected text first (and an unknown tag the voice
+did speak shows up as `extra`, which is the case worth flagging).
+
+**Workaround.** None; the check is read by eye.
+
+### §PW669 An unpriced refusal names what is bought
+
+**Where.** Dumont's WordPress demo (D261), `python -m polyweave sound.buy --root .
+--prompt "<a music bed>" --seconds 30 --loop --out demo/narration/music.mp3 --json` with
+`[service.elevenlabs]` pricing only a speech model.
+
+**What came back.** `fetch.unpriced`: "[service.elevenlabs] prices has no row
+'eleven_text_to_sound_v2', so what the picture costs is not known", remedy "add
+'eleven_text_to_sound_v2' = <price of one picture>".
+
+**Expected.** The refusal names what is bought — a sound, priced per call or per second
+— and its remedy shows a row in the unit ElevenLabs bills sound in, so the price written
+is the right one the first time.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
