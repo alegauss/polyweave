@@ -183,6 +183,9 @@ palette_source = { file = "tools/art/palette.py", names = ["PIPING", "CARD"] }  
 borrow   = { root = "../cottony", family = "", lightness = -0.1, saturation = 0.0, pinned = "" }  # another project's, shifted
 rig      = { azimuth = 35.0, elevation = 25.0, seen = 64 }  # a mesh family's render (PW451)
 
+[stock]
+dir      = "stock"                 # where a cut's stock clips land, by service and id (PW675)
+
 [sound]                            # or [sound.<family>], one table per family
 kind     = "loop"                  # loop, stinger or effect
 format   = "ogg"                   # wav, ogg, flac, mp3 or opus

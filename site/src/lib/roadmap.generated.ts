@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW675",
-    block: "D",
-    symptom: "A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write",
-    why: "A fresh checkout cannot rebuild the edit from its declaration, because the B-roll it names came from calls nobody recorded.",
-    deps: [],
-  },
   {
     id: "PW202",
     block: "R",

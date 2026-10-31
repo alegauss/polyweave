@@ -63,6 +63,19 @@ or a `motion` outside those words, is `video.bad-cut`; a file that is not there 
 `video.no-source`. A file clip carries no sound into `clip_audio`. The record names each
 file as an input, with the role `still` or `video`.
 
+**A clip may name a stock file by its id** (§PW675), so a cut is rebuilt from its
+declaration alone: `stock = { service = "pixabay", id = 123456, rendition = "medium" }`
+in place of `video` (`height` instead of `rendition`, and `kind = "picture"` for a held
+or moving still). Its copy lives under `[stock] dir` (`stock` by default) as
+`<service>-<id>-<rendition>.mp4`, or `<service>-<id>.jpg` for a picture; `video.cut`
+fetches it with `stock.fetch` where no copy is there and reuses the copy where it is, so
+a rebuild downloads nothing it holds. A clip the service no longer has, with no copy on
+disk, is `stock.gone`, never skipped, since a cut one shot short still renders and looks
+finished; a `stock` that is not such a table is `video.bad-cut`. The cut's record names
+each stock copy as an input with the role `stock`, so `provenance.credits all=true`
+follows it to the service's licence and `provenance.dependents` on a copy finds the cuts
+that carry it.
+
 **Each language is a sound track of its own** (§PW671). A narrated cut declares its
 languages and lays each take where it is said:
 

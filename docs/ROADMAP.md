@@ -8,8 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW675** (deps: PW671 ✅, PW674 ✅) **A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write** — A fresh checkout cannot rebuild the edit from its declaration, because the B-roll it names came from calls nobody recorded. → §PW675
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

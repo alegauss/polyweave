@@ -86,7 +86,9 @@ _TRACK_KEYS = {"language", "title"}
 _VOICE_KEYS = {"file", "at", "track", "gain"}
 _SUBTITLE_KEYS = {"file", "language"}
 _TABLES = {"video", "clip", "track", "voice", "subtitles"}
-_CLIP_KEYS = {"from", "still", "video", "motion", "start", "length", "fade_in"}
+_CLIP_KEYS = {"from", "still", "video", "stock", "motion", "start", "length",
+              "fade_in"}
+_STOCK_KEYS = {"service", "id", "kind", "rendition", "height"}
 
 #: Which way a still's frame moves while it zooms (§PW671); none holds it centred.
 PANS = ("none", "left", "right", "up", "down")
@@ -183,14 +185,19 @@ def read(source: Path, here: Path) -> dict:
                 given=extra[0],
                 at=at,
             )
-        named = [k for k in ("from", "still", "video") if k in clip]
+        named = [k for k in ("from", "still", "video", "stock") if k in clip]
         if len(named) != 1 or "length" not in clip:
             raise _bad(
                 f"{at} names {' and '.join(named) or 'nothing'} to show, or no length",
-                "give one of from (a folder capture.movie wrote), still (a picture) "
-                "or video (a file), and length in seconds",
+                "give one of from (a folder capture.movie wrote), still (a picture), "
+                "video (a file) or stock (a service's id), and length in seconds",
                 at=at,
             )
+        if named[0] == "stock":
+            kind, file = _stocked(clip["stock"], at, here)
+            filed = _filed({**clip, kind: file}, kind, at, here, fps, clips)
+            clips.append({**filed, "stock": True})
+            continue
         if named[0] != "from":
             clips.append(_filed(clip, named[0], at, here, fps, clips))
             continue
@@ -343,6 +350,54 @@ def _spoken(declared: dict, here: Path, total: float) -> tuple[list, list, list]
     return ([{"language": str(one["language"]),
               "title": str(one.get("title") or one["language"])} for one in tracks],
             voices, subtitles)
+
+
+def _stocked(asked: Any, at: str, here: Path) -> tuple[str, str]:
+    """A clip named by its stock service and id, as the path of its copy under
+    `[stock] dir`, fetched where the project holds none (§PW675).
+
+    A cut that named paths an earlier fetch wrote could not be rebuilt from a fresh
+    checkout, nor its shot changed without knowing which call made each file. One the
+    service has since removed, with no copy on disk, is `stock.gone` and never skipped,
+    since a cut one shot short still renders and looks finished.
+    """
+    from polyweave.kernel.config import load
+    from polyweave.layers.picture import stock
+
+    if not isinstance(asked, dict) or set(asked) - _STOCK_KEYS or not isinstance(
+            asked.get("id"), int) or asked.get("kind", "video") not in stock.KINDS:
+        raise _bad(
+            f"{at}.stock is {asked!r}",
+            'give stock = { service = "pixabay", id = 123456, rendition = "medium" }, '
+            'with kind = "picture" for a still',
+            at=at,
+            given="stock",
+        )
+    service, kind = asked.get("service", "pixabay"), asked.get("kind", "video")
+    held = asked.get("rendition") or (f"{asked['height']}p" if asked.get("height")
+                                      else "large")
+    name = (f"{service}-{asked['id']}-{held}.mp4" if kind == "video"
+            else f"{service}-{asked['id']}.jpg")
+    folder = str(load(here).get("stock.dir") or "stock")
+    copy = f"{folder.rstrip('/')}/{name}"
+    if not (here / copy).is_file():
+        try:
+            stock.fetch(asked["id"], copy, kind=kind, service=service,
+                        rendition=asked.get("rendition"), height=asked.get("height"),
+                        root=str(here))
+        except PolyweaveError as missing:
+            if missing.code != "stock.no-hit":
+                raise
+            raise PolyweaveError(
+                "stock.gone",
+                f"{at} names {service} {kind} {asked['id']}, which the service no "
+                f"longer has, and no copy is at {copy}",
+                "choose another shot with stock.find, or put the file back at "
+                f"{copy}",
+                at=at,
+                given=str(asked["id"]),
+            ) from missing
+    return ("still" if kind == "picture" else "video"), copy
 
 
 def _filed(clip: dict, kind: str, at: str, here: Path, fps: float,
@@ -766,7 +821,9 @@ def cut(
     sheet = _sheet(target, target.with_suffix(".sheet.png"), found["video_seconds"])
     inputs = [
         provenance.source("capture", c["manifest"], root=here) if c["kind"] == "run"
-        else provenance.source(c["kind"], c["file"], root=here)
+        # A stock clip's role says so, for provenance.dependents and credits (§PW675).
+        else provenance.source("stock" if c.get("stock") else c["kind"], c["file"],
+                               root=here)
         for c in declared["clips"]
     ]
     if declared["music"]:

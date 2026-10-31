@@ -54,6 +54,11 @@ TABLES: dict[str, Any] = {
         # rung...) and `seen`, the width in pixels a player sees one at.
         "rig": {},
     },
+    "stock": {
+        # Where a cut's stock clips land, by service, id and rendition, so a rebuild
+        # downloads nothing it already holds (§PW675).
+        "dir": "stock",
+    },
 }
 
 #: Tables that hold one thing, or several named ones.

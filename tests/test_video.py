@@ -238,3 +238,60 @@ def test_a_voice_on_no_declared_track_is_refused(tmp_path):
         video.read(here / "t.cut.toml", here)
     assert refused.value.code == "video.bad-cut"
     assert "no [[track]] declares" in refused.value.message
+
+
+# -- a clip named by its stock id (§PW675) -------------------------------------------
+
+
+@pytest.fixture
+def stocked(tmp_path, monkeypatch):
+    import io
+
+    from polyweave.services import client
+
+    here = _project(tmp_path)
+    monkeypatch.setenv("PIXABAY_API_KEY", "px-key")
+    hits = {"hits": [{"id": 4242, "pageURL": "https://pixabay.com/photos/4242/",
+                      "user": "Ana", "user_id": 1, "tags": "trail",
+                      "largeImageURL": "https://cdn.pixabay.com/4242.jpg"}]}
+    calls = []
+
+    def send(url, **_):
+        calls.append(url)
+        return client.Answer(200, json.dumps(hits).encode(), {})
+
+    held = io.BytesIO()
+    Image.new("RGB", (64, 36), (40, 90, 60)).save(held, "JPEG")
+    monkeypatch.setattr(client, "send", send)
+    monkeypatch.setattr(client, "download", lambda link: held.getvalue())
+    return here, hits, calls
+
+
+def test_a_stock_clip_is_fetched_once_and_reused_by_its_id(stocked):
+    """§PW675: a cut named paths an earlier fetch wrote, so a checkout could not
+    rebuild it."""
+    here, _, calls = stocked
+    (here / "t.cut.toml").write_text(
+        '[[clip]]\nstock = { service = "pixabay", id = 4242, kind = "picture" }\n'
+        "length = 1\n", encoding="utf-8")
+    cut = video.read(here / "t.cut.toml", here)
+    assert cut["clips"][0]["kind"] == "still"
+    assert (here / "stock" / "pixabay-4242.jpg").is_file()
+    asked = len(calls)
+    # The kept search goes too, so only the copy on disk can answer the second read.
+    from polyweave.kernel.config import load
+
+    shutil.rmtree(load(here).path("paths.work") / "stock", ignore_errors=True)
+    video.read(here / "t.cut.toml", here)
+    assert len(calls) == asked
+
+
+def test_a_stock_clip_the_service_removed_is_refused_by_name(stocked):
+    here, hits, _ = stocked
+    hits["hits"] = []
+    (here / "t.cut.toml").write_text(
+        '[[clip]]\nstock = { service = "pixabay", id = 9, kind = "picture" }\n'
+        "length = 1\n", encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        video.read(here / "t.cut.toml", here)
+    assert refused.value.code == "stock.gone"

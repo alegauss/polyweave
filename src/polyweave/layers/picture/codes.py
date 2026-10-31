@@ -59,6 +59,13 @@ CODES: dict[str, Code] = {
         "and the service's is not among them",
         doors=("add the licence to the list", "take the file from another service"),
     ),
+    "stock.gone": Code(
+        means="a cut names a stock clip the service no longer has, and no copy is on "
+        "disk (§PW675)",
+        when="video.cut on a fresh checkout after the author removed the clip",
+        doors=("choose another shot with stock.find",
+               "put the file back where [stock] dir keeps it"),
+    ),
     "stock.no-hit": Code(
         means="the service has no picture by the id stock.fetch was given",
         when="an id mistyped, or one from another service's search",

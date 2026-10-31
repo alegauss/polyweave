@@ -59,29 +59,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW675 B-roll declared by its Pixabay id
-
-**Where.** The use Dumont's demo (D261) has for stock: B-roll under narration, placed by
-docs/specs/video.md (PW671)'s `[[clip]]` from a video file or as a held or moving still.
-
-**What is missing.** With docs/specs/fetching.md (PW673) and docs/specs/fetching.md
-(PW674) alone, the cut names paths a previous `stock.fetch` wrote. A checkout without
-them, or a person changing the shot, has to know which call made each file and with
-which rendition.
-
-**What polyweave should do.** A `[[clip]]` may say `stock = { service = "pixabay", id =
-123456, rendition = "medium" }` in place of `file`, and an image id works the same for a
-held or moving still. `video.cut` fetches what is not already under the project's stock
-folder (a `[stock] dir` in `polyweave.toml`) and reuses what is, by service, id and
-rendition, so a rebuild downloads nothing new and a cut is reproducible from its
-declaration alone.
-
-The cut's own record lists each stock file as an input with the role `stock`, so
-`provenance.credits all=true` on the video names every Pixabay source it carries and
-`provenance.dependents` on a clip finds every cut that uses it. A clip Pixabay has since
-removed is refused by name (`stock.gone`) where no copy is on disk, and never skipped in
-silence, since a cut one shot short still renders and looks finished.
-
 ## Block E — One world with the engine
 
 ## Block F — Motion
