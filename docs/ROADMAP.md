@@ -56,7 +56,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW662** (deps: —) **The repository shows no release while PyPI already has polyweave-gamekit 0.1.0, so it reads as never shipped** — A visitor from the marketplace or a list judges by the Releases page, and the tag that publishes to PyPI can create the release too. → §PW662
 - 📋 **PW666** (deps: —) **project.init proposes no sound layer or ElevenLabs service when only an ElevenLabs key is set** — Adopting polyweave for voice means writing the service, its prices and the layer by hand from the spec. → §PW666
 
 ## Block U — A window on everything a project governs
@@ -133,6 +132,12 @@
 - **picture.buy sends the ratio in the field 4.0 draws by** A 16x9 request on 4.0 comes
   back within two percent of 16:9, proved by one paid request the owner chooses to make
   and recorded in the learned schema.
+
+## Done when — PW662
+
+- **The Releases page lists v0.1.0 beside PyPI's 0.1.0** gh release list names v0.1.0
+  with its wheel and sdist, made by the owner with the gh release create line
+  tools/release_notes.py gives, since publishing it is theirs.
 
 ## Non-goals
 

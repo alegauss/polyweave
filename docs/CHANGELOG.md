@@ -584,6 +584,7 @@
 - ✅ **PW374** **vfx.build writes each scene beside its declaration, so effects declared in an unshipped folder load only in the editor** — vfx.build writes where out or [paths] vfx says, and refuses beside a source the export leaves out; clip.camera refuses alike (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW387** **a style cannot take its palette from another project, so a game in a sister game's colours keeps a copy that drifts** — A style reads a palette kept in code, or borrows another project's shifted for its game, and says when that source moved (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW602** **polyweave cannot be pip-installed by name, and its refusals say `pip install polyweave[stems]`, another PyPI project** — The distribution is polyweave-gamekit, a v-tag publishes to TestPyPI then PyPI by Trusted Publishing, and every install remedy names it, so none installs the other project.
+- ✅ **PW662 (the release job)** **The repository shows no release while PyPI already has polyweave-gamekit 0.1.0, so it reads as never shipped** — A version tag makes the GitHub release once PyPI has it, wheel and sdist attached, notes from the changelog since the tag before.
 
 ## Block U — A window on everything a project governs
 

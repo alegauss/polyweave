@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
-  { block: "T", title: "Adopting polyweave in a project", open: 2 },
+  { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
@@ -151,13 +151,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW203"],
   },
   {
-    id: "PW662",
-    block: "T",
-    symptom: "The repository shows no release while PyPI already has polyweave-gamekit 0.1.0, so it reads as never shipped",
-    why: "A visitor from the marketplace or a list judges by the Releases page, and the tag that publishes to PyPI can create the release too.",
-    deps: [],
-  },
-  {
     id: "PW666",
     block: "T",
     symptom: "project.init proposes no sound layer or ElevenLabs service when only an ElevenLabs key is set",
@@ -209,4 +202,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW582", "PW659", "PW495", "PW57", "PW36", "PW449", "PW450", "PW201", "PW480", "PW641", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW582", "PW659", "PW495", "PW57", "PW36", "PW449", "PW450", "PW201", "PW480", "PW641", "PW662", "PW311", "PW368"];

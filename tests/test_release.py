@@ -45,3 +45,33 @@ def test_both_files_carry_the_new_version_and_nothing_else_moves(release):
     manifest = json.loads(release.MANIFEST.read_text("utf-8"))
     assert manifest == {"name": "polyweave", "version": "0.1.1", "license": "MIT"}
     assert release.PACKAGE.read_text("utf-8").startswith('"""polyweave."""\n')
+
+
+# -- the GitHub release beside the PyPI one (§PW662) ---------------------------------
+
+
+@pytest.fixture
+def release_notes():
+    spec = importlib.util.spec_from_file_location(
+        "release_notes", SCRIPT.with_name("release_notes.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_notes_are_the_entries_shipped_since_the_tag_before(release_notes):
+    diff = ("+- \u2705 **PW660** **credits list only owed** \u2014 every file listed.\n"
+            " - \u2705 **PW1** **already there** \u2014 old.\n"
+            "+- \u23f3 **PW661** half shipped\n")
+    added = release_notes.entries(diff)
+    assert added == [
+        "- \u2705 **PW660** **credits list only owed** \u2014 every file listed."]
+    said = release_notes.notes("v0.2.0", "v0.1.0", added)
+    assert "pip install polyweave-gamekit==0.2.0" in said
+    assert "unrelated project" in said
+    assert said.endswith(added[0] + "\n")
+
+
+def test_the_first_release_points_at_the_changelog(release_notes):
+    said = release_notes.notes("v0.1.0", "", [])
+    assert "blob/v0.1.0/docs/CHANGELOG.md" in said

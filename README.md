@@ -10,7 +10,7 @@
 pip install polyweave-gamekit
 ```
 
-then, inside Claude Code:
+(`polyweave` on PyPI is an unrelated project.) Then, inside Claude Code:
 
 ```
 /plugin marketplace add alegauss/polyweave

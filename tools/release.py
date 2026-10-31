@@ -9,7 +9,8 @@
 The version lives in two files, `src/polyweave/__init__.py` and the plugin manifest,
 which tests/test_packaging.py holds equal. This writes both, commits them, tags the
 commit `v<version>` and pushes the branch and the tag together; the tag is what starts
-.github/workflows/publish.yml, which publishes to TestPyPI and then to PyPI. A number
+.github/workflows/publish.yml, which publishes to TestPyPI and then to PyPI, and makes
+the tag's GitHub release with tools/release_notes.py (§PW662). A number
 PyPI already holds can never be published again, so everything is checked first: on
 main, a clean tree, nothing on origin that main lacks, and a tag that exists nowhere
 yet. Local commits not yet pushed go up with the tag.
