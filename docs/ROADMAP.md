@@ -11,6 +11,8 @@
 - 🛠 **PW658** (deps: —) **picture.buy writes only PNG, so a web project re-encodes to WebP outside polyweave and ships a file with no provenance** — A site needing WebP under a byte bound converts by hand, and credits name a file the release does not carry. → §PW658
 - 📋 **PW659** (deps: —) **picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning** — The caller pays for a 16x9 picture, gets 3x2 unannounced, and crops by hand after the spend. → §PW659
 - 📋 **PW660** (deps: —) **provenance.credits lists only owed credits, so a per-asset source and licence manifest is built from .prov.json by hand** — A package that must name every image's source and licence reads polyweave's records with its own script and types the licence. → §PW660
+- 📋 **PW664** (deps: —) **sound.speak on ElevenLabs records every take at 0 credits, surprised, so the ledger and budget never see the spend** — A project buying voice through polyweave cannot read what it spent, and the budget would never refuse an overspend. → §PW664
+- 📋 **PW665** (deps: —) **voice.lines speaks only a Godot CSV with world speakers, so a narration script outside a game is looped by hand** — A web project buys and refreshes takes with its own script over sound.speak, re-implementing the skip of current takes. → §PW665
 
 ## Block E — One world with the engine
 
@@ -56,6 +58,7 @@
 ## Block T — Adopting polyweave in a project
 
 - 📋 **PW662** (deps: —) **The repository shows no release while PyPI already has polyweave-gamekit 0.1.0, so it reads as never shipped** — A visitor from the marketplace or a list judges by the Releases page, and the tag that publishes to PyPI can create the release too. → §PW662
+- 📋 **PW666** (deps: —) **project.init proposes no sound layer or ElevenLabs service when only an ElevenLabs key is set** — Adopting polyweave for voice means writing the service, its prices and the layer by hand from the spec. → §PW666
 
 ## Block U — A window on everything a project governs
 

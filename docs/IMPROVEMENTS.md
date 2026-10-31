@@ -117,6 +117,50 @@ prompt, seed, date and licence, owed or not, written to `out` as JSON and checke
 `check`, the way the owed list already is. Where the service's terms are known (the
 declared plan, PW448), the licence comes from them rather than from the caller.
 
+### §PW664 An ElevenLabs take is recorded at what it cost
+
+**Where.** Dumont's WordPress plugin (`D:\Git\viglet\dumont\2026.3\wordpress`, task
+D246), buying the demo video's narration: 17 takes through `python -m polyweave
+sound.speak --root . --text "<line>" --voice XrExE9yKIg1WjnnlVkGX --model
+eleven_multilingual_v2 --rung paid --out demo/narration/<lang>/chapter-<n>.mp3 --json`,
+with `[service.elevenlabs] prices = { "eleven_multilingual_v2" = { per = "character",
+rate = 0.00003 } }` and a `[budget.elevenlabs]` of 2 USD.
+
+**What came back.** Every answer, and every row of `polyweave.purchases.json`, has
+`"credits": 0.0`, `"expected_credits": 0.00054` (or the line's own figure),
+`"balance_before": null`, `"balance_after": null` and `"surprised": true`. The take is
+fine; the spend is not recorded.
+
+**Expected.** ElevenLabs bills characters against the plan's quota and reports them (the
+`character-cost` response header, and `/v1/user/subscription`'s `character_count` before
+and after). A take should be recorded at what it cost — the characters, priced by the
+`[service]` row — so `purchase.spent` and the budget see it, and `surprised` is reserved
+for a cost that really differs from the quote.
+
+**Workaround.** None: the ledger in the project under-reports the narration, and the
+budget would never refuse a run that overspent it.
+
+### §PW665 Speak a plain lines file
+
+**Where.** Dumont's WordPress plugin (`D:\Git\viglet\dumont\2026.3\wordpress`, task
+D246): a demo video's narration, one line per chapter in English and pt-BR, kept in
+`demo/narration/script.json` with the voice id and model.
+
+**What happened.** `voice.lines` speaks a table, but the table is `[words] table`, a
+Godot translation CSV, with a speaker column naming a world entity, and the takes land
+at `[words] voiced`. A web project's narration has no Godot table and no world, so the
+operation could not be pointed at it.
+
+**Workaround.** `wordpress/bin/story-narration.mjs` loops over the script and calls
+`sound.speak --text --voice --model --rung paid --out` per line, and skips a take whose
+`.prov.json` already records the same prompt, voice and model — the "buy only what
+changed" that `voice.lines` presumably does for a game.
+
+**What polyweave should do.** Let `voice.lines` (or a sibling) take a plain lines file —
+key, locale, text, plus a voice and model for the whole file — and an output pattern,
+with the same plan/spend split (`--spend false` answers the plan) and the same skip of
+takes already current. Then the project script goes away.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
@@ -544,6 +588,26 @@ The design:
 - **The name is said where people look.** The README's install section already explains why the package is `polyweave-gamekit` (PW602); the release notes and the one-line install at the top of the README say it too, in one line ("`polyweave` on PyPI is an unrelated project").
 
 Done means the repository's Releases page and PyPI list the same versions.
+
+### §PW666 init reads the keys the environment holds
+
+**Where.** Dumont's WordPress plugin (`D:\Git\viglet\dumont\2026.3\wordpress`), adopting
+polyweave to speak a video's narration (task D246), with `ELEVENLABS_API_KEY` set in the
+user environment.
+
+**What came back.** `python -m polyweave project.init --root .` proposed `[layers] on =
+["picture"]`, a `[paths] godot`, `meshes` and `renders`, and `[service.meshy]` and
+`[service.ideogram]` — and no `sound` layer and no `[service.elevenlabs]`, though the
+only paid key present was ElevenLabs'. `layers.left_off.sound` said "nothing in the tree
+uses it", which is true of a project that is about to start using it.
+
+**Workaround.** `wordpress/polyweave.toml` written by hand: `[layers] on = ["sound"]`,
+the `[service.elevenlabs]` table with a per-character price copied from
+`docs/specs/project-config.md`, and the budget.
+
+**What polyweave should do.** Read the environment as well as the tree: a `*_API_KEY` a
+known service names proposes that service (with its default price rows) and the layer it
+serves, and a proposal never carries Godot paths into a tree with no Godot project.
 
 ## Block U — A window on everything a project governs
 
