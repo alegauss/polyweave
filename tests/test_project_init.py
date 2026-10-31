@@ -17,7 +17,7 @@ from polyweave.surface.commands import answer_for
 
 @pytest.fixture
 def tree(tmp_path, monkeypatch):
-    for variable in ("GODOT", "MESHY_API_KEY", "IDEOGRAM_API_KEY"):
+    for variable in ("GODOT", *(one[1] for one in project.SERVICES.values())):
         monkeypatch.delenv(variable, raising=False)
     (tmp_path / "project.godot").write_text(
         '[application]\n\nconfig/name="Starship"\n', encoding="utf-8"
@@ -78,6 +78,28 @@ def test_two_keys_propose_two_named_services(tree, monkeypatch):
     monkeypatch.setenv("MESHY_API_KEY", "msy")
     stated = tomllib.loads(project.init(str(tree))["proposed"])
     assert sorted(stated["service"]) == ["ideogram", "meshy"]
+
+
+def test_a_voice_key_alone_proposes_its_service_priced_and_the_sound_layer(
+    tmp_path, monkeypatch
+):
+    """§PW666: Dumont's WordPress plugin, with only ElevenLabs' key, was proposed Godot
+    paths and the picture layer, and wrote its sound service by hand."""
+    for variable in ("GODOT", "MESHY_API_KEY", "IDEOGRAM_API_KEY"):
+        monkeypatch.delenv(variable, raising=False)
+    monkeypatch.setenv("ELEVENLABS_API_KEY", "sk")
+    monkeypatch.setenv("GODOT", "C:/godot/godot.exe")
+    (tmp_path / "plugin.php").write_text("<?php\n", encoding="utf-8")
+    found = project.init(str(tmp_path), write=True)
+    stated = tomllib.loads(found["proposed"])
+    assert stated["service"] == {
+        "base": "https://api.elevenlabs.io", "key_env": "ELEVENLABS_API_KEY",
+        "prices": {"eleven_multilingual_v2": {"per": "character", "rate": 0.00003}}}
+    assert stated["layers"]["on"] == ["sound"]
+    assert "ELEVENLABS_API_KEY" in found["layers"]["because"]["sound"]
+    assert "paths" not in stated
+    assert found["check"] and "budget" not in stated
+    assert C.load(tmp_path).get("layers.on") == ["sound"]
 
 
 def test_an_existing_file_is_refused_unless_merged(tree):

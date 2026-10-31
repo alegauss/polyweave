@@ -639,26 +639,6 @@ The design:
 
 Done means the repository's Releases page and PyPI list the same versions.
 
-### §PW666 init reads the keys the environment holds
-
-**Where.** Dumont's WordPress plugin (`D:\Git\viglet\dumont\2026.3\wordpress`), adopting
-polyweave to speak a video's narration (task D246), with `ELEVENLABS_API_KEY` set in the
-user environment.
-
-**What came back.** `python -m polyweave project.init --root .` proposed `[layers] on =
-["picture"]`, a `[paths] godot`, `meshes` and `renders`, and `[service.meshy]` and
-`[service.ideogram]` — and no `sound` layer and no `[service.elevenlabs]`, though the
-only paid key present was ElevenLabs'. `layers.left_off.sound` said "nothing in the tree
-uses it", which is true of a project that is about to start using it.
-
-**Workaround.** `wordpress/polyweave.toml` written by hand: `[layers] on = ["sound"]`,
-the `[service.elevenlabs]` table with a per-character price copied from
-`docs/specs/project-config.md`, and the budget.
-
-**What polyweave should do.** Read the environment as well as the tree: a `*_API_KEY` a
-known service names proposes that service (with its default price rows) and the layer it
-serves, and a proposal never carries Godot paths into a tree with no Godot project.
-
 ## Block U — A window on everything a project governs
 
 ### §PW311 The window proved on Starship

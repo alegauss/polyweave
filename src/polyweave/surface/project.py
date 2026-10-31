@@ -5,12 +5,14 @@ agent had to read before its first call. `python -m polyweave init`, and the
 `project.init` operation behind it, reads the tree instead and proposes the file:
 
 - `[project] name` from `project.godot`'s `config/name`, or from the directory;
-- `[paths] godot` as `${GODOT}` where that variable is set, and never a binary's
-  absolute path, which is one desk's and not the project's;
-- `meshes`, `renders` and `specs` from folders that already exist, else the defaults;
+- `[paths] godot` as `${GODOT}` where that variable is set in a Godot project, and
+  never a binary's absolute path, which is one desk's and not the project's;
+- `meshes`, `renders` and `specs` from folders that already exist, else the defaults
+  where the tree is a Godot project;
 - `[style]` and `[words]` only where there is something to point them at: a folder
   named `canon`, a translation CSV Godot imports;
-- a `[service]` only for a key variable that is already set.
+- a `[service]` only for a key variable that is already set, with the price rows of a
+  service billed by a published rate, and the layer it serves turned on (§PW666).
 
 By default it answers with the proposal and writes nothing. `write` writes it, and
 refuses a file that exists unless `merge` says to add only the tables it lacks, never
@@ -39,6 +41,24 @@ from polyweave.kernel.files import read_text_retrying, write_atomic
 SERVICES = {
     "meshy": ("https://api.meshy.ai", "MESHY_API_KEY"),
     "ideogram": ("https://api.ideogram.ai", "IDEOGRAM_API_KEY"),
+    "elevenlabs": ("https://api.elevenlabs.io", "ELEVENLABS_API_KEY"),
+}
+
+#: The layer each service's purchases are made for: a key set for one is a project about
+#: to use it, though nothing in its tree does yet (§PW666).
+SERVES = {"meshy": "geometry", "ideogram": "picture", "elevenlabs": "sound"}
+
+
+class Inline(dict):
+    """A value written as an inline table, `{ per = "character", rate = 0.00003 }`."""
+
+
+#: A service's price rows where it bills by a published rate and has no balance to read,
+#: so a first purchase is priced at all; a person checks it against their plan (§PW666).
+PRICES = {
+    "elevenlabs": {
+        "eleven_multilingual_v2": Inline(per="character", rate=0.00003),
+    },
 }
 
 #: Where each produced kind is looked for, in order, before the default is proposed.
@@ -121,6 +141,11 @@ def init(
     }
     if switched:
         answer["layers"] = switched
+    priced = [name for name in _keyed() if name in PRICES]
+    if priced and "service" in tables:
+        answer["check"] = [
+            f"[service.{name}] prices is the service's published rate: a person checks "
+            "it against their plan before a ceiling is written" for name in priced]
     if agent:
         from polyweave.kernel.config import load
 
@@ -132,17 +157,22 @@ def proposed(here: Path) -> dict[str, dict]:
     """Every table the tree gives a reason to write, and only those."""
     tables: dict[str, dict] = {"project": {"name": _name(here)}}
     paths: dict = {}
-    if os.environ.get("GODOT"):
+    # A game's paths go only into a game's tree (§PW666): Dumont's WordPress plugin,
+    # there to buy narration, was proposed a Godot binary and a meshes folder.
+    game = (here / "project.godot").is_file()
+    if game and os.environ.get("GODOT"):
         paths["godot"] = "${GODOT}"
     for key, candidates in FOLDERS.items():
         found = next((c for c in candidates if (here / c).is_dir()), None)
-        paths[key] = found or DEFAULTS["paths"][key]
+        if found or game:
+            paths[key] = found or DEFAULTS["paths"][key]
     # An input, so stated only where one exists: a folder named here and missing is
     # what project.check reports.
     specs = _first(here, "*.accept.toml")
     if specs:
         paths["specs"] = _relative(specs.parent, here)
-    tables["paths"] = paths
+    if paths:
+        tables["paths"] = paths
     canon = next(
         (d for d in _walk(here, "canon") if d.is_dir()),
         None,
@@ -152,16 +182,22 @@ def proposed(here: Path) -> dict[str, dict]:
     table = _translations(here)
     if table is not None:
         tables["words"] = {"table": _relative(table, here)}
-    keyed = {n: s for n, s in SERVICES.items() if os.environ.get(s[1])}
+    keyed = {
+        name: {"base": base, "key_env": variable,
+               **({"prices": Inline(PRICES[name])} if name in PRICES else {})}
+        for name, (base, variable) in SERVICES.items() if os.environ.get(variable)
+    }
     if len(keyed) == 1:
-        base, variable = next(iter(keyed.values()))
-        tables["service"] = {"base": base, "key_env": variable}
+        tables["service"] = next(iter(keyed.values()))
     elif keyed:
-        tables["service"] = {
-            name: {"base": base, "key_env": variable}
-            for name, (base, variable) in keyed.items()
-        }
+        tables["service"] = keyed
     return tables
+
+
+def _keyed() -> list[str]:
+    """The services whose key variable is set, in the order SERVICES names them."""
+    return [name for name, (_, variable) in SERVICES.items()
+            if os.environ.get(variable)]
 
 
 #: What in a tree says a project uses a layer, each with the words the answer gives.
@@ -202,6 +238,9 @@ def _signals(here: Path, tables: dict) -> dict[str, str]:
     # is the surest sign it uses the layer (§PW531).
     for layer, kind in _recorded(here).items():
         found.setdefault(layer, f"its {kind} records")
+    # A key set in the environment is a project about to buy from that service (§PW666).
+    for name in _keyed():
+        found.setdefault(SERVES[name], f"{SERVICES[name][1]} is set, for {name}")
     return found
 
 
@@ -286,8 +325,9 @@ def _as_toml(tables: dict[str, dict]) -> str:
         "# [budget] is left to a person: nothing is spent until one is written.",
     ]
     for name, values in tables.items():
-        nested = {k: v for k, v in values.items() if isinstance(v, dict)}
-        flat = {k: v for k, v in values.items() if not isinstance(v, dict)}
+        nested = {k: v for k, v in values.items()
+                  if isinstance(v, dict) and not isinstance(v, Inline)}
+        flat = {k: v for k, v in values.items() if k not in nested}
         if flat:
             lines += ["", f"[{name}]"]
             lines += [f"{key} = {_value(value)}" for key, value in flat.items()]
@@ -298,6 +338,9 @@ def _as_toml(tables: dict[str, dict]) -> str:
 
 
 def _value(value) -> str:
+    if isinstance(value, dict):
+        return "{ " + ", ".join(f"{_key(k)} = {_value(v)}" for k, v in value.items()) \
+            + " }"
     if isinstance(value, bool):
         return str(value).lower()
     if isinstance(value, int | float):
@@ -306,6 +349,11 @@ def _value(value) -> str:
         return "[" + ", ".join(_value(one) for one in value) + "]"
     escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
     return f'"{escaped}"'
+
+
+def _key(key: str) -> str:
+    """A key bare where TOML allows it, quoted where it does not, as `"4.0"`."""
+    return key if re.fullmatch(r"[A-Za-z0-9_-]+", key) else _value(key)
 
 
 # -- the project's agent, wired to polyweave (§PW219) --------------------------------

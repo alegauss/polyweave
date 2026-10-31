@@ -496,15 +496,21 @@ A project is not configured by reading this spec first. `python -m polyweave ini
 `project.init` behind it, proposes the file from what the tree already holds:
 
 - `[project] name` from `project.godot`'s `config/name`, or the directory's name;
-- `[paths] godot` as `${GODOT}` where that variable is set, and never a binary's absolute
-  path, which belongs to one desk; Blender and Godot are otherwise found when called;
+- `[paths] godot` as `${GODOT}` where that variable is set in a tree with a
+  `project.godot`, and never a binary's absolute path, which belongs to one desk;
+  Blender and Godot are otherwise found when called;
 - `[paths] meshes` and `renders` from folders that exist (`assets/models`), otherwise
-  the defaults, and `specs` only as the folder of the first `*.accept.toml`, since an
-  input stated and missing is what the check below reports;
+  the defaults in a Godot project and nothing elsewhere, and `specs` only as the folder
+  of the first `*.accept.toml`, since an input stated and missing is what the check
+  below reports;
 - `[style] canon` only where a folder named `canon` exists, and `[words] table` only
   where a CSV has a Godot `.import` file saying `importer="csv_translation"`;
-- a `[service]` only for `MESHY_API_KEY` or `IDEOGRAM_API_KEY` already set, one bare table
-  for one key and named tables for both.
+- a `[service]` only for `MESHY_API_KEY`, `IDEOGRAM_API_KEY` or `ELEVENLABS_API_KEY`
+  already set, one bare table for one key and named tables for several. A key set turns
+  on the layer its service buys for (geometry, picture, sound), since a project about to
+  buy has nothing in its tree yet (§PW666). ElevenLabs bills by a published rate, so its
+  table carries `prices` for `eleven_multilingual_v2` by the character, and the answer's
+  `check` says a person holds it to their plan.
 
 It answers with the proposal and writes nothing. `--write` writes it and refuses an
 existing file with `config.exists`; `--write --merge` adds only the tables that file

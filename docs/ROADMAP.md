@@ -59,8 +59,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW666** (deps: —) **project.init proposes no sound layer or ElevenLabs service when only an ElevenLabs key is set** — Adopting polyweave for voice means writing the service, its prices and the layer by hand from the spec. → §PW666
-
 ## Block U — A window on everything a project governs
 
 ## Block V — Parts every game repeats, installed already proved
