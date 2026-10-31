@@ -8,11 +8,11 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW671** (deps: —) **video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music** — A narrated product video is built by a project script of ffmpeg calls instead of a declared cut. → §PW671
+- ⏳ **PW671** (deps: —) **video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music** — Voices placed on a track per language over the music, and subtitle tracks, are still built by hand. → §PW671
 - 📋 **PW672** (deps: PW673, PW674) **No way to fetch Pexels stock footage or photos with their licence recorded** — B-roll from Pexels is downloaded by hand; this adds Pexels to the stock seam the Pixabay lines build. → §PW672
 - 📋 **PW673** (deps: —) **No way to search Pixabay's photos, illustrations and vectors and bring one in with its page, author and licence recorded** — A picture taken from Pixabay is saved by hand, so provenance.credits and the release manifest cannot say where it came from. → §PW673
 - 📋 **PW674** (deps: PW673) **No way to search Pixabay's videos by length and resolution and bring a rendition in with its licence recorded** — B-roll is downloaded from the site by hand at whatever size the browser offered, and its source lives in nobody's record. → §PW674
-- 📋 **PW675** (deps: PW671, PW674) **A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write** — A fresh checkout cannot rebuild the edit from its declaration, because the B-roll it names came from calls nobody recorded. → §PW675
+- 📋 **PW675** (deps: PW671 ⏳, PW674) **A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write** — A fresh checkout cannot rebuild the edit from its declaration, because the B-roll it names came from calls nobody recorded. → §PW675
 
 ## Block E — One world with the engine
 
@@ -133,6 +133,13 @@
 - **The Releases page lists v0.1.0 beside PyPI's 0.1.0** gh release list names v0.1.0
   with its wheel and sdist, made by the owner with the gh release create line
   tools/release_notes.py gives, since publishing it is theirs.
+
+## Done when — PW671
+
+- **A cut lays voices on a track per language and carries subtitles** A *.cut.toml
+  declares [[voice]] takes at times on per-language [[track]]s mixed over faded music,
+  and [[subtitles]] files, and video.cut writes the MP4 with them, so Dumont's
+  story-video script has nothing left to do.
 
 ## Non-goals
 

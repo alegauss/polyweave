@@ -56,7 +56,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW671",
     block: "D",
     symptom: "video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music",
-    why: "A narrated product video is built by a project script of ffmpeg calls instead of a declared cut.",
+    why: "Voices placed on a track per language over the music, and subtitle tracks, are still built by hand.",
     deps: [],
   },
   {

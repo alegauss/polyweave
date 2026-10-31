@@ -39,6 +39,31 @@ teaser, or music that is not there is `video.bad-cut`. A `from` holding no
 `video.short-sequence`, both before anything is encoded. A missing or unparseable file is
 `video.no-source`.
 
+**A clip may be a file instead of a run** (§PW671). Dumont's narrated product video held
+its title cards and cut its B-roll with some 600 lines of ffmpeg arguments of its own.
+A `[[clip]]` names exactly one of `from`, `still` or `video`:
+
+```toml
+[[clip]]
+still  = "art/card.png"                         # a picture, held for length
+length = 3.0
+motion = { zoom = [1.0, 1.15], pan = "left" }  # optional; pan none, left, right, up, down
+
+[[clip]]
+video  = "footage/broll.mp4"                    # a stretch of a video file
+start  = 2.0
+length = 3.0
+```
+
+A still is fitted to `size` and held, or, with `motion`, zoomed from the first factor to
+the second (each 1 to 4) over its length while the frame pans across the room the zoom
+leaves. A video file is cut from `start` for `length`, and one shorter than that is
+`video.short-sequence`, read with ffprobe. A clip naming none or several of the three,
+or a `motion` outside those words, is `video.bad-cut`; a file that is not there is
+`video.no-source`. A file clip carries no sound into `clip_audio`. The record names each
+file as an input, with the role `still` or `video`. Voices on their own track per
+language, and subtitles, are not yet declared here (PW671's remainder).
+
 ## Building
 
 `video.cut(source, out=, root=)` makes one ffmpeg call: each clip trimmed from its run,

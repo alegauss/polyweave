@@ -147,3 +147,52 @@ def test_a_cut_is_refused_on_what_it_cannot_hold(tmp_path):
         with pytest.raises(PolyweaveError) as refused:
             video.read(here / "t.cut.toml", here)
         assert refused.value.code == code, body
+
+
+@needs_ffmpeg
+def test_a_still_is_held_and_moved_and_a_video_file_is_cut_in(tmp_path):
+    """§PW671: Dumont held its cards and cut its B-roll with ffmpeg calls of its own."""
+    import subprocess
+
+    here = _project(tmp_path)
+    card = Image.new("RGB", (640, 360), (30, 30, 36))
+    card.paste((230, 200, 40), (80, 80, 560, 280))
+    card.save(here / "card.png")
+    _run(here / "caps" / "a", seconds=2, still=0.0)
+    subprocess.run(
+        [shutil.which("ffmpeg"), "-v", "error", "-y", "-framerate", "30", "-i",
+         str(here / "caps" / "a" / "%04d.png"), "-pix_fmt", "yuv420p",
+         str(here / "broll.mp4")], check=True)
+    (here / "story.cut.toml").write_text(
+        '[video]\nsize = [640, 360]\nfps = 30\n\n'
+        '[[clip]]\nstill = "card.png"\nlength = 1.0\n\n'
+        '[[clip]]\nstill = "card.png"\nlength = 1.0\n'
+        'motion = { zoom = [1.0, 1.3], pan = "left" }\n\n'
+        '[[clip]]\nvideo = "broll.mp4"\nstart = 0.5\nlength = 1.0\nfade_in = 0.25\n',
+        encoding="utf-8",
+    )
+    said = video.cut("story.cut.toml", root=str(here))
+    assert said["video_seconds"] == pytest.approx(2.75, abs=0.1)
+    # The held card does not move; the zoom does, from its first second on.
+    assert said["first_motion"] == pytest.approx(1.0, abs=0.15)
+    record = json.loads((here / "story.mp4.prov.json").read_text("utf-8"))
+    assert {one["role"] for one in record["inputs"]} == {"still", "video"}
+
+
+def test_a_file_clip_is_refused_on_what_it_cannot_hold(tmp_path):
+    here = _project(tmp_path)
+    Image.new("RGB", (64, 36)).save(here / "card.png")
+    for body in (
+        '[[clip]]\nstill = "card.png"\nfrom = "caps/a"\nlength = 1\n',
+        '[[clip]]\nstill = "card.png"\nlength = 1\nmotion = { zoom = [0.5, 1.0] }\n',
+        '[[clip]]\nstill = "card.png"\nlength = 1\nmotion = { pan = "sideways" }\n',
+    ):
+        (here / "t.cut.toml").write_text(body, encoding="utf-8")
+        with pytest.raises(PolyweaveError) as refused:
+            video.read(here / "t.cut.toml", here)
+        assert refused.value.code == "video.bad-cut", body
+    (here / "t.cut.toml").write_text('[[clip]]\nstill = "gone.png"\nlength = 1\n',
+                                     encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        video.read(here / "t.cut.toml", here)
+    assert refused.value.code == "video.no-source"

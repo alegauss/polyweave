@@ -21,6 +21,16 @@ from = ".polyweave/teaser/fight"   # a folder capture.movie wrote
 start = 1.0                        # seconds into that run
 length = 4.0                       # seconds held
 fade_in = 0.0                      # seconds it crossfades from the clip before; 0 cuts
+
+[[clip]]
+still = "art/card.png"             # a picture held for its length (§PW671)
+length = 3.0
+motion = { zoom = [1.0, 1.15], pan = "left" }   # optional: zooms in, moving left
+
+[[clip]]
+video = "footage/broll.mp4"        # a stretch of a video file, from start
+start = 2.0
+length = 3.0
 ```
 
 `video.cut` builds it with ffmpeg, records it with each sequence as an input, and
@@ -71,7 +81,10 @@ _VIDEO_KEYS = {
     "clip_audio",
     "fade_out",
 }
-_CLIP_KEYS = {"from", "start", "length", "fade_in"}
+_CLIP_KEYS = {"from", "still", "video", "motion", "start", "length", "fade_in"}
+
+#: Which way a still's frame moves while it zooms (§PW671); none holds it centred.
+PANS = ("none", "left", "right", "up", "down")
 
 
 def _ffmpeg(tool: str = "ffmpeg") -> str:
@@ -164,12 +177,17 @@ def read(source: Path, here: Path) -> dict:
                 given=extra[0],
                 at=at,
             )
-        if "from" not in clip or "length" not in clip:
+        named = [k for k in ("from", "still", "video") if k in clip]
+        if len(named) != 1 or "length" not in clip:
             raise _bad(
-                f"{at} names no run or no length",
-                "give from, the folder capture.movie wrote, and length in seconds",
+                f"{at} names {' and '.join(named) or 'nothing'} to show, or no length",
+                "give one of from (a folder capture.movie wrote), still (a picture) "
+                "or video (a file), and length in seconds",
                 at=at,
             )
+        if named[0] != "from":
+            clips.append(_filed(clip, named[0], at, here, fps, clips))
+            continue
         folder = here / clip["from"]
         folder = folder.parent if folder.name == "sequence.json" else folder
         manifest = folder / "sequence.json"
@@ -213,6 +231,7 @@ def read(source: Path, here: Path) -> dict:
             )
         clips.append(
             {
+                "kind": "run",
                 "folder": folder,
                 "manifest": manifest,
                 "rate": rate,
@@ -249,6 +268,117 @@ def read(source: Path, here: Path) -> dict:
     }
 
 
+def _filed(clip: dict, kind: str, at: str, here: Path, fps: float,
+           before: list) -> dict:
+    """A clip from a file (§PW671): a still held for its length, zooming and panning
+    where `motion` says, or a stretch of a video file. Dumont's narrated video held
+    its cards and cut its B-roll with 600 lines of its own ffmpeg arguments."""
+    file = here / str(clip[kind])
+    if not file.is_file():
+        raise PolyweaveError(
+            "video.no-source",
+            f"{at} names {clip[kind]}, which is not there",
+            "name a picture or a video file under the project",
+            given=str(clip[kind]),
+            at=at,
+        )
+    start = _number(clip, "start", 0.0, at)
+    length = _number(clip, "length", 0.0, at, least=1 / fps)
+    fade_in = _number(clip, "fade_in", 0.0, at)
+    if (not before and fade_in) or fade_in >= length or (
+            before and fade_in >= before[-1]["length"]):
+        raise _bad(
+            f"{at}'s fade_in of {fade_in:g}s fades from nothing or is as long as a "
+            "clip it joins",
+            "give the first clip no fade_in, and fade over less than either length",
+            at=at,
+            given="fade_in",
+        )
+    found = {"kind": kind, "file": file, "start": start, "length": length,
+             "fade_in": fade_in, "audio": False}
+    if kind == "video":
+        held = _seconds(file)
+        if start + length > held + 1e-6:
+            raise PolyweaveError(
+                "video.short-sequence",
+                f"{at} asks {start:g}s to {start + length:g}s of {file.name}, which "
+                f"holds {held:.2f}s",
+                "shorten the clip or start it earlier",
+                at=at,
+                given=str(clip[kind]),
+            )
+        return found
+    motion = clip.get("motion") or {}
+    zoom = motion.get("zoom", [1.0, 1.0]) if isinstance(motion, dict) else None
+    pan = motion.get("pan", "none") if isinstance(motion, dict) else None
+    if not (isinstance(zoom, list) and len(zoom) == 2 and all(
+            isinstance(z, int | float) and not isinstance(z, bool) and 1.0 <= z <= 4.0
+            for z in zoom)) or pan not in PANS or set(motion) - {"zoom", "pan"}:
+        raise _bad(
+            f"{at}.motion is {motion!r}",
+            'give motion = { zoom = [1.0, 1.15], pan = "left" }: zoom from and to, '
+            f"1 to 4, and pan one of {', '.join(PANS)}",
+            at=at,
+            given="motion",
+        )
+    return {**found, "zoom": [float(z) for z in zoom], "pan": pan}
+
+
+def _seconds(file: Path) -> float:
+    """How long a video file runs, as ffprobe reads it."""
+    probe = subprocess.run(
+        [_ffmpeg("ffprobe"), "-v", "error", "-show_entries", "format=duration", "-of",
+         "default=noprint_wrappers=1:nokey=1", str(file)],
+        capture_output=True, text=True, check=False,
+    )
+    try:
+        return float(probe.stdout.strip())
+    except ValueError as exc:
+        raise PolyweaveError(
+            "video.unreadable",
+            f"{file.name} is not a video ffprobe reads",
+            "name a video file ffmpeg can decode",
+            detail=probe.stderr.strip()[:400],
+        ) from exc
+
+
+def _shown(i: int, clip: dict, width: int, height: int, fps: float) -> tuple:
+    """One clip's input arguments and its filter, ending in `[v<i>]`."""
+    fitted = (f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
+              f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1")
+    if clip["kind"] == "run":
+        first = int(clip["start"] * clip["rate"])
+        return (["-framerate", f"{clip['rate']:g}", "-start_number", str(first + 1),
+                 "-i", str(clip["folder"] / "%04d.png")],
+                f"[{i}:v]trim=duration={clip['length']:.6f},setpts=PTS-STARTPTS,"
+                f"fps={fps:g},{fitted},format=yuv420p,fps={fps:g},settb=AVTB[v{i}]")
+    if clip["kind"] == "video":
+        return (["-ss", f"{clip['start']:.6f}", "-t", f"{clip['length']:.6f}", "-i",
+                 str(clip["file"])],
+                f"[{i}:v]trim=duration={clip['length']:.6f},setpts=PTS-STARTPTS,"
+                f"fps={fps:g},{fitted},format=yuv420p,fps={fps:g},settb=AVTB[v{i}]")
+    held = ["-loop", "1", "-framerate", f"{fps:g}", "-t", f"{clip['length']:.6f}",
+            "-i", str(clip["file"])]
+    (z0, z1), pan = clip["zoom"], clip["pan"]
+    if z0 == z1 == 1.0 and pan == "none":
+        return held, (f"[{i}:v]{fitted},trim=duration={clip['length']:.6f},"
+                      f"setpts=PTS-STARTPTS,format=yuv420p,fps={fps:g},settb=AVTB[v{i}]")
+    # Fitted first, at twice the size so the zoom is not stepped, then moved frame by
+    # frame: `on` counts the frames out, and the pan rides across the room the zoom
+    # leaves.
+    last = max(1, round(clip["length"] * fps) - 1)
+    t = f"(on/{last})"
+    x = {"left": f"(iw-iw/zoom)*(1-{t})", "right": f"(iw-iw/zoom)*{t}"}.get(
+        pan, "(iw-iw/zoom)/2")
+    y = {"up": f"(ih-ih/zoom)*(1-{t})", "down": f"(ih-ih/zoom)*{t}"}.get(
+        pan, "(ih-ih/zoom)/2")
+    return held, (
+        f"[{i}:v]{fitted},scale={width * 2}:{height * 2},"
+        f"zoompan=z='{z0:g}+({z1:g}-{z0:g})*{t}':x='{x}':y='{y}':d=1:"
+        f"s={width}x{height}:fps={fps:g},trim=duration={clip['length']:.6f},"
+        f"setpts=PTS-STARTPTS,format=yuv420p,fps={fps:g},settb=AVTB[v{i}]")
+
+
 def _command(cut: dict, target: Path, here: Path) -> list[str]:
     """The one ffmpeg call that cuts, joins, scores and encodes the edit."""
     width, height = cut["size"]
@@ -256,20 +386,9 @@ def _command(cut: dict, target: Path, here: Path) -> list[str]:
     inputs: list[str] = []
     graph: list[str] = []
     for i, clip in enumerate(cut["clips"]):
-        first = int(clip["start"] * clip["rate"])
-        inputs += [
-            "-framerate",
-            f"{clip['rate']:g}",
-            "-start_number",
-            str(first + 1),
-            "-i",
-            str(clip["folder"] / "%04d.png"),
-        ]
-        graph.append(
-            f"[{i}:v]trim=duration={clip['length']:.6f},setpts=PTS-STARTPTS,"
-            f"fps={fps:g},scale={width}:{height}:force_original_aspect_ratio=decrease,"
-            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p[v{i}]"
-        )
+        given, shown = _shown(i, clip, width, height, fps)
+        inputs += given
+        graph.append(shown)
     joined, at = "v0", cut["clips"][0]["length"]
     for i, clip in enumerate(cut["clips"][1:], start=1):
         if clip["fade_in"]:
@@ -530,7 +649,8 @@ def cut(
     found = measured(target)
     sheet = _sheet(target, target.with_suffix(".sheet.png"), found["video_seconds"])
     inputs = [
-        provenance.source("capture", c["manifest"], root=here)
+        provenance.source("capture", c["manifest"], root=here) if c["kind"] == "run"
+        else provenance.source(c["kind"], c["file"], root=here)
         for c in declared["clips"]
     ]
     if declared["music"]:
