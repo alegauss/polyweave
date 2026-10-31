@@ -61,6 +61,7 @@
 - ✅ **PW447** **a bought mesh is oriented and scaled, but nothing holds its triangles, materials or holes to a bar before a sitting** — normalise.ingest(ready=spec) welds seams, cuts to the triangle ceiling and refuses a missed bound such as holes as mesh.not-ready (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW448** **no service's plan licence reaches the record, so a free-tier mesh or picture can ship in a sold game unwarned** — Each buy's record keeps its plan, read off the service or declared as [service] plan, and a sold game fails release_check on a free-plan part (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW658** **picture.buy writes only PNG, so a web project re-encodes to WebP outside polyweave and ships a file with no provenance** — picture.copies writes a WebP or JPEG under max_bytes, stepping quality down, and credits follow a copy to its purchase (design recorded in `docs/specs/store.md`).
+- ✅ **PW659 (the finding half)** **picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning** — picture.buy names a picture drawn at another shape than aspect_ratio asked as picture.aspect-differs, asked beside got.
 
 ## Block E — One world with the engine
 

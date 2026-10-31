@@ -12,6 +12,7 @@ from polyweave.kernel.codes import Code
 AREAS: dict[str, str] = {
     "style": "what a project's pictures look like, and the canon a person grows",
     "copies": "a picture's derived copies, cut from a declared table",
+    "picture": "a bought picture held to what the call asked of it",
 }
 
 CODES: dict[str, Code] = {
@@ -36,6 +37,14 @@ CODES: dict[str, Code] = {
         means="a copy is over its max_bytes at the lowest quality (§PW658)",
         when="a copy too large for its byte bound, or a PNG over it",
         doors=("give it a smaller side or a crop", "write it as .webp"),
+    ),
+    # -- picture: a bought picture against what was asked ----------------------
+    "picture.aspect-differs": Code(
+        means="a bought picture is not the aspect ratio the call asked for (§PW659)",
+        when="picture.buy on 4.0 with aspect_ratio, answered at another shape; a "
+        "finding on the answer, since the charge has been made",
+        doors=("crop it to the asked ratio with a picture.copies box",
+               "keep it as drawn"),
     ),
     "style.references-need-3": Code(
         means="a family with style references was asked for on a model that takes none",

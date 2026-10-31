@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 8 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 7 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW659",
-    block: "D",
-    symptom: "picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning",
-    why: "The caller pays for a 16x9 picture, gets 3x2 unannounced, and crops by hand after the spend.",
-    deps: [],
-  },
   {
     id: "PW660",
     block: "D",
@@ -230,4 +223,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW582", "PW495", "PW57", "PW36", "PW449", "PW450", "PW201", "PW480", "PW641", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW582", "PW659", "PW495", "PW57", "PW36", "PW449", "PW450", "PW201", "PW480", "PW641", "PW311", "PW368"];

@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW659** (deps: —) **picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning** — The caller pays for a 16x9 picture, gets 3x2 unannounced, and crops by hand after the spend. → §PW659
 - 📋 **PW660** (deps: —) **provenance.credits lists only owed credits, so a per-asset source and licence manifest is built from .prov.json by hand** — A package that must name every image's source and licence reads polyweave's records with its own script and types the licence. → §PW660
 - 📋 **PW664** (deps: —) **sound.speak on ElevenLabs records every take at 0 credits, surprised, so the ledger and budget never see the spend** — A project buying voice through polyweave cannot read what it spent, and the budget would never refuse an overspend. → §PW664
 - 📋 **PW665** (deps: —) **voice.lines speaks only a Godot CSV with world speakers, so a narration script outside a game is looped by hand** — A web project buys and refreshes takes with its own script over sound.speak, re-implementing the skip of current takes. → §PW665
@@ -131,6 +130,12 @@
 - **Cottony keeps no mesh preparation of its own** tools/art/prep.py and export_props,
   export_boosters and export_friends are gone from Cottony, its families name prepare
   steps through fixes, and project.adoption lists none of them as kept.
+
+## Done when — PW659
+
+- **picture.buy sends the ratio in the field 4.0 draws by** A 16x9 request on 4.0 comes
+  back within two percent of 16:9, proved by one paid request the owner chooses to make
+  and recorded in the learned schema.
 
 ## Non-goals
 

@@ -95,6 +95,9 @@ def buy(
 
     On a Scenario service the picture is drawn from the model `style.train` trained on
     the family's canon, from a text prompt; `model` is then the trained one (§PW450).
+
+    A picture drawn at another shape than `aspect_ratio` asked is kept, and the answer
+    carries a `picture.aspect-differs` finding naming both (§PW659).
     """
     if model not in MODELS:
         raise PolyweaveError(
@@ -227,7 +230,48 @@ def buy(
                if drawn_from else {}),
         },
     )
-    return S.buy(ideogram.SERVICE, order, report)
+    entry = S.buy(ideogram.SERVICE, order, report)
+    differs = _aspect_differs(aspect_ratio, config.root / out)
+    return {**entry, "findings": [differs]} if differs else entry
+
+
+#: How far a picture's width over height may sit from the ratio asked and still be it:
+#: the service rounds each side to its own grid, so 16x9 comes back 1312x736.
+ASPECT_SLACK = 0.02
+
+
+def _aspect_differs(asked: str | None, path) -> dict | None:
+    """The finding where the picture drawn is not the shape asked for (§PW659).
+
+    4.0 answered a 16x9 request with 2496x1664 and a 3x2 one with 1792x2240, with the
+    asked ratio and the drawn resolution side by side on the record and nothing saying
+    they disagree. The money is spent by now, so this is named, not refused: a crop is
+    a decision about the picture.
+    """
+    import re
+
+    from PIL import Image as PILImage
+
+    sides = re.fullmatch(r"\s*(\d+)\s*[x:]\s*(\d+)\s*", str(asked or ""))
+    if not sides or not path.is_file() or not all(int(one) for one in sides.groups()):
+        return None
+    try:
+        with PILImage.open(path) as drawn:
+            width, height = drawn.size
+    except OSError:
+        return None
+    wanted = int(sides[1]) / int(sides[2])
+    if not height or abs(width / height - wanted) <= ASPECT_SLACK * wanted:
+        return None
+    return {
+        "code": "picture.aspect-differs",
+        "asked": str(asked),
+        "got": f"{width}x{height}",
+        "why": f"asked for {asked} and drawn at {width}x{height}, "
+        f"{width / height:.3f} wide to 1 against {wanted:.3f}",
+        "remedy": "crop it to the asked ratio with a picture.copies box, or keep it "
+        "as drawn; the charge stands either way",
+    }
 
 
 @operation("picture.collect")

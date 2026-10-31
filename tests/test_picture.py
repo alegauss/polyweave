@@ -506,3 +506,40 @@ def test_the_colour_under_full_transparency_is_cleared_before_sending(tmp_path):
     assert tuple(sent[4, 4]) == (200, 60, 60, 255)
     (tmp_path / "opaque.jpg").write_bytes(b"not a picture")
     assert picture.sent_bytes(tmp_path / "opaque.jpg") == b"not a picture"
+
+
+# -- the shape asked for (§PW659) ----------------------------------------------------
+
+
+def _drawn(width, height) -> bytes:
+    import io
+
+    from PIL import Image
+
+    held = io.BytesIO()
+    Image.new("RGB", (width, height), (90, 120, 160)).save(held, "PNG")
+    return held.getvalue()
+
+
+def test_a_picture_drawn_at_another_shape_is_kept_and_named(
+    tmp_path, service, monkeypatch
+):
+    """4.0 answered a 16x9 request at 2496x1664 and said nothing."""
+    monkeypatch.setattr(S, "download", lambda link: _drawn(312, 208))
+    entry = buy(tmp_path, aspect_ratio="16x9", transparent=False)
+    assert (tmp_path / "refs" / "booster.png").is_file()
+    assert entry["credits"] == 0.08
+    (found,) = entry["findings"]
+    assert found["code"] == "picture.aspect-differs"
+    assert (found["asked"], found["got"]) == ("16x9", "312x208")
+    assert "picture.copies" in found["remedy"]
+
+
+def test_a_picture_drawn_at_the_shape_asked_carries_no_finding(
+    tmp_path, service, monkeypatch
+):
+    # The service rounds each side to its grid: 1312x736 is 16x9.
+    monkeypatch.setattr(S, "download", lambda link: _drawn(1312, 736))
+    entry = buy(tmp_path, aspect_ratio="16:9", transparent=False)
+    assert "findings" not in entry
+    assert purchase.read(tmp_path) == [entry]
