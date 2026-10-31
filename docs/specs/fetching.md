@@ -164,7 +164,10 @@ declared price rather than a reading, so a total never passes off a figure as ev
 **The ceiling counts quoted spend in full**, because under-counting is the direction that
 lets a session pass a ceiling a person set. A model and speed with no row are refused
 (`fetch.unpriced`) rather than priced at zero, and a row that is not a number above zero is
-refused when the file is read.
+refused when the file is read. The refusal names what the call buys (a picture, a mesh, a
+sound, a spoken line, a voice design), and where the call counts the words it sends, its
+remedy offers the row by the character beside the row by the call (§PW669): an unpriced
+sound model had been refused as a picture, priced per picture.
 
 **A quote is not trusted forever.** `purchase.reconcile` takes the service's own usage export,
 its columns mapped by the caller onto `at`, `cost` and `count` as `adopt` maps a foreign

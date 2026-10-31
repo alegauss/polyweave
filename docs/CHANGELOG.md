@@ -67,6 +67,7 @@
 - ✅ **PW665** **voice.lines speaks only a Godot CSV with world speakers, so a narration script outside a game is looped by hand** — voice.lines script= speaks a plain JSON or TOML lines file with one voice and an out pattern, planning, spending and skipping current takes (design recorded in `docs/specs/world.md`).
 - ✅ **PW667** **picture.buy cuts the background out of a picture nobody asked to be transparent** — picture.buy keeps a picture's background unless transparent asks or a style family is in force, and the answer's background says why (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW668** **sound.speech counts an eleven_v3 audio tag such as [excited] as a missing word and fails the take** — On eleven_v3 a line's [bracketed] audio tags are directions, left out of the words a take is held to and named under directions (design recorded in `docs/specs/effects.md`).
+- ✅ **PW669** **An unpriced sound model is refused as a picture, with a remedy priced per picture** — fetch.unpriced names what the call buys, and a call counted by its words is offered the row by the character beside the row by the call (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 

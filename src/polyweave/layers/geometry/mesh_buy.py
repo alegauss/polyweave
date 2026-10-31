@@ -127,7 +127,7 @@ def buy(
         )
     # Painted costs more than grey, so it is its own row and never the grey one's price.
     price = client.price(name, about.get("prices") or {}, model,
-                         "textured" if texture else None)
+                         "textured" if texture else None, bought="mesh")
     tripo, rodin = adapter.name == "tripo", adapter.name == "rodin"
     many = picture_path is None or tripo or len(views) > MOST_VIEWS
     if views and not rodin and many:

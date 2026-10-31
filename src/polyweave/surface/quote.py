@@ -13,6 +13,12 @@ from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.services.purchase import CHEAPER, COUNTED, PRICED_BY, remaining
 
+#: What a paid operation buys, by its name or its layer's, for a refusal to name
+#: (§PW669); a picture where neither says.
+BOUGHT = {"mesh": "mesh", "sound": "sound", "sound.speak": "spoken line",
+          "voice.lines": "spoken line", "voice.design": "voice design",
+          "picture.describe": "description"}
+
 
 @operation("purchase.quote")
 def quote(
@@ -64,6 +70,7 @@ def quote(
     found_price = client.priced(
         service, about.get("prices") or {}, model, given.get("rendering_speed"),
         None if counted is None else len(counted),
+        bought=BOUGHT.get(operation, BOUGHT.get(operation.split(".")[0], "picture")),
     )
     price = found_price["price"]
     left = remaining(root, service=service)

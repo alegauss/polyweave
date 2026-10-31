@@ -451,3 +451,16 @@ def test_the_characters_the_service_says_it_billed_are_the_cost(
     [entry] = purchase.read(tmp_path)
     assert entry["credits"] == pytest.approx(20 * 0.001)
     assert entry["measured"] is True
+
+
+def test_an_unpriced_sound_is_refused_as_a_sound_with_a_row_by_the_words(
+    tmp_path, service
+):
+    """§PW669: it was refused as a picture, priced per picture."""
+    with pytest.raises(PolyweaveError) as caught:
+        sound_buy.buy(prompt="a music bed", out="sfx/bed.mp3", model="eleven_v9",
+                      root=str(tmp_path))
+    assert "what the sound costs" in caught.value.message
+    assert "<price of one sound>" in caught.value.remedy
+    assert 'per = "character"' in caught.value.remedy
+    assert "picture" not in caught.value.message + caught.value.remedy

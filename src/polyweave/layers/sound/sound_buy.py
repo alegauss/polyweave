@@ -222,7 +222,8 @@ def _bought(
     about = config.services()[name]
     base, key = client.reached(name, about)
     priced = client.priced(
-        name, about.get("prices") or {}, model, None, len(words)
+        name, about.get("prices") or {}, model, None, len(words),
+        bought="spoken line" if details.get("spoken") else "sound",
     )
     price = priced["price"]
     if target.suffix.lower() != ".mp3" and not shutil.which("ffmpeg"):
@@ -416,7 +417,7 @@ def design(
     folder = _laid(config, out, named)
     base, key = client.reached(name, about)
     priced = client.priced(
-        name, about.get("prices") or {}, model, None, len(sample)
+        name, about.get("prices") or {}, model, None, len(sample), bought="voice design"
     )
     drawn_from = {
         "id": entity,
@@ -648,7 +649,8 @@ def lines(
             # Each column in the voice its locale has, the shared one where it has none
             # of its own (§PW413).
             voice = voice_in(entities.get(who) or {}, one)
-            price = client.priced(name, prices, model, None, len(text))["price"]
+            price = client.priced(name, prices, model, None, len(text),
+                                  bought="spoken line")["price"]
             if not voice.get("id"):
                 # Priced all the same, so a set's cost is known before a voice is
                 # bought for it (§PW414).
@@ -796,7 +798,8 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
         if _still(here / land, line, None, model, here, said_by=(voice, delivery)):
             current.append(at)
             continue
-        price = client.priced(name, prices, model, None, len(text))["price"]
+        price = client.priced(name, prices, model, None, len(text),
+                                  bought="spoken line")["price"]
         plan.append({**at, "text": text, "characters": len(text), "price": price,
                      "line": line})
     left = purchase.remaining(str(here), service=name)

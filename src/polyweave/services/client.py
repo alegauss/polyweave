@@ -94,14 +94,16 @@ def mime(path) -> str:
 
 
 def price(
-    name: str, prices: dict, model: str, speed: str | None, count: int | None = None
+    name: str, prices: dict, model: str, speed: str | None, count: int | None = None,
+    *, bought: str = "picture",
 ) -> float:
     """What one call costs, from the declared table, or a refusal (§PW164)."""
-    return priced(name, prices, model, speed, count)["price"]
+    return priced(name, prices, model, speed, count, bought=bought)["price"]
 
 
 def priced(
-    name: str, prices: dict, model: str, speed: str | None, count: int | None = None
+    name: str, prices: dict, model: str, speed: str | None, count: int | None = None,
+    *, bought: str = "picture",
 ) -> dict:
     """What one call costs and how it was reached, or a refusal (§PW164, §PW320).
 
@@ -110,6 +112,10 @@ def priced(
     direction that lets a session pass a ceiling a person set. A row by the unit,
     `{ per = "character", rate }`, is the rate times `count`, the characters the call
     sends, and one with no count is refused for the same reason.
+
+    The refusal names what the call buys, `bought`, and where the call counts the
+    words it sends, the row by the character beside the row by the call (§PW669): an
+    unpriced sound model had been refused as a picture, priced per picture.
     """
     row = f"{model}:{speed}" if speed else model
     if row in prices and isinstance(prices[row], dict):
@@ -126,12 +132,16 @@ def priced(
                 "count": int(count)}
     if row in prices:
         return {"price": float(prices[row]), "per": "call"}
+    by_words = (
+        f', or {row!r} = {{ per = "character", rate = <price of one character> }} '
+        f"where the service bills by the words sent" if count is not None else ""
+    )
     raise PolyweaveError(
         "fetch.unpriced",
-        f"[service.{name}] prices has no row {row!r}, so what the picture costs is "
+        f"[service.{name}] prices has no row {row!r}, so what the {bought} costs is "
         f"not known",
-        f"add {row!r} = <price of one picture> to [service.{name}] prices, in the "
-        f"unit of its ceiling",
+        f"add {row!r} = <price of one {bought}> to [service.{name}] prices{by_words}, "
+        f"in the unit of its ceiling",
         given=row,
         allowed=sorted(prices),
     )

@@ -59,20 +59,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW669 An unpriced refusal names what is bought
-
-**Where.** Dumont's WordPress demo (D261), `python -m polyweave sound.buy --root .
---prompt "<a music bed>" --seconds 30 --loop --out demo/narration/music.mp3 --json` with
-`[service.elevenlabs]` pricing only a speech model.
-
-**What came back.** `fetch.unpriced`: "[service.elevenlabs] prices has no row
-'eleven_text_to_sound_v2', so what the picture costs is not known", remedy "add
-'eleven_text_to_sound_v2' = <price of one picture>".
-
-**Expected.** The refusal names what is bought — a sound, priced per call or per second
-— and its remedy shows a row in the unit ElevenLabs bills sound in, so the price written
-is the right one the first time.
-
 ### §PW670 A 402 says the account is out of credit
 
 **Where.** Dumont's WordPress demo (D265), `npm run demo:photos` buying 68 Ideogram 4.0
