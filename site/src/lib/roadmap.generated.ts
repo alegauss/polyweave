@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 5 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 4 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW671",
-    block: "D",
-    symptom: "video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music",
-    why: "Voices placed on a track per language over the music, and subtitle tracks, are still built by hand.",
-    deps: [],
-  },
   {
     id: "PW672",
     block: "D",
@@ -85,7 +78,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write",
     why: "A fresh checkout cannot rebuild the edit from its declaration, because the B-roll it names came from calls nobody recorded.",
-    deps: ["PW671", "PW674"],
+    deps: ["PW674"],
   },
   {
     id: "PW202",

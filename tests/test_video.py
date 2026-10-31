@@ -196,3 +196,45 @@ def test_a_file_clip_is_refused_on_what_it_cannot_hold(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         video.read(here / "t.cut.toml", here)
     assert refused.value.code == "video.no-source"
+
+
+@needs_ffmpeg
+def test_each_language_is_a_track_of_its_voices_over_the_music_with_subtitles(tmp_path):
+    """§PW671: Dumont laid each language's narration over a looped bed by hand."""
+    here = _project(tmp_path)
+    Image.new("RGB", (640, 360), (30, 30, 36)).save(here / "card.png")
+    _tone(here / "bed.wav", 1.0, 110.0)
+    _tone(here / "en.wav", 0.8, 440.0)
+    _tone(here / "pt.wav", 0.8, 550.0)
+    (here / "en.srt").write_text(
+        "1\n00:00:00,500 --> 00:00:01,500\nWelcome\n", encoding="utf-8")
+    (here / "story.cut.toml").write_text(
+        '[video]\nsize = [640, 360]\nfps = 30\nmusic = "bed.wav"\nmusic_loop = true\n'
+        "music_gain = -12\n\n"
+        '[[clip]]\nstill = "card.png"\nlength = 2.5\n\n'
+        '[[track]]\nlanguage = "eng"\n\n[[track]]\nlanguage = "por"\n\n'
+        '[[voice]]\nfile = "en.wav"\nat = 0.5\ntrack = "eng"\n\n'
+        '[[voice]]\nfile = "pt.wav"\nat = 0.5\ntrack = "por"\n\n'
+        '[[subtitles]]\nfile = "en.srt"\nlanguage = "eng"\n',
+        encoding="utf-8",
+    )
+    said = video.cut("story.cut.toml", root=str(here))
+    assert said["tracks"] == ["eng", "por"]
+    assert (said["audio_tracks"], said["subtitle_tracks"]) == (2, 1)
+    # The one-second bed loops under the whole cut.
+    assert said["video_seconds"] == pytest.approx(2.5, abs=0.1)
+    record = json.loads((here / "story.mp4.prov.json").read_text("utf-8"))
+    assert {"voice", "subtitles", "music"} <= {one["role"] for one in record["inputs"]}
+
+
+def test_a_voice_on_no_declared_track_is_refused(tmp_path):
+    here = _project(tmp_path)
+    Image.new("RGB", (64, 36)).save(here / "card.png")
+    _tone(here / "en.wav", 0.5, 440.0)
+    (here / "t.cut.toml").write_text(
+        '[[clip]]\nstill = "card.png"\nlength = 1\n\n'
+        '[[voice]]\nfile = "en.wav"\nat = 0\ntrack = "eng"\n', encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        video.read(here / "t.cut.toml", here)
+    assert refused.value.code == "video.bad-cut"
+    assert "no [[track]] declares" in refused.value.message

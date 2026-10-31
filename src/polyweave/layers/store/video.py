@@ -80,7 +80,12 @@ _VIDEO_KEYS = {
     "music_gain",
     "clip_audio",
     "fade_out",
+    "music_loop",
 }
+_TRACK_KEYS = {"language", "title"}
+_VOICE_KEYS = {"file", "at", "track", "gain"}
+_SUBTITLE_KEYS = {"file", "language"}
+_TABLES = {"video", "clip", "track", "voice", "subtitles"}
 _CLIP_KEYS = {"from", "still", "video", "motion", "start", "length", "fade_in"}
 
 #: Which way a still's frame moves while it zooms (§PW671); none holds it centred.
@@ -136,13 +141,14 @@ def read(source: Path, here: Path) -> dict:
             given=str(source),
         ) from exc
     video = declared.get("video", {})
-    unknown = sorted(set(declared) - {"video", "clip"}) + sorted(
+    unknown = sorted(set(declared) - _TABLES) + sorted(
         set(video) - _VIDEO_KEYS
     )
     if unknown:
         raise _bad(
             f"{source.name} has no {', '.join(unknown)}",
-            f"[video] takes {', '.join(sorted(_VIDEO_KEYS))}; each [[clip]] takes "
+            f"a cut has {', '.join(sorted(_TABLES))}; [video] takes "
+            f"{', '.join(sorted(_VIDEO_KEYS))}; each [[clip]] takes "
             f"{', '.join(sorted(_CLIP_KEYS))}",
             given=unknown[0],
         )
@@ -254,6 +260,7 @@ def read(source: Path, here: Path) -> dict:
             "fade over less than its length",
             given="fade_out",
         )
+    tracks, voices, subtitles = _spoken(declared, here, total)
     return {
         "out": video.get("out"),
         "size": size,
@@ -261,11 +268,81 @@ def read(source: Path, here: Path) -> dict:
         "music": music,
         "music_from": _number(video, "music_from", 0.0, "video"),
         "music_gain": float(video.get("music_gain", 0.0)),
+        "music_loop": bool(video.get("music_loop", False)),
         "clip_audio": bool(video.get("clip_audio", False)),
         "fade_out": fade_out,
         "clips": clips,
         "seconds": total,
+        "tracks": tracks,
+        "voices": voices,
+        "subtitles": subtitles,
     }
+
+
+def _rows(declared: dict, table: str, keys: set, needs: tuple) -> list[dict]:
+    """A cut's `[[table]]` rows, each holding only `keys` and every one of `needs`."""
+    rows = declared.get(table, [])
+    for index, row in enumerate(rows):
+        at = f"{table}[{index + 1}]"
+        stray, short = sorted(set(row) - keys), [k for k in needs if k not in row]
+        if stray or short:
+            raise _bad(
+                f"{at} " + (f"has no {', '.join(stray)}" if stray
+                            else f"names no {', '.join(short)}"),
+                f"a [[{table}]] takes {', '.join(sorted(keys))}, and needs "
+                f"{', '.join(needs)}",
+                at=at,
+                given=(stray or short)[0],
+            )
+    return rows
+
+
+def _filed_at(row: dict, here: Path, at: str) -> Path:
+    file = here / str(row["file"])
+    if not file.is_file():
+        raise PolyweaveError(
+            "video.no-source",
+            f"{at} names {row['file']}, which is not there",
+            "name a file under the project",
+            given=str(row["file"]),
+            at=at,
+        )
+    return file
+
+
+def _spoken(declared: dict, here: Path, total: float) -> tuple[list, list, list]:
+    """A cut's sound tracks by language, the voices placed on them, and its subtitles
+    (§PW671): Dumont laid each language's narration over the music, and its subtitle
+    files, with ffmpeg calls of its own."""
+    tracks = _rows(declared, "track", _TRACK_KEYS, ("language",))
+    languages = [str(one["language"]) for one in tracks]
+    if len(set(languages)) != len(languages):
+        raise _bad("two [[track]]s have one language",
+                   "give each language one [[track]]", given="language")
+    voices = []
+    for index, row in enumerate(_rows(declared, "voice", _VOICE_KEYS,
+                                      ("file", "at", "track"))):
+        at = f"voice[{index + 1}]"
+        if str(row["track"]) not in languages:
+            raise _bad(f"{at} is on a track no [[track]] declares: {row['track']!r}",
+                       f"declare [[track]] language = {row['track']!r}, or name one of "
+                       f"{', '.join(languages) or 'none yet'}", at=at, given="track")
+        start = _number(row, "at", 0.0, at)
+        if start >= total:
+            raise _bad(f"{at} starts at {start:g}s, past the cut's {total:g}s",
+                       "place it inside the cut", at=at, given="at")
+        voices.append({"file": _filed_at(row, here, at), "at": start,
+                       "track": str(row["track"]),
+                       "gain": float(row.get("gain", 0.0))})
+    subtitles = [
+        {"file": _filed_at(row, here, f"subtitles[{index + 1}]"),
+         "language": str(row["language"])}
+        for index, row in enumerate(_rows(declared, "subtitles", _SUBTITLE_KEYS,
+                                          ("file", "language")))
+    ]
+    return ([{"language": str(one["language"]),
+              "title": str(one.get("title") or one["language"])} for one in tracks],
+            voices, subtitles)
 
 
 def _filed(clip: dict, kind: str, at: str, here: Path, fps: float,
@@ -379,6 +456,13 @@ def _shown(i: int, clip: dict, width: int, height: int, fps: float) -> tuple:
         f"setpts=PTS-STARTPTS,format=yuv420p,fps={fps:g},settb=AVTB[v{i}]")
 
 
+def _mixed(sounds: list[str]) -> str:
+    """The sounds named, mixed without normalising, or the one passed through."""
+    if len(sounds) == 1:
+        return f"{sounds[0]}anull"
+    return f"{''.join(sounds)}amix=inputs={len(sounds)}:normalize=0:duration=longest"
+
+
 def _command(cut: dict, target: Path, here: Path) -> list[str]:
     """The one ffmpeg call that cuts, joins, scores and encodes the edit."""
     width, height = cut["size"]
@@ -409,7 +493,10 @@ def _command(cut: dict, target: Path, here: Path) -> list[str]:
     sounds: list[str] = []
     count = len(cut["clips"])
     if cut["music"]:
-        inputs += ["-ss", f"{cut['music_from']:g}", "-i", str(here / cut["music"])]
+        # Looped where the bed is shorter than the cut it lies under (§PW671).
+        looped = ["-stream_loop", "-1"] if cut.get("music_loop") else []
+        inputs += [*looped, "-ss", f"{cut['music_from']:g}", "-i",
+                   str(here / cut["music"])]
         graph.append(
             f"[{count}:a]atrim=duration={total:.6f},asetpts=PTS-STARTPTS,"
             f"volume={cut['music_gain']:g}dB[m]"
@@ -432,22 +519,48 @@ def _command(cut: dict, target: Path, here: Path) -> list[str]:
                 count += 1
             offset += clip["length"]
     mapped = ["-map", "[vout]"]
-    if sounds:
-        mixed = (
-            f"{''.join(sounds)}amix=inputs={len(sounds)}:normalize=0:duration=longest"
-            if len(sounds) > 1
-            else f"{sounds[0]}anull"
-        )
-        fading = (
-            f",afade=t=out:st={total - cut['fade_out']:.6f}:d={cut['fade_out']:.6f}"
-            if cut["fade_out"]
-            else ""
-        )
-        graph.append(
-            f"{mixed},atrim=duration={total:.6f}{fading},"
-            f"aformat=sample_rates=48000:channel_layouts=stereo[aout]"
-        )
+    fading = (
+        f",afade=t=out:st={total - cut['fade_out']:.6f}:d={cut['fade_out']:.6f}"
+        if cut["fade_out"]
+        else ""
+    )
+    finish = (f"atrim=duration={total:.6f}{fading},"
+              "aformat=sample_rates=48000:channel_layouts=stereo")
+    tracks = cut.get("tracks") or []
+    if sounds and not tracks:
+        graph.append(f"{_mixed(sounds)},{finish}[aout]")
         mapped += ["-map", "[aout]", "-c:a", "aac", "-b:a", "192k"]
+    if tracks:
+        # One audio stream per language: the bed (music and the runs' own sound) under
+        # that language's voices, each placed at its time (§PW671).
+        beds = [f"[bed{t}]" for t in range(len(tracks))] if sounds else []
+        if sounds:
+            graph.append(f"{_mixed(sounds)},asplit={len(tracks)}{''.join(beds)}")
+        for t, track in enumerate(tracks):
+            laid = [beds[t]] if beds else []
+            for n, voice in enumerate(v for v in cut["voices"]
+                                      if v["track"] == track["language"]):
+                inputs += ["-i", str(voice["file"])]
+                delay = int(round(voice["at"] * 1000))
+                graph.append(f"[{count}:a]asetpts=PTS-STARTPTS,volume={voice['gain']:g}dB,"
+                             f"adelay={delay}|{delay}[t{t}v{n}]")
+                laid.append(f"[t{t}v{n}]")
+                count += 1
+            if not laid:
+                graph.append(f"anullsrc=r=48000:cl=stereo,{finish}[a{t}]")
+            else:
+                graph.append(f"{_mixed(laid)},{finish}[a{t}]")
+            mapped += ["-map", f"[a{t}]", f"-metadata:s:a:{t}",
+                       f"language={track['language']}", f"-metadata:s:a:{t}",
+                       f"title={track['title']}"]
+        mapped += ["-c:a", "aac", "-b:a", "192k"]
+    for s, subtitle in enumerate(cut.get("subtitles") or []):
+        inputs += ["-i", str(subtitle["file"])]
+        mapped += ["-map", f"{count}:s", f"-metadata:s:s:{s}",
+                   f"language={subtitle['language']}"]
+        count += 1
+    if cut.get("subtitles"):
+        mapped += ["-c:s", "mov_text"]
     return [
         _ffmpeg(),
         "-v",
@@ -546,6 +659,9 @@ def measured(path: Path) -> dict:
         if moved.size and fps
         else seconds,
         "audio": any(s["codec_type"] == "audio" for s in streams),
+        # One audio stream per declared language, and the subtitle streams (§PW671).
+        "audio_tracks": sum(s["codec_type"] == "audio" for s in streams),
+        "subtitle_tracks": sum(s["codec_type"] == "subtitle" for s in streams),
     }
 
 
@@ -655,6 +771,10 @@ def cut(
     ]
     if declared["music"]:
         inputs.append(provenance.source("music", here / declared["music"], root=here))
+    inputs += [provenance.source("voice", one["file"], root=here)
+               for one in declared["voices"]]
+    inputs += [provenance.source("subtitles", one["file"], root=here)
+               for one in declared["subtitles"]]
     record = provenance.write(
         provenance.build(
             "capture",
@@ -677,6 +797,8 @@ def cut(
         "sheet": provenance.relative(sheet, here),
         "record": provenance.relative(Path(record), here),
         "clips": len(declared["clips"]),
+        **({"tracks": [one["language"] for one in declared["tracks"]]}
+           if declared["tracks"] else {}),
         **found,
         "says": f"{found['video_seconds']:g}s at {found['video_width']}x"
         f"{found['video_height']}, moving from {found['first_motion']:g}s; watch "

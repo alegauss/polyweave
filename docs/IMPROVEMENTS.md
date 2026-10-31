@@ -59,27 +59,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW671 A cut that holds stills, places voices and mixes music
-
-**Where.** Dumont's WordPress demo video (D261): `wordpress/bin/story-video.mjs` drives
-ffmpeg itself to build a narrated product video from a Playwright recording
-(`story.webm` + `chapters.json`), title cards rendered as PNGs, narration takes and a
-music bed.
-
-**What it needed that `video.cut` cannot take.** `video.cut` joins `capture.movie`
-sequences with music. The narrated video also needs: a still held for a length (a card,
-a result frozen while the voice talks about it); a still with slow motion (Ken Burns
-zoom and pan) as B-roll; a clip cut from an existing video file by start and end; voice
-takes placed at given times on their own track per language, mixed over a looped, faded
-music bed; and subtitle tracks. All of it lives in the project as ~600 lines of ffmpeg
-arguments.
-
-**What polyweave should do.** Extend the cut file: `[[clip]]` from an image (`hold`,
-optional `motion = { zoom = [1.0, 1.15], pan = "left" }`) or from a video file with
-`start`/`length`; `[[voice]]` entries (`file`, `at`, `track` language); `[[track]]` per
-language mixing voices over `music` with `music_gain` and fades; `[[subtitles]]` files.
-Then the project declares its edit and `video.cut` builds it.
-
 ### §PW672 Stock footage with its licence
 
 **Where.** Dumont's WordPress demo video (D261): the owner wants public footage
@@ -122,7 +101,8 @@ Pixabay asks; a call past 100 a minute waits on `X-RateLimit-Reset` instead of a
 ### §PW674 Pixabay footage by length and resolution
 
 **Where.** Dumont's demo video (D261) wants mountains and trails as B-roll under the
-narration. §PW671 cuts a clip from a file, and nothing brings that file in.
+narration. docs/specs/video.md (PW671) cuts a clip from a file, and nothing brings that
+file in.
 
 **What is missing.** The Pixabay half of §PW672 for footage: a clip is chosen in the
 browser at whatever size it offered, and its page, author and licence are kept nowhere.
@@ -143,7 +123,7 @@ shape.
 ### §PW675 B-roll declared by its Pixabay id
 
 **Where.** The use Dumont's demo (D261) has for stock: B-roll under narration, placed by
-§PW671's `[[clip]]` from a video file or as a held or moving still.
+docs/specs/video.md (PW671)'s `[[clip]]` from a video file or as a held or moving still.
 
 **What is missing.** With §PW673 and §PW674 alone, the cut names paths a previous
 `stock.fetch` wrote. A checkout without them, or a person changing the shot, has to know

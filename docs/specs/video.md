@@ -61,8 +61,37 @@ leaves. A video file is cut from `start` for `length`, and one shorter than that
 `video.short-sequence`, read with ffprobe. A clip naming none or several of the three,
 or a `motion` outside those words, is `video.bad-cut`; a file that is not there is
 `video.no-source`. A file clip carries no sound into `clip_audio`. The record names each
-file as an input, with the role `still` or `video`. Voices on their own track per
-language, and subtitles, are not yet declared here (PW671's remainder).
+file as an input, with the role `still` or `video`.
+
+**Each language is a sound track of its own** (§PW671). A narrated cut declares its
+languages and lays each take where it is said:
+
+```toml
+[video]
+music_loop = true                 # the bed loops under a cut longer than it
+
+[[track]]
+language = "eng"                  # one audio stream, tagged; title optional
+[[voice]]
+file  = "vo/en/intro.mp3"
+at    = 0.5                       # seconds into the cut it starts
+track = "eng"                     # the [[track]] it is laid on
+gain  = 0.0                       # dB, optional
+
+[[subtitles]]
+file     = "subs/en.srt"
+language = "eng"
+```
+
+With no `[[track]]` the cut has one sound, as above. With them, the bed (the music and,
+with `clip_audio`, the runs' own sound) is laid under each track's voices, each track is
+trimmed and faded with the picture and written as its own AAC stream tagged with its
+language, and each subtitle file is carried as a `mov_text` stream. A voice on a
+language no `[[track]]` declares, one starting past the cut's end, two tracks of one
+language or a row with a key it does not take is `video.bad-cut`; a voice or subtitle
+file that is not there is `video.no-source`. The answer names the `tracks`, the measures
+add `audio_tracks` and `subtitle_tracks`, and the record names every voice and subtitle
+file as an input.
 
 ## Building
 

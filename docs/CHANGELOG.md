@@ -69,7 +69,7 @@
 - ✅ **PW668** **sound.speech counts an eleven_v3 audio tag such as [excited] as a missing word and fails the take** — On eleven_v3 a line's [bracketed] audio tags are directions, left out of the words a take is held to and named under directions (design recorded in `docs/specs/effects.md`).
 - ✅ **PW669** **An unpriced sound model is refused as a picture, with a remedy priced per picture** — fetch.unpriced names what the call buys, and a call counted by its words is offered the row by the character beside the row by the call (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW670** **A service out of credit answers 402 and the refusal's remedy explains only 401 and 400** — A 402 from any service is fetch.no-credit, saying to top the account up, and voice.lines stops there naming the lines not voiced (design recorded in `docs/specs/fetching.md`).
-- ✅ **PW671 (stills and file clips)** **video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music** — A cut's clip may be a still held or zoomed and panned, or a stretch of a video file, beside a captured run.
+- ✅ **PW671** **video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music** — A cut lays each language's voices on a track of its own over a looped music bed, and carries subtitle files (design recorded in `docs/specs/video.md`).
 
 ## Block E — One world with the engine
 
