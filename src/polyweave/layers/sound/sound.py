@@ -669,8 +669,17 @@ def _span(path: str | Path) -> tuple[float, float, float]:
     return first, last, len(mono) / rate
 
 
+#: The models that read a `[bracketed]` word as a direction to the voice and do not say
+#: it, such as `[excited]` or `[laughs]` (§PW668).
+DIRECTED = ("eleven_v3",)
+
+#: A direction in a line, as those models take one.
+DIRECTION = re.compile(r"\[[^\[\]]*\]")
+
+
 def speech(
-    path: str | Path, text: str, vocabulary=(), language=None, interjections=()
+    path: str | Path, text: str, vocabulary=(), language=None, interjections=(),
+    directions=False,
 ) -> dict:
     """What a spoken take measures against its line (§PW323).
 
@@ -679,7 +688,14 @@ def speech(
     the line does not have, or misses, where faster-whisper is installed. The
     transcription is held to the take's `language` where it is known, and a word of
     the line among `interjections` counts as said however it was spelled (§PW414).
+
+    With `directions`, the line's `[bracketed]` audio tags are directions, not words,
+    and are left out of what it should say; they are named under `directions` (§PW668).
+    Dumont's `[excited]` and `[laughs]` had failed takes that performed both.
     """
+    tags = DIRECTION.findall(text) if directions else []
+    if tags:
+        text = " ".join(DIRECTION.sub(" ", text).split())
     first, last, duration = _span(path)
     letters = len(re.sub(r"\s+", "", text))
     found = {
@@ -688,6 +704,7 @@ def speech(
         "rate": round(letters / max(last - first, 1e-6), 2),
         "loudness": measure(path)["loudness"],
         "duration": round(duration, 3),
+        **({"directions": tags} if tags else {}),
     }
     heard = _transcribed(Path(path), vocabulary, language)
     if heard is None:
@@ -764,7 +781,8 @@ def _differs(line: str, heard: str, interjections=()) -> dict:
 
 def expected(where: Path, config) -> dict:
     """What a take's words are checked with: the world's names, the language its
-    record says it was read in, and the project's interjections (§PW414)."""
+    record says it was read in, the project's interjections (§PW414), and whether its
+    model takes `[tags]` as directions (§PW668)."""
     from polyweave.kernel import provenance
 
     from .sound_buy import language_of
@@ -778,6 +796,7 @@ def expected(where: Path, config) -> dict:
         "vocabulary": _names(config.root),
         "language": language_of(locale) if locale else None,
         "interjections": tuple(config.get("voice.interjections") or ()),
+        "directions": (record.get("engine") or {}).get("model") in DIRECTED,
     }
 
 

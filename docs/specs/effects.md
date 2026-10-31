@@ -214,7 +214,10 @@ words from the take's record where `text` is unset) answers:
   `pt_BR` as `pt`, said back as `said.language`), since left to guess it heard a
   Portuguese take as English. Words are compared with their accents folded, and a
   word of the line among `[voice] interjections` is said however it was heard, with
-  its own share of the words heard in its place (§PW414).
+  its own share of the words heard in its place (§PW414). On a model that takes
+  `[bracketed]` audio tags as directions (`eleven_v3`, by its record's model), the tags
+  are left out of the line before it is compared or its rate counted, and named under
+  `directions` (§PW668); on any other model they are words it should have said.
 
 `failed` names each measure outside the project's `[voice]` bound: `lead_silence` and
 `tail_silence` as maxima, `rate` and `loudness` as `[low, high]` bands, and `said` where

@@ -59,23 +59,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW668 A line's audio tags are directions, not words
-
-**Where.** Dumont's WordPress demo (D246/D261), narration on ElevenLabs `eleven_v3`,
-whose audio tags (`[excited]`, `[laughs]`, `[happy]`) direct the delivery and are not
-spoken.
-
-**What came back.** `python -m polyweave sound.speech --root . --take
-demo/narration/en/intro.mp3 --json` on a take whose prompt opens with `[excited]` and
-contains `[laughs]`: `said.missing` lists `excited` and `laughs`, `matches: false`, and
-the take is reported under `failed` — though the voice performed both correctly.
-
-**Expected.** A line's directions are not its words: for a model that takes audio tags,
-the comparison strips `[...]` from the expected text first (and an unknown tag the voice
-did speak shows up as `extra`, which is the case worth flagging).
-
-**Workaround.** None; the check is read by eye.
-
 ### §PW669 An unpriced refusal names what is bought
 
 **Where.** Dumont's WordPress demo (D261), `python -m polyweave sound.buy --root .

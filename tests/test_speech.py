@@ -164,3 +164,30 @@ def test_a_bought_take_lands_with_its_silence_cut_to_the_bound(tmp_path, monkeyp
     cut = trimmed["details"]["trimmed"]
     assert cut["sent_sha256"] == hashlib.sha256(sent).hexdigest()
     assert cut["lead"] > 0.6
+
+
+def test_a_lines_audio_tags_are_directions_not_words(tmp_path, monkeypatch):
+    """§PW668: Dumont's eleven_v3 take performed [excited] and [laughs] and failed."""
+    from polyweave.kernel import provenance
+
+    def heard(path, vocabulary=(), language=None):
+        return "Welcome back, friend."
+
+    monkeypatch.setattr(sound, "_transcribed", heard)
+    take(tmp_path / "t.wav")
+    line = "[excited] Welcome back, [laughs] friend."
+    provenance.write(provenance.build(
+        "sound", tmp_path / "t.wav",
+        engine={"name": "elevenlabs", "model": "eleven_v3"},
+        extra={"prompt": line}, root=tmp_path), tmp_path)
+    said = sound.spoken("t.wav", root=str(tmp_path))
+    assert said["said"]["matches"] is True
+    assert said["directions"] == ["[excited]", "[laughs]"]
+    assert said["failed"] == []
+    # A model that says what it is given is held to every word of it.
+    provenance.write(provenance.build(
+        "sound", tmp_path / "t.wav",
+        engine={"name": "elevenlabs", "model": "eleven_multilingual_v2"},
+        extra={"prompt": line}, root=tmp_path), tmp_path)
+    assert sound.spoken("t.wav", root=str(tmp_path))["said"]["missing"] == [
+        "excited", "laughs"]

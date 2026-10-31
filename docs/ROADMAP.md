@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW668** (deps: —) **sound.speech counts an eleven_v3 audio tag such as [excited] as a missing word and fails the take** — A take that performed its directions correctly is reported as failed. → §PW668
 - 📋 **PW669** (deps: —) **An unpriced sound model is refused as a picture, with a remedy priced per picture** — The refusal names the wrong kind of asset and suggests the wrong unit for the price row. → §PW669
 - 📋 **PW670** (deps: —) **A service out of credit answers 402 and the refusal's remedy explains only 401 and 400** — A batch learns that the account needs topping up only by reading an HTTP code, and keeps calling. → §PW670
 - 📋 **PW671** (deps: —) **video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music** — A narrated product video is built by a project script of ffmpeg calls instead of a declared cut. → §PW671
