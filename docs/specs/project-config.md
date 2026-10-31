@@ -117,6 +117,8 @@ plan    = ""                   # the key's plan where the service does not repor
                                # "free" is non-commercial, any other name commercial
 terms   = ""                   # what the service's terms grant its files, in words: the
                                # licence provenance.credits all=true names (§PW660)
+licences = []                  # the licences a stock file may come under; empty takes
+                               # any (stock.fetch, §PW672)
 
 [budget]
 credits = 60

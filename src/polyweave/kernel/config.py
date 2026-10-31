@@ -197,6 +197,9 @@ KERNEL_DEFAULTS: dict[str, Any] = {
         # What the service's terms grant a file made under this key, in words: the
         # licence `provenance.credits all=true` names for each file bought (§PW660).
         "terms": "",
+        # The licences a stock file may come under for this project; empty takes any
+        # (§PW672).
+        "licences": [],
     },
     "budget": {
         # No budget is no spend, never an unlimited one: the absence of a ceiling is

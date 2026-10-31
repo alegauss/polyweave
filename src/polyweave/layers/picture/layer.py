@@ -39,7 +39,8 @@ LAYER = Layer(
     codes="polyweave.layers.picture.codes",
     config="polyweave.layers.picture.settings",
     #: 12,925 with stock.find and stock.fetch (§PW673, 2026-10-31).
-    tools=13_500,
+    #: 13,616 with their kind, service and video renditions (§PW674, §PW672).
+    tools=14_000,
     census={
         "polyweave.layers.picture.panel:declared": (
             "internal", "a panel's states, checked; panel.build"),

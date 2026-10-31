@@ -361,6 +361,18 @@ tallest, with `fell` in the answer saying so. The record is a picture's, plus th
 `duration`, `width`, `height` and `rate` ffprobe reads, the shape `reference.register`
 keeps, and its params name the rendition taken.
 
+**Pexels is the second service on the seam** (§PW672), named by `service = "pexels"` on
+either operation. Its key is `PEXELS_API_KEY` (or `[service.pexels] key_env`), sent as
+the `Authorization` header rather than in the query; its filters are `orientation`,
+`size`, `color` and `locale` for pictures, and those less `color` plus `min_width`,
+`min_height`, `min_duration` and `max_duration` for videos. A video's files are listed
+by quality and size, and the four of distinct height, tallest first, are named `large`,
+`medium`, `small` and `tiny`, so `rendition` and `height` read both services alike. A
+picture downloads its original. Its files come under the Pexels License and owe no
+credit. A project that ships only some licences lists them as `[service.<name>]
+licences`, and `stock.fetch` refuses any other with `stock.licence-refused` before
+anything is downloaded; an empty list takes any.
+
 ## A mesh is bought through the plugin
 
 `mesh.buy` is the plugin's own Meshy client (§PW183), so a consumer keeps its prompts and

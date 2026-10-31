@@ -53,6 +53,12 @@ CODES: dict[str, Code] = {
         when="a filter key that is not one of Pixabay's image search parameters",
         doors=("pass only the filters the refusal lists",),
     ),
+    "stock.licence-refused": Code(
+        means="a stock service's licence is not one the project allows (§PW672)",
+        when="[service.<name>] licences lists the licences the project ships under, "
+        "and the service's is not among them",
+        doors=("add the licence to the list", "take the file from another service"),
+    ),
     "stock.no-hit": Code(
         means="the service has no picture by the id stock.fetch was given",
         when="an id mistyped, or one from another service's search",

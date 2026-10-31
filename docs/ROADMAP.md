@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW672** (deps: PW673 ✅, PW674 ✅) **No way to fetch Pexels stock footage or photos with their licence recorded** — B-roll from Pexels is downloaded by hand; this adds Pexels to the stock seam the Pixabay lines build. → §PW672
 - 📋 **PW675** (deps: PW671 ✅, PW674 ✅) **A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write** — A fresh checkout cannot rebuild the edit from its declaration, because the B-roll it names came from calls nobody recorded. → §PW675
 
 ## Block E — One world with the engine

@@ -146,3 +146,80 @@ def test_an_empty_rendition_falls_to_the_next_one_down_and_says_so(tmp_path, foo
     record = provenance.read("broll/trail.mp4", root=tmp_path)
     assert record["licence"] == "Pixabay Content License"
     assert record["params"]["rendition"] == "medium"
+
+
+# -- Pexels, on the same seam (§PW672) -----------------------------------------------
+
+PHOTO = {"id": 2014422, "width": 3024, "height": 3024,
+         "url": "https://www.pexels.com/photo/trail-2014422/",
+         "photographer": "Joey", "photographer_url": "https://www.pexels.com/@joey",
+         "alt": "a mountain trail",
+         "src": {"original": "https://images.pexels.com/p.jpeg", "small": "s.jpeg"}}
+FILM = {"id": 857195, "url": "https://www.pexels.com/video/857195/", "duration": 12,
+        "user": {"name": "Mo", "url": "https://www.pexels.com/@mo"},
+        "video_files": [
+            {"quality": "hd", "width": 1920, "height": 1080, "link": "https://v/1080"},
+            {"quality": "sd", "width": 960, "height": 540, "link": "https://v/540"},
+            {"quality": "uhd", "width": 3840, "height": 2160, "link": "https://v/2160"},
+        ]}
+
+
+@pytest.fixture
+def pexels(tmp_path, monkeypatch):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    monkeypatch.setenv("PEXELS_API_KEY", "pk-key")
+    asked = []
+
+    def send(url, headers=None, **_):
+        asked.append((url, dict(headers or {})))
+        if "/videos/videos/" in url:
+            return client.Answer(200, json.dumps(FILM).encode(), {})
+        if "/v1/photos/" in url:
+            return client.Answer(200, json.dumps(PHOTO).encode(), {})
+        return client.Answer(200, json.dumps(
+            {"total_results": 1, "photos": [PHOTO]}).encode(), {})
+
+    fetched = []
+    monkeypatch.setattr(client, "send", send)
+    monkeypatch.setattr(client, "download",
+                        lambda link: fetched.append(link) or b"bytes")
+    return asked, fetched
+
+
+def test_a_pexels_photo_is_found_and_brought_in_with_its_photographer(
+    tmp_path, pexels
+):
+    asked, fetched = pexels
+    found = stock.find("mountain trail", service="pexels",
+                       filters={"orientation": "landscape"}, root=str(tmp_path))
+    url, headers = asked[0]
+    assert url.startswith("https://api.pexels.com/v1/search?")
+    assert headers == {"Authorization": "pk-key"}
+    assert "pk-key" not in url
+    assert found["hits"][0]["author"] == "Joey"
+    said = stock.fetch(2014422, "art/trail.jpg", service="pexels", root=str(tmp_path))
+    assert fetched == ["https://images.pexels.com/p.jpeg"]
+    record = provenance.read("art/trail.jpg", root=tmp_path)
+    assert (record["licence"], record["author"]) == ("Pexels License", "Joey")
+    assert record["source_page"] == PHOTO["url"]
+    assert said["licence"] == "Pexels License"
+
+
+def test_a_pexels_video_is_taken_by_height_from_its_files(tmp_path, pexels):
+    _, fetched = pexels
+    said = stock.fetch(857195, "broll/film.mp4", kind="video", service="pexels",
+                       height=1000, root=str(tmp_path))
+    assert said["rendition"] == "medium"
+    assert fetched == ["https://v/1080"]
+
+
+def test_a_licence_the_project_does_not_allow_is_refused_before_a_download(
+    tmp_path, pexels
+):
+    _, fetched = pexels
+    (tmp_path / "polyweave.toml").write_text(
+        '[service.pexels]\nlicences = ["Pixabay Content License"]\n', encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        stock.fetch(2014422, "art/trail.jpg", service="pexels", root=str(tmp_path))
+    assert refused.value.code == "stock.licence-refused"
+    assert fetched == []

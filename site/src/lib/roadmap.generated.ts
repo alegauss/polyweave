@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW672",
-    block: "D",
-    symptom: "No way to fetch Pexels stock footage or photos with their licence recorded",
-    why: "B-roll from Pexels is downloaded by hand; this adds Pexels to the stock seam the Pixabay lines build.",
-    deps: [],
-  },
   {
     id: "PW675",
     block: "D",

@@ -59,23 +59,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW672 Stock footage with its licence
-
-**Where.** Dumont's WordPress demo video (D261): the owner wants public footage
-(mountains, trails) as B-roll while the narrator talks over chapter cards.
-
-**What is missing.** polyweave buys generated assets (Ideogram, Meshy, ElevenLabs) with
-budgets and provenance, but has no way to fetch freely licensed stock footage or photos
-(Pexels, Pixabay APIs): search by words, pick by length and resolution, download, and
-record the source page, author and licence in the `.prov.json` so `provenance.credits`
-lists them.
-
-**What polyweave should do.** A `stock.find` / `stock.fetch` pair (or `reference.*`
-extended) over Pexels, keyed by `PEXELS_API_KEY`, on the seam docs/specs/fetching.md
-(PW673) and docs/specs/fetching.md (PW674) build for Pixabay, free so no budget, with
-the licence and attribution in the provenance, and a check that refuses a result whose
-licence is not one the project allows.
-
 ### §PW675 B-roll declared by its Pixabay id
 
 **Where.** The use Dumont's demo (D261) has for stock: B-roll under narration, placed by
