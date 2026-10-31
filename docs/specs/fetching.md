@@ -349,6 +349,18 @@ area's `stock/` for 24 hours and answered from there; a 429 waits for the window
 downloaded, never linked. The key is `[service.pixabay] key_env`, `PIXABAY_API_KEY`
 where the project declares no table, and no record holds it.
 
+**Footage comes the same way** (§PW674), with `kind = "video"`, asked at the service's
+`videos/` route. `stock.find` takes `video_type`, `min_width`, `min_height`, `category`
+and `order`, and answers each hit's `duration` and its `renditions` (`large`, `medium`,
+`small`, `tiny`, only those carrying a link) with their width, height and bytes, so a
+caller picks by length and resolution without a download. `stock.fetch` takes a
+`rendition`, or a `height`, meaning the smallest rendition at least that tall, since a
+4K file a 1080p cut scales down is a gigabyte nobody needed; `large` where neither is
+given. An empty rendition falls to the next one down, and none tall enough to the
+tallest, with `fell` in the answer saying so. The record is a picture's, plus the
+`duration`, `width`, `height` and `rate` ffprobe reads, the shape `reference.register`
+keeps, and its params name the rendition taken.
+
 ## A mesh is bought through the plugin
 
 `mesh.buy` is the plugin's own Meshy client (§PW183), so a consumer keeps its prompts and

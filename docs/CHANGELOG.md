@@ -71,6 +71,7 @@
 - ✅ **PW670** **A service out of credit answers 402 and the refusal's remedy explains only 401 and 400** — A 402 from any service is fetch.no-credit, saying to top the account up, and voice.lines stops there naming the lines not voiced (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW671** **video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music** — A cut lays each language's voices on a track of its own over a looped music bed, and carries subtitle files (design recorded in `docs/specs/video.md`).
 - ✅ **PW673** **No way to search Pixabay's photos, illustrations and vectors and bring one in with its page, author and licence recorded** — stock.find searches Pixabay pictures, and stock.fetch brings one in recorded with its page, author and licence, at no cost (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW674** **No way to search Pixabay's videos by length and resolution and bring a rendition in with its licence recorded** — stock.find kind=video answers each clip's duration and renditions, and stock.fetch takes one by rendition or height, saying when it fell (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 

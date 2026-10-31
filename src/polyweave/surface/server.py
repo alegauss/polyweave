@@ -84,7 +84,8 @@ CORE_TOOLS = 41_400
 #: 145,112 with game.replay_rates (§PW640), whose engine figure rose by 600 for it.
 #: 146,718 with stock.find and stock.fetch (§PW673, 2026-10-31), whose picture figure
 #: rose by 1,500 for them.
-SESSION_BUDGET = 147_200
+#: 147,210 with stock's footage parameters (§PW674, 2026-10-31).
+SESSION_BUDGET = 147_600
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

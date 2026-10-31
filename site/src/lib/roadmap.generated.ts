@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 3 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -57,13 +57,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "No way to fetch Pexels stock footage or photos with their licence recorded",
     why: "B-roll from Pexels is downloaded by hand; this adds Pexels to the stock seam the Pixabay lines build.",
-    deps: ["PW674"],
-  },
-  {
-    id: "PW674",
-    block: "D",
-    symptom: "No way to search Pixabay's videos by length and resolution and bring a rendition in with its licence recorded",
-    why: "B-roll is downloaded from the site by hand at whatever size the browser offered, and its source lives in nobody's record.",
     deps: [],
   },
   {
@@ -71,7 +64,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write",
     why: "A fresh checkout cannot rebuild the edit from its declaration, because the B-roll it names came from calls nobody recorded.",
-    deps: ["PW674"],
+    deps: [],
   },
   {
     id: "PW202",

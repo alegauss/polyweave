@@ -2352,20 +2352,28 @@ export interface SpritesMatchedArgs {
   root?: string
 }
 
-/** Bring one Pixabay picture in, recorded with its page, author and licence. */
+/** Bring one Pixabay picture or video in, recorded with its page and licence. */
 export interface StockFetchArgs {
   /** the hit's id, as stock.find answered it */
   id: number
   /** where it is written, under the project */
   out: string
+  /** a picture or a video; default "picture" */
+  kind?: "picture" | "video"
+  /** a video's rendition; large if neither this nor height */
+  rendition?: "large" | "medium" | "small" | "tiny"
+  /** a video's smallest rendition at least this tall, in px */
+  height?: number
   /** the project it is brought into; default "." */
   root?: string
 }
 
-/** Search Pixabay's photos, illustrations and vectors, downloading nothing. */
+/** Search Pixabay's photos, illustrations, vectors or videos, downloading nothing. */
 export interface StockFindArgs {
-  /** what the picture shows: a quiet harbour at dawn */
+  /** what it shows: a quiet harbour at dawn */
   words: string
+  /** a picture or a video; default "picture" */
+  kind?: "picture" | "video"
   /** the service's own filters: image_type, orientation, min_width… */
   filters?: Record<string, unknown>
   /** how many hits, 3 to 200; from 3 to 200; default 20 */
