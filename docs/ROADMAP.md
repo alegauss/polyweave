@@ -16,6 +16,7 @@
 - 📋 **PW667** (deps: —) **picture.buy cuts the background out of a picture nobody asked to be transparent** — A photo comes back with its landscape removed and fringed edges, and the answer never says so. → §PW667
 - 📋 **PW668** (deps: —) **sound.speech counts an eleven_v3 audio tag such as [excited] as a missing word and fails the take** — A take that performed its directions correctly is reported as failed. → §PW668
 - 📋 **PW669** (deps: —) **An unpriced sound model is refused as a picture, with a remedy priced per picture** — The refusal names the wrong kind of asset and suggests the wrong unit for the price row. → §PW669
+- 📋 **PW670** (deps: —) **A service out of credit answers 402 and the refusal's remedy explains only 401 and 400** — A batch learns that the account needs topping up only by reading an HTTP code, and keeps calling. → §PW670
 
 ## Block E — One world with the engine
 

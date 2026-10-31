@@ -211,6 +211,25 @@ did speak shows up as `extra`, which is the case worth flagging).
 — and its remedy shows a row in the unit ElevenLabs bills sound in, so the price written
 is the right one the first time.
 
+### §PW670 A 402 says the account is out of credit
+
+**Where.** Dumont's WordPress demo (D265), `npm run demo:photos` buying 68 Ideogram 4.0
+photos through `python -m polyweave picture.buy`; the 15th call came back refused.
+
+**What came back.** `{"refused": {"code": "fetch.service-error", "message": "the service
+answered 402", "remedy": "read the detail; a 401 is a key the service does not accept,
+and a 400 a payload it does not"}}` — the remedy explains 401 and 400 and not the 402 it
+is answering. The next call answered 401 for the same key.
+
+**Expected.** A 402 is the account out of credit: the refusal says so ("Ideogram's
+account has no credit left: top it up, then run again; nothing was charged for this
+call"), with its own code (`fetch.no-credit`) so a batch stops at once rather than
+trying every remaining item; and the ledger and `purchase.remaining` show what the
+polyweave budget still allowed, which is a different limit from the service's own
+balance.
+
+**Workaround.** `bin/demo-photos.mjs` stops at the first refusal and prints it.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
