@@ -66,8 +66,6 @@
 
 ## Block X — The site on the shared design system
 
-- 📋 **PW663** (deps: —) **A visitor to the site never sees a part being made, only prose about it** — The promise is visual, and the channels that fit (r/gamedev, r/godot, r/blender) accept only a real before and after. → §PW663
-
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The

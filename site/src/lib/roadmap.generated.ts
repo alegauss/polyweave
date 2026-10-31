@@ -48,7 +48,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
-  { block: "X", title: "The site on the shared design system", open: 1 },
+  { block: "X", title: "The site on the shared design system", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -157,13 +157,6 @@ export const generatedTasks: GeneratedTask[] = [
     why: "Adopting polyweave for voice means writing the service, its prices and the layer by hand from the spec.",
     deps: [],
   },
-  {
-    id: "PW663",
-    block: "X",
-    symptom: "A visitor to the site never sees a part being made, only prose about it",
-    why: "The promise is visual, and the channels that fit (r/gamedev, r/godot, r/blender) accept only a real before and after.",
-    deps: [],
-  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [
@@ -202,4 +195,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW582", "PW659", "PW495", "PW57", "PW36", "PW449", "PW450", "PW201", "PW480", "PW641", "PW662", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW582", "PW659", "PW495", "PW57", "PW36", "PW449", "PW450", "PW201", "PW480", "PW641", "PW662", "PW311", "PW368", "PW663"];

@@ -71,3 +71,4 @@
 
 ## Block X — The site on the shared design system
 
+- ⏸ **PW663** (deps: —) **A visitor to the site never sees a part being made, only prose about it** — set aside (The owner picks the part and approves the loop.): The promise is visual, and the channels that fit (r/gamedev, r/godot, r/blender) accept only a real before and after. → §PW663
