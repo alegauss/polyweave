@@ -54,8 +54,6 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW661** (deps: PW652 ✅) **the remap kit cannot lay itself out in less height, so a host scales it until its text is too small to read** — Spinhold scales the kit to 0.64 to fit its options panel, leaving its text near 11 px at 1280x720. → §PW661
-
 ## Block T — Adopting polyweave in a project
 
 - 📋 **PW662** (deps: —) **The repository shows no release while PyPI already has polyweave-gamekit 0.1.0, so it reads as never shipped** — A visitor from the marketplace or a list judges by the Releases page, and the tag that publishes to PyPI can create the release too. → §PW662

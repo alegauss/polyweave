@@ -313,7 +313,12 @@ slider, the inverted vertical and a reset. Every row's label, the options' and t
 actions', shares one column as wide as the widest label shown, at least 160 pixels, and
 measured again when the language changes (§PW652, since 0.12.1). So a longer language
 moves every row's controls together: Spinhold's pt-BR "Zona morta do analógico" had run
-into its slider in a column English fitted. Its proof script rebinds, swaps, restarts
+into its slider in a column English fitted. The screen lays itself out in the room a
+host gives it, by `fit(space)` or its `room` export, and never scales its text (§PW661,
+since 0.13.0): one column where it fits, else the actions beside the options, else their
+buttons shrunk from 56 pixels towards 40. `fit` answers the size it laid itself out at.
+Spinhold had scaled the screen to 0.64 to fit its options panel, and its text to 11
+pixels; the proof gives it 0.64 of its own height. Its proof script rebinds, swaps, restarts
 the store from the file, resets, and drives the screen with a pad button, all on three
 actions of its own declared at run time (since 0.2.1), so it holds in a game whatever
 actions that game has. A pad binding the store puts in force answers every pad, as the

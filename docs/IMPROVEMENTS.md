@@ -560,26 +560,6 @@ when the lull counts no new track and RK198's re-count matches the owner's sheet
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW661 The remap screen in the room it is given
-
-Split from PW652 (2026-10-28), which gave the remap screen's labels one shared column so
-a longer language moves every row's controls together. The other half of Spinhold's
-report (RK166, 2026-10-26, its Controls tab in pt-BR at 1280x720) is left: the kit is
-taller than the options panel's rows, so the game scales it to about 0.64, which leaves
-its text near 11 px tall. A host cannot change the kit's layout from outside, so scaling
-it down is the only thing it can do.
-
-What to build: the remap screen lays itself out in the height and width it is given,
-before anyone scales it. Its action rows are 56 px buttons each, and the option rows
-(deadzone, invert, map, button names, reset, the pad) follow them in one column. Where
-the screen is given less height than one column needs, the rows go into two columns,
-actions on the left and options on the right. Where even that does not fit, the buttons
-shrink towards a floor (40 px), keeping the text at the theme's size. The screen answers
-the size it laid itself out at, so a host reads it rather than guessing. The proof gives
-the screen a box 0.64 of its natural height and holds every label at the theme's font
-size and every row inside the box. Done when Spinhold's Controls tab shows the kit
-unscaled in its options panel at 1280x720, in pt-BR.
-
 ## Block T — Adopting polyweave in a project
 
 ### §PW662 A GitHub release for every PyPI version

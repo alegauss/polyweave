@@ -300,6 +300,20 @@ func _process(_delta: float) -> bool:
 			break
 	longest.text = was
 	menu._fit_column()
+	# The screen in the room it is given (§PW661): Spinhold's options panel had room for
+	# 0.64 of its height, and the game scaled it until its text was 11 px tall.
+	var points: Array = menu._labels.map(func(one: Label) -> int:
+		return one.get_theme_font_size("font_size"))
+	var natural: Vector2 = menu.fit(Vector2(0.0, 1.0e6))
+	var short := Vector2(0.0, floorf(natural.y * 0.64))
+	var laid: Vector2 = menu.fit(short)
+	var after: Array = menu._labels.map(func(one: Label) -> int:
+		return one.get_theme_font_size("font_size"))
+	if laid.y > short.y or menu.scale != Vector2.ONE or after != points:
+		failed.append("the screen given %d px of its %d laid itself out at %d, scaled %s"
+			% [short.y, natural.y, laid.y, menu.scale])
+	if menu.fit(Vector2(0.0, 1.0e6)) != natural:
+		failed.append("the screen given its room back did not lay itself out as before")
 	# A host game hears when the screen listens and when it stops, and the button a pad
 	# focused is still the one focused once it binds (§PW541).
 	var heard: Array[String] = []

@@ -68,6 +68,18 @@ var _buttons := {}
 var _labels: Array[Label] = []
 ## the narrowest the label column is, which English fits
 const COLUMN := 160.0
+## the side an action's buttons are drawn at, and the least `fit` shrinks them to once two
+## columns do not fit either (§PW661)
+const BUTTON := 56.0
+const LEAST := 40.0
+## where set, the room the screen lays itself out in once it is ready (§PW661)
+@export var room := Vector2.ZERO
+## the size `fit` last laid the screen out at, zero before it was asked
+var laid_out := Vector2.ZERO
+## the action rows beside the option rows: one column, or two where the room is short
+var _body: GridContainer
+var _options: VBoxContainer
+var _side := BUTTON
 
 
 ## one of the screen's words, as the game's table says it under REMAP_, else English;
@@ -86,8 +98,12 @@ func _ready() -> void:
 		bindings = _PwBindings.shared()
 	_prompts = _PwPrompts.new()
 	add_child(_prompts)
+	_body = GridContainer.new()
+	add_child(_body)
 	_rows = VBoxContainer.new()
-	add_child(_rows)
+	_body.add_child(_rows)
+	_options = VBoxContainer.new()
+	_body.add_child(_options)
 	_said = Label.new()
 	add_child(_said)
 	var deadzone := HSlider.new()
@@ -139,12 +155,42 @@ func _ready() -> void:
 		_said.text = said("reset_done")
 		_paint()
 		_paint_map())
-	add_child(reset)
+	_options.add_child(reset)
 	var pad := Button.new()
 	pad.text = said("pad")
 	pad.pressed.connect(open_pad)
-	add_child(pad)
+	_options.add_child(pad)
 	_draw_rows()
+	if room != Vector2.ZERO:
+		fit(room)
+
+
+## lay the screen out in `space` before anyone scales it (§PW661): one column where it
+## fits, else the actions beside the options, else their buttons shrunk towards LEAST,
+## the text at the theme's size throughout. A width of zero holds the height alone.
+## Answers the size it laid itself out at, over `space` only where nothing fits it.
+## Spinhold's options panel had room for 0.64 of the screen, and scaled it to 11 px text.
+func fit(space: Vector2) -> Vector2:
+	room = space
+	var tries := [[1, BUTTON]]
+	var side := BUTTON
+	while side >= LEAST:
+		tries.append([2, side])
+		side -= 4.0
+	for one: Array in tries:
+		_body.columns = one[0]
+		_size_buttons(one[1])
+		laid_out = get_combined_minimum_size()
+		if laid_out.y <= space.y and (space.x <= 0.0 or laid_out.x <= space.x):
+			break
+	return laid_out
+
+
+func _size_buttons(side: float) -> void:
+	_side = side
+	for action in _buttons:
+		for button: Button in _buttons[action]:
+			button.custom_minimum_size = Vector2(side, side)
 
 
 func _map_input(event: InputEvent) -> void:
@@ -233,7 +279,7 @@ func _row(named: String, control: Control) -> void:
 	row.add_child(label)
 	control.custom_minimum_size.x = COLUMN
 	row.add_child(control)
-	add_child(row)
+	_options.add_child(row)
 	_fit_column()
 
 
@@ -270,7 +316,7 @@ func _draw_rows() -> void:
 		var pair := []
 		for pad in [false, true]:
 			var button := Button.new()
-			button.custom_minimum_size = Vector2(56, 56)
+			button.custom_minimum_size = Vector2(_side, _side)
 			button.expand_icon = true
 			button.pressed.connect(_listen.bind(action, pad))
 			row.add_child(button)

@@ -556,6 +556,7 @@
 - ✅ **PW651** **the MCP server runs a stale installed copy of polyweave, and no answer says which copy replied** — The MCP server names its copy of polyweave and refuses every call as op.stale-server once another copy is installed or its code changed (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW652** **the remap kit keeps an English-wide label column, so pt-BR labels run into their controls** — The remap screen's labels share one column as wide as the widest shown, so a longer language moves every row's controls together (design recorded in `docs/specs/kit.md`).
 - ✅ **PW657** **nothing reads a game's scripts for play timed by frames, so a drift is found only after a replay parts** — engine.check names frame-timed play at its line: a member _process writes and a tick reads, time_scale in a tick, an idle-clock await (design recorded in `docs/specs/engine.md`).
+- ✅ **PW661** **the remap kit cannot lay itself out in less height, so a host scales it until its text is too small to read** — The remap screen lays itself out in the room a host gives it, two columns then buttons down to 40 px, its text never scaled (design recorded in `docs/specs/kit.md`).
 
 ## Block T — Adopting polyweave in a project
 
