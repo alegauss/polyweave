@@ -22,6 +22,12 @@ CODES: dict[str, Code] = {
         doors=("install espeak-ng, or piper with a model in [voice] draft_model",),
     ),
     # -- sound: the audio a game declares it needs -----------------------------
+    "sound.bad-script": Code(
+        means="a lines file voice.lines was given is not one it can speak (§PW665)",
+        when="no voice, no out with {key}, a line with no key, locale or text, or a "
+        "file that is not JSON or TOML",
+        doors=("fix the field the message names",),
+    ),
     "sound.family-unnamed": Code(
         means="the project declares several sound families and the call named none",
         when="a read of the declared audio with [sound.<family>] tables and no family",

@@ -59,27 +59,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW665 Speak a plain lines file
-
-**Where.** Dumont's WordPress plugin (`D:\Git\viglet\dumont\2026.3\wordpress`, task
-D246): a demo video's narration, one line per chapter in English and pt-BR, kept in
-`demo/narration/script.json` with the voice id and model.
-
-**What happened.** `voice.lines` speaks a table, but the table is `[words] table`, a
-Godot translation CSV, with a speaker column naming a world entity, and the takes land
-at `[words] voiced`. A web project's narration has no Godot table and no world, so the
-operation could not be pointed at it.
-
-**Workaround.** `wordpress/bin/story-narration.mjs` loops over the script and calls
-`sound.speak --text --voice --model --rung paid --out` per line, and skips a take whose
-`.prov.json` already records the same prompt, voice and model — the "buy only what
-changed" that `voice.lines` presumably does for a game.
-
-**What polyweave should do.** Let `voice.lines` (or a sibling) take a plain lines file —
-key, locale, text, plus a voice and model for the whole file — and an output pattern,
-with the same plan/spend split (`--spend false` answers the plan) and the same skip of
-takes already current. Then the project script goes away.
-
 ### §PW667 A picture keeps its background unless asked
 
 **Where.** Dumont's WordPress demo (`D:\Git\viglet\dumont\2026.3\wordpress`, task D265),
@@ -148,6 +127,109 @@ polyweave budget still allowed, which is a different limit from the service's ow
 balance.
 
 **Workaround.** `bin/demo-photos.mjs` stops at the first refusal and prints it.
+
+### §PW671 A cut that holds stills, places voices and mixes music
+
+**Where.** Dumont's WordPress demo video (D261): `wordpress/bin/story-video.mjs` drives
+ffmpeg itself to build a narrated product video from a Playwright recording
+(`story.webm` + `chapters.json`), title cards rendered as PNGs, narration takes and a
+music bed.
+
+**What it needed that `video.cut` cannot take.** `video.cut` joins `capture.movie`
+sequences with music. The narrated video also needs: a still held for a length (a card,
+a result frozen while the voice talks about it); a still with slow motion (Ken Burns
+zoom and pan) as B-roll; a clip cut from an existing video file by start and end; voice
+takes placed at given times on their own track per language, mixed over a looped, faded
+music bed; and subtitle tracks. All of it lives in the project as ~600 lines of ffmpeg
+arguments.
+
+**What polyweave should do.** Extend the cut file: `[[clip]]` from an image (`hold`,
+optional `motion = { zoom = [1.0, 1.15], pan = "left" }`) or from a video file with
+`start`/`length`; `[[voice]]` entries (`file`, `at`, `track` language); `[[track]]` per
+language mixing voices over `music` with `music_gain` and fades; `[[subtitles]]` files.
+Then the project declares its edit and `video.cut` builds it.
+
+### §PW672 Stock footage with its licence
+
+**Where.** Dumont's WordPress demo video (D261): the owner wants public footage
+(mountains, trails) as B-roll while the narrator talks over chapter cards.
+
+**What is missing.** polyweave buys generated assets (Ideogram, Meshy, ElevenLabs) with
+budgets and provenance, but has no way to fetch freely licensed stock footage or photos
+(Pexels, Pixabay APIs): search by words, pick by length and resolution, download, and
+record the source page, author and licence in the `.prov.json` so `provenance.credits`
+lists them.
+
+**What polyweave should do.** A `stock.find` / `stock.fetch` pair (or `reference.*`
+extended) over Pexels, keyed by `PEXELS_API_KEY`, on the seam §PW673 and §PW674 build
+for Pixabay, free so no budget, with the licence and attribution in the provenance, and
+a check that refuses a result whose licence is not one the project allows.
+
+### §PW673 Pixabay pictures with their licence
+
+**Where.** §PW672 asked for stock photos and footage from Pexels and Pixabay together.
+This is the Pixabay half for pictures, and the seam the footage line after it and Pexels
+reuse.
+
+**What is missing.** A picture from Pixabay is found in a browser and saved by hand, so
+nothing records its page, author or licence, and `provenance.credits all=true` lists it
+under `unstated`.
+
+**What polyweave should do.** `stock.find` with `service = "pixabay"`, words and the
+API's own filters (`image_type`, `orientation`, `min_width`, `colors`, `safesearch`),
+answering each hit's id, size, tags, author and preview URL without downloading
+anything. `stock.fetch` takes an id and `out`, downloads the largest rendition the key
+may read (`largeImageURL`, 1280 px, unless the account has full access), and writes a
+`fetch` record with the source page, author, `licence = "Pixabay Content License"`, an
+empty credit and zero cost, so no budget is drawn. The key is `PIXABAY_API_KEY`, read
+like any service key and never written to a record.
+
+**The API's terms are the client's to keep.** Search answers are cached for 24 hours, as
+Pixabay asks; a call past 100 a minute waits on `X-RateLimit-Reset` instead of answering
+429; a result is downloaded, never linked.
+
+### §PW674 Pixabay footage by length and resolution
+
+**Where.** Dumont's demo video (D261) wants mountains and trails as B-roll under the
+narration. §PW671 cuts a clip from a file, and nothing brings that file in.
+
+**What is missing.** The Pixabay half of §PW672 for footage: a clip is chosen in the
+browser at whatever size it offered, and its page, author and licence are kept nowhere.
+
+**What polyweave should do.** The seam §PW673 adds, with `kind = "video"`: `stock.find`
+passes `video_type` and the minimum width and height, and answers each hit's `duration`
+and every rendition (`large`, `medium`, `small`, `tiny`) with its width, height and
+bytes, so a caller picks by length and resolution without a download. `stock.fetch`
+takes the id and either a rendition or a `height`, meaning the smallest rendition at or
+above it, since a 4K file a 1080p cut scales down is a gigabyte nobody needed. A `large`
+the API left empty falls to the next one down, and the answer says so rather than
+handing back a smaller file in silence.
+
+The record is §PW673's, plus the duration, resolution and frame rate ffprobe reads, the
+same fields `reference.register` keeps, so the cut and the reference layer read one
+shape.
+
+### §PW675 B-roll declared by its Pixabay id
+
+**Where.** The use Dumont's demo (D261) has for stock: B-roll under narration, placed by
+§PW671's `[[clip]]` from a video file or as a held or moving still.
+
+**What is missing.** With §PW673 and §PW674 alone, the cut names paths a previous
+`stock.fetch` wrote. A checkout without them, or a person changing the shot, has to know
+which call made each file and with which rendition.
+
+**What polyweave should do.** A `[[clip]]` may say `stock = { service = "pixabay", id =
+123456, rendition = "medium" }` in place of `file`, and an image id works the same for a
+held or moving still. `video.cut` fetches what is not already under the project's stock
+folder (a `[stock] dir` in `polyweave.toml`) and reuses what is, by service, id and
+rendition, so a rebuild downloads nothing new and a cut is reproducible from its
+declaration alone.
+
+The cut's own record lists each stock file as an input with the role `stock`, so
+`provenance.credits all=true` on the video names every Pixabay source it carries and
+`provenance.dependents` on a clip finds every cut that uses it. A clip Pixabay has since
+removed is refused by name (`stock.gone`) where no copy is on disk, and never skipped in
+silence, since a cut one shot short still renders and looks finished.
 
 ## Block E — One world with the engine
 

@@ -153,6 +153,17 @@ the rest is `not_voiced`, with `stopped_by` saying why. A sound sitting lays the
 takes out ordered by speaker, so a person hears a character's lines together, in `out`
 or else `voices/lines/` in the work area.
 
+**A plain lines file is voiced the same way** (§PW665). A narration outside a game has no
+Godot table and no world, and Dumont's was spoken by a loop of its own over
+`sound.speak`. `voice.lines script=<file>` reads a JSON or TOML file instead of the table:
+a `voice` id and an `out` pattern with `{key}` (and `{locale}`) for the whole file, an
+optional `model` and delivery (`stability`, `similarity`, `style`, `speed`), and `lines`,
+each a `key`, `locale` and `text`. The plan, `spend`, the ceiling, the sitting and the
+`current` takes are as above, a take being current where its record holds the same line,
+voice id, delivery and model; the record's `details.line` names the `script`, which is
+its `words` input. A file with no voice, no `{key}` in `out`, or a line short of a field
+is `sound.bad-script`.
+
 Each take's record names its row (`details.line`: the key, the locale, the table and the
 SHA-256 of the words spoken) and has the table as an input with the role `words`. So
 `provenance.outdated` counts an edit to the table against a take only where that row's

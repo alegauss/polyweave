@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 5 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 9 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW665",
-    block: "D",
-    symptom: "voice.lines speaks only a Godot CSV with world speakers, so a narration script outside a game is looped by hand",
-    why: "A web project buys and refreshes takes with its own script over sound.speak, re-implementing the skip of current takes.",
-    deps: [],
-  },
   {
     id: "PW667",
     block: "D",
@@ -86,6 +79,41 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A service out of credit answers 402 and the refusal's remedy explains only 401 and 400",
     why: "A batch learns that the account needs topping up only by reading an HTTP code, and keeps calling.",
     deps: [],
+  },
+  {
+    id: "PW671",
+    block: "D",
+    symptom: "video.cut joins captures only: no held or moving still, no clip from a file, no voice track over music",
+    why: "A narrated product video is built by a project script of ffmpeg calls instead of a declared cut.",
+    deps: [],
+  },
+  {
+    id: "PW672",
+    block: "D",
+    symptom: "No way to fetch Pexels stock footage or photos with their licence recorded",
+    why: "B-roll from Pexels is downloaded by hand; this adds Pexels to the stock seam the Pixabay lines build.",
+    deps: ["PW673", "PW674"],
+  },
+  {
+    id: "PW673",
+    block: "D",
+    symptom: "No way to search Pixabay's photos, illustrations and vectors and bring one in with its page, author and licence recorded",
+    why: "A picture taken from Pixabay is saved by hand, so provenance.credits and the release manifest cannot say where it came from.",
+    deps: [],
+  },
+  {
+    id: "PW674",
+    block: "D",
+    symptom: "No way to search Pixabay's videos by length and resolution and bring a rendition in with its licence recorded",
+    why: "B-roll is downloaded from the site by hand at whatever size the browser offered, and its source lives in nobody's record.",
+    deps: ["PW673"],
+  },
+  {
+    id: "PW675",
+    block: "D",
+    symptom: "A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write",
+    why: "A fresh checkout cannot rebuild the edit from its declaration, because the B-roll it names came from calls nobody recorded.",
+    deps: ["PW671", "PW674"],
   },
   {
     id: "PW202",

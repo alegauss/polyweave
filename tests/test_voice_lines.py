@@ -153,3 +153,49 @@ def test_a_project_with_nowhere_to_put_takes_is_refused(tmp_path, project):
     with pytest.raises(PolyweaveError) as refused:
         sound_buy.lines(root=str(tmp_path))
     assert refused.value.code == "words.no-voiced"
+
+
+# -- a plain lines file, outside a game (§PW665) -------------------------------------
+
+SCRIPT = """{
+ "voice": "narrator-voice", "out": "demo/narration/{locale}/{key}.mp3", "speed": 0.95,
+ "lines": [
+  {"key": "chapter-1", "locale": "en", "text": "Search, without a plugin."},
+  {"key": "chapter-1", "locale": "pt_BR", "text": "Busca, sem um plugin."}
+ ]
+}"""
+
+
+def test_a_lines_file_is_spoken_and_a_current_take_is_not_bought_again(
+    tmp_path, project
+):
+    """Dumont's narration was spoken by a loop of its own over sound.speak."""
+    script = tmp_path / "demo" / "script.json"
+    script.parent.mkdir()
+    script.write_text(SCRIPT, encoding="utf-8")
+    plan = sound_buy.lines(script="demo/script.json", root=str(tmp_path))
+    assert [(one["key"], one["locale"]) for one in plan["voice"]] == [
+        ("chapter-1", "en"), ("chapter-1", "pt_BR")]
+    assert project.sent == []
+    done = sound_buy.lines(script="demo/script.json", locale="en", spend=True,
+                           root=str(tmp_path))
+    assert [one["out"] for one in done["voiced"]] == ["demo/narration/en/chapter-1.mp3"]
+    url, _, sent = project.sent[0]
+    assert "/text-to-speech/narrator-voice?" in url
+    assert sent["voice_settings"] == {"speed": 0.95}
+    again = sound_buy.lines(script="demo/script.json", root=str(tmp_path))
+    assert [one["locale"] for one in again["current"]] == ["en"]
+    assert [one["locale"] for one in again["voice"]] == ["pt_BR"]
+    script.write_text(SCRIPT.replace('"speed": 0.95', '"speed": 1.0'), "utf-8")
+    redone = sound_buy.lines(script="demo/script.json", root=str(tmp_path))
+    assert redone["current"] == []
+
+
+def test_a_lines_file_with_no_voice_is_refused_by_name(tmp_path, project):
+    (tmp_path / "script.toml").write_text(
+        'out = "vo/{key}.mp3"\n[[lines]]\nkey = "a"\nlocale = "en"\ntext = "Hi"\n',
+        encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.lines(script="script.toml", root=str(tmp_path))
+    assert refused.value.code == "sound.bad-script"
+    assert "no voice" in refused.value.message

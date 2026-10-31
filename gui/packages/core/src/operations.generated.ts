@@ -2670,6 +2670,8 @@ export interface VoiceLinesArgs {
   world?: string
   /** the [service.<name>] to use; needed only where there are several */
   service?: string
+  /** a plain lines file to speak in place of the game's table */
+  script?: string
   /** the project whose ledger this is; default "." */
   root?: string
 }

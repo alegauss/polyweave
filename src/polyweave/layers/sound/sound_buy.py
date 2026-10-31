@@ -589,6 +589,9 @@ def lines(
         None
     ),
     service: Annotated[str, purchase.SERVICE] = None,
+    script: Annotated[
+        str, Param("a plain lines file to speak in place of the game's table")
+    ] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
     """Voice the string table's lines as a set, each in its speaker's voice (§PW322).
@@ -597,12 +600,20 @@ def lines(
     price, the takes still current, and the rows whose speaker has no voice. With it,
     the same selection is spoken until the ceiling stops it, the rest named as not
     voiced, and a sitting lays the new takes out by speaker for a person to hear.
+
+    `script` speaks a plain lines file instead (§PW665), JSON or TOML: a `voice` id and
+    an `out` pattern with `{key}` and `{locale}` for the whole file, an optional `model`
+    and delivery (`stability`, `similarity`, `style`, `speed`), and `lines`, each a
+    `key`, `locale` and `text`. A narration outside a game needs no table and no world.
     """
     from polyweave.layers.words import words
     from polyweave.layers.words.world import declared, voice_digest, voice_in
 
     config = load(root)
     here = config.root
+    if script:
+        return _scripted(report, script, locale=locale, keys=keys, spend=spend, out=out,
+                         model=model, service=service, config=config)
     if not config.get("words.voiced"):
         raise PolyweaveError(
             "words.no-voiced",
@@ -729,6 +740,115 @@ def lines(
     return answer
 
 
+def _script(path: Path) -> dict:
+    """A plain lines file, read and held to the shape `voice.lines` speaks (§PW665)."""
+    import tomllib
+
+    def bad(what: str) -> PolyweaveError:
+        return PolyweaveError("sound.bad-script", f"{path.name} {what}",
+                              "fix it; voice.lines describes the file's fields",
+                              given=str(path))
+
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+        said = tomllib.loads(text) if path.suffix == ".toml" else json.loads(text)
+    except (OSError, ValueError) as unread:
+        raise bad(f"is not there or not readable as {path.suffix[1:] or 'JSON'}") \
+            from unread
+    if not isinstance(said, dict) or not str(said.get("voice") or "").strip():
+        raise bad("names no voice")
+    if "{key}" not in str(said.get("out") or ""):
+        raise bad("has no out pattern with {key} for where each take lands")
+    listed = said.get("lines", said.get("line"))
+    if not isinstance(listed, list) or not listed:
+        raise bad("has no lines")
+    for one in listed:
+        if not (isinstance(one, dict) and all(
+                str(one.get(k) or "").strip() for k in ("key", "locale", "text"))):
+            raise bad(f"has a line with no key, locale or text: {one!r}")
+    return {**said, "lines": listed}
+
+
+def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
+              config) -> dict:
+    """`voice.lines` over a plain lines file (§PW665): Dumont's narration was spoken by
+    a loop of its own over sound.speak, skipping the takes already current."""
+    from polyweave.layers.words.words import said_digest
+
+    here = config.root
+    where = Path(script) if Path(script).is_absolute() else here / script
+    said = _script(where)
+    model = str(said.get("model") or model)
+    voice = str(said["voice"]).strip()
+    delivery = {DELIVERY[k]: float(said[k]) for k in DELIVERY
+                if said.get(k) is not None}
+    name = config.service(service, model=model)
+    prices = config.services()[name].get("prices") or {}
+    plan, current = [], []
+    for one in said["lines"]:
+        if (locale and one["locale"] != locale) or (keys and one["key"] not in keys):
+            continue
+        text = str(one["text"]).strip()
+        land = str(said["out"]).format(
+            locale=one["locale"], key=re.sub(r"[^\w.-]+", "_", str(one["key"])))
+        at = {"key": str(one["key"]), "locale": str(one["locale"]), "out": land}
+        line = {"key": at["key"], "locale": at["locale"], "sha256": said_digest(text)}
+        if _still(here / land, line, None, model, here, said_by=(voice, delivery)):
+            current.append(at)
+            continue
+        price = client.priced(name, prices, model, None, len(text))["price"]
+        plan.append({**at, "text": text, "characters": len(text), "price": price,
+                     "line": line})
+    left = purchase.remaining(str(here), service=name)
+    answer = {
+        "voice": [{k: v for k, v in one.items() if k != "line"} for one in plan],
+        "current": current, "unvoiced": [],
+        "characters": sum(one["characters"] for one in plan),
+        "price": round(sum(one["price"] for one in plan), 6),
+        "left": left["left"], "unit": left["unit"], "spent": False,
+    }
+    if not spend or not plan:
+        return answer
+    route = SPEAK.format(voice=urllib.parse.quote(voice, safe=""))
+    request_base: dict = {"model_id": model,
+                          **({"voice_settings": delivery} if delivery else {})}
+    voiced, stopped = [], []
+    for index, one in enumerate(plan):
+        request = {"text": one["text"], **request_base}
+        if model in LANGUAGE_HELD:
+            request["language_code"] = language_of(one["locale"])
+        try:
+            took = _bought(
+                report, f"{route}?output_format={FORMAT}", request, words=one["text"],
+                cue=None, out=one["out"], model=model, service=name, root=here,
+                details={"voice": voice, "delivery": delivery, "spoken": True,
+                         "line": {**one["line"],
+                                  "script": provenance.relative(where, here)}},
+                inputs=[provenance.source("words", where, root=here)],
+            )
+        except PolyweaveError as refused:
+            if refused.code not in ("fetch.over-budget", "fetch.budget-closed"):
+                raise
+            stopped = [{k: o[k] for k in ("key", "locale", "price")}
+                       for o in plan[index:]]
+            answer["stopped_by"] = refused.message
+            break
+        voiced.append({**one, "failed": took["speech"].get("failed", [])})
+    if voiced:
+        heard = [{"name": f"{one['key']}.{one['locale']}", "new": one["out"],
+                  "line": one["text"]} for one in voiced]
+        folder = _laid(config, out, "lines")
+        answer["sitting"] = sound.sitting(
+            heard, out=provenance.relative(folder, here), root=str(here))["sitting"]
+    answer.update({
+        "spent": True,
+        "voiced": [{k: one[k] for k in ("key", "locale", "out", "failed")}
+                   for one in voiced],
+        "not_voiced": stopped,
+    })
+    return answer
+
+
 def _laid(config, out: str | None, named: str) -> Path:
     """The folder a voice sitting goes in: `out` under the project, or `voices/<named>`
     in the work area. Never the project's root, where an engine imports the sheets as
@@ -749,8 +869,10 @@ def _draft(where: Path, here: Path) -> bool:
     return (record.get("params") or {}).get("rung") == "draft"
 
 
-def _still(where: Path, line: dict, voice: str, model: str, here: Path) -> bool:
-    """Whether a take already says this line, in this voice, on this model."""
+def _still(where: Path, line: dict, voice: str | None, model: str, here: Path,
+           *, said_by: tuple[str, dict] | None = None) -> bool:
+    """Whether a take already says this line, in this voice, on this model: the world's
+    voice by its digest, or, for a lines file, `said_by`'s voice id and delivery."""
     if not where.is_file():
         return False
     try:
@@ -762,9 +884,14 @@ def _still(where: Path, line: dict, voice: str, model: str, here: Path) -> bool:
         return False
     details = record.get("details") or {}
     said = details.get("line") or {}
+    spoken_by = (
+        (details.get("voice"), details.get("delivery") or {}) == said_by
+        if said_by is not None
+        else (details.get("entity") or {}).get("sha256") == voice
+    )
     return (
         said.get("sha256") == line["sha256"]
-        and (details.get("entity") or {}).get("sha256") == voice
+        and spoken_by
         and (record.get("engine") or {}).get("model") == model
         and provenance.sha256_of(where)[0] == (record.get("artefact") or {}).get(
             "sha256"
