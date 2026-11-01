@@ -471,11 +471,12 @@ export const review = {
   ] as Rich,
   mock: {
     window: "polyweave · mascot",
+    // The candidates alone: their checks are the loop's to show (§PW663).
     candidates: [
-      { label: "A", hue: 32, checks: [["silhouette", "0.98", true], ["colour", "ΔE 1.4", true]] },
-      { label: "B", hue: 14, checks: [["silhouette", "0.97", true], ["colour", "ΔE 1.9", true]] },
-      { label: "C", hue: 300, checks: [["silhouette", "0.91", false], ["colour", "ΔE 4.2", false]] },
-    ] as { label: string; hue: number; checks: [string, string, boolean][] }[],
+      { label: "A", hue: 32 },
+      { label: "B", hue: 14 },
+      { label: "C", hue: 300 },
+    ] as { label: string; hue: number }[],
     approve: "Approve",
     reject: "Reject",
     change: "Ask for a change",
@@ -485,7 +486,7 @@ export const review = {
   points: [
     [
       { b: "Every candidate side by side," },
-      " with the checks behind it, so you compare instead of opening files.",
+      " already through its checks, so you compare instead of opening files.",
     ] as Rich,
     [
       { b: "Ask for a change in your own words." },

@@ -29,7 +29,11 @@ export function Review() {
   );
 }
 
-/** A drawing of the review page: three candidates, their checks, and the three answers. */
+/**
+ * A drawing of the review page: three candidates and the three answers. The checks are
+ * the loop's to show, with a real part, under the hero (§PW663); this is the person's
+ * decision, so the two do not tell one story twice.
+ */
 function ReviewMock() {
   const m = review.mock;
   return (
@@ -41,20 +45,12 @@ function ReviewMock() {
         <span>{m.window}</span>
       </div>
       <div className="mock-grid">
-        {m.candidates.map((c, i) => {
-          const pass = c.checks.every(([, , ok]) => ok);
-          return (
-            <div className={`cand${i === 0 ? " picked" : ""}${pass ? "" : " miss"}`} key={c.label}>
-              <Critter hue={c.hue} />
-              <div className="cand-label">{c.label}</div>
-              {c.checks.map(([name, value, ok]) => (
-                <div className={`chip ${ok ? "ok" : "no"}`} key={name}>
-                  {ok ? "✓" : "✗"} {name} <b>{value}</b>
-                </div>
-              ))}
-            </div>
-          );
-        })}
+        {m.candidates.map((c, i) => (
+          <div className={`cand${i === 0 ? " picked" : ""}`} key={c.label}>
+            <Critter hue={c.hue} />
+            <div className="cand-label">{c.label}</div>
+          </div>
+        ))}
       </div>
       <div className="mock-actions">
         <span className="act act-yes">{m.approve}</span>
