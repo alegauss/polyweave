@@ -21,7 +21,8 @@ key and the record, a custom one with its source's digest, and the answer says w
 did. A family sets them through `fixes`, which already reaches `render.bake`. Joining
 needs no step: `load_mesh` joins every part a file holds.
 
-Left, in Cottony: each exporter's work as prepare steps, then the exporters and
+Left, in Cottony (the boosters and props moved on 2026-10-31 through `fill`, PW676 and
+Cottony RK187): the friends' exporter's work as prepare steps, then the exporters and
 `prep.py` deleted. Two pieces need care. `cloth.dress` projects drawn cloth from the
 orthographic camera `prep.frame` builds, so it becomes a custom step that builds its own
 camera from the object's bounds. The exporters also scale each mesh to a fill of its

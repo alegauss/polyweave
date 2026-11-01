@@ -415,8 +415,25 @@ def test_a_projects_own_step_runs_on_the_mesh_and_is_in_its_record(project, mesh
     assert "ValueError" in refused.value.message
 
 
+def test_a_mesh_is_filled_to_its_share_of_the_frame(project, mesh):
+    """§PW582: Cottony's exporters scaled each mesh to a fill of its frame by hand."""
+    toml = project / "polyweave.toml"
+    toml.write_text((toml.read_text("utf-8") if toml.exists() else "")
+                    + "\n[units]\npixels_per_unit = 64\n", encoding="utf-8")
+    frame = {"azimuth": 0.0, "elevation": 0.0, "rung": "final", "model": mesh,
+             "covers": [2.0, 2.0], "pixels_per_unit": 64.0}
+    done = render.bake(Reported(), out="f.png", root=project, **frame,
+                       prepare=[{"step": "fill", "share": 0.5}])
+    assert done["prepared"][0]["step"] == "fill"
+    # The frame is 128 px; half of it is what the larger side spans.
+    assert max(_drawn_box(project / "f.png")) == pytest.approx(64, abs=6)
+    said = provenance.read("f.png", root=project)["params"]["prepare"]
+    assert said == [{"step": "fill", "share": 0.5}]
+
+
 @pytest.mark.parametrize("step", [
     {"step": "sand"},
+    {"step": "fill", "share": 0.5},
     {"step": "dedust"},
     {"step": "settle", "squash": 0.9, "twice": True},
     {"step": "custom", "fn": "nowhere.py:shrink"},

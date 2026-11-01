@@ -242,7 +242,7 @@ def bake(
     ] = False,
     prepare: Annotated[
         list,
-        Param("steps on the mesh: dedust, settle or custom"),
+        Param("mesh steps: dedust, settle, fill, custom"),
     ] = (),
     after: Annotated[
         list,
@@ -290,6 +290,7 @@ def bake(
     `spec` renders the build its `subject` names, at its rung (§PW298).
 
     `prepare` runs steps on the loaded mesh, each in the key and the record (§PW582).
+    `fill { share }` scales it to that share of the frame `covers` declares.
 
     `masks` names materials whose pixels are written beside the picture, white where
     each shows, so a pocket carved in its own material is cut out by its own coverage
@@ -370,6 +371,13 @@ def bake(
     steps = _steps(prepare, where=Path(root).resolve())
     if steps:
         params["prepare"] = [one["said"] for one in steps]
+    if any(one["said"]["step"] == "fill" for one in steps) and len(covers) != 2:
+        # A share of what? The frame is the declared rectangle, and nothing else.
+        raise PolyweaveError(
+            "render.bad-prepare",
+            "fill spans a share of the frame, and no covers declares one",
+            "pass covers, the frame's width and height in world units, or drop fill",
+        )
     scale = None
     # The size the picture comes out at: the rung's square, unless a world rectangle was
     # declared, in which case the declaration decides both axes (§PW47). Before this, a
@@ -504,7 +512,7 @@ def bake(
         )
         # Before the decimation, which would count a crumb's faces as the body's.
         for one in steps:
-            subject, did = _prepared(one, subject)
+            subject, did = _prepared(one, subject, covers)
             prepared.append({"step": one["said"]["step"], **did})
         subject = blender.decimate(subject, chosen["decimate"])
         if scrub:
@@ -737,7 +745,8 @@ def _project_fn(named, *, where: Path, at: str, code: str, failed) -> tuple:
 
 
 #: The preparation steps `render.bake` knows, each with the arguments it takes.
-STEPS = {"dedust": ("below",), "settle": ("squash",), "custom": None}
+STEPS = {"dedust": ("below",), "settle": ("squash",), "fill": ("share",),
+         "custom": None}
 
 
 def _steps(prepare, *, where: Path) -> list[dict]:
@@ -751,7 +760,8 @@ def _steps(prepare, *, where: Path) -> list[dict]:
                 f"prepare[{index}] is {given!r}, and a step is one of "
                 f"{', '.join(STEPS)}",
                 "give each step as {step = dedust, below = 0.01}, {step = settle, "
-                "squash = 0.93} or {step = custom, fn = \"file.py:fn\"}",
+                "squash = 0.93}, {step = fill, share = 0.6} or {step = custom, "
+                "fn = \"file.py:fn\"}",
                 given=str(given),
             )
         arguments = {k: v for k, v in given.items() if k not in ("step", "fn")}
@@ -777,7 +787,7 @@ def _steps(prepare, *, where: Path) -> list[dict]:
     return resolved
 
 
-def _prepared(one: dict, subject):
+def _prepared(one: dict, subject, covers=()):
     """Run one step on the loaded mesh; the subject after it, and what it did."""
     from . import blender
 
@@ -786,6 +796,9 @@ def _prepared(one: dict, subject):
         return subject, blender.dedust(subject, float(one["arguments"]["below"]))
     if step == "settle":
         return subject, blender.settle(subject, float(one["arguments"]["squash"]))
+    if step == "fill":
+        return subject, blender.fill(subject, float(one["arguments"]["share"]),
+                                     (float(covers[0]), float(covers[1])))
     try:
         given = one["fn"](subject, **one["arguments"])
     except Exception as broken:  # noqa: BLE001 - the project's code, said as its own

@@ -301,6 +301,38 @@ def settle(obj: Any, squash: float) -> dict:
     return {"squash": squash}
 
 
+def fill(obj: Any, share: float, covers: tuple[float, float]) -> dict:
+    """Scale the subject so it spans `share` of the frame `covers` holds (§PW582).
+
+    Its width and its height, as the front camera sees them, are each held to the
+    frame's, and the larger of the two shares is made `share`. Cottony's three exporters
+    each scaled a mesh by hand to a fill of its 200 px frame before the bake, outside
+    the record; this is that step, in the key.
+    """
+    from mathutils import Matrix
+
+    if not 0.0 < share <= 1.0:
+        raise PolyweaveError(
+            "render.bad-prepare",
+            f"fill spans a share of the frame, and {share!r} is not one",
+            "pass a share above 0 and at most 1, such as 0.6",
+        )
+    world = [obj.matrix_world @ v.co for v in obj.data.vertices]
+    if not world:
+        return {"share": share}
+    width = max(v.x for v in world) - min(v.x for v in world)
+    height = max(v.z for v in world) - min(v.z for v in world)
+    spans = max(width / float(covers[0]), height / float(covers[1]))
+    if spans <= 0.0:
+        return {"share": share}
+    factor = share / spans
+    # On the world matrix, as settle is, so what frames the subject next reads it
+    # scaled: `obj.scale` waits for a depsgraph update, and a mesh built off the origin
+    # framed its old bounds and rendered empty.
+    obj.matrix_world = Matrix.Scale(factor, 4) @ obj.matrix_world
+    return {"share": share, "scaled": round(factor, 6)}
+
+
 def triangles(obj: Any) -> int:
     """How many triangles the subject was drawn with, after any decimation (§PW141)."""
     return sum(len(polygon.vertices) - 2 for polygon in obj.data.polygons)

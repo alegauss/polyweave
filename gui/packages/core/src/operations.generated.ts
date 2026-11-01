@@ -1932,7 +1932,7 @@ export interface RenderBakeArgs {
   allow_uniform?: boolean
   /** undo shading a service painted into the mesh's texture; default false */
   scrub?: boolean
-  /** steps on the mesh: dedust, settle or custom; default [] */
+  /** mesh steps: dedust, settle, fill, custom; default [] */
   prepare?: unknown[]
   /** project passes over the picture: file.py:fn or {pass, args}; default [] */
   after?: unknown[]
