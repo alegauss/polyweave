@@ -1521,6 +1521,25 @@ section.band {
 }
 
 /* ---------- made with polyweave ---------- */
+/* The loop under the hero (§PW663): a fixed dark frame, since the video is drawn on one. */
+.loop {
+  max-width: 960px;
+  margin: 0 auto;
+}
+.loop video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #121216;
+}
+.loop figcaption {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--muted, inherit);
+  text-align: center;
+}
 .games {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

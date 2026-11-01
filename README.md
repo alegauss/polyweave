@@ -6,6 +6,8 @@
 
 **A Claude Code plugin that makes a game's parts: you declare what each part must satisfy, and it searches Blender, Godot and the generators for the parameters that pass.**
 
+<img src="site/public/demo/hammer-loop-poster.webp" alt="Cottony's hammer booster in three attempts: two fail on colour and size, and a person refuses one for its edge; the third passes every check and is accepted" width="720">
+
 ```
 pip install polyweave-gamekit
 ```

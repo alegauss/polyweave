@@ -496,21 +496,3 @@ take is read off that code rather than invented here.
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system
-
-### §PW663 A part going from failed to passed, on the home page
-
-The site explains polyweave with prose, a session transcript and the specs, but never
-shows a part being made. The promise is visual (a model, a sprite, a sound, held to a
-bar and searched until it passes), and a reader deciding in a few seconds whether this
-is for them gets no picture of it. The portfolio review of 30/10/2026 (visibility repo,
-`produtos/polyweave.md`) proposes a visual demonstration on the site, and the author
-confirmed polyweave may be promoted before Block H, without waiting for a measured game.
-The channels named there (r/gamedev, r/godot, r/blender) only accept a post that shows a
-real before and after.
-
-The design:
-
-- **One short loop on the home page**, above the fold or just below the hero: a real part from Cottony or Spinhold going from the first generated attempt that failed its `accept.toml` (the measure that failed shown beside it) to the attempt that passed, with the numbers.
-- **Recorded, not mocked.** The frames come from the run's own evidence (renders, `.prov.json`, the accept report), so the demo is reproducible from the repository.
-- **Light on the page.** WebM or animated WebP under ~1.5 MB with a still poster, `loading="lazy"`, and a text caption for readers who do not play it.
-- **Reused** as the image of the README's first screen and of the Reddit and Show HN posts.

@@ -4,6 +4,7 @@ import { HeroFigure } from "../components/sections/HeroFigure";
 import { Icon } from "../components/ui/Icon";
 import { hero, repoUrl } from "../lib/site-content";
 import { Different } from "../components/sections/Different";
+import { Loop } from "../components/sections/Loop";
 import { Gains } from "../components/sections/Gains";
 import { Steps } from "../components/sections/Steps";
 import { Makes } from "../components/sections/Makes";
@@ -17,7 +18,8 @@ import { Explore } from "../components/sections/Explore";
 
 // The landing page, and the section order is the pitch:
 //
-//   hero (what it is, in one picture) → where it sits (what the other tools leave to you)
+//   hero (what it is, in one picture) → one real part going from refused to accepted
+//   → where it sits (what the other tools leave to you)
 //   → what Claude Code gains (the reason to install it) → how it works → what it makes → the games made with it → see it run → the models it sits in front of
 //   → the review page (where the person decides) → why it is safe → install → go deeper.
 //
@@ -48,6 +50,7 @@ export function Landing() {
       >
         <HeroFigure />
       </SiteHero>
+      <Loop />
       <Different />
       <Gains />
       <Steps />

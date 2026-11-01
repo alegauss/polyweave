@@ -361,6 +361,21 @@ export const heroParts: { icon: IconName; label: string }[] = [
 
 // The games polyweave is built against and used on. Each logo is copied from the game's own
 // repository into public/showcase/, so the page fetches nothing from their sites.
+// The home page's loop (§PW663): one real part, from refused to accepted, read at a glance.
+// The video is made by scripts/hammer_loop.py from Cottony's own renders, checked against
+// its spec as it is made; the caption says the same for a reader who does not play it.
+export const loop = {
+  eyebrow: "See it work",
+  heading: "Wrong, wrong, right: one real game asset.",
+  intro: [
+    "Cottony's hammer booster, checked against its own spec at every attempt. Two tries fail on colour and size, and a person refuses one for its edge. The third passes every check, and the person accepts it.",
+  ] as Rich,
+  video: "/polyweave/demo/hammer-loop.webm",
+  poster: "/polyweave/demo/hammer-loop-poster.webp",
+  caption:
+    "Attempt 1: wrong pink, too small. Attempt 2: wrong pink, too small, and a person says the edge has flaws. Final: right pink, right size, accepted.",
+};
+
 export const showcase = {
   eyebrow: "Made with polyweave",
   heading: "Real games, made with it.",

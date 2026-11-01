@@ -1,0 +1,98 @@
+{
+ "spec": "docs/design/accept/booster_hammer.accept.toml",
+ "steps": [
+  {
+   "render": ".polyweave/boosters/flat-hammer.png",
+   "title": "Attempt 1",
+   "said": null,
+   "passed": false,
+   "failed": [
+    "head-reads-pink",
+    "fills-its-well"
+   ],
+   "shown": [
+    {
+     "id": "head-reads-pink",
+     "label": "colour off by",
+     "value": 6.97542,
+     "text": "6.98",
+     "bound": "at most 3.73",
+     "passed": false,
+     "says": "wrong pink"
+    },
+    {
+     "id": "fills-its-well",
+     "label": "fills",
+     "value": 0.1642,
+     "text": "0.164",
+     "bound": "0.17 to 0.2",
+     "passed": false,
+     "says": "too small"
+    }
+   ]
+  },
+  {
+   "render": ".polyweave/boosters/cv-hammer.png",
+   "title": "Attempt 2",
+   "said": [
+    false,
+    "a person: \u201cthe edge has flaws\u201d"
+   ],
+   "passed": false,
+   "failed": [
+    "head-reads-pink",
+    "fills-its-well"
+   ],
+   "shown": [
+    {
+     "id": "head-reads-pink",
+     "label": "colour off by",
+     "value": 24.243488,
+     "text": "24.24",
+     "bound": "at most 3.73",
+     "passed": false,
+     "says": "wrong pink"
+    },
+    {
+     "id": "fills-its-well",
+     "label": "fills",
+     "value": 0.1642,
+     "text": "0.164",
+     "bound": "0.17 to 0.2",
+     "passed": false,
+     "says": "too small"
+    }
+   ]
+  },
+  {
+   "render": ".polyweave/boosters/booster_hammer.port.png",
+   "title": "Final",
+   "said": [
+    true,
+    "a person: accepted"
+   ],
+   "passed": true,
+   "failed": [],
+   "shown": [
+    {
+     "id": "head-reads-pink",
+     "label": "colour off by",
+     "value": 3.725799,
+     "text": "3.73",
+     "bound": "at most 3.73",
+     "passed": true,
+     "says": "right pink"
+    },
+    {
+     "id": "fills-its-well",
+     "label": "fills",
+     "value": 0.18635,
+     "text": "0.186",
+     "bound": "0.17 to 0.2",
+     "passed": true,
+     "says": "right size"
+    }
+   ]
+  }
+ ]
+}
