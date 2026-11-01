@@ -449,24 +449,6 @@ when the lull counts no new track and RK198's re-count matches the owner's sheet
 
 ## Block T — Adopting polyweave in a project
 
-### §PW662 A GitHub release for every PyPI version
-
-`polyweave-gamekit` 0.1.0 is on PyPI since 22/10/2026, published by `publish.yml` from
-the tag `v0.1.0`. The GitHub repository shows no release at all: the workflow uploads to
-PyPI and stops. Someone who lands on the repository from the marketplace or an awesome
-list sees "no releases published" and reads it as a project that has not shipped, while
-the package it installs is right there under another name. The portfolio review of
-30/10/2026 (visibility repo, `estrategia/portfolio.md` and `produtos/polyweave.md`) asks
-for coherence in the niche tools: the release aligned with the published package.
-
-The design:
-
-- **The same tag makes both.** After the PyPI job succeeds, a job creates the GitHub Release for that tag with `GITHUB_TOKEN`, titled with the version and with the CHANGELOG entries since the previous tag as its notes, and the built wheel and sdist attached.
-- **The first release is backfilled** for `v0.1.0`, so the page lists what PyPI already has.
-- **The name is said where people look.** The README's install section already explains why the package is `polyweave-gamekit` (PW602); the release notes and the one-line install at the top of the README say it too, in one line ("`polyweave` on PyPI is an unrelated project").
-
-Done means the repository's Releases page and PyPI list the same versions.
-
 ## Block U — A window on everything a project governs
 
 ### §PW311 The window proved on Starship

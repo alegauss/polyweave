@@ -122,12 +122,6 @@
   back within two percent of 16:9, proved by one paid request the owner chooses to make
   and recorded in the learned schema.
 
-## Done when — PW662
-
-- **The Releases page lists v0.1.0 beside PyPI's 0.1.0** gh release list names v0.1.0
-  with its wheel and sdist, made by the owner with the gh release create line
-  tools/release_notes.py gives, since publishing it is theirs.
-
 ## Non-goals
 
 - **A graphical editor** The caller here is an agent in a terminal, so a surface only a
