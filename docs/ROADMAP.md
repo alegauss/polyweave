@@ -50,6 +50,8 @@
 
 ## Block T — Adopting polyweave in a project
 
+- 📋 **PW678** (deps: —) **a file borrowed after sound.loop cut it records only its scratch path: no origin service, original or derivation step** — A shipped asset made outside polyweave cannot say where it came from, so its credit and licence are typed by hand and drift. → §PW678
+
 ## Block U — A window on everything a project governs
 
 ## Block V — Parts every game repeats, installed already proved
