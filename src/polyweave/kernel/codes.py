@@ -1041,6 +1041,12 @@ KERNEL_CODES: dict[str, Code] = {
         "export_presets.cfg or no preset by the name given (§PW455)",
         doors=("name one of the project's presets", "pass the paths a build ships"),
     ),
+    "prov.stale": Code(
+        means="an artefact under the path asked was made from a file that moved since",
+        when="provenance.outdated strict=true in CI: a site copy older than its art "
+        "(§PW36)",
+        doors=("make the named artefacts again", "drop strict to read the list alone"),
+    ),
     "prov.missing-artefact": Code(
         means="there is nothing at the path the record would describe",
         when="a record is built before the artefact is written, or beside the wrong "

@@ -85,7 +85,8 @@ CORE_TOOLS = 41_400
 #: 146,718 with stock.find and stock.fetch (§PW673, 2026-10-31), whose picture figure
 #: rose by 1,500 for them.
 #: 147,210 with stock's footage parameters (§PW674, 2026-10-31).
-SESSION_BUDGET = 147_600
+#: 147,606 with provenance.outdated's under and strict (§PW36, 2026-11-03).
+SESSION_BUDGET = 148_000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

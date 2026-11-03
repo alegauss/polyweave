@@ -1192,17 +1192,29 @@ def dependents(
 
 
 @operation("provenance.outdated")
-def outdated(root: Annotated[str, ROOT] = ".") -> dict:
+def outdated(
+    root: Annotated[str, ROOT] = ".",
+    under: Annotated[str, Param("only artefacts under this path")] = "",
+    strict: Annotated[bool, Param("refuse with prov.stale when any is left")] = False,
+) -> dict:
     """Artefacts made from a file that has changed since, and not made again (§PW119).
 
     The gate half: a file moved and an artefact depending on it did not, so a committed
     screenshot no longer shows the game. `sound` is false while any is left. `kits`
     names each installed kit the plugin now carries in a newer version, with the
     changes between the two (§PW343).
+
+    `under` narrows it to one folder's artefacts, and `strict` refuses where any is
+    left, so CI can hold a site's copies to their art without the project's working
+    files (§PW36): Cottony's whole tree held 256 stale records, none of them the site's.
     """
     where = Path(root).resolve()
+    prefix = under.replace("\\", "/").strip("/")
     stale = []
     for record in _records(where):
+        made = str((record.get("artefact") or {}).get("path") or "")
+        if prefix and not (made == prefix or made.startswith(prefix + "/")):
+            continue
         moved = []
         for one in record.get("inputs") or ():
             named = one.get("path")
@@ -1220,8 +1232,21 @@ def outdated(root: Annotated[str, ROOT] = ".") -> dict:
                     "moved": moved,
                 }
             )
+    if strict and stale:
+        named = ", ".join(one["artefact"] for one in stale[:5])
+        raise PolyweaveError(
+            "prov.stale",
+            f"{len(stale)} artefact(s){f' under {prefix}' if prefix else ''} were made "
+            f"from files that have moved since: {named}"
+            + (", ..." if len(stale) > 5 else ""),
+            "make them again with the operation that made them, then commit what it "
+            "writes",
+            given=prefix,
+        )
     # A section a layer adds, under its own name: kits that are behind (§PW343).
-    added = {name: call(target, where) for name, target in outdated_sections().items()}
+    # Not under a path: a kit is no artefact under one.
+    sections = {} if prefix else outdated_sections()
+    added = {name: call(target, where) for name, target in sections.items()}
     return {"outdated": stale, "sound": not stale, **added}
 
 

@@ -140,7 +140,11 @@ twelve copies showed older art than the game for weeks. A `*.copies.toml` declar
 encodes it by its extension, a WebP at method 6. Every copy's record names the source
 (`picture`) and the table (`table`) as inputs with the side, box and quality as params,
 so `provenance.outdated` names a copy once its source or its table moves, and a newer
-Pillow encoding a level differently changes nothing. A source that is not there is
+Pillow encoding a level differently changes nothing. CI holds a site to its art with
+`provenance.outdated under="site/assets" strict=true` (§PW36): `under` reads only the
+records of artefacts under that path, so a project's working files, of which Cottony
+held 256 stale, do not drown the site's, and `strict` refuses with `prov.stale`, naming
+them, where any is left, which a command line exits 1 on. A source that is not there is
 `copies.missing-source`, naming every one, before anything is written. A key the table
 does not take, a row with no source or out, an extension no format is picked by, or a
 side, box or quality that is not a whole number in range is `copies.bad-table`. A JPEG

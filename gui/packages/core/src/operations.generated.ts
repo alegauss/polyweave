@@ -1596,6 +1596,10 @@ export interface ProvenanceGeneratedArgs {
 export interface ProvenanceOutdatedArgs {
   /** the project the records are under; default "." */
   root?: string
+  /** only artefacts under this path */
+  under?: string
+  /** refuse with prov.stale when any is left; default false */
+  strict?: boolean
 }
 
 /** Read a record, by its own path or by the path of the artefact it describes. */

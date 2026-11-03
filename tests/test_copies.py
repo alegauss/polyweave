@@ -78,6 +78,31 @@ def test_a_copy_is_outdated_once_its_source_moves_and_only_its_own(tree):
     assert provenance.outdated(str(tree))["sound"] is True
 
 
+def test_a_site_can_be_held_to_its_art_alone_and_fail_ci(tree):
+    """§PW36: Cottony's tree held 256 stale working files, none of them the site's."""
+    cut(tree)
+    # A working file made from the same art, outside the site.
+    elsewhere = tree / "work" / "scratch.jpg"
+    elsewhere.parent.mkdir()
+    (tree / "site" / "assets" / "og.jpg").replace(elsewhere)
+    record = provenance.read(tree / "site" / "assets" / "og.jpg.prov.json", tree)
+    record["artefact"]["path"] = "work/scratch.jpg"
+    provenance.write(record, tree)
+    cut(tree)
+    Image.new("RGB", (120, 80), (220, 220, 30)).save(tree / "art" / "promo.png")
+    whole = {one["artefact"] for one in provenance.outdated(str(tree))["outdated"]}
+    assert whole == {"site/assets/og.jpg", "work/scratch.jpg"}
+    site = provenance.outdated(str(tree), under="site/assets")
+    assert [one["artefact"] for one in site["outdated"]] == ["site/assets/og.jpg"]
+    assert "kits" not in site
+    with pytest.raises(PolyweaveError) as refused:
+        provenance.outdated(str(tree), under="site/assets/", strict=True)
+    assert refused.value.code == "prov.stale"
+    assert "site/assets/og.jpg" in refused.value.message
+    cut(tree)
+    assert provenance.outdated(str(tree), under="site/assets", strict=True)["sound"]
+
+
 def test_a_missing_source_is_refused_before_anything_is_written(tree):
     (tree / "art" / "promo.png").unlink()
     with pytest.raises(PolyweaveError) as refused:

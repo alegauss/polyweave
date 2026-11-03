@@ -108,4 +108,6 @@ def test_a_code_declared_where_it_does_not_belong_is_refused(
 
 def test_the_kernels_codes_file_is_no_longer_the_whole_table():
     kernel = Path(C.__file__).read_text(encoding="utf-8")
-    assert len(kernel.splitlines()) < 1400
+    # 1,399 lines until prov.stale (§PW36, 2026-11-03): a kernel operation's own code,
+    # where the bar is against a layer's codes coming back, not the kernel's growing.
+    assert len(kernel.splitlines()) < 1410

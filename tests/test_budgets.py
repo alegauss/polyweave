@@ -192,7 +192,9 @@ from polyweave.surface.capabilities import capabilities
 #: author and licence, which Dumont saved by hand (§PW673, 2026-10-31).
 #: 168,565 with stock's kind, rendition and height, footage by length and resolution
 #: (§PW674, 2026-10-31).
-DESCRIBE = 169_000
+#: 169,039 with provenance.outdated's under and strict, a site's copies held to their
+#: art in CI without the project's working files (§PW36, 2026-11-03).
+DESCRIBE = 169_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -345,7 +347,9 @@ DESCRIBE = 169_000
 #: 184,785 with the codes of PW659-PW673 (an aspect that differs, a lines file, an
 #: account out of credit) and stock.find and stock.fetch (§PW673, 2026-10-31).
 #: 185,391 with stock's footage parameters (§PW674, 2026-10-31).
-CAPABILITIES = 185_800
+#: 185,918 with provenance.outdated's under and strict, and prov.stale (§PW36,
+#: 2026-11-03).
+CAPABILITIES = 186_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
