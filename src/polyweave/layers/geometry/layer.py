@@ -4,7 +4,7 @@ from polyweave.kernel.layer import Layer, Producer, Subject
 
 LAYER = Layer(
     name="geometry",
-    uses=("engine", "words",),
+    uses=("words",),
     summary="Shapes declared as data, built to meshes or voxels, rendered, measured.",
     modules=(
         "polyweave.layers.geometry.cost",

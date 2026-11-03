@@ -42,13 +42,16 @@ LAYER = Layer(
         )
     },
     # A search sample judged on a declared run's capture, after an import (§PW621).
-    parts={"runs.after": "polyweave.layers.engine.runs:after"},
+    parts={"runs.after": "polyweave.layers.engine.runs:after",
+           "engine.draw_at_rig": "polyweave.layers.engine.at_rig:draw"},
     codes="polyweave.layers.engine.codes",
     config="polyweave.layers.engine.settings",
     # 29,481 with game.compare_runs, two runs' traces held together (§PW612).
     # 29,966 with game.replay_rates, one run flown at several frame rates (§PW640).
     tools=30_400,
     census={
+        "polyweave.layers.engine.at_rig": (
+            "internal", "a model drawn at a staged rig, the part render.in_game asks"),
         "polyweave.layers.engine.contrast:targets_in": (
             "internal", "the targets a log's lines name"),
         "polyweave.layers.engine.contrast:contrasts": (

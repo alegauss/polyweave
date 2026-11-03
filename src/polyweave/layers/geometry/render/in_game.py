@@ -19,22 +19,17 @@ against a tolerance the caller passes.
 from __future__ import annotations
 
 import math
-import re
 from pathlib import Path
 from typing import Annotated
 
 import numpy as np
 
-from polyweave.kernel import provenance
+from polyweave.kernel import layer, provenance
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 
 from .rig import Rig, camera_for, lights_for
-
-#: The Godot script that draws the model, carried by polyweave rather than the game.
-SCRIPT = (Path(__file__).resolve().parents[2] / "engine" / "godot" / "model_at_rig.gd")
-LINE = re.compile(r"^MODEL_AT_RIG shot=(?P<shot>.+)$", re.MULTILINE)
 
 #: An omni light's energy per watt of the bake's area light. A Lambertian emitter of P
 #: watts gives P / (pi d^2) of irradiance at d, and a diffuse surface sends a pi-th of
@@ -150,7 +145,6 @@ def in_game(
     """
     from PIL import Image
 
-    from polyweave.layers.engine import engine, offscreen
     from polyweave.loop import verdict
 
     config = load(root)
@@ -169,29 +163,17 @@ def in_game(
     size = (baked.shape[1], baked.shape[0])
     scene = _staged(rig, lo, hi, size, light_scale)
     shot = picture.with_name(picture.stem + ".game.png")
-    try:
-        route = offscreen.route_for(here)
-    except PolyweaveError as refused:
-        return {"ok": None, "skipped": refused.message,
+    # The engine's half by name, so geometry never imports the engine (§PW506).
+    ran = layer.call(layer.needed("engine.draw_at_rig"), mesh, scene, size, shot, here)
+    if "skipped" in ran:
+        return {"ok": None, "skipped": ran["skipped"],
                 "says": "skipped: no route draws real pixels on this machine"}
-    import json
-
-    engine._launch([engine.find(here), "--headless", "--import", "--path", str(here)],
-                   cwd=here, timeout=600)
-    found = offscreen.capture(
-        SCRIPT, expect=LINE, root=here, route=route.name, frames=600,
-        args=("--", f"model={engine._as_res(mesh, here)}", f"size={size[0]}x{size[1]}",
-              f"shot={shot.as_posix()}", f"rig={json.dumps(scene)}"))
-    if not shot.is_file():
-        raise PolyweaveError(
-            "engine.no-signal", f"the game drew no picture of {mesh.name}",
-            "read the log for why the scene did not load or draw",
-            detail=found.get("why") or found.get("log"))
+    route = ran["route"]
     with Image.open(shot) as opened:
         drawn = np.asarray(opened.convert("RGBA"))
     measured = _apart(drawn, baked)
     provenance.write(provenance.build(
-        "capture", shot, engine={"name": "godot", "route": route.name},
+        "capture", shot, engine={"name": "godot", "route": route},
         inputs=[provenance.source("bake", picture, root=here),
                 provenance.source("mesh", mesh, root=here)],
         params={"light_scale": light_scale, "staged": scene},
@@ -209,7 +191,7 @@ def in_game(
     return {
         "game": provenance.relative(shot, here),
         "sheet": sheet,
-        "route": route.name,
+        "route": route,
         **measured,
         "agrees": agrees,
         "says": (f"the game's {mesh.name} overlaps the bake's silhouette by "
