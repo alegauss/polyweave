@@ -62,30 +62,6 @@ same model at one rig says whether the two agree.
 
 ## Block H — Proof on a real game
 
-### §PW57 One floor of five is a target now, and one more is a floor
-
-A threshold inside a gate can only answer after the render is spent. The same number in
-an acceptance spec is what `search` moves towards, so the bar stops being a verdict and
-becomes the target. That was the reason for this line, and the vivid floor is now that:
-`docs/design/accept/board_drawn.accept.toml` and `board_mesh.accept.toml` in Cottony,
-read by `saturation_hsv_p99`, with `check_vivid.py` reduced to running them. It needed a
-measure: at a whole screen's tail HSL saturation reads 1.0 on every picture, so the
-claim in `docs/specs/acceptance-spec.md` that it needed nothing new was wrong.
-
-Reading the other four corrected the count. Only one more is a floor on a picture.
-`check_palette.py` checks that `pieces.gd` mirrors `palette.py`. `check_plush.py` and
-`check_markings.py` draw a synthetic body through Cottony's own 2D code and assert
-ratios between two materials drawn in one run. They are unit tests of drawing code, no
-asset is under them, and no search turns their parameters. They stay where they are.
-
-What is left is `check_pieces.py`, which holds the committed sheet
-`docs/design/screenshot-pieces3d.png` to three rules: ink on the faced kinds, no pale
-ring of marks round a rim (rope or thread), and the kinds' radial silhouettes kept
-apart. None of the three is a measure in `docs/specs/measurements.md`. The ring rule is
-a property of a set of marks, which the script argues at length, and porting it is
-either a measure that counts marks forming a ring on a subject, or a person deciding it
-stays a test.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

@@ -146,4 +146,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW659", "PW495", "PW57", "PW449", "PW450", "PW201", "PW480", "PW641", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW659", "PW495", "PW449", "PW450", "PW201", "PW480", "PW641", "PW311", "PW368"];

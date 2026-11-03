@@ -20,8 +20,6 @@
 
 ## Block H — Proof on a real game
 
-- ⏸ **PW57** (deps: PW53 ✅) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — set aside (The owner decides: new measures, or a kept test.): check_pieces.py's rings and silhouette gaps have no measure a search could aim at. → §PW57
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

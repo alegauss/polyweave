@@ -86,13 +86,6 @@
   five or more, and a picture bought from the model passes or fails the family's gate
   with its record naming the model and its members.
 
-## Done when — PW57
-
-- **check_pieces.py's three rules are specs, or a person keeps them as a test** Each of
-  ink on the faced kinds, no pale ring of marks round a rim, and the kinds' silhouettes
-  kept apart is either a predicate in a Cottony acceptance spec over the committed piece
-  sheet, or recorded as a test a person chose to keep.
-
 ## Done when — PW480
 
 - **A kind's sample is cut and read from a frame by one call** reference.sample(frames,
