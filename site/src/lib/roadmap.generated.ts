@@ -27,7 +27,7 @@ export interface GeneratedNonGoal {
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
-  { block: "C", title: "The asset compiler", open: 1 },
+  { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW582",
-    block: "C",
-    symptom: "a mesh cannot be prepared before it is rendered, so Cottony keeps prep.py and three exporters outside the record",
-    why: "Cottony still runs prep.py and export_friends.py for the friends' cloth.",
-    deps: [],
-  },
   {
     id: "PW202",
     block: "R",

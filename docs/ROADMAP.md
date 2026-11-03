@@ -6,8 +6,6 @@
 
 ## Block C — The asset compiler
 
-- 🛠 **PW582** (deps: —) **a mesh cannot be prepared before it is rendered, so Cottony keeps prep.py and three exporters outside the record** — Cottony still runs prep.py and export_friends.py for the friends' cloth. → §PW582
-
 ## Block D — Fetching from a paid service without surprise
 
 ## Block E — One world with the engine
@@ -111,15 +109,6 @@
 - **Resogun's phase 1 counts its pods, not its city** On Spinhold's resogun_p1 frames
   the count per frame follows the pods by eye on the sheets, with silhouette or warp-in
   where motion alone is not enough.
-
-## Done when — PW582
-
-- **Cottony keeps no mesh preparation of its own** tools/art/prep.py and export_props,
-  export_boosters and export_friends are gone from Cottony, its families name prepare
-  steps through fixes, and project.adoption lists none of them as kept.
-- **Cottony keeps no exporter and no prep.py** The friends' cloth runs as a prepare step
-  that frames its own camera, the owner compares the five with today's sprites, and
-  Cottony's RK187 closes with tools/art holding no exporter.
 
 ## Done when — PW659
 
