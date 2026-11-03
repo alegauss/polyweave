@@ -284,30 +284,27 @@ against this line.
 
 ### §PW480 Objects told from a scene of their own colour
 
-Found in Spinhold on 2026-10-16 (RK198), re-reading Resogun's phase 1 from the owner's
-capture (`reference.register` as `resogun_p1`, 170 frames from `reference.frames`).
+Found in Spinhold on 2026-10-16 (RK198): Resogun's phase 1
+(`.polyweave/references/resogun_p1`) has enemies of the violet of the city behind them.
 
-The enemies are violet and blue-violet, and so is the city behind them: a violet ring,
-navy towers, pink-lit edges. `reference.objects` was called three times on
-`.polyweave/references/resogun_p1`, area `[0, 180, 1920, 1080]`:
+Landed: `motion` against the scene's scroll, `reference.sample`, and through PW641 a
+kind's `warp`, which keeps only tracks born at a flash just before them. The lull counts
+no track and the phase 282 (`docs/specs/fetching.md`).
 
-- pod `#604ba0` tol 0.12, samples (two 76 px crops), match 0.25, and chain `#282670`
-  tol 0.10, one sample: 9595 tracks, the city counted everywhere.
-- pod alone, tol 0.06, match 0.12: 0 tracks.
-- pod alone, tol 0.10, match 0.20: 987 tracks; `objects_004.png` shows most of them on
-  buildings and the ring, while the stack of pods at 0:28.5 is partly missed.
+Left is the count stretch by stretch against `art/reference/resogun/phase1-sheet.md`.
+Measured 2026-11-03 at warp tolerance 0.05, the twelve stretches read 53, 10, 5, 7, 7,
+19, 5, 22, 22, 11, 7, 26 against about 9, 8, 5, 3, 21, 38, 15, 22, 10, 20, 15, 12. Two
+errors remain.
 
-No step between those settles it: hue and an average colour distance to a sample cannot
-tell a lit studded sphere from a lit window of the same hue. Colours were also taken by
-a throwaway PIL snippet, since nothing picks a kind's colour or sample from a point.
+- Kills over-count: a death burst is white like a warp-in and its debris is born at it.
+  Ignoring a flash near a track that just ended cut the opening from 53 to 35 but the
+  chain run from 19 to 10, since the noise tracks the gate drops end everywhere. A burst
+  has to be told by its own look: size, colour spread, how fast it fades.
+- Chains are rings, not pods, and are under-counted. A kind told by its silhouette, the
+  island's mask against its sample's foreground, would make a chain a kind of its own.
 
-What polyweave should do: separate objects from a busy scene by more than colour, using
-what the footage gives: motion against the scrolling background (frame differencing
-after aligning the scene), shape (a sample's silhouette, not its mean colour), and the
-white warp-in each enemy makes a second before it is live. And `reference.sample(frames,
-at, box, name)` to cut a kind's sample and read its colour from a frame. Until then
-Spinhold's RK198 cites frames, not tracks, and its comparison with `phase_poc` waits on
-this line.
+Done when each stretch's count is within the sheet's own uncertainty, which the owner's
+sheet decides.
 
 ### §PW608 A level schema's reader and field metadata for the engine
 
