@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 8 },
+  { block: "R", title: "Levels measured before a person plays them", open: 9 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -108,6 +108,13 @@ export const generatedTasks: GeneratedTask[] = [
     why: "Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed.",
     deps: ["PW203"],
   },
+  {
+    id: "PW480",
+    block: "R",
+    symptom: "reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted",
+    why: "A kind told by its silhouette, the warp-in that marks an enemy going live, and Resogun's own phase counted are still to come.",
+    deps: [],
+  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [
@@ -146,4 +153,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW659", "PW495", "PW449", "PW450", "PW201", "PW480", "PW641", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW659", "PW495", "PW449", "PW450", "PW201", "PW311", "PW368"];

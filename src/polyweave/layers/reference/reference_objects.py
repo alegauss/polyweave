@@ -55,6 +55,14 @@ WIDEN = 2.0
 #: it to be an object rather than the background (§PW480).
 MOVING = 0.2
 
+#: A warp-in is an island of its colour this many pixels across, or more, at the width
+#: the frames are read at, that was not there in the frame before (§PW641).
+WARP_PIXELS = 4
+
+#: How far a light already lit in the frame before may have moved and still be the same
+#: light, in pixels at the width the frames are read at.
+WARP_GROW = 2
+
 _COLOUR = re.compile(r"#([0-9a-fA-F]{6})")
 
 
@@ -95,8 +103,34 @@ def declared(kinds: Any, here: Path | None = None) -> dict[str, dict]:
             "tolerance": float(tolerance),
             "size": [float(size[0]), float(size[1])],
             **_sampled(str(name), kind, here),
+            **_warped(str(name), kind),
         }
     return out
+
+
+def _warped(name: str, kind: dict) -> dict:
+    """A kind's warp-in: the colour it flashes, how far from it, and how long before and
+    how near its birth the flash is (§PW641)."""
+    warp = kind.get("warp")
+    if warp is None:
+        return {}
+    remedy = ('write warp as {"colour": "#ffffff", "tolerance": 0.1, "before": 1.0, '
+              '"near": 80}: the flash an object of the kind makes before it is live, '
+              "how long before in seconds and how near in the video's pixels")
+    if not isinstance(warp, dict):
+        raise _bad(f"kind {name!r} has warp {warp!r}", remedy)
+    found = _COLOUR.fullmatch(str(warp.get("colour", "")))
+    tolerance = warp.get("tolerance", 0.1)
+    before = warp.get("before", 1.0)
+    near = warp.get("near", 80)
+    if (not found or not isinstance(tolerance, int | float) or not 0 < tolerance <= 1
+            or not isinstance(before, int | float) or before <= 0
+            or not isinstance(near, int | float) or near <= 0):
+        raise _bad(f"kind {name!r} has warp {warp!r}", remedy)
+    rgb = found.group(1)
+    return {"warp": {"colour": "#" + rgb.lower(), "tolerance": float(tolerance),
+                     "before": float(before), "near": float(near)},
+            "warp_rgb": [int(rgb[i:i + 2], 16) for i in (0, 2, 4)]}
 
 
 def _sampled(name: str, kind: dict, here: Path | None) -> dict:
@@ -190,6 +224,67 @@ def _moved(now: np.ndarray, then: np.ndarray,
     aligned = np.roll(then[..., :3].astype(np.float64), shift, axis=(0, 1))
     apart = np.sqrt(((now[..., :3].astype(np.float64) - aligned) ** 2).sum(axis=2))
     return apart > threshold * math.sqrt(3) * 255.0, shift
+
+
+def _grown(mask: np.ndarray, steps: int) -> np.ndarray:
+    """The mask with every island widened by `steps` pixels, four-connected."""
+    for _ in range(steps):
+        wider = mask.copy()
+        wider[1:] |= mask[:-1]
+        wider[:-1] |= mask[1:]
+        wider[:, 1:] |= mask[:, :-1]
+        wider[:, :-1] |= mask[:, 1:]
+        mask = wider
+    return mask
+
+
+def _warps(now: np.ndarray, then: np.ndarray | None, rgb: list[int],
+          tolerance: float, scale: float) -> list[tuple[float, float]]:
+    """Where a flash of `rgb` lit in `now` that was not lit in `then`, the frame before,
+    once the scene's own scroll is taken out: each island's centre in the video's own
+    pixels (§PW641). A light the scene carries was lit before and is not a warp."""
+    def lit(frame: np.ndarray) -> np.ndarray:
+        apart = np.sqrt(((frame[..., :3].astype(np.float64) - np.array(rgb)) ** 2)
+                        .sum(axis=2))
+        return apart <= tolerance * math.sqrt(3) * 255.0
+
+    new = lit(now)
+    if then is None:
+        return []
+    before = np.roll(lit(then), _scrolled(now, then), axis=(0, 1))
+    labels = islands(new & ~_grown(before, WARP_GROW))
+    ids, counts = np.unique(labels[labels >= 0], return_counts=True)
+    out = []
+    for label, count in zip(ids, counts, strict=True):
+        if count >= WARP_PIXELS:
+            ys, xs = np.nonzero(labels == label)
+            out.append((float(xs.mean()) / scale, float(ys.mean()) / scale))
+    return out
+
+
+def _gated(tracks: list[dict], kinds: dict[str, dict], flashes: dict[str, list],
+          lasting: int) -> tuple[list[dict], dict]:
+    """The tracks seen in at least `lasting` frames and, for a kind with a warp, born
+    where and shortly after one of its flashes; renumbered, and how many each test
+    dropped (§PW641). A flash in the frame a track is born in does not count: a warp-in
+    comes before the object is live, and a burst or a shot lights where one is."""
+    kept, dropped = [], {"lasting": 0, "warp": 0}
+    for track in tracks:
+        if len(track["path"]) < lasting:
+            dropped["lasting"] += 1
+            continue
+        warp = kinds[track["kind"]].get("warp")
+        if warp:
+            at, x, y = track["path"][0]
+            if not any(at - warp["before"] <= when < at
+                       and math.dist((fx, fy), (x, y)) <= warp["near"]
+                       for when, fx, fy in flashes[track["kind"]]):
+                dropped["warp"] += 1
+                continue
+        kept.append(track)
+    for number, track in enumerate(kept, start=1):
+        track["id"] = number
+    return kept, dropped
 
 
 def detect(rgb: np.ndarray, kinds: dict[str, dict], scale: float,
@@ -504,6 +599,9 @@ def objects(
         float, Param("keep only what moved against the scene's scroll by this share of "
                      "the widest colour distance; 0 is off", lo=0.0, hi=1.0)
     ] = 0.0,
+    lasting: Annotated[
+        int, Param("keep only a track seen in at least this many frames", lo=1)
+    ] = 1,
     root: Annotated[str, Param("the project the frames are under")] = ".",
 ) -> dict:
     """Count and follow what moves in a reference video's frames, by kinds you declare.
@@ -511,8 +609,10 @@ def objects(
     Each frame's islands of a kind's colour and size become detections, joined into
     tracks (first and last second, path, and whether each left the frame, was gone
     inside it or was alive at the end) and into groups born together, with a count and
-    a formation. objects.json and contact sheets with each track's id land beside the
-    frames, recorded. Checking the counts against the sheets stays the agent's work.
+    a formation. A kind that declares a `warp` keeps only tracks born near a flash of
+    that colour lit shortly before, which a scene's own lights never make. objects.json
+    and contact sheets with each track's id land beside the frames, recorded. Checking
+    the counts against the sheets stays the agent's work.
     """
     from PIL import Image as Pil
 
@@ -536,7 +636,15 @@ def objects(
         reads.append((one, scale, np.asarray(image.resize(shape))))
     left, top = (int(area[0]), int(area[1])) if area else (0, 0)
     shifts = []
+    flashes: dict[str, list] = {name: [] for name in kinds_}
     for index, (one, scale, read) in enumerate(reads):
+        for name, kind in kinds_.items():
+            if "warp" in kind:
+                then = reads[index - 1][2] if index else None
+                flashes[name] += [
+                    (one["ms"] / 1000, round(x + left, 1), round(y + top, 1))
+                    for x, y in _warps(read, then, kind["warp_rgb"],
+                                      kind["warp"]["tolerance"], scale)]
         moving = None
         if motion and len(reads) > 1:
             # Against the frame before, or the one after for the first.
@@ -550,17 +658,23 @@ def objects(
             one_found["y"] = round(one_found["y"] + top, 1)
         seen.append((one["ms"] / 1000, found))
     wide = size[0] or 1
-    tracks = tracked(seen, speed * wide, size)
+    tracks, dropped = _gated(tracked(seen, speed * wide, size), kinds_, flashes,
+                            int(lasting))
     groups = grouped(tracks, together, apart * wide)
     sheets = _sheet(folder, listed.get("frames", []), tracks) if tracks else []
     written = {
         "frames": provenance.relative(manifest, here),
         "kinds": {k: {key: v[key] for key in ("colour", "tolerance", "size", "samples",
-                                              "match") if key in v}
+                                              "match", "warp") if key in v}
                   for k, v in kinds_.items()},
         "area": list(area) if area else None,
         "motion": motion,
+        "lasting": int(lasting),
         **({"scroll": shifts} if shifts else {}),
+        **({"warps": {name: [list(one) for one in found]
+                      for name, found in flashes.items() if "warp" in kinds_[name]}}
+           if any("warp" in kind for kind in kinds_.values()) else {}),
+        "dropped": dropped,
         "per_frame": [{"at": at, "count": len(found)} for at, found in seen],
         "tracks": tracks,
         "groups": groups,
@@ -576,15 +690,18 @@ def objects(
             provenance.source("sample", _under(here, one), root=here)
             for kind in kinds_.values() for one in kind.get("samples", [])],
         params={"kinds": written["kinds"], "area": written["area"], "speed": speed,
-                "together": together, "apart": apart, "motion": motion},
+                "together": together, "apart": apart, "motion": motion,
+                "lasting": int(lasting)},
         root=here,
     ), here)
     return {
         "objects": provenance.relative(target, here),
         "sheets": [provenance.relative(one, here) for one in sheets],
         "tracks": len(tracks),
+        "dropped": dropped,
         "groups": [{key: g[key] for key in ("id", "kind", "born", "count", "formation",
                                             "ended")} for g in groups],
         "says": f"{len(tracks)} tracks in {len(groups)} groups over {len(seen)} "
-        "frames; check them against the sheets before writing a wave from them",
+        f"frames, {dropped['lasting']} dropped as too brief and {dropped['warp']} born "
+        "at no warp-in; check them against the sheets before writing a wave from them",
     }

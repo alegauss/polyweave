@@ -97,6 +97,95 @@ def test_a_city_of_the_enemies_hue_is_left_out_by_its_motion(tmp_path):
     assert track["path"][-1][2] > track["path"][0][2]  # [at, x, y]: it fell
 
 
+WHITE = (255, 255, 255)
+
+
+def warped(tmp_path, frames=6):
+    """A tower edge in the enemies' cyan sliding across at its own parallax, an enemy
+    that warps in as a white flash at one second and is live from 1.5 falling, and a
+    cyan blip seen in one frame only, born at a flash of its own (§PW641)."""
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    folder = tmp_path / ".polyweave" / "references" / "warped"
+    folder.mkdir(parents=True)
+    import numpy as np
+
+    # A still, textured backdrop, so the scroll found is the scene's and not one flash
+    # laid onto the other, as a real frame's city outweighs its two flashes.
+    texture = np.random.default_rng(7).integers(0, 50, (720, 1280, 3), dtype=np.uint8)
+    backdrop = Image.fromarray(texture)
+    listed = []
+    for n in range(frames):
+        at = n * 0.5
+        image = backdrop.copy()
+        draw = ImageDraw.Draw(image)
+        square(draw, 200 + 60 * n, 500, CYAN)  # the tower edge: moves, never warps
+        if n == 2:
+            square(draw, 650, 300, WHITE, half=8)  # the warp-in
+        if n >= 3:
+            square(draw, 650, 300 + 30 * (n - 3), CYAN)  # the enemy, live
+        if n == 3:
+            square(draw, 1000, 200, WHITE, half=8)
+        if n == 4:
+            square(draw, 1000, 200, CYAN)  # a blip: one frame, then nothing
+        name = f"t{int(at * 1000):08d}.png"
+        image.save(folder / name)
+        listed.append({"ms": int(at * 1000), "file": name})
+    (folder / "frames.json").write_text(json.dumps({"frames": listed}),
+                                        encoding="utf-8")
+    return ".polyweave/references/warped"
+
+
+WARPING = {"pod": {"colour": "#3fe8ff", "size": [40, 400],
+                   "warp": {"colour": "#ffffff", "before": 1.0, "near": 60}}}
+
+
+def test_only_what_warped_in_is_counted(tmp_path):
+    source = warped(tmp_path)
+    plain = {"pod": {k: v for k, v in WARPING["pod"].items() if k != "warp"}}
+    every = reference_objects.objects(source, plain, root=str(tmp_path))
+    assert every["tracks"] == 3
+    made = reference_objects.objects(source, WARPING, lasting=2, root=str(tmp_path))
+    written = json.loads((tmp_path / made["objects"]).read_text("utf-8"))
+    (track,) = written["tracks"]
+    assert track["first"] == 1.5 and track["id"] == 1
+    assert track["path"][0][1:] == pytest.approx([650, 300], abs=3)
+    assert written["dropped"] == {"lasting": 1, "warp": 1} == made["dropped"]
+    # The flashes it gated by are kept, in the video's pixels.
+    assert [one[0] for one in written["warps"]["pod"]] == [1.0, 1.5]
+    assert written["kinds"]["pod"]["warp"]["tolerance"] == 0.1
+
+
+def test_a_flash_in_the_frame_a_track_is_born_in_is_no_warp_in(tmp_path):
+    """The blip is born at 2.0, half a second after its own flash: kept without
+    `lasting`, and dropped if the flash had to come before by less than that."""
+    source = warped(tmp_path)
+    kept = reference_objects.objects(source, WARPING, root=str(tmp_path))
+    assert kept["tracks"] == 2
+    tight = {"pod": {**WARPING["pod"], "warp": {**WARPING["pod"]["warp"],
+                                                 "before": 0.25}}}
+    gone = reference_objects.objects(source, tight, root=str(tmp_path))
+    assert gone["tracks"] == 0 and gone["dropped"]["warp"] == 3
+
+
+def test_the_warp_and_lasting_are_recorded(tmp_path):
+    made = reference_objects.objects(warped(tmp_path), WARPING, lasting=2,
+                                     root=str(tmp_path))
+    record = provenance.read(made["objects"], root=str(tmp_path))
+    assert record["params"]["lasting"] == 2
+    assert record["params"]["kinds"]["pod"]["warp"]["near"] == 60.0
+
+
+@pytest.mark.parametrize("warp", ["white", {"colour": "white"},
+                                  {"colour": "#ffffff", "before": 0},
+                                  {"colour": "#ffffff", "near": -1},
+                                  {"colour": "#ffffff", "tolerance": 3}])
+def test_a_warp_that_means_nothing_is_refused(tmp_path, warp):
+    with pytest.raises(PolyweaveError) as refused:
+        reference_objects.objects(warped(tmp_path), {"pod": {
+            "colour": "#3fe8ff", "size": [40, 400], "warp": warp}}, root=str(tmp_path))
+    assert refused.value.code == "capture.bad-kinds"
+
+
 def test_a_kinds_sample_is_cut_and_its_colour_read_from_a_frame(tmp_path):
     """§PW480: no throwaway script picks a kind's colour or its crop."""
     source = film(tmp_path)

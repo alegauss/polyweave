@@ -1800,6 +1800,8 @@ export interface ReferenceObjectsArgs {
   apart?: number
   /** keep only what moved against the scene's scroll by this share of the widest colour distance; 0 is off; from 0 to 1; default 0.0 */
   motion?: number
+  /** keep only a track seen in at least this many frames; from 1 to …; default 1 */
+  lasting?: number
   /** the project the frames are under; default "." */
   root?: string
 }

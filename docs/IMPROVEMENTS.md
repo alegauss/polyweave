@@ -357,27 +357,6 @@ The draft is written with its provenance naming the transcription, its verdicts 
 mapping, marked as a draft so a person still tunes it; rows a person corrected carry
 their corrected value, and a row nobody answered is refused, not guessed.
 
-### §PW641 Enemies told from a city that moves by parallax
-
-Met in Spinhold, RK198 (2026-10-25), after PW480. Resogun's phase 1
-(`.polyweave/references/resogun_p1`, 2 frames a second, area `[0, 180, 1920, 1080]`, the
-pod kind from `reference.sample`): `reference.objects` keeps 1485 to 2756 tracks, or 2,
-and the 15.5 to 18.5 s lull the owner's sheet calls empty is full of tower edges. The
-towers stand at many depths, so parallax moves them as much as an enemy moves.
-
-Measured 2026-10-28, and not kept: three track filters, dropping a track that moved with
-a patch of the scene round it, one whose area varied, and one seen in too few frames. At
-2 fps all three together still left 28 tracks born in the lull against 1295 elsewhere.
-The 11 to 23 s window was read again at 10 fps, and the best setting gave 9 to 32 tracks
-born every second with no dip at the lull. Where its colour and size match, a tower edge
-moves against its local patch as an enemy does, so these filters do not separate them.
-
-What is left untried is what the city never does. A Resogun enemy warps in with a small
-white flash a second before it is live, and dies in a burst. `reference.events` finds
-flashes over the whole frame only. A local flash, a bright island that appears and fades
-within a few frames, would gate a track's birth, keeping only tracks born at one. Done
-when the lull counts no new track and RK198's re-count matches the owner's sheet.
-
 ## Block S — Playing the game, not only rendering it
 
 ## Block T — Adopting polyweave in a project

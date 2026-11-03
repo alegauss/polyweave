@@ -708,8 +708,29 @@ That holds for a scene that scrolls as one. Resogun's does not: its city is a cy
 with depth, so near towers and far ones move at different speeds. Read at ten frames a
 second around 0:26, motion took 248 tracks to 238, the scroll it found jumping from
 frame to frame, and aligning each 24-pixel block on its own did no better and lost an
-enemy that sat inside a block. Telling objects from such a scene waits on what else the
-footage gives, a kind's silhouette or the warp-in before an enemy is live.
+enemy that sat inside a block. Filters on a track's own motion, its area and how long it
+lasted did no better either: a tower edge of the enemies' colour and size moves against
+its patch of scene as an enemy does (§PW641).
+
+What the city never does is warp in. A kind may declare a `warp`: the `colour` it
+flashes before it is live (`#rrggbb`), a `tolerance` (0.1 unless said), how long
+`before` its birth the flash comes, in seconds (1.0), and how `near` it, in the video's
+pixels (80). In each frame, the islands of that colour at least four pixels across at
+the read width that were not lit in the frame before, once the scene's scroll is taken
+out and allowing two pixels' drift, are flashes. A track of the kind is then kept only
+where a flash lit within `near` of its first position and within `before` seconds ahead
+of its first frame, never in that frame itself, since a shot or a burst lights where
+something already is. `lasting` (1 unless said) drops a track seen in fewer frames.
+objects.json keeps the flashes under `warps`, `lasting`, and `dropped`: how many tracks
+each test took out.
+
+On Resogun's phase 1 at two frames a second, the pod kind with `motion` 0.3, a white
+warp (`before` 1.5, `near` 80) and `lasting` 2 counts no track born in the 15.5 to
+18.5 s lull the owner's sheet calls empty, against 79 without the warp, and 282 tracks
+over the phase against 2,913. At a warp `tolerance` of 0.05 it is 194 against the
+sheet's 189, but stretch by stretch it is not the sheet: stretches heavy with kills
+count several times what the sheet does, since a death burst is white too and its
+debris is born at it, and the chains, rings rather than pods, are under-counted.
 
 `reference.sample(frames, at, box, name)` cuts a kind's sample from the frame nearest
 second `at`: the `box` `[left, top, right, bottom]` in the video's pixels lands beside
