@@ -8,7 +8,7 @@
 | Know the machine | `capabilities`, `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.kit` (a folder built, rendered, specced, checked and sat in one call), `geometry.describe`, `geometry.variants`, `geometry.fit`, `geometry.compare` |
-| Render | `render.plan`, `render.bake` |
+| Render | `render.plan`, `render.bake`, `render.in_game` |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest`, `measure.contrast`, `measure.pressure`, `measure.level`, `measure.flashes` |
 | Judge against the bar | `accept.first`, `accept.check`, `accept.verify`, `accept.check_screen`, `reference.concept`, `cost.read`, `sound.measure`, `sound.speech`, `sound.declared` (what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |

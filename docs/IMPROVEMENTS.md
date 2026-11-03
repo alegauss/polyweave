@@ -43,23 +43,6 @@ with Pillow in the same one-off re-encode that PW658 covers.
 
 ## Block G — Geometry as a declaration
 
-### §PW495 The declared finish as a Godot material
-
-Found in Spinhold on 2026-10-17, for the plastic city of PW498
-(`docs/specs/geometry.md`). When the finish PW494 shipped (`docs/specs/geometry.md`) is
-accepted on a sitting, the game must draw the same thing. A built model reaches Godot as
-a `.glb`, and the importer keeps what glTF and its own mapping keep: a coat, a rim, a
-subsurface tint or a sheen may come in at other numbers or not at all, and the game's
-city is drawn on a MultiMesh in its own shader, which takes no material from a mesh.
-Then the accepted look is re-made in game code by eye, which is what the project's rule
-forbids.
-
-What polyweave should do: write the declared material beside the build as a Godot
-material (a `.tres` StandardMaterial3D, or a generated `.gdshader` where a feature the
-standard one lacks is asked for), with the same numbers the bake used and a provenance
-record, so the game loads what was judged. A capture of the game against the bake of the
-same model at one rig says whether the two agree.
-
 ## Block H — Proof on a real game
 
 ## Block I — Voxel models from a declaration
@@ -401,6 +384,23 @@ It is the most opinionated kit in this block: games structure their state very
 differently, and a skeleton that suits one may fight the next. So it stays an idea until
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
+
+### §PW677 The preset sheet that is written and never named
+
+Found on 2026-11-03 while building `render.in_game` (PW495), which uses the same call.
+
+`engine.preset_search` writes a sheet of every preset that loses quality and answers it
+as `sheet`, so a person judges them (`src/polyweave/layers/engine/presets.py`). It reads
+the sheet's path as `verdict.sheet(...).get("out")`, and `verdict.sheet` answers
+`{"sheet": ..., "members": ..., "choices": ...}`, with no `out`. The sheet is written,
+but the answer's `sheet` is always null, so an agent following the answer never hands it
+to the person and the says line still tells them to judge it.
+
+What to build: read `["sheet"]`, as a path relative to the project the way the rest of
+the answer spells its pictures, and add a test where one preset loses quality and the
+answer's `sheet` is a file on disk. A test of this exists only behind `$GODOT`, which is
+why the gate never saw it: the shape of `verdict.sheet`'s answer can be checked without
+an engine by stubbing the capture.
 
 ## Block W — A core that grows by layers
 

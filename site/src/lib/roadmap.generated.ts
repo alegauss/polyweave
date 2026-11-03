@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 1 },
   { block: "W", title: "A core that grows by layers", open: 0 },
   { block: "X", title: "The site on the shared design system", open: 0 },
 ];
@@ -115,6 +115,13 @@ export const generatedTasks: GeneratedTask[] = [
     why: "With the warp-in (PW641) the lull is empty, but a death burst still reads as one and a chain is no pod, so stretches miss the sheet.",
     deps: [],
   },
+  {
+    id: "PW677",
+    block: "V",
+    symptom: "engine.preset_search answers no sheet for the presets that lose quality, though it writes one",
+    why: "It reads verdict.sheet's answer under a key that answer never has, so a person is never handed the presets to judge.",
+    deps: [],
+  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [
@@ -153,4 +160,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW659", "PW495", "PW449", "PW450", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW659", "PW449", "PW450", "PW201", "PW311", "PW368"];

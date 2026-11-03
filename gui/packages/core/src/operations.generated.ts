@@ -1960,6 +1960,18 @@ export interface RenderBakeArgs {
   root?: string
 }
 
+/** Draw a baked model again in the game's own engine, at the bake's rig. */
+export interface RenderInGameArgs {
+  /** a picture render.bake drew, under the project */
+  bake: string
+  /** the game's light against the derived match, 1 as derived; from 0 to …; default 1.0 */
+  light_scale?: number
+  /** the colour distance a person accepts, 0 to 1; 0 gives no verdict; from 0 to 1; default 0.0 */
+  tolerance?: number
+  /** the game's project, holding project.godot; default "." */
+  root?: string
+}
+
 /** Which rung will answer, how big it will be, and why that one. */
 export interface RenderPlanArgs {
   /** the rung to render at, if the caller names it */
@@ -2920,6 +2932,7 @@ export interface Operations {
   "reference.transcribed": ReferenceTranscribedArgs
   "reference.transcription": ReferenceTranscriptionArgs
   "render.bake": RenderBakeArgs
+  "render.in_game": RenderInGameArgs
   "render.plan": RenderPlanArgs
   "review.answer": ReviewAnswerArgs
   "review.canon": ReviewCanonArgs
@@ -3143,6 +3156,7 @@ export const OPERATIONS = [
   "reference.transcribed",
   "reference.transcription",
   "render.bake",
+  "render.in_game",
   "render.plan",
   "review.answer",
   "review.canon",

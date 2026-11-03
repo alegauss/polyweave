@@ -507,6 +507,28 @@ names is imported as its written `.tres` (`_subresources.materials.<material>
 it in. An existing import keeps every other setting; one whose `_subresources` the
 project filled with more than materials is left alone.
 
+**Whether the game draws what was judged is a picture** (§PW495). `render.in_game(bake)`
+reads a bake's record for its `.glb` and its rig, and in the game's project (where
+`project.godot` is) imports and draws that model, wearing what its import gives it,
+under the bake's camera, three lights and world, into a transparent picture the bake's
+size: `<bake>.game.png`, recorded with the bake and the mesh as its inputs, and
+`<bake>.game.sheet.png` with the two side by side. The camera and the lights' places are
+the bake's own arithmetic (`camera_for`, `lights_for`), so they cannot drift. The light
+cannot be carried exactly: each Cycles area light becomes an omni light falling off by
+the inverse square at 1/π² of its watts per unit of energy. That is derived, and on a
+grey cone at the default rig the game's light came out 1.07 of the bake's, its
+silhouette overlapping by 0.996 (Godot 4.7.1 on OpenGL, 2026-11-03); `light_scale`
+corrects it for a project's own. The world is the bake's ambient colour, Blender's own
+`#404040` where it set none, at its strength; the film is linear at its exposure.
+
+It answers `silhouette_iou` (where the two pictures show the model), `light_ratio` (the
+game's median light over the bake's, where both show it) and `colour_apart` (the mean
+colour distance there, as a share of the widest). How far apart is still the same look
+is a person's tolerance: `agrees` is null unless a `tolerance` is passed. A picture with
+no render record, drawn from no `.glb`, or baked with `covers`, `prepare`, `after` or a
+`material` over the mesh's own is `render.not-a-bake`, and a folder with no
+`project.godot` is `render.no-game`.
+
 **A project may open the finish to its own hand** (§PW569), where the pieces stand on a
 MultiMesh and the background is held under the play. `[finish]` in polyweave.toml:
 

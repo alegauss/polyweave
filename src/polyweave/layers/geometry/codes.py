@@ -172,6 +172,17 @@ CODES: dict[str, Code] = {
         when="a declared material's `image` names a path nothing is at",
         doors=("name the picture as a path under the project",),
     ),
+    "render.not-a-bake": Code(
+        means="the picture has no bake of a game's model to draw again in the game",
+        when="render.in_game on a picture with no render record, from no .glb, or "
+        "baked with covers, prepare, after or a material over the mesh's own (§PW495)",
+        doors=("bake the model with render.bake, perspective, in its own materials",),
+    ),
+    "render.no-game": Code(
+        means="there is no Godot project to draw the model in",
+        when="render.in_game run from a folder holding no project.godot (§PW495)",
+        doors=("run it from the game's project, where the mesh is imported",),
+    ),
     # -- geom: a shape declared as data ----------------------------------------
     "geom.unreadable": Code(
         means="the declaration is not readable as the format it claims",

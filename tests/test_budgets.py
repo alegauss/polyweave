@@ -194,7 +194,9 @@ from polyweave.surface.capabilities import capabilities
 #: (§PW674, 2026-10-31).
 #: 169,039 with provenance.outdated's under and strict, a site's copies held to their
 #: art in CI without the project's working files (§PW36, 2026-11-03).
-DESCRIBE = 169_400
+#: 169,994 with render.in_game, a baked model drawn again in the game at the bake's rig
+#: (§PW495, 2026-11-03).
+DESCRIBE = 170_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -349,7 +351,9 @@ DESCRIBE = 169_400
 #: 185,391 with stock's footage parameters (§PW674, 2026-10-31).
 #: 185,918 with provenance.outdated's under and strict, and prov.stale (§PW36,
 #: 2026-11-03).
-CAPABILITIES = 186_300
+#: 186,912 with render.in_game and render.not-a-bake and render.no-game (§PW495,
+#: 2026-11-03).
+CAPABILITIES = 187_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

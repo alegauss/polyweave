@@ -4,7 +4,7 @@ from polyweave.kernel.layer import Layer, Producer, Subject
 
 LAYER = Layer(
     name="geometry",
-    uses=("words",),
+    uses=("engine", "words",),
     summary="Shapes declared as data, built to meshes or voxels, rendered, measured.",
     modules=(
         "polyweave.layers.geometry.cost",
@@ -14,6 +14,7 @@ LAYER = Layer(
         "polyweave.layers.geometry.normalise",
         "polyweave.layers.geometry.port",
         "polyweave.layers.geometry.render",
+        "polyweave.layers.geometry.render.in_game",
         "polyweave.layers.geometry.review",
         "polyweave.layers.geometry.shape",
         "polyweave.layers.geometry.texture",
@@ -50,7 +51,8 @@ LAYER = Layer(
     # the ceiling rather than round it (§PW627).
     # 19,186 with render.bake's masks and mesh.budget, a bought mesh brought to a game's
     # budget (§PW630, §PW634).
-    tools=19_500,
+    # 19,903 with render.in_game, a baked model drawn again in the game (§PW495).
+    tools=20_300,
     census={
         "polyweave.layers.geometry.port:read": (
             "internal", "a family file checked, inside port.run"),

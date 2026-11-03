@@ -16,8 +16,6 @@
 
 ## Block G — Geometry as a declaration
 
-- ⏸ **PW495** (deps: PW494 ✅) **a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader** — set aside (Needs the bake's rig in Godot and the owner's tolerance.): No capture yet compares the game with the bake. → §PW495
-
 ## Block H — Proof on a real game
 
 ## Block I — Voxel models from a declaration
