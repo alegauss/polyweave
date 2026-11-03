@@ -62,27 +62,6 @@ same model at one rig says whether the two agree.
 
 ## Block H — Proof on a real game
 
-### §PW36 Cottony adopts it without a fork
-
-Cottony is the first consumer and the test of whether the configuration boundary in
-Block A actually holds. Its pipeline uses everything this backlog proposes: a
-script-built mesh, a fetched mesh re-dressed in drawn cloth, a cushion inflated from a
-drawing, a fourteen-parameter rig, a paid service with a lock file, and four engine
-captures. If all of that can move onto the plugin with a configuration file and no fork,
-the boundary is real. If any of it needs a change inside the plugin that only Cottony
-would ever want, that is the defect, and it is much cheaper to find here than via a
-second adopter. The migration is also what keeps this from being a rewrite for its own
-sake: each piece moves only once the plugin's version passes the same check the existing
-one does, and the pieces that are better left alone stay where they are. What this line
-delivers is the adoption plus a written list of everything that had to be configured,
-which is the plugin's real interface, discovered rather than designed.
-
-Site copies, left by PW585 on 2026-10-21: `picture.copies` cuts a `*.copies.toml`, and a
-trial on Cottony's hero and favicon came out pixel for pixel equal to `site/assets/`.
-Cottony moves IMAGES into `site/assets.copies.toml` (`into`, `quality = 88`, and
-`quality = 86` on `og.jpg`), runs it once, deletes `tools/site_assets.py`, and lets CI's
-`provenance.outdated` replace `--check`.
-
 ### §PW57 One floor of five is a target now, and one more is a floor
 
 A threshold inside a gate can only answer after the render is spent. The same number in

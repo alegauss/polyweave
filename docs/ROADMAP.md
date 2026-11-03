@@ -16,8 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- 🛠 **PW36** (deps: PW5 ✅, PW82 ✅, PW582 ✅, PW585 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family renders on polyweave and the rig is gone; Cottony still prepares meshes and cuts its site's copies itself. → §PW36
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -58,14 +56,6 @@
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system
-
-## Done when — PW36
-
-- **Every piece of Cottony's pipeline runs on the plugin, with no fork** The
-  script-built tray, the fetched prop in drawn cloth, the inflated cushion, the rig, the
-  paid service and the four engine captures each pass the check the existing pipeline
-  passes, against a before-side baseline recorded before that piece moved. A piece left
-  behind is named, with what it needed.
 
 ## Done when — Block N
 
