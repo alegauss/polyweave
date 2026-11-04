@@ -48,7 +48,9 @@ const paused = (committed.match(/^export const generatedPaused: string\[\] = \[(
   .filter(Boolean);
 
 test("the module has lines, blocks and non-goals at all", () => {
-  assert.ok(ids.length > 0, "no tasks in the generated module");
+  // A drained roadmap has no open line and still sets work aside, so it is open lines
+  // or set-aside ones that a working generation always has; neither is a broken read.
+  assert.ok(ids.length > 0 || paused.length > 0, "no tasks in the generated module");
   assert.ok(declared.length > 0, "no blocks in the generated module");
   assert.match(committed, /generatedNonGoals: GeneratedNonGoal\[\] = \[\s*\{/);
 });
