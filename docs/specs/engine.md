@@ -683,6 +683,15 @@ where declared its `type`, `min`, `max`, `step`, `unit`, `default`, `choices`, `
 whether it is `required` and whether it names a world `entity`. With `out` it writes them
 as JSON, recorded as a `level` with the schema as its input, for the game to load.
 
+A field's help is in the schema's language, so it also gets a `help_key` derived from
+its path (`LEVEL_STAGE_WAVE_GROUP_COUNT_HELP`), and the editor shows `tr(help_key)`
+(§PW683). With `strings`, every key `[words] table` lacks is appended to it, the help as
+its first locale's line and the other locales empty for a person or a translation pass,
+never invented, so `words.check` holds it like any other line; `strings` answers what
+was `added`, and as `changed` each key already there whose first-locale line differs
+from the schema, with the locales whose translation is now `stale`. A changed line is
+named and never rewritten, since the table is the project's.
+
 `level.reader(out)` writes the reader a game loads its levels through, from the same
 schema, so the reader's keys are not typed a second time: a GDScript with one inner class
 for each object the schema declares (`_Level`, then `_Stage`, `_StageWave` and so on by

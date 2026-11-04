@@ -36,8 +36,6 @@
 
 ## Block R — Levels measured before a person plays them
 
-- 📋 **PW683** (deps: —) **a level field's help reaches a game's editor in the schema's language only, outside the string table** — words.check never holds it, so the editor's help reads untranslated in every other locale. → §PW683
-
 ## Block S — Playing the game, not only rendering it
 
 ## Block T — Adopting polyweave in a project

@@ -185,25 +185,6 @@ kind told by its silhouette would make a chain a kind of its own.
 Done when each stretch's count is within the sheet's own uncertainty, which the owner's
 sheet decides.
 
-### §PW683 A level field's help in every locale
-
-Split from PW608 on 2026-11-04, when `level.fields` and `level.reader` landed. A level
-schema's `description` is a field's one-line help, and `level.fields` hands it to a
-game's own editor as written: in the language the schema was written in, and outside the
-string table the game's other lines go through, so `words.check` never holds it and a
-player of the editor in another locale reads it untranslated.
-
-What to build: `level.fields` gives each field with help a stable key derived from its
-path (`LEVEL_STAGE_WAVE_GROUP_COUNT_HELP`) beside the help itself, and a call writes the
-missing keys into the project's string table (`[words]`'s table, the one `words.check`
-reads), the schema's text as the source language's line and the other locales left for a
-person or a translation pass, never invented. The editor then shows `tr(key)`. A help
-changed in the schema reads as a changed source line, so its translations read stale.
-
-The editor stays the game's (non-goal "A graphical editor"); this gives it translated
-help. The words layer owns the string table, so this reaches it as a named part (as
-`engine.draw_at_rig` reaches the engine), not an import of the engine into words.
-
 ## Block S — Playing the game, not only rendering it
 
 ## Block T — Adopting polyweave in a project

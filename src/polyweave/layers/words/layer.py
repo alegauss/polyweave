@@ -71,6 +71,8 @@ LAYER = Layer(
             "internal", "every verdict on a line, oldest first"),
         "polyweave.layers.words.words:verdicts": (
             "internal", "the latest verdict on each line"),
+        "polyweave.layers.words.words:added": (
+            "internal", "missing rows appended to the string table, for level.fields"),
         "polyweave.layers.words.words:approved": (
             "internal", "a speaker's canon, in world.read"),
         "polyweave.layers.words.words:judged": (

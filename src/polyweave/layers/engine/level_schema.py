@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import difflib
 import json
+import re
 import tomllib
 from pathlib import Path
 from typing import Annotated, Any
@@ -271,6 +272,11 @@ def _fields(node: dict, at: str = "", required: bool = False) -> list[dict]:
     if at:
         one = {"path": at, "required": required}
         one.update({name: node[key] for key, name in _SAID if key in node})
+        if "help" in one:
+            # The key its help is shown by in every locale (§PW683).
+            one["help_key"] = "LEVEL_" + "_".join(
+                part for part in re.split(r"[^A-Za-z0-9]+", at.upper()) if part) \
+                + "_HELP"
         out.append(one)
     wanted = set(node.get("required") or [])
     for name, child in (node.get("properties") or {}).items():
@@ -284,6 +290,9 @@ def _fields(node: dict, at: str = "", required: bool = False) -> list[dict]:
 def fields(
     out: Annotated[str, Param("where to write them as JSON, under the project; "
                               "nowhere if empty")] = "",
+    strings: Annotated[
+        bool, Param("add each help's key missing from [words] table, untranslated")
+    ] = False,
     root: Annotated[str, Param("the project whose level schema this is")] = ".",
 ) -> dict:
     """Each field of the project's level schema, for a game's own editor (§PW608).
@@ -301,6 +310,12 @@ def fields(
     named, schema = _schema(here, config.table("levels"))
     listed = _fields(schema)
     answer: dict = {"schema": named, "fields": listed}
+    if strings:
+        from polyweave.layers.words import words
+
+        answer["strings"] = words.added(
+            {one["help_key"]: one["help"] for one in listed if "help_key" in one},
+            root=here)
     if out:
         target = here / out
         write_atomic(target, json.dumps({"schema": named, "fields": listed}, indent=1)

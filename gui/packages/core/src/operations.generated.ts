@@ -898,6 +898,8 @@ export interface LevelCurveArgs {
 export interface LevelFieldsArgs {
   /** where to write them as JSON, under the project; nowhere if empty */
   out?: string
+  /** add each help's key missing from [words] table, untranslated; default false */
+  strings?: boolean
   /** the project whose level schema this is; default "." */
   root?: string
 }

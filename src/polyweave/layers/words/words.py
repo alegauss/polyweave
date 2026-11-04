@@ -187,6 +187,32 @@ def table(root: str | Path = ".") -> tuple[Path, list[str], list[dict]]:
     return where, locales, rows
 
 
+def added(lines: dict[str, str], root: str | Path = ".") -> dict:
+    """Rows the string table lacks, appended in its first locale's column, the other
+    locales left empty for a person or a translation pass and never invented; a key
+    already there whose first-locale text differs is named, not rewritten (§PW683)."""
+    where, locales, rows = table(root)
+    source = locales[0] if locales else None
+    held = {row["key"]: row["cells"] for row in rows}
+    missing = {k: v for k, v in lines.items() if k not in held}
+    changed = [{"key": k, "was": held[k].get(source, ""), "now": v,
+                "stale": [loc for loc in locales[1:] if held[k].get(loc)]}
+               for k, v in lines.items() if k in held and held[k].get(source) != v]
+    if missing:
+        text = read_text_retrying(where) or ""
+        header = next(csv.reader(io.StringIO(text.lstrip("﻿"), newline="")))
+        out = io.StringIO()
+        writer = csv.writer(out, lineterminator="\n")
+        for key, said in missing.items():
+            writer.writerow([key if column == header[0] else
+                             said if column == source else "" for column in header])
+        lead = "" if not text or text.endswith("\n") else "\n"
+        with where.open("a", encoding="utf-8", newline="") as appended:
+            appended.write(lead + out.getvalue())
+    return {"table": str(where), "locale": source, "added": sorted(missing),
+            "changed": changed}
+
+
 #: What Markdown wraps prose in and is not prose itself: inline code, a link's or an
 #: image's address (its text kept), a bare address, a tag, and a line's own marker.
 _MD_CODE = re.compile(r"`[^`]*`")

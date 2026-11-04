@@ -203,7 +203,7 @@ def test_each_field_says_what_a_game_s_editor_needs_of_it(tmp_path):
     assert by["stage[].wave[].group[].count"] == {
         "path": "stage[].wave[].group[].count", "required": True, "type": "integer",
         "min": 1, "max": 40, "step": 1, "unit": "enemies", "default": 6,
-        "help": "how many fly in"}
+        "help": "how many fly in", "help_key": "LEVEL_STAGE_WAVE_GROUP_COUNT_HELP"}
     assert by["stage[].wave[].group[].enemy"]["entity"] is True
     assert by["stage[].wave[].group[].side"]["choices"] == ["left", "right"]
     assert by["stage"]["required"] is True and by["line"]["required"] is False
@@ -212,6 +212,36 @@ def test_each_field_says_what_a_game_s_editor_needs_of_it(tmp_path):
     assert written["fields"] == said["fields"]
     record = provenance.read("tools/fields.json", root=str(root))
     assert record["kind"] == "level"
+
+
+def test_each_help_goes_to_the_string_table_by_its_key_untranslated(tmp_path):
+    """§PW683: the editor's help read in the schema's language in every locale."""
+    import csv
+
+    schema = json.loads(json.dumps(SCHEMA))
+    group = schema["properties"]["stage"]["items"]["properties"]["wave"]["items"][
+        "properties"]["group"]["items"]["properties"]
+    group["count"]["description"] = "how many fly in"
+    group["enemy"]["description"] = "which enemy, by the world's name"
+    root = _project(tmp_path, schema=schema)
+    with (root / "polyweave.toml").open("a", encoding="utf-8") as table:
+        table.write('\n[words]\ntable = "strings.csv"\n')
+    (root / "strings.csv").write_text(
+        "keys,en,pt_BR\nLEVEL_STAGE_WAVE_GROUP_ENEMY_HELP,which foe,qual inimigo\n",
+        encoding="utf-8")
+    said = level_schema.fields(strings=True, root=str(root))
+    by = {one["path"]: one for one in said["fields"]}
+    assert by["stage[].wave[].group[].count"]["help_key"] == (
+        "LEVEL_STAGE_WAVE_GROUP_COUNT_HELP")
+    assert said["strings"]["added"] == ["LEVEL_STAGE_WAVE_GROUP_COUNT_HELP"]
+    (changed,) = said["strings"]["changed"]
+    assert changed["key"] == "LEVEL_STAGE_WAVE_GROUP_ENEMY_HELP"
+    assert changed["stale"] == ["pt_BR"]
+    rows = list(csv.reader((root / "strings.csv").read_text("utf-8").splitlines()))
+    assert rows[-1] == ["LEVEL_STAGE_WAVE_GROUP_COUNT_HELP", "how many fly in", ""]
+    assert rows[1][1] == "which foe", "a changed help is named, never rewritten"
+    again = level_schema.fields(strings=True, root=str(root))
+    assert again["strings"]["added"] == []
 
 
 def test_the_reader_has_a_typed_class_for_each_object(tmp_path):

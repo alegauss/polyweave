@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 1 },
+  { block: "R", title: "Levels measured before a person plays them", open: 0 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW683",
-    block: "R",
-    symptom: "a level field's help reaches a game's editor in the schema's language only, outside the string table",
-    why: "words.check never holds it, so the editor's help reads untranslated in every other locale.",
-    deps: [],
-  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [
