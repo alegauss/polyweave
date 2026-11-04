@@ -24,6 +24,15 @@ LAYER = Layer(
             claims=lambda member: bool(member.get("canon")),
             target="polyweave.layers.picture.style:judged",
         ),
+        # A bought picture a person accepted is kept through a reworded prompt (§PW679).
+        Judge(
+            name="bought",
+            about="a bought picture's verdict is kept in its own record, so it is not "
+            "bought again",
+            claims=lambda member: (bool(member.get("bought"))
+                                   and not member.get("canon")),
+            target="polyweave.layers.picture.picture:judged",
+        ),
     ),
     kinds=("picture",),
     parts={
@@ -42,6 +51,10 @@ LAYER = Layer(
     #: 13,616 with their kind, service and video renditions (§PW674, §PW672).
     tools=14_000,
     census={
+        "polyweave.layers.picture.picture:kept": (
+            "internal", "a bought picture's accept on its bytes, inside picture.buy"),
+        "polyweave.layers.picture.picture:judged": (
+            "internal", "a bought picture's verdict, kept in its record"),
         "polyweave.layers.picture.panel:declared": (
             "internal", "a panel's states, checked; panel.build"),
         "polyweave.layers.picture.panel:wipe": (

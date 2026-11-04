@@ -37,31 +37,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW679 A picture a person kept is not bought again
-
-**Where.** Dumont's `wordpress/bin/demo-photos.mjs` (D265) calls `picture.buy --prompt
-<text> --out demo/photos/<kind>/<slug>.png` per photo. polyweave has no notion of a kept
-picture, so the script calls one current only when its `.png.prov.json` prompt equals
-today's prompt.
-
-**What went wrong (2026-11-04).** Rewording the rock scene in passing, and four words of
-the clothing scene, made every photo in both compare unequal, the reference jacket the
-person had approved included: about 38 purchases started where 5 were wanted. A
-product's catalog text, embedded in the prompt, gained "zips closed" and re-buys a photo
-nothing visible changed in.
-
-**Workaround.** A `reworded` list of `[before, after]` pairs applied to the recorded
-prompt before comparing, in that script; twelve photos restored from git by hand.
-
-**What polyweave should do.** Record a person's verdict that a bought picture is right
-with it, through the surface where a person answers (Block O), never by the agent, as
-the non-goal on an agent accepting its own look requires. A kept picture is not bought
-again when its prompt changes: the answer is `kept`, with both prompts, until the person
-withdraws the verdict or asks for a retake.
-
-**Done when.** A kept picture survives a reworded prompt with no spend and says whose
-verdict kept it, and an unkept one is still bought again.
-
 ### §PW680 A batch of pictures planned before it buys
 
 **Where it happened.** Dumont's demo store (`wordpress/bin/demo-photos.mjs`, D265) buys

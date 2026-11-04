@@ -319,6 +319,17 @@ measurement, `measured: true`, with the quote kept as `expected_credits`. A fail
 generation ledgers nothing. An answer that already carries its pictures, as a synchronous
 one does, is taken as it is, and is identified by its `created` time and seed.
 
+**A picture a person kept is not bought again** (§PW679). Rewording a scene's prompt
+made a consumer re-buy every good picture in it, since it could compare only prompts. A
+member of a sitting marked `bought: true` has the person's verdict kept in the picture's
+own record, with the digest of the bytes they looked at, as a sound's is. Where the
+picture at `out` carries an `accept` on its current bytes, `picture.buy` sends nothing
+and spends nothing: the answer is `kept`, `spent` 0, the `verdict` (choice, words, when)
+and both prompts, the one it was bought with and the one asked now. A verdict that is
+not an accept, a picture bought again since the verdict, or no verdict at all is bought
+as before; withdrawing the verdict on the review page is how a kept picture is bought
+again. The agent never writes that verdict itself.
+
 **A picture charged for and never delivered is owed** (§PW179). By the time its link is
 read, the service has charged, so a failed download meets two rules: the ledger never names
 an asset that is not there, and the ceiling never misses a charge. The charge goes to

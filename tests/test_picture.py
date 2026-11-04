@@ -98,6 +98,39 @@ def test_a_bought_picture_lands_hashed_recorded_and_ledgered(tmp_path, service):
     assert record["details"]["model"] == "4.0"
 
 
+def test_a_picture_a_person_accepted_is_not_bought_again_when_its_prompt_is_reworded(
+        tmp_path, service):
+    """§PW679: rewording a scene re-bought every good picture in it."""
+    from polyweave.layers.picture import picture as P
+
+    buy(tmp_path, prompt="a plush booster on a shelf")
+    member = {"name": "booster", "new": "refs/booster.png", "bought": True}
+    P.judged(member, accepted=True, choice="accept", why="the jacket is right",
+             when="2026-11-04", root=tmp_path)
+    asked = len(service.sent)
+    again = buy(tmp_path, prompt="a plush booster, on a shelf")
+    assert again["kept"] is True and again["spent"] == 0
+    assert len(service.sent) == asked
+    assert again["verdict"] == {"choice": "accept", "why": "the jacket is right",
+                                "when": "2026-11-04"}
+    assert again["prompt"] == {"kept": "a plush booster on a shelf",
+                               "asked": "a plush booster, on a shelf"}
+    assert len(purchase.read(tmp_path)) == 1
+
+
+def test_a_picture_nobody_kept_or_one_rejected_is_bought_again(tmp_path, service):
+    from polyweave.layers.picture import picture as P
+
+    buy(tmp_path)
+    buy(tmp_path, prompt="a plush booster, reworded")
+    assert len(purchase.read(tmp_path)) == 2
+    P.judged({"name": "booster", "new": "refs/booster.png", "bought": True},
+             accepted=False, choice="look", why="the jacket is wrong",
+             when="2026-11-04", root=tmp_path)
+    assert "kept" not in buy(tmp_path, prompt="reworded once more")
+    assert len(purchase.read(tmp_path)) == 3
+
+
 def test_it_is_charged_to_its_own_services_ceiling(tmp_path, service):
     buy(tmp_path)
     assert purchase.spent(tmp_path, "ideogram") == 0.08

@@ -190,6 +190,16 @@ def buy(
 
     _, prompt_field, _ = MODELS[model]
     sent = prompt if json_prompt is None else json.dumps(json_prompt, sort_keys=True)
+    held = kept(config.root / out, config.root)
+    if held is not None:
+        # A person's accept on these bytes keeps them through a reworded prompt
+        # (§PW679): nothing is spent; the answer says whose verdict, and both prompts.
+        said = held["verdict"]
+        return {"kept": True, "out": out, "spent": 0, "verdict": said,
+                "prompt": {"kept": held["prompt"], "asked": sent},
+                "says": f"{out} is kept by a person's accept ({said['when']}: "
+                f"{said['why']}), so it is not bought again; withdraw the verdict on "
+                "the review page to buy it again"}
     payload: dict = {prompt_field if json_prompt is None else "json_prompt": sent}
     for field, value in (
         ("aspect_ratio", aspect_ratio),
@@ -252,6 +262,44 @@ def buy(
     differs = _aspect_differs(aspect_ratio, config.root / out)
     return {**entry, **({"background": background} if background else {}),
             **({"findings": [differs]} if differs else {})}
+
+
+def kept(path, root) -> dict | None:
+    """A bought picture's last verdict on its bytes, where it is a person's accept, and
+    the prompt it was bought with (§PW679); None where it is not kept."""
+    from pathlib import Path
+
+    where = Path(path)
+    if not where.is_file():
+        return None
+    try:
+        record = provenance.read(str(where), root=root)
+    except PolyweaveError:
+        return None
+    digest = provenance.sha256_of(where)[0]
+    said = [v for v in record.get("verdicts") or () if v.get("sha256") == digest]
+    if not said or said[-1].get("choice") != "accept":
+        return None
+    return {"verdict": {k: said[-1].get(k) for k in ("choice", "why", "when")},
+            "prompt": record.get("prompt")}
+
+
+def judged(member: dict, *, accepted: bool, choice: str, why: str, when: str,
+           root) -> dict:
+    """A person's verdict on a bought picture, kept in its own record with the digest
+    of what they looked at (§PW679), so a reworded prompt does not buy it again and a
+    picture bought again since is not kept by a verdict on the old one."""
+    new = root / member["new"]
+    entry = {"choice": choice, "why": why, "when": when,
+             "sha256": provenance.sha256_of(new)[0]}
+    try:
+        record = provenance.read(str(new), root=root)
+    except PolyweaveError:
+        return {**entry, "record": None,
+                "why_unrecorded": f"{member['new']} has no record to keep it in"}
+    record["verdicts"] = [*(record.get("verdicts") or []), entry]
+    written = provenance.write(record, root)
+    return {**entry, "record": provenance.relative(written, root)}
 
 
 #: How far a picture's width over height may sit from the ratio asked and still be it:

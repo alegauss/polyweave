@@ -2610,7 +2610,7 @@ export interface VerdictAnswersArgs {
 
 /** What a person said of a family, carried into the ledger and the spec. */
 export interface VerdictJudgeArgs {
-  /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, motion, a loop to play, and model, a .glb to turn */
+  /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, bought, true for a bought picture kept through a reworded prompt, motion, a loop to play, and model, a .glb */
   members: unknown[]
   /** what the person said of the family */
   choice: "accept" | "look" | "number"
@@ -2670,7 +2670,7 @@ export interface VerdictPromoteArgs {
 
 /** The family on one picture: old beside new at the size shown, and what failed. */
 export interface VerdictSheetArgs {
-  /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, motion, a loop to play, and model, a .glb to turn */
+  /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, bought, true for a bought picture kept through a reworded prompt, motion, a loop to play, and model, a .glb */
   members: unknown[]
   /** where the sheet is written, under the project */
   out: string
@@ -2694,7 +2694,7 @@ export interface VerdictSittingArgs {
 
 /** The bar a person says a look must reach, written into its spec (§PW620). */
 export interface VerdictTargetArgs {
-  /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, motion, a loop to play, and model, a .glb to turn */
+  /** each member: name, spec and new, and optionally old, capture with box, shown, canon, the style family an accepted picture joins, bought, true for a bought picture kept through a reworded prompt, motion, a loop to play, and model, a .glb */
   members: unknown[]
   /** each predicate's id, or a member's name for all its predicates, to the number the person said it must reach, or {"toward": 0.5}, that share of the way to the measure's ideal */
   targets: Record<string, unknown>

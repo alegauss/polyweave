@@ -76,8 +76,8 @@ def _said(result: dict) -> str:
 
 MEMBERS = (
     "each member: name, spec and new, and optionally old, capture with box, shown, "
-    "canon, the style family an accepted picture joins, motion, a loop to play, and "
-    "model, a .glb to turn"
+    "canon, the style family an accepted picture joins, bought, true for a bought "
+    "picture kept through a reworded prompt, motion, a loop to play, and model, a .glb"
 )
 
 #: What a member's `motion` may be: a short muted loop the review page plays (§PW600).
