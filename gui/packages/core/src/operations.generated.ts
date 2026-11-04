@@ -904,6 +904,20 @@ export interface LevelProbeArgs {
   root?: string
 }
 
+/** What players met in a level: each event per second and in all, and how many were alive, averaged over the runs their traces record (§PW327). */
+export interface LevelTraceArgs {
+  /** the runs' event traces under the project */
+  traces: unknown[]
+  /** the event an alive thing starts at; default "spawn" */
+  starts?: string
+  /** the event that ends it, paired by id; default "kill" */
+  ends?: string
+  /** where to write the answer, recorded; nowhere if empty */
+  out?: string
+  /** the project the traces are under; default "." */
+  root?: string
+}
+
 /** Every declared level file held to the project's schema and its world. */
 export interface LevelValidateArgs {
   /** one level file; every [levels] files match if empty */
@@ -2889,6 +2903,7 @@ export interface Operations {
   "level.compile": LevelCompileArgs
   "level.curve": LevelCurveArgs
   "level.probe": LevelProbeArgs
+  "level.trace": LevelTraceArgs
   "level.validate": LevelValidateArgs
   "loop.assets": LoopAssetsArgs
   "loop.bounds": LoopBoundsArgs
@@ -3117,6 +3132,7 @@ export const OPERATIONS = [
   "level.compile",
   "level.curve",
   "level.probe",
+  "level.trace",
   "level.validate",
   "loop.assets",
   "loop.bounds",

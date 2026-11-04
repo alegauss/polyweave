@@ -19,6 +19,7 @@ LAYER = Layer(
         "polyweave.layers.engine.offscreen",
         "polyweave.layers.engine.pack",
         "polyweave.layers.engine.perf",
+        "polyweave.layers.engine.playtest",
         "polyweave.layers.engine.presets",
         "polyweave.layers.engine.pressure",
         "polyweave.layers.engine.runs",
@@ -69,7 +70,8 @@ LAYER = Layer(
     # 30,604 with level.probe, a level played by the game's own probe (§PW202).
     # 31,011 with level.validate, level files held to the project's schema (§PW203).
     # 31,831 with level.curve, a level set held to its declared shape (§PW204).
-    tools=32_300,
+    # 32,638 with level.trace, a playtest's events read per second (§PW327).
+    tools=33_100,
     census={
         "polyweave.layers.engine.at_rig": (
             "internal", "a model drawn at a staged rig, the part render.in_game asks"),

@@ -40,7 +40,6 @@
 
 ## Block R — Levels measured before a person plays them
 
-- 📋 **PW327** (deps: PW205 ✅) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both. → §PW327
 - 📋 **PW608** (deps: —) **a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help** — Each level key is written again in the reader, the editor and the docs, and the three drift apart. → §PW608
 - 📋 **PW609** (deps: PW203 ✅) **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed. → §PW609
 - 📋 **PW480** (deps: —) **reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted** — With the warp-in (PW641) the lull is empty, but a death burst still reads as one and a chain is no pod, so stretches miss the sheet. → §PW480
@@ -112,6 +111,13 @@
   spec and per-level accept specs over the probe records hold the bounds the owner set
   on the verdict page (stars measured by a careful player, Cottony RK189), and the
   runtime fallback curve is fitted from the accepted levels.
+
+## Done when — PW327
+
+- **a played phase's trace is read beside its declared curve and held to a spec**
+  Spinhold's runs write the event trace, the probe gives the declared pressure per
+  second, level.trace lays the two together, and accept.check holds bounds a person set
+  (alive never above N, a peak above the phase before), naming the rule broken.
 
 ## Non-goals
 

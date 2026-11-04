@@ -724,6 +724,26 @@ a player. No `[levels] probe` is `level.no-probe`, an empty or ill-declared
 `[levels.measures]` is `level.bad-measures`, a level not there is `level.no-level`, and a
 probe that did not finish is `level.probe-failed` with its log.
 
+## What players met in a level
+
+A probe says what a level asks; only the runs people played say where they struggled
+(§PW327). A run writes its events, one JSON object a line: `t` in seconds from the
+level's start, `event` in the project's own word (`spawn`, `kill`, `hit`, `life_lost`),
+and where it has them an `id` and a `weight`:
+
+```json
+{"t": 12.4, "event": "spawn", "id": "mote-17", "kind": "mote", "weight": 1.0}
+{"t": 14.0, "event": "kill", "id": "mote-17"}
+```
+
+`level.trace(traces=[...])` reads one run or many and answers, averaged over the runs,
+each event's weighted count per second (`events`) and in all (`totals`), how many were
+`alive` each second, a `starts` event (`spawn`) whose `id` no `ends` event (`kill`) has
+closed yet, and the `peak_alive`. `out` writes the answer recorded with every trace as
+its input. A trace not there is `game.no-trace`; a line that is not JSON, has no `t` from
+0 or no `event`, or a weight that is no number is `game.bad-trace` with its line. The
+declared curve laid beside it per second, and a spec over both, are still to come.
+
 ## Still to come in this block
 
 Baking at the size a unit declaration gives (PW47).

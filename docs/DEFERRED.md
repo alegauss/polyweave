@@ -43,6 +43,7 @@
 ## Block R — Levels measured before a person plays them
 
 - ⏸ **PW206** (deps: PW204 ✅, PW205 ✅) **Cottony's levels are still tuned by a curve nobody measured** — set aside (Waits on the owner's curve and Cottony RK189's star bar.): No curve the owner agreed holds the 20 yet, so no accept specs, and make_levels.py and the fallback curve stay until then. → §PW206
+- ⏸ **PW327** (deps: PW205 ✅) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — set aside (Waits on Spinhold writing traces of real play.): Spinhold writes no event trace yet, and the declared curve per second and a spec over both are still to come. → §PW327
 
 ## Block S — Playing the game, not only rendering it
 
