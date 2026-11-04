@@ -493,6 +493,20 @@ outdated. A member admitted after training is listed under `outdated` in the ans
 the record. Drawing before training is `style.untrained`, with the door to train. The
 pictures are held to the canon and the gate like any service's.
 
+**A public model needs no training** (§PW688). `picture.buy(model=<id>)` on a Scenario
+service, with `<id>` one of Scenario's public models (`model_bfl-flux-2-klein-4b`, say),
+draws from it through the same `/generate/custom/<id>`, which is how an account whose
+plan trains nothing still buys a picture. What the model takes is read first at
+`GET /models/<id>`, whose `inputs` name each field with its bounds and allowed values,
+and the payload holds only those: `aspect_ratio` goes as `aspectRatio` (`16:9`) where the
+model declares that and among its allowed values, or as `width` and `height`, the longer
+side 1024 within the model's bounds, rounded to 16. A seed the model does not declare is
+`fetch.unknown-field`, and a model with no `prompt` input is `fetch.bad-choice`. The
+`prices` row is the model's id. Where the ceiling's unit is `CU`, the call is first sent
+with `?dryRun=true`, which bills nothing and answers `creativeUnitsCost`; a quote above
+the row is `picture.quoted-over-price` and nothing is spent. The record's details name
+the model, `public = true` and the shape fields sent.
+
 
 A picture service returns an image at a size, margin and position it chose, and an icon or
 a flat sprite needs the project's (§PW171). That fix is mechanical, so `picture.fit` makes it

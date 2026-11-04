@@ -8,6 +8,8 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+- 📋 **PW689** (deps: PW688 ✅) **store.too-small says give a larger key art, and nothing in the plugin can make one** — An upscale bought and recorded against its source is a way on that a person still judges. → §PW689
+
 ## Block E — One world with the engine
 
 ## Block F — Motion

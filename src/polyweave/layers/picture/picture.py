@@ -67,7 +67,9 @@ def buy(
     transparent: Annotated[
         bool, Param("cut from its background; a style family's pictures are if unset")
     ] = None,
-    model: Annotated[str, Param("the model", choices=tuple(MODELS))] = "4.0",
+    model: Annotated[
+        str, Param("4.0 or 3.0; on Scenario, a public model's id")
+    ] = "4.0",
     aspect_ratio: Annotated[
         str, Param("as 16x9; 4.0 is sent its size of that shape")
     ] = None,
@@ -104,6 +106,8 @@ def buy(
 
     On a Scenario service the picture is drawn from the model `style.train` trained on
     the family's canon, from a text prompt; `model` is then the trained one (§PW450).
+    A `model` naming one of Scenario's public models, such as
+    `model_bfl-flux-2-klein-4b`, draws from it with no training (§PW688).
 
     A picture drawn at another shape than `aspect_ratio` asked is kept, and the answer
     carries a `picture.aspect-differs` finding naming both (§PW659). 4.0 takes no ratio,
@@ -114,14 +118,6 @@ def buy(
     family is in force; otherwise it keeps the background it was drawn with, and the
     answer's `background` says which and why (§PW667).
     """
-    if model not in MODELS:
-        raise PolyweaveError(
-            "fetch.bad-choice",
-            f"there is no model {model!r} this client knows the request shape of",
-            f"pass one of {', '.join(MODELS)}",
-            given=model,
-            allowed=MODELS,
-        )
     if not out:
         raise PolyweaveError(
             "fetch.missing-field",
@@ -135,10 +131,20 @@ def buy(
             raise PolyweaveError(
                 "fetch.bad-choice", "a batch cannot plan a Scenario picture yet",
                 "buy it on its own with picture.buy", given=service)
-        # A Scenario service draws from the model the family's canon trained (§PW450).
+        # A Scenario service draws from the model the family's canon trained (§PW450),
+        # or from a public model the call names (§PW688).
         return scenario.bought(report, out=out, prompt=prompt, family=family,
                                aspect_ratio=aspect_ratio, seed=seed, service=service,
-                               root=root)
+                               root=root, model=model)
+    if model not in MODELS:
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            f"there is no model {model!r} this client knows the request shape of",
+            f"pass one of {', '.join(MODELS)}, or name a Scenario service for a "
+            "public model's id",
+            given=model,
+            allowed=MODELS,
+        )
     drawn_from = None
     if entity is not None:
         drawn_from, family, prompt, json_prompt = from_world(

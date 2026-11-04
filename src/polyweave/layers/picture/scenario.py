@@ -132,8 +132,12 @@ def trained_model(declared: dict) -> dict | None:
 
 def bought(report, *, out: str, prompt: str | None, family: str | None,
            aspect_ratio: str | None, seed: int | None, service: str | None,
-           root) -> dict:
-    """`picture.buy` on a Scenario service: a picture from the family's model."""
+           root, model: str | None = None) -> dict:
+    """`picture.buy` on a Scenario service: a picture from the family's model, or
+    from the public model `model` names (§PW688)."""
+    if model and model not in picture.MODELS:
+        return _public(report, out=out, prompt=prompt, model=model,
+                      aspect_ratio=aspect_ratio, seed=seed, service=service, root=root)
     config = load(root)
     name, declared = config.style(family)
     trained = trained_model(declared)
@@ -187,5 +191,125 @@ def bought(report, *, out: str, prompt: str | None, family: str | None,
     )
     entry = S.buy(adapter.SERVICE, order, report)
     return {**entry, "outdated": outdated} if outdated else entry
+
+
+#: The longer side a shape given as width and height is drawn at, where the model
+#: declares no default of its own.
+LONGER = 1024
+
+
+def _public(report, *, out: str, prompt: str | None, model: str,
+           aspect_ratio: str | None, seed: int | None, service: str | None,
+           root) -> dict:
+    """A picture from one of Scenario's public models, which needs no training (§PW688).
+
+    The payload is built from what the model declares it takes, read for free, so a
+    field it would drop is refused here. The price is the project's row for the model;
+    where the ceiling counts Scenario's own units, a dry run asks the exact charge
+    first, and one above the row is refused rather than under-counted.
+    """
+    if not prompt:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a picture from a public model was asked for with no prompt",
+            "pass prompt, what it shows in words",
+        )
+    config = load(root)
+    chosen = config.service(service)
+    about = config.services()[chosen]
+    base, key = picture._reached(chosen, about)
+    price = picture._price(chosen, about.get("prices") or {}, model, None)
+    takes = {one["name"]: one for one in adapter.declared(base, key, model)}
+    if "prompt" not in takes:
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            f"{model} takes no prompt, so it draws no picture from words",
+            "name a model whose capabilities include txt2img",
+            given=model,
+        )
+    payload: dict = {"prompt": prompt, **_shaped(model, takes, aspect_ratio)}
+    if seed is not None:
+        if "seed" not in takes:
+            # A seed the model drops records a picture as repeatable when it is not.
+            raise PolyweaveError(
+                "fetch.unknown-field",
+                f"{model} declares no seed",
+                "ask without a seed",
+                given="seed",
+                allowed=sorted(takes),
+            )
+        payload["seed"] = seed
+    unit = str(config.budget(service=chosen).get("unit") or "")
+    if unit.upper() == "CU":
+        charge = adapter.quoted(base, key, model, payload)
+        if charge is not None and charge > price:
+            raise PolyweaveError(
+                "picture.quoted-over-price",
+                f"Scenario quotes {charge:g} CU for this call, and [service.{chosen}] "
+                f"prices {model!r} at {price:g}",
+                f"raise the {model!r} row to at least {charge:g}, so the ceiling "
+                "counts what is spent; nothing was spent",
+                given=charge,
+            )
+    order = S.Order(
+        service=chosen, base=base, key=key, price=price, root=config.root,
+        asked={"call": "draw", "model": model, "payload": payload},
+        kept={
+            "out": out,
+            "prompt": prompt,
+            "bought": "image",
+            "engine": {"name": chosen, "model": model},
+            "details": {
+                "model": model,
+                "public": True,
+                "seed": seed,
+                "aspect_ratio": aspect_ratio,
+                **{k: v for k, v in payload.items() if k != "prompt"},
+            },
+        },
+    )
+    return S.buy(adapter.SERVICE, order, report)
+
+
+def _shaped(model: str, takes: dict, asked: str | None) -> dict:
+    """The fields a ratio goes as, in the spelling the model declares (§PW688)."""
+    if not asked:
+        return {}
+    wanted = picture._ratio(asked)
+    if wanted is None:
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            f"aspect_ratio is {asked!r}",
+            "give it as width by height, such as 16x9",
+            given=asked,
+        )
+    if "aspectRatio" in takes:
+        left, right = str(asked).replace("x", ":").replace(" ", "").split(":")
+        spelled = f"{left}:{right}"
+        allowed = takes["aspectRatio"].get("allowedValues") or []
+        if allowed and spelled not in allowed:
+            raise PolyweaveError(
+                "fetch.bad-choice",
+                f"{model} draws no {spelled}",
+                f"pass one of {', '.join(str(one) for one in allowed)}",
+                given=asked,
+                allowed=allowed,
+            )
+        return {"aspectRatio": spelled}
+    if "width" in takes and "height" in takes:
+        top = min(int(takes["width"].get("max") or LONGER),
+                  int(takes["height"].get("max") or LONGER), LONGER)
+        width, height = (top, top / wanted) if wanted >= 1 else (top * wanted, top)
+        low = max(int(takes["width"].get("min") or 0),
+                  int(takes["height"].get("min") or 0))
+        sides = [max(low, int(round(side / 16)) * 16) for side in (width, height)]
+        return {"width": sides[0], "height": sides[1]}
+    raise PolyweaveError(
+        "fetch.unknown-field",
+        f"{model} declares no shape, so aspect_ratio has nowhere to go",
+        "ask without aspect_ratio",
+        given="aspect_ratio",
+        allowed=sorted(takes),
+    )
 
 

@@ -47,6 +47,12 @@ CODES: dict[str, Code] = {
         doors=("crop it to the asked ratio with a picture.copies box",
                "keep it as drawn"),
     ),
+    "picture.quoted-over-price": Code(
+        means="the service quotes more for the call than the project's price row",
+        when="a Scenario call whose dry run costs more CU than [service.<name>] "
+        "prices declares; refused, since the ceiling would count less than is spent",
+        doors=("raise the row to the quote",),
+    ),
     # -- stock: a picture from Pixabay, with its licence (§PW673) ---------------
     "stock.bad-filter": Code(
         means="stock.find was given a filter the service does not take",

@@ -35,6 +35,21 @@ expires = "2099-12-31"
 """
 
 
+PUBLIC = "model_bfl-flux-2-klein-4b"
+
+#: A Starter account: its ceiling counts Scenario's own units, and it trains nothing.
+STARTER = f"""[service.scenario]
+base = "https://api.cloud.scenario.com"
+key_env = "SCENARIO_TEST_KEY"
+prices = {{ "{PUBLIC}" = 1 }}
+
+[budget.scenario]
+amount = 50
+unit = "CU"
+expires = "2099-12-31"
+"""
+
+
 def png(colour) -> bytes:
     held = io.BytesIO()
     Image.new("RGBA", (32, 32), colour).save(held, format="PNG")
@@ -47,6 +62,14 @@ class Fake:
     def __init__(self):
         self.sent: list[tuple[str, str, dict | None]] = []
         self.status = "trained"
+        self.quote = 1
+        # As Scenario declares Flux.2 Klein 4B's inputs (read 2026-11-04).
+        self.inputs = [
+            {"name": "prompt", "type": "string", "required": {"always": True}},
+            {"name": "width", "type": "number", "min": 128, "max": 2048},
+            {"name": "height", "type": "number", "min": 128, "max": 2048},
+            {"name": "seed", "type": "number"},
+        ]
 
     def __call__(self, method, url, key, body=None):
         assert key == "k:s"
@@ -61,6 +84,12 @@ class Fake:
         if path == "models/model_1":
             return 200, {"model": {"id": "model_1", "status": self.status}}
         if path.startswith("generate/custom/model_1"):
+            return 200, {"job": {"jobId": "job_1", "status": "queued"}}
+        if path == f"models/{PUBLIC}":
+            return 200, {"model": {"id": PUBLIC, "inputs": self.inputs}}
+        if path == f"generate/custom/{PUBLIC}?dryRun=true":
+            return 269, {"creativeUnitsCost": self.quote}
+        if path == f"generate/custom/{PUBLIC}":
             return 200, {"job": {"jobId": "job_1", "status": "queued"}}
         if path == "jobs/job_1":
             return 200, {"job": {"status": "success",
@@ -155,6 +184,90 @@ def test_a_training_over_the_ceiling_is_refused_before_sending(project):
         scenario.train(family="heroes", root=str(root))
     assert refused.value.code == "fetch.over-budget"
     assert fake.sent == []
+
+
+# -- a public model, which needs no training (§PW688) --------------------------------
+
+
+@pytest.fixture
+def starter(tmp_path, monkeypatch):
+    (tmp_path / "polyweave.toml").write_text(STARTER, encoding="utf-8")
+    monkeypatch.setenv("SCENARIO_TEST_KEY", "k:s")
+    fake = Fake()
+    monkeypatch.setattr(scenario_adapter, "call", fake)
+    monkeypatch.setattr(scenario_adapter, "POLL_EVERY", 0.0)
+    monkeypatch.setattr(S, "download", lambda link: png((200, 40, 40, 255)))
+    return tmp_path, fake
+
+
+def drawn(fake) -> dict:
+    """The payload of the last drawing sent, which is not a dry run."""
+    return [body for method, path, body in fake.sent
+            if method == "POST" and path == f"generate/custom/{PUBLIC}"][-1]
+
+
+def bought_from(root, **over):
+    return picture.buy(**{"out": "art/rocket.png", "prompt": "a plush rocket",
+                          "model": PUBLIC, "service": "scenario", "root": str(root),
+                          **over})
+
+
+def test_a_public_model_draws_with_no_training_and_its_record_names_it(starter):
+    root, fake = starter
+    entry = bought_from(root, aspect_ratio="16x9", seed=7)
+    payload = drawn(fake)
+    # Klein declares width and height, not aspectRatio, so the shape goes as those.
+    assert payload == {"prompt": "a plush rocket", "width": 1024, "height": 576,
+                       "seed": 7}
+    assert ("POST", f"generate/custom/{PUBLIC}?dryRun=true") in [
+        (m, p) for m, p, _ in fake.sent]
+    details = provenance.read("art/rocket.png", root)["details"]
+    assert details["model"] == PUBLIC and details["public"] is True
+    assert entry["credits"] == 1
+    assert purchase.spent(root, service="scenario") == 1
+
+
+def test_a_ratio_goes_as_aspect_ratio_where_the_model_declares_that(starter):
+    root, fake = starter
+    fake.inputs = [{"name": "prompt", "type": "string"},
+                   {"name": "aspectRatio", "type": "string",
+                    "allowedValues": ["16:9", "1:1", "auto"]}]
+    bought_from(root, aspect_ratio="16x9")
+    assert drawn(fake) == {"prompt": "a plush rocket", "aspectRatio": "16:9"}
+    with pytest.raises(PolyweaveError) as refused:
+        bought_from(root, out="art/other.png", aspect_ratio="21x9")
+    assert refused.value.code == "fetch.bad-choice"
+    assert "16:9" in refused.value.remedy
+
+
+def test_a_quote_above_the_declared_price_is_refused_before_anything_is_spent(
+    starter
+):
+    root, fake = starter
+    fake.quote = 4
+    with pytest.raises(PolyweaveError) as refused:
+        bought_from(root)
+    assert refused.value.code == "picture.quoted-over-price"
+    assert f"generate/custom/{PUBLIC}" not in [p for _, p, _ in fake.sent]
+    assert purchase.read(root) == []
+
+
+def test_a_seed_the_model_does_not_declare_is_refused(starter):
+    root, fake = starter
+    fake.inputs = [{"name": "prompt", "type": "string"}]
+    with pytest.raises(PolyweaveError) as refused:
+        bought_from(root, seed=3)
+    assert refused.value.code == "fetch.unknown-field"
+    assert purchase.read(root) == []
+
+
+def test_a_model_that_draws_nothing_from_words_is_refused(starter):
+    root, fake = starter
+    fake.inputs = [{"name": "image", "type": "file"}]
+    with pytest.raises(PolyweaveError) as refused:
+        bought_from(root)
+    assert refused.value.code == "fetch.bad-choice"
+    assert "txt2img" in refused.value.remedy
 
 
 def test_a_failed_training_is_owed(project):

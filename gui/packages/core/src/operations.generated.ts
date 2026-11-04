@@ -1420,8 +1420,8 @@ export interface PictureBuyArgs {
   json_prompt?: Record<string, unknown>
   /** cut from its background; a style family's pictures are if unset */
   transparent?: boolean
-  /** the model; default "4.0" */
-  model?: "4.0" | "3.0"
+  /** 4.0 or 3.0; on Scenario, a public model's id; default "4.0" */
+  model?: string
   /** as 16x9; 4.0 is sent its size of that shape */
   aspect_ratio?: string
   /** as the service spells it */

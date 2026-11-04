@@ -4,7 +4,8 @@ The routes are Scenario's v1 API, authenticated with `Basic key:secret`: the key
 variable holds both, joined by a colon. What the domain asks is `call`, `train` or
 `draw`. A training sends `pictures` as (name, path) under a model `name` of a `type`,
 and delivers the `record` kept beside the canon with the model's id and status. A
-drawing sends `payload` to the trained `model` and delivers the first asset it made.
+drawing sends `payload` to the `model`, trained or public (§PW688), and delivers the
+first asset it made.
 """
 
 from __future__ import annotations
@@ -68,6 +69,37 @@ def _ok(status: int, answer: Any, doing: str) -> Any:
 
 def _url(base: str, path: str) -> str:
     return f"{base.rstrip('/')}/v1/{path}"
+
+
+def declared(base: str, key: str, model: str) -> list[dict]:
+    """What a model takes, as it declares it: each input's name, type and bounds.
+
+    Free to read, and the only account of a public model's fields that is the
+    service's own (§PW688): one spells a shape as `aspectRatio`, another as `width`
+    and `height`, and a field it does not declare would be dropped or refused.
+    """
+    status, said = call("GET", _url(base, f"models/{model}"), key)
+    if status == 404:
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            f"Scenario has no model {model!r}",
+            "name a public model by its id, as GET /v1/models?privacy=public lists "
+            "them, such as model_bfl-flux-2-klein-4b",
+            given=model,
+        )
+    return (_ok(status, said, f"reading model {model}").get("model") or {}).get(
+        "inputs") or []
+
+
+def quoted(base: str, key: str, model: str, payload: dict) -> float | None:
+    """What Scenario says the call will cost, asked with `dryRun`, which bills nothing.
+
+    In the account's own units (CU), or None where the answer names no cost.
+    """
+    status, said = call("POST", _url(base, f"generate/custom/{model}?dryRun=true"),
+                        key, payload)
+    cost = _ok(status, said, "pricing the call").get("creativeUnitsCost")
+    return None if cost is None else float(cost)
 
 
 def submit(order: S.Order) -> str:
