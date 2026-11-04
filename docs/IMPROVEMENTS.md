@@ -189,24 +189,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW684 An inventory by kind that opens on what it shows
-
-Met by the owner on 2026-11-04, opening Spinhold in the window for PW311. The inventory
-lists 2,019 items in one column, meshes first (156 of them), so a picture is found only
-by scrolling past every mesh, and the page waits until every item is read before it
-shows anything.
-
-What to build: the inventory gets one tab per kind (meshes, pictures, sounds, lines, and
-the rest the payload names), each with its count, the filters (waiting on a person, need
-attention, open revision) kept across tabs, and a search by path. A tab draws its first
-screenful at once and the rest as it scrolls (a virtual list), so a project of thousands
-opens on what it shows rather than on everything. The kinds and counts still come from
-the operation's payload, as the window's rule says, never from a scan of its own.
-
-Done when Spinhold's window shows its first items without waiting for the whole list, a
-picture is two clicks away (its tab, then it, or a typed name), and the tabs' counts sum
-to the inventory's.
-
 ### §PW685 A picture fitted beside what is asked of it
 
 Met by the owner on 2026-11-04 (PW311). The item view draws a picture at its real size

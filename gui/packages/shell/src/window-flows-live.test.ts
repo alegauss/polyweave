@@ -41,6 +41,12 @@ async function open(page: Page, root: string, labels: { root: string; find: stri
   await page.getByRole('heading', { level: 1, name: 'starship' }).waitFor({ timeout: 30_000 })
 }
 
+/** Choose an item in the inventory: its kind's tab, then it (§PW684). */
+async function choose(page: Page, tab: RegExp, item: RegExp) {
+  await page.getByRole('tab', { name: tab }).click()
+  await page.getByRole('button', { name: item }).click()
+}
+
 /** Lay out a sitting of one picture family, as an agent would after a change. */
 function sitting(game: string, out: string, members: Record<string, string>[]) {
   const laid = spawnSync('python', [
@@ -95,11 +101,16 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
     await page.getByText(game, { exact: true }).waitFor()
     await page.getByText(/^Servido por polyweave .*, encontrado no PATH$/).waitFor()
     // The kinds in the inventory's order, each with how many it holds, in the catalog's words.
-    await expect.poll(() => page.getByRole('heading', { level: 2 }).allTextContents()).toEqual(['Imagens (1)', 'Sons (1)', 'Falas (2)'])
+    await expect.poll(() => page.getByRole('tab').allTextContents()).toEqual(['Imagens (1)', 'Sons (1)', 'Falas (2)'])
     await page.getByText('4 itens', { exact: true }).waitFor()
     // The open revision is what the list can be narrowed to.
     await page.getByRole('button', { name: 'Com revisão aberta' }).click()
-    await expect.poll(() => page.getByRole('heading', { level: 2 }).allTextContents()).toEqual(['Falas (1)'])
+    await expect.poll(() => page.getByRole('tab').allTextContents()).toEqual(['Falas (1)'])
+    // A typed path finds an item whatever tab it is on, the filter kept beside it.
+    await page.getByRole('button', { name: 'Todos' }).click()
+    await page.getByRole('searchbox', { name: 'Buscar pelo caminho' }).fill('ICON')
+    await expect.poll(() => page.getByRole('tab').allTextContents()).toEqual(['Imagens (1)'])
+    await page.getByRole('button', { name: /^docs\/renders\/icon\.png/ }).waitFor()
     const shot = await page.screenshot()
     expect(shot.byteLength).toBeGreaterThan(1000)
   })
@@ -107,12 +118,12 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
   it('shows a line beside what it was held to, and a picture beside its gate', async () => {
     const page = await launch('en')
     await open(page, root)
-    await page.getByRole('button', { name: /^line:TITLE/ }).click()
+    await choose(page, /^Lines/, /^line:TITLE/)
     await page.getByRole('heading', { level: 2, name: 'line:TITLE' }).waitFor()
     await expect.poll(() => page.getByRole('definition').allTextContents()).toEqual(['Starship'])
     await page.getByText('No person has judged this line yet.').waitFor()
 
-    await page.getByRole('button', { name: /^docs\/renders\/icon\.png/ }).click()
+    await choose(page, /^Pictures/, /^docs\/renders\/icon\.png/)
     await page.getByRole('img', { name: 'docs/renders/icon.png' }).waitFor()
     // Both lanes: the kept icon and the refused one beside it, with why it was refused.
     await page.getByRole('heading', { level: 3, name: 'Its last gate' }).waitFor()
@@ -124,7 +135,7 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
   it('plays a loop looped', async () => {
     const page = await launch('en')
     await open(page, root)
-    await page.getByRole('button', { name: /^audio\/calm\.wav/ }).click()
+    await choose(page, /^Sounds/, /^audio\/calm\.wav/)
     const audio = page.locator('audio')
     await audio.waitFor()
     // The shell has no DOM types: the element is read for the one property asked.
@@ -135,7 +146,7 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
     sitting(game, 'review/first', [{ name: 'icon', new: 'docs/renders/icon.png' }])
     const page = await launch('en')
     await open(page, root)
-    await page.getByRole('button', { name: /^docs\/renders\/icon\.png/ }).click()
+    await choose(page, /^Pictures/, /^docs\/renders\/icon\.png/)
     await page.getByRole('button', { name: 'Where it is judged' }).click()
     // The window's own screen, the one the review page serves in a browser (§PW403).
     const focused = page.locator('article[data-focused]')
@@ -262,7 +273,7 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
     fake = fakeClaude()
     const page = await launch('en', { [AGENT_VAR]: JSON.stringify(fake.argv) })
     await open(page, root)
-    await page.getByRole('button', { name: /^line:TITLE/ }).click()
+    await choose(page, /^Lines/, /^line:TITLE/)
     await page.getByPlaceholder('What should change, in your words').fill('shorter, in capitals')
     await page.getByRole('button', { name: 'Ask, and open a Claude Code session on it' }).click()
     // The fake says its first message back: built from the revision and the brief.
@@ -304,7 +315,7 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
       PW_FAKE_ASK: 'mcp__polyweave__picture_buy',
     })
     await open(page, root)
-    await page.getByRole('button', { name: /^docs\/renders\/icon\.png/ }).click()
+    await choose(page, /^Pictures/, /^docs\/renders\/icon\.png/)
     await page.getByPlaceholder('What should change, in your words').fill('a warmer rim')
     await page.getByRole('button', { name: 'Ask, and open a Claude Code session on it' }).click()
     await page.getByText('It asks to use mcp__polyweave__picture_buy', { exact: true }).waitFor({ timeout: 30_000 })
@@ -315,7 +326,7 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
   it('follows the project: an item changed on disk is marked, not swapped silently', async () => {
     const page = await launch('en')
     await open(page, root)
-    await page.getByRole('button', { name: /^docs\/renders\/icon\.png/ }).click()
+    await choose(page, /^Pictures/, /^docs\/renders\/icon\.png/)
     await page.getByRole('img', { name: 'docs/renders/icon.png' }).waitFor()
     // Rewritten as a session or terminal would, once the person is looking at it.
     await writeFile(

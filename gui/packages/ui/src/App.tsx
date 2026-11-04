@@ -2,29 +2,33 @@
 // one hands it to the project screen.
 
 import { Button, Input } from '@viglet/viglet-design-system'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { merged, type Bridge, type Item, type Opened } from '@pw/core'
+import { merged, type Bridge, type Item, type Kind, type Opened } from '@pw/core'
 
 import { Project } from './Project'
 
 interface Shown {
   opened: Opened
+  /** The rows read so far (§PW684): the first page, then each later one as it lands. */
   items: Item[]
+  /** The payload's counts, which stand for the whole inventory from the first page on. */
+  kinds: Partial<Record<Kind, number>>
+  total: number
+  /** Whether later pages are still being read. */
+  reading: boolean
   /** The ids whose digest moved in the last re-read, for the item on screen. */
   moved: string[]
 }
 
-/** A project being opened (§PW580): which one, and how far its inventory has been read. */
+/** A project being opened (§PW580): which one, until its first page is on screen. */
 interface Opening {
   project: string
-  read: number
-  total: number | null
 }
 
 export function App({ bridge }: { bridge: Bridge }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [root, setRoot] = useState('')
   const [depth, setDepth] = useState(2)
   const [found, setFound] = useState<string[] | null>(null)
@@ -44,42 +48,93 @@ export function App({ bridge }: { bridge: Bridge }) {
 
   const look = () => attempt(async () => setFound(await bridge.find(root, depth)))
 
-  const everything = async (project: string, page?: (read: number, total: number) => void) => {
-    const items: Item[] = []
-    let offset: number | null = 0
-    while (offset !== null) {
-      const read = await bridge.inventory(project, undefined, offset)
-      items.push(...read.items)
-      page?.(items.length, read.total)
-      offset = read.next
+  // Which read of the inventory is the live one: a later open, a re-read or going back
+  // makes the pages an earlier read is still fetching land nowhere.
+  const live = useRef(0)
+
+  /** The pages after the first, each put on screen as it lands (§PW684). */
+  const rest = async (project: string, mine: number, from: number | null) => {
+    let offset = from
+    try {
+      while (offset !== null) {
+        const read = await bridge.inventory(project, undefined, offset)
+        if (mine !== live.current) return
+        offset = read.next
+        const done = offset === null
+        setShown((now) =>
+          now && now.opened.project === project
+            ? { ...now, items: [...now.items, ...read.items], reading: !done }
+            : now,
+        )
+      }
+    } catch (error) {
+      if (mine !== live.current) return
+      // What was read stays on screen, and the page that failed is said.
+      setShown((now) => (now && now.opened.project === project ? { ...now, reading: false } : now))
+      setFailed(error instanceof Error ? error.message : String(error))
     }
-    return items
   }
 
-  // While one project opens every "Open" is disabled, so a slow open is never a second read.
+  // While one project opens every "Open" is disabled, so a slow open is never a second
+  // read. The open waits on the first page alone: the screen shows it, and the pages
+  // after it arrive behind it (§PW684).
   const open = (project: string) => {
     if (opening) return
-    setOpening({ project, read: 0, total: null })
+    setOpening({ project })
     return attempt(async () => {
       const opened = await bridge.open(project)
-      const items = await everything(project, (read, total) => setOpening({ project, read, total }))
-      setShown({ opened, items, moved: [] })
+      const mine = ++live.current
+      const head = await bridge.inventory(project, undefined, 0)
+      if (mine !== live.current) return
+      setShown({
+        opened,
+        items: head.items,
+        kinds: head.kinds,
+        total: head.total,
+        reading: head.next !== null,
+        moved: [],
+      })
+      void rest(project, mine, head.next)
     }).finally(() => setOpening(null))
   }
 
-  const count = (n: number) => n.toLocaleString(i18n.language)
+  /** Every page from offset 0, for a re-read that replaces what is on screen. */
+  const everything = async (project: string) => {
+    const items: Item[] = []
+    let kinds: Shown['kinds'] = {}
+    let total = 0
+    let offset: number | null = 0
+    while (offset !== null) {
+      const read = await bridge.inventory(project, undefined, offset)
+      if (offset === 0) ({ kinds, total } = read)
+      items.push(...read.items)
+      offset = read.next
+    }
+    return { items, kinds, total }
+  }
 
-  // A burst of changes is one re-read, folded over what is on screen (§PW310).
+  // A burst of changes is one re-read, folded over what is on screen (§PW310). It takes
+  // over from a read still paging, whose rows it holds as well.
   useEffect(
     () =>
       bridge.onChanged((project) => {
+        const mine = ++live.current
         void everything(project).then(
-          (fresh) =>
+          (fresh) => {
+            if (mine !== live.current) return
             setShown((now) => {
               if (!now || now.opened.project !== project) return now
-              const folded = merged(now.items, fresh)
-              return { ...now, items: folded.items, moved: [...now.moved, ...folded.moved] }
-            }),
+              const folded = merged(now.items, fresh.items)
+              return {
+                ...now,
+                items: folded.items,
+                kinds: fresh.kinds,
+                total: fresh.total,
+                reading: false,
+                moved: [...now.moved, ...folded.moved],
+              }
+            })
+          },
           () => undefined,
         )
       }),
@@ -99,8 +154,14 @@ export function App({ bridge }: { bridge: Bridge }) {
           bridge={bridge}
           opened={shown.opened}
           items={shown.items}
+          kinds={shown.kinds}
+          total={shown.total}
+          reading={shown.reading}
           moved={shown.moved}
-          back={() => setShown(null)}
+          back={() => {
+            live.current += 1
+            setShown(null)
+          }}
         />
       ) : (
         <section className="flex flex-col gap-4">
@@ -135,12 +196,7 @@ export function App({ bridge }: { bridge: Bridge }) {
                   <span className="truncate font-mono text-sm">{project}</span>
                   {opening?.project === project && (
                     <output className="text-sm text-muted-foreground">
-                      {opening.total === null
-                        ? t('projects.opening')
-                        : t('projects.opening_read', {
-                            read: count(opening.read),
-                            total: count(opening.total),
-                          })}
+                      {t('projects.opening')}
                     </output>
                   )}
                   <Button

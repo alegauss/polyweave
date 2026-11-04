@@ -1,12 +1,13 @@
-// One project (§PW303, §PW304): its inventory by kind on the left, filterable by what
-// needs a person, and one item on the right with what it was held to. Nothing here
-// writes: what the window cannot draw itself is offered as the operation that would.
+// One project (§PW303, §PW304): its inventory on the left, one tab per kind, filterable
+// by what needs a person and searchable by path, and one item on the right with what it
+// was held to. Nothing here writes: what the window cannot draw itself is offered as the
+// operation that would.
 
-import { Button } from '@viglet/viglet-design-system'
-import { useEffect, useMemo, useState } from 'react'
+import { Button, Input } from '@viglet/viglet-design-system'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { KINDS, type Bridge, type Desk, type Item, type Opened } from '@pw/core'
+import { KINDS, type Bridge, type Desk, type Item, type Kind, type Opened } from '@pw/core'
 
 import { Decide } from './Decide'
 import { ItemView } from './ItemView'
@@ -25,22 +26,144 @@ export function kept(items: Item[], filter: Filter, revised: string[] = []): Ite
   return items
 }
 
+/** A tab: one kind, with how many of its rows the list shows. */
+export interface Tab {
+  kind: Kind
+  count: number
+}
+
+/**
+ * The tabs the inventory draws (§PW684), in the inventory's order. Unnarrowed, each kind
+ * the payload counts is a tab with the payload's count, so the tabs sum to the inventory
+ * even while its later pages are still being read. Narrowed by a filter or a typed path,
+ * a tab counts the rows that are left, and a kind with none is no tab.
+ */
+export function tabs(
+  rows: Item[],
+  kinds: Partial<Record<Kind, number>>,
+  narrowed: boolean,
+): Tab[] {
+  return KINDS.map((kind) => ({
+    kind,
+    count: narrowed ? rows.filter((i) => i.kind === kind).length : (kinds[kind] ?? 0),
+  })).filter((tab) => tab.count > 0)
+}
+
+/** The rows whose id holds the typed text, case aside. */
+export function matching(items: Item[], query: string): Item[] {
+  const typed = query.trim().toLowerCase()
+  return typed ? items.filter((i) => i.id.toLowerCase().includes(typed)) : items
+}
+
+/** The height one row of the list is drawn at, which the window below counts in. */
+export const ROW = 36
+
+/**
+ * Which rows a list of `count` draws, scrolled `top` pixels into a `height`-pixel view
+ * (§PW684): the ones in view and `spare` on either side, so a kind of thousands draws a
+ * screenful and not every row. A view not measured yet is taken as one screen.
+ */
+export function windowed(
+  count: number,
+  top: number,
+  height: number,
+  spare = 10,
+): { from: number; to: number } {
+  const view = height > 0 ? height : 720
+  const from = Math.min(count, Math.max(0, Math.floor(top / ROW) - spare))
+  const to = Math.min(count, Math.ceil((top + view) / ROW) + spare)
+  return { from, to: Math.max(from, to) }
+}
+
+/** One kind's rows, drawn a screenful at a time as the list scrolls. */
+function Rows({
+  rows,
+  chosen,
+  choose,
+}: {
+  rows: Item[]
+  chosen: Item | null
+  choose: (item: Item) => void
+}) {
+  const { t } = useTranslation()
+  const box = useRef<HTMLDivElement>(null)
+  const [top, setTop] = useState(0)
+  const [height, setHeight] = useState(0)
+  useLayoutEffect(() => {
+    const element = box.current
+    if (!element) return
+    setHeight(element.clientHeight)
+    const watch = new ResizeObserver(() => setHeight(element.clientHeight))
+    watch.observe(element)
+    return () => watch.disconnect()
+  }, [])
+  const { from, to } = windowed(rows.length, top, height)
+  return (
+    <div
+      ref={box}
+      data-rows
+      onScroll={(e) => setTop(e.currentTarget.scrollTop)}
+      className="max-h-[70vh] overflow-y-auto rounded-lg border"
+    >
+      <ul style={{ height: rows.length * ROW, position: 'relative' }}>
+        {rows.slice(from, to).map((item, at) => (
+          <li
+            key={item.id}
+            style={{ position: 'absolute', top: (from + at) * ROW, height: ROW, left: 0, right: 0 }}
+            className="border-b"
+          >
+            <button
+              type="button"
+              data-item={item.id}
+              aria-current={chosen?.id === item.id}
+              onClick={() => choose(item)}
+              className="flex h-full w-full items-center gap-3 px-2 text-left text-sm hover:bg-muted aria-[current=true]:bg-muted"
+            >
+              <span className="min-w-0 flex-1 truncate font-mono" title={item.id}>
+                {item.id}
+              </span>
+              {item.pending && (
+                <span className="shrink-0 text-xs text-amber-600">{t('project.pending')}</span>
+              )}
+              <span className="shrink-0 text-xs text-muted-foreground">
+                {t(`record.${item.record ?? 'none'}`)}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export function Project({
   bridge,
   opened,
   items,
+  kinds,
+  total,
+  reading = false,
   moved = [],
   back,
 }: {
   bridge: Bridge
   opened: Opened
+  /** The rows read so far: the first page at once, the rest as it arrives (§PW684). */
   items: Item[]
+  /** The payload's count by kind, for the whole inventory however much is read. */
+  kinds: Partial<Record<Kind, number>>
+  /** The payload's count of every row. */
+  total: number
+  /** Whether later pages are still being read. */
+  reading?: boolean
   /** Ids whose digest moved since the window drew them (§PW310). */
   moved?: string[]
   back: () => void
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [filter, setFilter] = useState<Filter>('all')
+  const [query, setQuery] = useState('')
+  const [tab, setTab] = useState<Kind | null>(null)
   const [chosen, setChosen] = useState<Item | null>(null)
   // The digest of the item as the person was last shown it: a change to it is marked,
   // never swapped in silently, and the new one is shown when they ask (§PW310).
@@ -69,10 +192,13 @@ export function Project({
     }),
     [bridge, opened.project],
   )
-  const shown = kept(items, filter, revised ?? [])
-  const byKind = KINDS.map((kind) => [kind, shown.filter((i) => i.kind === kind)] as const).filter(
-    ([, rows]) => rows.length > 0,
-  )
+  const shown = matching(kept(items, filter, revised ?? []), query)
+  const narrowed = filter !== 'all' || query.trim() !== ''
+  const drawn = tabs(shown, kinds, narrowed)
+  // The tab chosen stays chosen while it has rows; a narrowing that empties it moves to
+  // the first tab left, so a typed name lands on the kind that holds it.
+  const current = drawn.find((one) => one.kind === tab)?.kind ?? drawn[0]?.kind ?? null
+  const rows = current ? shown.filter((i) => i.kind === current) : []
 
   return (
     <section className="flex flex-col gap-4">
@@ -110,8 +236,24 @@ export function Project({
         <>
       <div className="flex flex-wrap items-center gap-2">
         <p data-count className="mr-auto text-sm">
-          {t('project.items', { count: items.length })}
+          {t('project.items', { count: total })}
+          {reading && (
+            <output className="ml-2 text-muted-foreground">
+              {t('project.reading', {
+                read: items.length.toLocaleString(i18n.language),
+                total: total.toLocaleString(i18n.language),
+              })}
+            </output>
+          )}
         </p>
+        <Input
+          type="search"
+          aria-label={t('project.search')}
+          placeholder={t('project.search')}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="w-64"
+        />
         {FILTERS.map((one) => (
           <Button
             key={one}
@@ -124,38 +266,33 @@ export function Project({
         ))}
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <div className="flex flex-col gap-4">
-          {byKind.length === 0 && <p className="text-muted-foreground">{t('project.empty')}</p>}
-          {byKind.map(([kind, rows]) => (
-            <section key={kind} data-kind={kind} className="flex flex-col gap-2">
-              <h2 className="text-lg font-medium">
-                {t(`kind.${kind}`)} <span className="text-muted-foreground">({rows.length})</span>
-              </h2>
-              <ul className="flex flex-col divide-y rounded-lg border">
-                {rows.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      data-item={item.id}
-                      aria-current={chosen?.id === item.id}
-                      onClick={() => setChosen(item)}
-                      className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 p-2 text-left text-sm hover:bg-muted aria-[current=true]:bg-muted"
-                    >
-                      <span className="min-w-32 flex-1 truncate font-mono">{item.id}</span>
-                      {item.pending && (
-                        <span className="shrink-0 text-xs text-amber-600">
-                          {t('project.pending')}
-                        </span>
-                      )}
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {t(`record.${item.record ?? 'none'}`)}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+        <div className="flex min-w-0 flex-col gap-2">
+          {total === 0 && <p className="text-muted-foreground">{t('project.empty')}</p>}
+          {total > 0 && drawn.length === 0 && (
+            <p className="text-muted-foreground">{t('project.no_match')}</p>
+          )}
+          {drawn.length > 0 && (
+            <div role="tablist" className="flex flex-wrap gap-1 border-b pb-2">
+              {drawn.map((one) => (
+                <button
+                  key={one.kind}
+                  type="button"
+                  role="tab"
+                  data-kind={one.kind}
+                  aria-selected={one.kind === current}
+                  onClick={() => setTab(one.kind)}
+                  className="rounded-md px-3 py-1 text-sm hover:bg-muted aria-selected:bg-muted aria-selected:font-medium"
+                >
+                  {t(`kind.${one.kind}`)} <span className="text-muted-foreground">({one.count})</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {current && (
+            <div role="tabpanel" data-kind={current}>
+              <Rows key={current} rows={rows} chosen={chosen} choose={setChosen} />
+            </div>
+          )}
         </div>
         <div>
           {chosen && moved.includes(chosen.id) && seenAt !== chosenDigest && (

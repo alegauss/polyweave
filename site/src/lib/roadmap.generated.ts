@@ -45,20 +45,13 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 0 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 4 },
+  { block: "U", title: "A window on everything a project governs", open: 3 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
   { block: "X", title: "The site on the shared design system", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW684",
-    block: "U",
-    symptom: "the window's inventory reads all 2,019 of Spinhold's items before it shows any, in one column with no tab per kind",
-    why: "A picture is found only after scrolling past every mesh, and the page waits for the whole list to open.",
-    deps: [],
-  },
   {
     id: "PW685",
     block: "U",

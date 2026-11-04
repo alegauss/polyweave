@@ -10,8 +10,7 @@
     "none": "No folder under here holds a polyweave.toml.",
     "nothing_yet": "Name a folder and how deep to look. Nothing is scanned until you do.",
     "open": "Open",
-    "opening": "Opening…",
-    "opening_read": "Opening… {{read}} of {{total}} items read"
+    "opening": "Opening…"
   },
   "project": {
     "back": "Projects",
@@ -23,7 +22,10 @@
     "pending": "waits on a person",
     "decide": "Decide",
     "inventory": "Inventory",
-    "where_judged": "Where it is judged"
+    "where_judged": "Where it is judged",
+    "search": "Find by path",
+    "reading": "{{read}} of {{total}} read",
+    "no_match": "Nothing here matches."
   },
   "record": {
     "sound": "sound",

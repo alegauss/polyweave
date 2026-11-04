@@ -647,6 +647,7 @@
 - ✅ **PW615** **a sitting laid again under a family name that already holds a verdict is not listed as waiting on the review page** — An answer counts only from when its sitting was laid out, so a re-laid sitting waits and review.state names its unanswered families (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW616** **verdict.sitting crashes when a family name holds a character Windows forbids in a file name, such as a question mark** — A family keeps its name as written and its sheet takes a safe, unique file name, so a question mark no longer crashes a sitting (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW618** **the window's watch test counts one burst of writes as two on a loaded Linux runner, turning the gates red** — The watch test holds the watcher to the window's own 300 ms quiet, settles and zeroes its count before writing, so a late inotify event cannot read as a burst.
+- ✅ **PW684** **the window's inventory reads all 2,019 of Spinhold's items before it shows any, in one column with no tab per kind** — A project opens on its first inventory page, with a tab per kind counted by the payload, a path search and a list drawing only rows in view (design recorded in `gui/README.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

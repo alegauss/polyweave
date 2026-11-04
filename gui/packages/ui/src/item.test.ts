@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { Item } from '@pw/core'
 
 import { offered, viewer } from './ItemView'
-import { kept } from './Project'
+import { kept, matching, ROW, tabs, windowed } from './Project'
 
 const item = (over: Partial<Item>): Item => ({
   id: 'x',
@@ -45,5 +45,36 @@ describe('an item seen', () => {
     expect(kept(rows, 'attention').map((r) => r.id)).toEqual(['b'])
     expect(kept(rows, 'all')).toHaveLength(3)
     expect(kept(rows, 'revision', ['c']).map((r) => r.id)).toEqual(['c'])
+  })
+
+  it('draws a tab per kind the payload counts, summing to the inventory before every page is read', () => {
+    const read = [item({ id: 'a.glb' }), item({ id: 'b.glb' })]
+    const kinds = { mesh: 156, picture: 1500, line: 363 }
+    const drawn = tabs(read, kinds, false)
+    expect(drawn.map((tab) => tab.kind)).toEqual(['mesh', 'picture', 'line'])
+    expect(drawn.reduce((sum, tab) => sum + tab.count, 0)).toBe(2019)
+  })
+
+  it('counts what is left once narrowed, and draws no tab for a kind with none', () => {
+    const rows = [
+      item({ id: 'art/ship.glb' }),
+      item({ id: 'art/ship.png', kind: 'picture' }),
+      item({ id: 'line:SHIP', kind: 'line' }),
+    ]
+    const found = matching(rows, ' SHIP.png ')
+    expect(found.map((r) => r.id)).toEqual(['art/ship.png'])
+    expect(tabs(found, { mesh: 1, picture: 1, line: 1 }, true)).toEqual([{ kind: 'picture', count: 1 }])
+    expect(matching(rows, '')).toBe(rows)
+  })
+
+  it('draws a screenful of a long kind, not every row', () => {
+    expect(windowed(2019, 0, 720)).toEqual({ from: 0, to: 720 / ROW + 10 })
+    const deep = windowed(2019, 100 * ROW, 720)
+    expect(deep.from).toBe(90)
+    expect(deep.to).toBe(100 + 720 / ROW + 10)
+    expect(windowed(5, 0, 720)).toEqual({ from: 0, to: 5 })
+    expect(windowed(5, 9999, 720).to - windowed(5, 9999, 720).from).toBeGreaterThanOrEqual(0)
+    // A view not measured yet is taken as one screen, never as none.
+    expect(windowed(2019, 0, 0).to).toBeGreaterThan(0)
   })
 })

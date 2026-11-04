@@ -10,8 +10,7 @@
     "none": "Nenhuma pasta aqui tem um polyweave.toml.",
     "nothing_yet": "Diga uma pasta e até que nível procurar. Nada é varrido antes disso.",
     "open": "Abrir",
-    "opening": "Abrindo…",
-    "opening_read": "Abrindo… {{read}} de {{total}} itens lidos"
+    "opening": "Abrindo…"
   },
   "project": {
     "back": "Projetos",
@@ -23,7 +22,10 @@
     "pending": "aguarda uma pessoa",
     "decide": "Decidir",
     "inventory": "Inventário",
-    "where_judged": "Onde é julgado"
+    "where_judged": "Onde é julgado",
+    "search": "Buscar pelo caminho",
+    "reading": "{{read}} de {{total}} lidos",
+    "no_match": "Nada aqui corresponde."
   },
   "record": {
     "sound": "íntegro",

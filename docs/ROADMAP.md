@@ -42,7 +42,6 @@
 
 ## Block U — A window on everything a project governs
 
-- 📋 **PW684** (deps: —) **the window's inventory reads all 2,019 of Spinhold's items before it shows any, in one column with no tab per kind** — A picture is found only after scrolling past every mesh, and the page waits for the whole list to open. → §PW684
 - 📋 **PW685** (deps: —) **the item view draws a picture at its real size, so a tall capture runs far past the request box** — Asking for a change means scrolling away from the picture the request is about. → §PW685
 - 📋 **PW686** (deps: —) **the project screen is a narrow centred column, so a wide window leaves most of itself blank** — The list and the item are cramped side by side while the margins take most of the screen. → §PW686
 - 📋 **PW687** (deps: —) **the item view has no way to mark where a picture is wrong, so a change asked from it carries words alone** — The boxes exist only on the Decide screen, where the owner did not look for them. → §PW687
