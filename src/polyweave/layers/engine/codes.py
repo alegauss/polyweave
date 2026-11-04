@@ -15,9 +15,41 @@ AREAS: dict[str, str] = {
     "game": "a game held open between an agent's calls",
     "driver": "the driver inside a held game, answering one command",
     "tables": "a game's data tables, held to the schema of one row",
+    "level": "a level played by the game's own probe, and what it measured",
 }
 
 CODES: dict[str, Code] = {
+    # -- level: a level played by the game's own probe (§PW202) ----------------
+    "level.no-probe": Code(
+        means="the project names no script of its own to play a level",
+        when="level.probe with no [levels] probe in polyweave.toml",
+        doors=("declare [levels] probe, a script printing one level: line a seed",),
+    ),
+    "level.bad-measures": Code(
+        means="[levels.measures] declares nothing, or a measure without its terms",
+        when="an empty table, a measure called seed, or one with no unit or a "
+        "direction other than higher or lower",
+        doors=('declare each as name = { unit = "...", direction = "higher" }',),
+    ),
+    "level.no-level": Code(
+        means="the level file named is not there",
+        when="a path one folder off, or a level not yet written",
+        doors=("name the level's file as a path under the project",),
+    ),
+    "level.probe-failed": Code(
+        means="the probe did not finish playing the level",
+        when="a script error, a run past [engine] frames or timeout, or no level: "
+        "line printed",
+        doors=("read the log the refusal names",
+               "raise [engine] timeout for many seeds"),
+    ),
+    "level.bad-line": Code(
+        means="the probe said something other than the declared measures for each seed",
+        when="a line missing a measure, carrying an undeclared one or a non-number, "
+        "or a seed missing or said twice; read as a refusal, never a zero",
+        doors=("print level: seed=N name=value for each declared measure and seed",
+               "declare the measure in [levels.measures]"),
+    ),
     # -- engine: running a scene script and reading its verdict ---------------
     # -- game: a game held open between an agent's calls ----------------------
     "game.not-listening": Code(

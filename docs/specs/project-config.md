@@ -107,6 +107,12 @@ time      = "frame"            # the key a trace line is stamped by: frame, or t
 tolerance = { position = 0.5 } # how far a field may part; a field not named must be equal
 pairs     = [{ one = "runs/play.jsonl", other = "runs/editor.jsonl" }]  # what a gate holds
 
+[levels]                       # the game's own level probe, level.probe (PW202)
+probe       = "res://tools/level_probe.gd"  # prints level: seed=N name=value a seed
+seeds       = 100              # seeds 1 to N a level is played over
+percentiles = [10, 50, 90]     # each measure read at these and its mean
+measures    = { won = { unit = "0 or 1", direction = "higher" } }  # what it prints
+
 [service]
 base    = "https://api.meshy.ai"
 key_env = "MESHY_API_KEY"      # the NAME of the variable, never the value

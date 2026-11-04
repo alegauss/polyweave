@@ -878,6 +878,16 @@ export interface KitUpdateArgs {
   root?: string
 }
 
+/** Play one level with the game's own probe and read back what it measured. */
+export interface LevelProbeArgs {
+  /** the level file the probe plays, under the project */
+  level: string
+  /** how many seeds, from 1; [levels] seeds where 0; from 0 to …; default 0 */
+  seeds?: number
+  /** the Godot project the probe is in; default "." */
+  root?: string
+}
+
 /** Every asset the ledger has a run for. */
 export interface LoopAssetsArgs {
   /** the project whose ledger this is; default "." */
@@ -2852,6 +2862,7 @@ export interface Operations {
   "kit.list": KitListArgs
   "kit.prove": KitProveArgs
   "kit.update": KitUpdateArgs
+  "level.probe": LevelProbeArgs
   "loop.assets": LoopAssetsArgs
   "loop.bounds": LoopBoundsArgs
   "loop.changes": LoopChangesArgs
@@ -3076,6 +3087,7 @@ export const OPERATIONS = [
   "kit.list",
   "kit.prove",
   "kit.update",
+  "level.probe",
   "loop.assets",
   "loop.bounds",
   "loop.changes",

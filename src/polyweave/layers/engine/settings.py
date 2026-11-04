@@ -38,6 +38,15 @@ TABLES: dict[str, Any] = {
         "tolerance": {},
         "pairs": [],
     },
+    # The game's own level probe (§PW202): its script, the seeds a level is played over,
+    # the percentiles each measure is read at, and `[levels.measures]`, each measure the
+    # probe prints with its unit and direction.
+    "levels": {
+        "probe": "",
+        "seeds": 100,
+        "percentiles": [10, 50, 90],
+        "measures": {},
+    },
     "driving": {
         # Seconds a driven game waits for its next call before it quits, so a session an
         # agent forgot never outlives the conversation that opened it (§PW213).

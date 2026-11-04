@@ -14,6 +14,7 @@ LAYER = Layer(
         "polyweave.layers.engine.frame_cost",
         "polyweave.layers.engine.godot",
         "polyweave.layers.engine.integrity",
+        "polyweave.layers.engine.levels",
         "polyweave.layers.engine.offscreen",
         "polyweave.layers.engine.pack",
         "polyweave.layers.engine.perf",
@@ -48,7 +49,8 @@ LAYER = Layer(
     config="polyweave.layers.engine.settings",
     # 29,481 with game.compare_runs, two runs' traces held together (§PW612).
     # 29,966 with game.replay_rates, one run flown at several frame rates (§PW640).
-    tools=30_400,
+    # 30,604 with level.probe, a level played by the game's own probe (§PW202).
+    tools=31_000,
     census={
         "polyweave.layers.engine.at_rig": (
             "internal", "a model drawn at a staged rig, the part render.in_game asks"),

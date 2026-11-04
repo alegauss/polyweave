@@ -650,6 +650,42 @@ over and hoping to catch the drift. A record keeps the `ticks_per_second` it was
 and the proof plays it back at that rate. A game without the kit is
 `game.no-determinism`, and fewer than two distinct whole rates is `game.bad-rates`.
 
+## A level played by the game's own probe
+
+Only a game can play its own rules, so polyweave owns the handshake and never the
+player (§PW202). `[levels]` names the game's script and what it reports:
+
+```toml
+[levels]
+probe       = "res://tools/level_probe.gd"
+seeds       = 200              # 100 unless said; the call's seeds overrides it
+percentiles = [10, 50, 90]     # the default
+
+[levels.measures]
+won        = { unit = "0 or 1", direction = "higher" }
+moves_left = { unit = "moves",  direction = "higher" }
+stars      = { unit = "stars",  direction = "higher" }
+```
+
+`level.probe(level)` runs the probe headless, under `[engine]`'s frames and timeout, with
+`level=res://…` and `seeds=N` after `--`. The probe plays seeds 1 to N and prints one line
+a seed: `level: seed=1 won=1 moves_left=4 stars=2`. Each line must carry the seed and
+every declared measure as `name=number` and nothing else; a measure missing, one
+undeclared, a word that is not a pair, or a seed missing or said twice is
+`level.bad-line`, never read as zero. A measure the bot does not print is the failure
+this exists for: Cottony's careless bot won 65% of level 20's deals while the owner felt
+the level by its three stars being out of reach, which the bot never counted (§PW201).
+
+Each measure is answered at each percentile (`p10`, `p50`, `p90`) and its `mean`, which
+for a 0 or 1 measure is its rate, because a level's feel lives in its bad runs as much
+as its median. `<level>.probe.json` lands beside the level with the seeds, percentiles,
+measures and `measured`, recorded with the level and the probe as inputs and the engine's
+version. A run where one was there before answers `moved`, each aggregate's `was` and
+`now`, so a rule change that moves a level's difficulty is reported rather than found by
+a player. No `[levels] probe` is `level.no-probe`, an empty or ill-declared
+`[levels.measures]` is `level.bad-measures`, a level not there is `level.no-level`, and a
+probe that did not finish is `level.probe-failed` with its log.
+
 ## Still to come in this block
 
 Baking at the size a unit declaration gives (PW47).

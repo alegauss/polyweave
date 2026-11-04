@@ -109,27 +109,6 @@ model and the members.
 
 ## Block R — Levels measured before a person plays them
 
-### §PW202 A level probe the game runs and polyweave reads
-
-A match-3 bot and a shooter's threat count have nothing in common except their shape. A
-script inside the game takes a level and some seeds, plays or analyses it, and returns
-numbers. polyweave cannot own that script, since it would be one genre compiled in. It
-can own the handshake, the way the capture environment already does.
-
-`[levels] probe` in `polyweave.toml` names the script and the measures it reports, each
-with a unit and a direction. `level.probe` runs it through the existing engine runner.
-The level file and the seeds are passed after `--`, the same as capture settings. The
-script prints one `level: name=value ...` line per seed. polyweave checks that every
-declared measure came back and that nothing undeclared did, and a line missing a measure
-is a refusal rather than a zero.
-
-Across the seeds, polyweave aggregates each measure at the percentiles the project asks
-for, because a level's feel lives in its bad runs as much as its median, the same lesson
-that measures a look at a percentile. The result is written beside the level with its
-seeds, the probe's hash and the engine version. A later run is compared against that
-record, so a change in the rules that moves a level's difficulty is reported, not
-rediscovered by a player.
-
 ### §PW203 A level declaration compiled by the game's own step
 
 Both consumers already treat levels as data. Cottony has 20 JSON files written by

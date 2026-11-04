@@ -545,6 +545,7 @@
 - ✅ **PW613** **measure.pressure runs only in Python over an exported file, so a tool in the running game cannot measure a level** — The measures kit carries measure.pressure in GDScript, its proof holding the engine's answers to the Python measure over cases and a game's waves (design recorded in `docs/specs/kit.md`).
 - ✅ **PW641** **after PW480, reference.objects still counts a parallax city as moving enemies, so Resogun's phase 1 cannot be counted** — A kind's warp keeps only tracks born at a flash just before, so Resogun's lull counts none (79 before) and its phase 282 tracks (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW201** **Nobody knows if a scripted bot's win rate tracks how hard a level feels to a person** — The owner played Cottony's levels 10 to 20: the careless bot's falling win rate orders them right, but the feel is three stars out of reach, so the block measures stars too.
+- ✅ **PW202** **A game's own headless play of a level has no way to report what it measured** — level.probe runs the game's own probe over seeds and reads each declared measure at its percentiles, refusing a line that says less or more (design recorded in `docs/specs/engine.md`).
 
 ## Block S — Playing the game, not only rendering it
 

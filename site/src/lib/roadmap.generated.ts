@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 9 },
+  { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW202",
-    block: "R",
-    symptom: "A game's own headless play of a level has no way to report what it measured",
-    why: "Only the game can play its own rules, so polyweave needs a contract for what the game's probe prints, not a simulator of its own.",
-    deps: [],
-  },
   {
     id: "PW203",
     block: "R",
@@ -71,14 +64,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "A level's difficulty has no bar a search can aim at, and a level set has no curve to hold",
     why: "Cottony's curve constants were set by feel and never measured, so a level can be unwinnable or trivial and nothing fails.",
-    deps: ["PW202", "PW203"],
+    deps: ["PW203"],
   },
   {
     id: "PW205",
     block: "R",
     symptom: "A shooter's waves have no measure of threat, so the level contract is proven on one genre only",
     why: "A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once.",
-    deps: ["PW202", "PW203"],
+    deps: ["PW203"],
   },
   {
     id: "PW206",
