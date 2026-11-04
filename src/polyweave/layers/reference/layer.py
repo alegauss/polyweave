@@ -10,6 +10,7 @@ LAYER = Layer(
         "polyweave.layers.reference.reference",
         "polyweave.layers.reference.reference_compare",
         "polyweave.layers.reference.reference_concept",
+        "polyweave.layers.reference.reference_draft",
         "polyweave.layers.reference.reference_events",
         "polyweave.layers.reference.reference_objects",
         "polyweave.layers.reference.reference_regions",
@@ -33,7 +34,8 @@ LAYER = Layer(
         ),
     ),
     config="polyweave.layers.reference.settings",
-    tools=11_000,
+    # 11,283 with reference.draft, a level drafted from a transcription (§PW609).
+    tools=11_700,
     census={
         "polyweave.layers.reference.reference_concept:concept_value": (
             "internal", "one concept measure, which accept.check reads"),

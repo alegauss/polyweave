@@ -262,28 +262,6 @@ kind told by its silhouette would make a chain a kind of its own.
 Done when each stretch's count is within the sheet's own uncertainty, which the owner's
 sheet decides.
 
-### §PW609 A draft level from an accepted transcription
-
-Found in spinhold (RK198, RK258, and the library of pieces RK274 plans). A reference
-video is read with `reference.frames`, `reference.events` and `reference.objects`, laid
-out with `reference.transcription`, and a person answers it row by row. What comes next
-is by hand: an agent reads the accepted rows (what arrives, how many, from where, in
-what formation, at what second) and retypes them into the game's level file. Two stages
-have been carried over this way, each a long session of retyping and a source of slips
-the transcription had already settled.
-
-polyweave should take that step: `reference.draft` (or a mode of `level.compile`) turns
-an accepted transcription into a draft level in the project's own declared schema (PW203
-(`docs/specs/engine.md`)). The mapping is the project's, declared once beside the
-schema: which column of a row becomes which field, how a row's time becomes the level's
-clock, how a named formation or kind maps to the project's names, what a row with no
-mapping becomes. No genre is compiled in: a shooter maps rows to spawn groups, a rhythm
-game to notes, a platformer to placed objects.
-
-The draft is written with its provenance naming the transcription, its verdicts and the
-mapping, marked as a draft so a person still tunes it; rows a person corrected carry
-their corrected value, and a row nobody answered is refused, not guessed.
-
 ### §PW681 A curve's rise bounded as a ratio
 
 Met adopting the level contract in Spinhold on 2026-11-04 (PW205). `level.curve`'s set

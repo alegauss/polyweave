@@ -552,6 +552,7 @@
 - ✅ **PW206 (declared and probed)** **Cottony's levels are still tuned by a curve nobody measured** — Cottony's 20 levels hold a schema, are recorded and probed by the careless bot (level 20 wins 66%), each with a record.
 - ✅ **PW327 (the trace read)** **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — level.trace reads runs' event traces, each event per second and in all and how many were alive, averaged over the runs.
 - ✅ **PW608** **a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help** — level.reader writes a typed GDScript reader from the level schema; Cottony's 20 levels and Spinhold's 3 phases read through it with no error (design recorded in `docs/specs/engine.md`).
+- ✅ **PW609** **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — reference.draft turns a transcription a person accepted into a draft level by the project's mapping, recorded and held to its schema (design recorded in `docs/specs/fetching.md`).
 
 ## Block S — Playing the game, not only rendering it
 

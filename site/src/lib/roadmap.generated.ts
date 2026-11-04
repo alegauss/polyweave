@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 3 },
+  { block: "R", title: "Levels measured before a person plays them", open: 2 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -71,13 +71,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "picture.buy on Ideogram 4.0 answers a 16x9 request in 4:5, and neither answer nor record warns (PW659 is back)",
     why: "A caller trusting the ratio crops the picture, and the person finds it on the site.",
-    deps: [],
-  },
-  {
-    id: "PW609",
-    block: "R",
-    symptom: "an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand",
-    why: "Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed.",
     deps: [],
   },
   {

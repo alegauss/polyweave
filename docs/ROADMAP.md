@@ -40,7 +40,6 @@
 
 ## Block R — Levels measured before a person plays them
 
-- 📋 **PW609** (deps: PW203 ✅) **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed. → §PW609
 - 📋 **PW681** (deps: —) **a level set's curve cannot bound how much harder a level may get as a ratio, so Spinhold's peak_step stays in check.gd** — level.curve's step is absolute, and the owner's rule is each phase's peak at most 1.5 times the one before. → §PW681
 - 📋 **PW683** (deps: —) **a level field's help reaches a game's editor in the schema's language only, outside the string table** — words.check never holds it, so the editor's help reads untranslated in every other locale. → §PW683
 

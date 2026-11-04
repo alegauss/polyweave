@@ -335,6 +335,18 @@ CODES: dict[str, Code] = {
         "input's says internal (§PW407)",
         doors=("run the capture on the game's own scene and files",),
     ),
+    "capture.not-accepted": Code(
+        means="a transcription is not accepted, so no level is drafted from it",
+        when="reference.draft on a sheet with a row unanswered or corrected in words "
+        "(§PW609)",
+        doors=("write the correction into the sheet and have the person answer it",),
+    ),
+    "capture.bad-mapping": Code(
+        means="a draft's mapping does not say how a row becomes part of the level",
+        when="no into list or [row], a {column} the rows lack, into running through a "
+        "value, or an out neither .toml nor .json (§PW609)",
+        doors=('write into = "a.0.list", [row] with "{column}" values and [names]',),
+    ),
     "capture.bad-transcription": Code(
         means="a transcription read from a reference video cannot be checked",
         when="a file not JSON or TOML, no rows, a row with no id or span, a row "

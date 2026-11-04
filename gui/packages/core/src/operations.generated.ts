@@ -1804,6 +1804,18 @@ export interface ReferenceConceptArgs {
   root?: string
 }
 
+/** A draft level from a transcription accepted row by row (§PW609). */
+export interface ReferenceDraftArgs {
+  /** the transcription a person answered */
+  sheet: string
+  /** the project's mapping of a row into its level */
+  mapping: string
+  /** where the draft level goes, .toml or .json */
+  out: string
+  /** the project the files are under; default "." */
+  root?: string
+}
+
 /** A timeline of a reference video's events, to split it into stretches at. */
 export interface ReferenceEventsArgs {
   /** the folder reference.frames wrote, or its frames.json */
@@ -2991,6 +3003,7 @@ export interface Operations {
   "purchase.spent": PurchaseSpentArgs
   "reference.compare": ReferenceCompareArgs
   "reference.concept": ReferenceConceptArgs
+  "reference.draft": ReferenceDraftArgs
   "reference.events": ReferenceEventsArgs
   "reference.frames": ReferenceFramesArgs
   "reference.minimap": ReferenceMinimapArgs
@@ -3222,6 +3235,7 @@ export const OPERATIONS = [
   "purchase.spent",
   "reference.compare",
   "reference.concept",
+  "reference.draft",
   "reference.events",
   "reference.frames",
   "reference.minimap",

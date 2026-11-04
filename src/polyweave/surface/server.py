@@ -92,7 +92,8 @@ CORE_TOOLS = 41_400
 #: 150,228 with level.curve (§PW204, 2026-11-04).
 #: 151,037 with level.trace (§PW327, 2026-11-04).
 #: 151,871 with level.fields and level.reader (§PW608, 2026-11-04).
-SESSION_BUDGET = 152_300
+#: 152,490 with reference.draft (§PW609, 2026-11-04).
+SESSION_BUDGET = 152_900
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

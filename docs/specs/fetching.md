@@ -847,6 +847,37 @@ beside the sheet, `<sheet>.answers.jsonl`, with when, and that is the only door 
 what was corrected and in whose words, and `accepted` only where every row is answered
 and none is wrong. The agent never accepts its own reading.
 
+## A draft level from an accepted transcription
+
+Rows a person settled were retyped into the level file by hand, a session a stage and
+the slips the sitting had removed (§PW609). The project declares once how a row becomes
+part of its level, in a mapping file of its own, since no genre is compiled in:
+
+```toml
+level  = "game/waves/phase_1.waves.toml"   # a level the rows go into; {} if left out
+into   = "stage.0.wave.0.group"            # the list each row becomes an item of
+offset = 3.0                               # seconds taken off a row's from and to
+
+[row]
+enemy = "{kind}"                           # one placeholder keeps the value's type
+count = "{count}"
+at    = "{from}"
+
+[names.kind]
+pod = "mote"                               # a column's words in the project's names
+```
+
+`reference.draft(sheet, mapping, out)` drafts only from a sheet `reference.transcribed`
+calls accepted: a row unanswered, or corrected in a person's words, is
+`capture.not-accepted` with the rows, since the agent never turns their words into a
+value itself. Each row becomes an item of `into` (made where missing) as `[row]` says,
+`{column}`, `{from}` and `{to}` filled in, renamed by `[names.<column>]`. The draft is
+TOML or JSON by `out`'s suffix, recorded with the sheet, its answers and the mapping as
+inputs and `draft = true`; where `[levels] schema` is declared it is held to it and the
+findings come back, since a draft is still a person's to tune. A mapping that says no
+`into` or `[row]`, a placeholder the rows lack, an `into` through a value, or another
+suffix is `capture.bad-mapping`.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.

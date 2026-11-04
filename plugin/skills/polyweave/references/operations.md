@@ -30,7 +30,7 @@
 | A project's look | `style.read`, `style.drift` (before a person looks), `style.train` |
 | Buy a drawing | `picture.buy`, `picture.gate`, `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit`, `picture.collect` |
 | A stock picture, with its licence | `stock.find`, `stock.fetch` (Pixabay, Pexels; no cost) |
-| Before buying a mesh | `reference.pick`, `reference.prepare`, `reference.register`, `reference.frames`, `reference.objects`, `reference.sample`, `reference.regions`, `reference.minimap`, `reference.events`, `reference.compare`, `reference.transcription`, `reference.transcribed`, `shape.check`, `shape.silhouette`, `shape.turntable` |
+| Before buying a mesh | `reference.pick`, `reference.prepare`, `reference.register`, `reference.frames`, `reference.objects`, `reference.sample`, `reference.regions`, `reference.minimap`, `reference.events`, `reference.compare`, `reference.transcription`, `reference.transcribed`, `reference.draft`, `shape.check`, `shape.silhouette`, `shape.turntable` |
 | Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |
 | After buying | `normalise.ingest`, `mesh.budget` (to a triangle count and a texture edge), `texture.worth_scrubbing` |
@@ -38,5 +38,5 @@
 | Motion | `clip.new`, `clip.read`, `clip.set_key`, `clip.retime`, `clip.write`, `clip.compiled` |
 | A skeleton | `skeleton.plan`, `skeleton.shared`, `skeleton.joints_in`, `skeleton.plays`, `sprites.matched` |
 
-A long operation (`asynchronous` in `describe`) takes `--job` and answers with a
-handle; `job poll|result|cancel <handle>` follows it.
+A long operation (`asynchronous` in `describe`) takes `--job`;
+`job poll|result|cancel <handle>` follows its handle.
