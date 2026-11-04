@@ -9,7 +9,9 @@ placed by its shape's rule.
 
 **Nothing is upscaled.** A key art or a logo too small for a shape is refused before
 anything is written, naming the shape and the size it needs: a capsule blown up from a
-smaller picture is soft, and a store's reviewer sees it at once.
+smaller picture is soft, and a store's reviewer sees it at once. Where the key art is
+what is short, the refusal carries the `picture.upscale` call that buys a larger one,
+recorded against it, for a person to judge first (§PW689).
 
 **A logo is held to reading at its size.** Its thinnest stroke, measured on the logo's
 alpha at the scale each shape draws it, must be at least the store's `min_stroke`
@@ -27,6 +29,7 @@ import numpy as np
 from polyweave.kernel import provenance
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
+from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.picture.vector import _drawn_svg
 
@@ -179,7 +182,7 @@ def capsules(
     fonts: list[Path] = []
     art, mark = _opened(art_path, "key art"), _opened(logo_path, "logo", here, fonts)
     vector = logo_path.suffix.lower() == ".svg"
-    _large_enough(declared, art, None if vector else mark)
+    _large_enough(declared, art, None if vector else mark, key_art)
     # A vector logo is drawn again at each capsule's own size, in one engine run, and
     # its stroke measured there (§PW275).
     sized = {name: _logo_size(shape, mark) for name, shape in declared["shape"].items()}
@@ -269,30 +272,48 @@ def _focused(focus) -> None:
         )
 
 
-def _large_enough(declared: dict, art, mark) -> None:
+def _large_enough(declared: dict, art, mark, key_art: str | None = None) -> None:
     """Refuse before anything is written where a shape would need an upscale.
 
-    `mark` is None for a vector logo, which has no size to be too small at.
+    `mark` is None for a vector logo, which has no size to be too small at. Where the
+    key art is what is short, the refusal carries the call that buys a larger one
+    (§PW689): the smallest whole factor that clears every shape it named.
     """
+    import math
+
     small, cuttable = [], []
+    needed = 1.0
     for name, shape in declared["shape"].items():
         width, height = shape["size"]
         before = len(small)
         if shape.get("logo") != "only" and (art.width < width or art.height < height):
             small.append(f"{name} needs {width}x{height} of key art")
+            needed = max(needed, width / art.width, height / art.height)
         drawn = _logo_size(shape, mark) if mark is not None else None
         if drawn and (drawn[0] > mark.width or drawn[1] > mark.height):
             small.append(f"{name} draws the logo at {drawn[0]}x{drawn[1]}")
         if len(small) == before:
             cuttable.append(name)
     if small:
+        factor = math.ceil(needed)
+        larger = None
+        if factor > 1 and key_art:
+            stem = Path(key_art)
+            larger = door("picture.upscale", source=key_art,
+                          out=stem.with_name(f"{stem.stem}@{factor}x{stem.suffix}")
+                          .as_posix(),
+                          factor=factor, service=Blank("scenario"))
         raise PolyweaveError(
             "store.too-small",
             f"the key art is {art.width}x{art.height}"
             + (f" and the logo {mark.width}x{mark.height}" if mark is not None else "")
             + f", and {'; '.join(small)}",
             "give a larger key art or logo, or cut the other shapes now with shapes=; "
-            "nothing is upscaled, since a capsule blown up from a smaller picture is "
-            "soft",
+            "nothing is upscaled here, since a capsule blown up from a smaller picture "
+            "is soft"
+            + (f"; picture.upscale buys a {factor}x key art, recorded against this "
+               "one, for a person to judge before the capsules are cut from it"
+               if larger else ""),
             allowed=cuttable,
+            **({"call": larger} if larger else {}),
         )

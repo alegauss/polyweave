@@ -50,7 +50,8 @@ LAYER = Layer(
     #: 12,925 with stock.find and stock.fetch (§PW673, 2026-10-31).
     #: 13,616 with their kind, service and video renditions (§PW674, §PW672).
     #: 14,138 with picture.batch, a batch planned before it spends (§PW680).
-    tools=14_600,
+    #: 14,946 with picture.upscale, a larger picture bought from Scenario (§PW689).
+    tools=15_400,
     census={
         "polyweave.layers.picture.picture:kept": (
             "internal", "a bought picture's accept on its bytes, inside picture.buy"),

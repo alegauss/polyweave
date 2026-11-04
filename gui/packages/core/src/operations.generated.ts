@@ -1516,6 +1516,22 @@ export interface PictureSewArgs {
   root?: string
 }
 
+/** Buy a larger copy of a picture from a Scenario upscaler (§PW689). */
+export interface PictureUpscaleArgs {
+  /** the picture to enlarge, under the project */
+  source?: string
+  /** where the larger picture goes */
+  out?: string
+  /** how many times larger each side becomes; default 2 */
+  factor?: number
+  /** a Scenario upscaler's id; default "model_upscale-v3" */
+  model?: string
+  /** the [service.<name>] to use; needed only where there are several */
+  service?: string
+  /** the project whose ledger this is; default "." */
+  root?: string
+}
+
 /** Buy a variation of an approved picture, with its parent on the record. */
 export interface PictureVaryArgs {
   /** the approved picture, under the project */
@@ -2995,6 +3011,7 @@ export interface Operations {
   "picture.gate": PictureGateArgs
   "picture.letters": PictureLettersArgs
   "picture.sew": PictureSewArgs
+  "picture.upscale": PictureUpscaleArgs
   "picture.vary": PictureVaryArgs
   "picture.vector": PictureVectorArgs
   "port.run": PortRunArgs
@@ -3107,7 +3124,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.batch" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.batch" | "picture.buy" | "picture.upscale" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -3228,6 +3245,7 @@ export const OPERATIONS = [
   "picture.gate",
   "picture.letters",
   "picture.sew",
+  "picture.upscale",
   "picture.vary",
   "picture.vector",
   "port.run",

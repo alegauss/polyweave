@@ -270,6 +270,102 @@ def test_a_model_that_draws_nothing_from_words_is_refused(starter):
     assert "txt2img" in refused.value.remedy
 
 
+# -- a larger picture, bought and recorded against its source (§PW689) ---------------
+
+UPSCALER = "model_upscale-v3"
+
+
+class Upscaler(Fake):
+    """Scenario's routes for an upscaler, which declares an image and a factor."""
+
+    def __init__(self, declared):
+        super().__init__()
+        self.declared = declared
+
+    def __call__(self, method, url, key, body=None):
+        path = url.split("/v1/", 1)[1]
+        if path.startswith("models/model_up"):
+            self.sent.append((method, path, body))
+            return 200, {"model": {"inputs": self.declared}}
+        if path.startswith("generate/custom/model_up"):
+            self.sent.append((method, path, body))
+            if path.endswith("?dryRun=true"):
+                return 269, {"creativeUnitsCost": self.quote}
+            return 200, {"job": {"jobId": "job_1", "status": "queued"}}
+        return super().__call__(method, url, key, body)
+
+
+@pytest.fixture
+def upscaling(tmp_path, monkeypatch):
+    (tmp_path / "polyweave.toml").write_text(
+        STARTER.replace(f'"{PUBLIC}" = 1', f'"{UPSCALER}" = 10, "model_up-fixed" = 2'),
+        encoding="utf-8")
+    monkeypatch.setenv("SCENARIO_TEST_KEY", "k:s")
+    monkeypatch.setattr(scenario_adapter, "POLL_EVERY", 0.0)
+    held = io.BytesIO()
+    Image.new("RGB", (64, 36), (200, 40, 40)).save(held, format="PNG")
+    monkeypatch.setattr(S, "download", lambda link: held.getvalue())
+    (tmp_path / "art").mkdir()
+    Image.new("RGB", (32, 18), (90, 120, 160)).save(tmp_path / "art" / "key.png")
+
+    def with_inputs(declared):
+        fake = Upscaler(declared)
+        monkeypatch.setattr(scenario_adapter, "call", fake)
+        return fake
+
+    return tmp_path, with_inputs
+
+
+def test_an_upscale_is_recorded_against_its_source(upscaling):
+    root, with_inputs = upscaling
+    fake = with_inputs([{"name": "image", "type": "file"},
+                        {"name": "upscaleFactor", "type": "number", "min": 1,
+                         "max": 16}])
+    entry = scenario.upscale(source="art/key.png", out="art/key@2x.png", factor=2,
+                             service="scenario", root=str(root))
+    sent = [body for method, path, body in fake.sent
+            if path == f"generate/custom/{UPSCALER}"][-1]
+    assert sent["image"].startswith("data:image/png;base64,")
+    assert sent["upscaleFactor"] == 2
+    assert entry["size"] == [64, 36] and entry["credits"] == 10
+    record = provenance.read("art/key@2x.png", root)
+    assert record["details"]["upscaled"] == {"from": "art/key.png", "size": [32, 18],
+                                             "factor": 2}
+    assert record["inputs"][0]["role"] == "source"
+
+
+def test_a_factor_goes_as_the_model_spells_it_or_not_at_all(upscaling):
+    root, with_inputs = upscaling
+    fake = with_inputs([{"name": "image", "type": "file"},
+                        {"name": "upscaleFactor", "type": "string",
+                         "allowedValues": ["2x", "4x"]}])
+    scenario.upscale(source="art/key.png", out="art/a.png", factor=4,
+                     model="model_up-fixed", service="scenario", root=str(root))
+    drawn = [body for _, path, body in fake.sent
+             if path == "generate/custom/model_up-fixed"][-1]
+    assert drawn["upscaleFactor"] == "4x"
+    with pytest.raises(PolyweaveError) as refused:
+        scenario.upscale(source="art/key.png", out="art/b.png", factor=3,
+                         model="model_up-fixed", service="scenario", root=str(root))
+    assert refused.value.code == "fetch.bad-choice"
+    fixed = with_inputs([{"name": "image", "type": "file"}])
+    scenario.upscale(source="art/key.png", out="art/c.png", factor=2,
+                     model="model_up-fixed", service="scenario", root=str(root))
+    drawn = [body for _, path, body in fixed.sent
+             if path == "generate/custom/model_up-fixed"][-1]
+    assert set(drawn) == {"image"}
+
+
+def test_a_model_that_takes_no_image_enlarges_nothing(upscaling):
+    root, with_inputs = upscaling
+    with_inputs([{"name": "prompt", "type": "string"}])
+    with pytest.raises(PolyweaveError) as refused:
+        scenario.upscale(source="art/key.png", out="art/d.png", service="scenario",
+                         root=str(root))
+    assert refused.value.code == "fetch.bad-choice"
+    assert purchase.read(root) == []
+
+
 def test_a_failed_training_is_owed(project):
     root, fake = project
     fake.status = "failed"

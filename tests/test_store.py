@@ -90,6 +90,12 @@ def test_a_key_art_smaller_than_a_shape_is_refused_before_anything_is_written(pr
     assert refused.value.code == "store.too-small"
     assert "library_hero needs 3840x1240" in refused.value.message
     assert not (project / "store").exists()
+    # §PW689: the refusal carries the call that buys a key art large enough.
+    larger = refused.value.call
+    assert larger["operation"] == "picture.upscale"
+    assert larger["arguments"]["source"] == "art/small.png"
+    assert larger["arguments"]["factor"] == 2
+    assert larger["arguments"]["out"] == "art/small@2x.png"
     # Starship's key art is 2560x1440: every shape but the hero can be cut now.
     cuttable = refused.value.as_dict()["allowed"]
     assert "library_hero" not in cuttable and "small_capsule" in cuttable

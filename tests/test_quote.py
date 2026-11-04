@@ -28,8 +28,8 @@ def project(tmp_path):
 def test_the_registry_marks_every_operation_that_spends():
     paid = sorted(o["operation"] for o in describe.describe() if o.get("spends"))
     assert paid == [
-        "mesh.buy", "picture.batch", "picture.buy", "picture.describe", "picture.vary",
-        "sound.buy",
+        "mesh.buy", "picture.batch", "picture.buy", "picture.describe",
+        "picture.upscale", "picture.vary", "sound.buy",
         "sound.speak", "style.train", "voice.design", "voice.lines",
     ]
 

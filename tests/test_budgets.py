@@ -206,7 +206,9 @@ from polyweave.surface.capabilities import capabilities
 #: 2026-11-04).
 #: 174,483 with level.reader and reference.draft (§PW608, §PW609, 2026-11-04).
 #: 175,549 with picture.batch, a batch planned before it spends (§PW680, 2026-11-04).
-DESCRIBE = 176_000
+#: 176,857 with picture.upscale and a public Scenario model (§PW688, §PW689,
+#: 2026-11-04).
+DESCRIBE = 177_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -372,7 +374,9 @@ DESCRIBE = 176_000
 #: 191,714 with level.reader, reference.draft and its two codes (§PW608, §PW609,
 #: 2026-11-04).
 #: 192,780 with picture.batch and the bought judge (§PW679, §PW680, 2026-11-04).
-CAPABILITIES = 193_300
+#: 194,137 with picture.upscale and picture.quoted-over-price (§PW688, §PW689,
+#: 2026-11-04).
+CAPABILITIES = 194_700
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -453,7 +457,8 @@ HELP_VERB = 5_100
 #: 34,871 with level.validate and level.compile (§PW203, 2026-11-03).
 #: 35,251 with level.curve and level.trace (§PW204, §PW327, 2026-11-04).
 #: 35,548 with level.fields and level.reader (§PW608, 2026-11-04).
-HELP_TOP = 35_900
+#: 35,996 with picture.upscale (§PW689, 2026-11-04).
+HELP_TOP = 36_300
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

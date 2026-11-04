@@ -8,31 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW689 A larger key art, bought and recorded
-
-`store.capsules` refuses a key art smaller than a shape with `store.too-small`, and its
-remedy is "give a larger key art". Nothing in the plugin makes one, so the refusal is a
-dead end for an agent: the only way on is outside polyweave, unrecorded.
-
-The refusal stays. `store.capsules` still upscales nothing, because a capsule blown up
-by resampling is soft and the store's reviewer sees it. What changes is that there is a
-recorded way to a larger picture: `picture.upscale` buys an enlargement from a Scenario
-upscaler (`model_recraft-crisp-upscale` quoted 2 CU for 2x on a 512 picture,
-`model_upscale-v3` 10 CU, probed 2026-11-04 with `dryRun`). It takes the picture, the
-factor and the model, sends the picture inline as a data URL, writes the result to
-`out`, and records the source picture as its input with the model and factor, so the
-larger art reads as made from the smaller one.
-
-It spends like any purchase: the declared price, the dry-run quote checked against it,
-the ceiling, the ledger. The enlargement is a new picture a person judges; being
-upscaled earns no pass, and the capsules are cut from it only once it is chosen.
-
-`store.too-small` gains the call: `picture.upscale` on the key art with the smallest
-factor that clears every shape it named, so the refusal carries its own way on.
-
-Evidence that it landed: a refusal whose door upscales the key art, and one real
-enlargement bought on the Starter key, recorded against its source.
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

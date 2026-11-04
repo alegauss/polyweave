@@ -18,6 +18,7 @@ Scenario's client is `services/scenario.py`, and both are bought through
 
 from __future__ import annotations
 
+import base64
 import json
 from pathlib import Path
 from typing import Annotated
@@ -30,6 +31,7 @@ from polyweave.kernel.errors import PolyweaveError
 from polyweave.services import purchase
 from polyweave.services import scenario as adapter
 from polyweave.services import service as S
+from polyweave.services.client import mime as client_mime
 from polyweave.services.scenario import HOSTS
 
 from . import picture, style
@@ -239,18 +241,7 @@ def _public(report, *, out: str, prompt: str | None, model: str,
                 allowed=sorted(takes),
             )
         payload["seed"] = seed
-    unit = str(config.budget(service=chosen).get("unit") or "")
-    if unit.upper() == "CU":
-        charge = adapter.quoted(base, key, model, payload)
-        if charge is not None and charge > price:
-            raise PolyweaveError(
-                "picture.quoted-over-price",
-                f"Scenario quotes {charge:g} CU for this call, and [service.{chosen}] "
-                f"prices {model!r} at {price:g}",
-                f"raise the {model!r} row to at least {charge:g}, so the ceiling "
-                "counts what is spent; nothing was spent",
-                given=charge,
-            )
+    _within_quote(config, chosen, base, key, model, payload, price)
     order = S.Order(
         service=chosen, base=base, key=key, price=price, root=config.root,
         asked={"call": "draw", "model": model, "payload": payload},
@@ -269,6 +260,144 @@ def _public(report, *, out: str, prompt: str | None, model: str,
         },
     )
     return S.buy(adapter.SERVICE, order, report)
+
+
+def _within_quote(config, chosen: str, base: str, key: str, model: str, payload: dict,
+                  price: float) -> None:
+    """Refuse a call Scenario quotes above the project's row, before it is sent.
+
+    Only where the ceiling counts Scenario's own units, the ones a dry run answers in;
+    the dry run bills nothing (§PW688).
+    """
+    unit = str(config.budget(service=chosen).get("unit") or "")
+    if unit.upper() != "CU":
+        return
+    charge = adapter.quoted(base, key, model, payload)
+    if charge is not None and charge > price:
+        raise PolyweaveError(
+            "picture.quoted-over-price",
+            f"Scenario quotes {charge:g} CU for this call, and [service.{chosen}] "
+            f"prices {model!r} at {price:g}",
+            f"raise the {model!r} row to at least {charge:g}, so the ceiling "
+            "counts what is spent; nothing was spent",
+            given=charge,
+        )
+
+
+#: The upscaler a call names none of: Scenario's own, which takes the factor asked.
+UPSCALER = "model_upscale-v3"
+
+
+@operation("picture.upscale", kind="fetch", injects=("report",), spends=True)
+def upscale(
+    report=None,
+    source: Annotated[str, Param("the picture to enlarge, under the project")] = None,
+    out: Annotated[str, Param("where the larger picture goes")] = None,
+    *,
+    factor: Annotated[int, Param("how many times larger each side becomes")] = 2,
+    model: Annotated[str, Param("a Scenario upscaler's id")] = UPSCALER,
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Buy a larger copy of a picture from a Scenario upscaler (§PW689).
+
+    The picture goes inline, the factor in the spelling the model declares, and the
+    price is the project's row for the model, checked against a dry run where the
+    ceiling counts CU. The larger picture is recorded as made from the smaller one; it
+    is a new picture a person judges, and being upscaled earns it no pass. The answer
+    says the size it came back at, which a model with a fixed factor decides itself.
+    """
+    from PIL import Image as PILImage
+
+    config = load(root)
+    if not source or not out:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "an upscale was asked for without the picture or where it goes",
+            "pass source and out, both under the project",
+        )
+    path = config.root / source
+    if not path.is_file():
+        raise PolyweaveError(
+            "fetch.missing-field",
+            f"there is no picture at {source}",
+            "pass a picture under the project",
+            given=source,
+        )
+    if not serves(config, service):
+        scenarios = sorted(one for one in config.services() if serves(config, one))
+        raise PolyweaveError(
+            "fetch.unknown-service",
+            "picture.upscale buys from Scenario, and the service named is not one",
+            f"name one of {', '.join(scenarios)}" if scenarios else
+            'declare [service.scenario] with base = "https://api.cloud.scenario.com"',
+            given=service,
+            allowed=scenarios,
+        )
+    chosen = config.service(service)
+    about = config.services()[chosen]
+    base, key = picture._reached(chosen, about)
+    price = picture._price(chosen, about.get("prices") or {}, model, None)
+    takes = {one["name"]: one for one in adapter.declared(base, key, model)}
+    if "image" not in takes:
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            f"{model} takes no image, so it enlarges nothing",
+            "name an upscaler, such as model_upscale-v3",
+            given=model,
+        )
+    data = f"data:{client_mime(path)};base64," + base64.b64encode(
+        path.read_bytes()).decode()
+    payload = {"image": data, **_factored(model, takes, factor)}
+    _within_quote(config, chosen, base, key, model, payload, price)
+    with PILImage.open(path) as held:
+        width, height = held.size
+    order = S.Order(
+        service=chosen, base=base, key=key, price=price, root=config.root,
+        asked={"call": "draw", "model": model, "payload": payload},
+        kept={
+            "out": out,
+            "prompt": None,
+            "bought": "image",
+            "engine": {"name": chosen, "model": model},
+            "details": {"model": model, "public": True, "upscaled": {
+                "from": source, "size": [width, height],
+                **({"factor": factor} if len(payload) > 1 else {})}},
+            "inputs": [provenance.source("source", path, config.root)],
+        },
+    )
+    entry = S.buy(adapter.SERVICE, order, report)
+    with PILImage.open(config.root / out) as drawn:
+        entry["size"] = list(drawn.size)
+    return entry
+
+
+def _factored(model: str, takes: dict, factor: int) -> dict:
+    """The factor in the spelling the model declares, or nothing for a fixed one."""
+    field = takes.get("upscaleFactor")
+    if field is None:
+        return {}
+    allowed = field.get("allowedValues") or []
+    if field.get("type") == "string":
+        spelled = f"{factor}x"
+        if allowed and spelled not in allowed:
+            raise PolyweaveError(
+                "fetch.bad-choice",
+                f"{model} enlarges by none of {factor}x",
+                f"pass a factor among {', '.join(str(one) for one in allowed)}",
+                given=factor,
+                allowed=allowed,
+            )
+        return {"upscaleFactor": spelled}
+    low, high = field.get("min"), field.get("max")
+    if (low is not None and factor < low) or (high is not None and factor > high):
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            f"{model} enlarges by {low} to {high}, and {factor} was asked",
+            f"pass a factor from {low} to {high}",
+            given=factor,
+        )
+    return {"upscaleFactor": factor}
 
 
 def _shaped(model: str, takes: dict, asked: str | None) -> dict:

@@ -507,6 +507,18 @@ with `?dryRun=true`, which bills nothing and answers `creativeUnitsCost`; a quot
 the row is `picture.quoted-over-price` and nothing is spent. The record's details name
 the model, `public = true` and the shape fields sent.
 
+**A larger picture is bought, not resampled** (§PW689). `picture.upscale(source, out,
+factor=2, model="model_upscale-v3")` on a Scenario service sends the picture inline as a
+data URI in the model's `image` input, with the factor as the model declares it: a
+number within its bounds as `upscaleFactor`, a string among its allowed values (`"2x"`),
+or nothing where the model has a fixed factor. A model with no `image` input is
+`fetch.bad-choice`. It is priced and dry-run checked as a public model's picture. The
+record's `details.upscaled` names the source, its size and the factor, the source is its
+`source` input, and the answer's `size` is what came back. The enlargement is a new
+picture a person judges. `store.too-small`, where the key art is what is short, carries
+the call: `picture.upscale` on the key art with the smallest whole factor that clears
+every shape it named, out beside it as `<stem>@<factor>x<suffix>`.
+
 
 A picture service returns an image at a size, margin and position it chose, and an icon or
 a flat sprite needs the project's (§PW171). That fix is mechanical, so `picture.fit` makes it
