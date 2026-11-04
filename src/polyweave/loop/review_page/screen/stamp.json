@@ -5,11 +5,12 @@
     "gui/packages/ui/review/index.html",
     "gui/packages/ui/src/Advanced.tsx",
     "gui/packages/ui/src/Decide.tsx",
+    "gui/packages/ui/src/Marker.tsx",
     "gui/packages/ui/src/Model.tsx",
     "gui/packages/ui/src/index.css",
     "gui/packages/ui/src/review.css",
     "gui/packages/ui/src/review.tsx"
   ],
-  "sha256": "57c1e7a9eee0e95d5ac99b1efa5aec2f32aab11dc6df7a9f29fb6a1f9b896251",
+  "sha256": "407f224c952870d7bac5dcdeae6d5d94c7f049dd537e9af4bbcecd2cc1641371",
   "rebuild": "cd gui && npm run build:review"
 }

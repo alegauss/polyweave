@@ -29,6 +29,16 @@ describe('a session on one item', () => {
     expect(first).toContain('never with a verdict of your own')
   })
 
+  it('names the boxes drawn on a picture before the words are read (§PW687)', () => {
+    const first = opening(
+      { ...revision, marks: [{ box: [1.2, 2, 4, 5.6] }, { box: [0, 0, 2, 2] }] },
+      { spec: null, dependents: [] },
+    )
+    expect(first).toContain('Where: 2 boxes drawn on the picture')
+    expect(first).toContain('[1, 2, 4, 6], [0, 0, 2, 2]')
+    expect(first).toContain('the mask .polyweave/marks/rim.png')
+  })
+
   it('says so when no spec holds the item, or it moved since the request', () => {
     const first = opening({ ...revision, moved: true }, { spec: null, dependents: [] })
     expect(first).toContain('No spec holds it yet.')

@@ -382,10 +382,14 @@ person drew.
 **A person can ask for a change unprompted** (§PW301). An answer replies to a sitting the
 agent laid out, and a revision starts from the other end: a request about any item the
 inventory lists ([inventory.md](inventory.md)), whether or not anyone put it up for review.
-`revision.ask(item, words, mask=, span=)` appends one event to `[paths]
+`revision.ask(item, words, mask=, span=, marks=)` appends one event to `[paths]
 work`/`revisions.jsonl`. The event holds the item's id, the digest it had then, the
 person's words, when they asked, and optionally a mask under the project or, for a sound,
-a `[start, end]` span in seconds. `revision.open(item=)` lists the revisions still open,
+a `[start, end]` span in seconds. For a picture, `marks` takes boxes drawn on it,
+`{"box": [left, top, right, bottom]}` in its own pixels, the way a Decide answer's marks
+are drawn (§PW687). They become a mask the picture's size under `[paths] work`/`marks`, as
+an answer's do. The event keeps that mask as `mask`, the boxes as `marks`, and the
+picture's sha256 as `marked`. A mask and marks together are refused (`review.bad-marks`). `revision.open(item=)` lists the revisions still open,
 each with the item's `asset.brief`. Each also carries `moved`, which is true where the
 item's digest is no longer the one the person was looking at.
 `revision.close(revision, run=, sitting=)` ends one with the loop run and the sitting that

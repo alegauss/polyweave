@@ -189,22 +189,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW687 Marks drawn where the change is asked
-
-Met by the owner on 2026-11-04 (PW311): asking for a change to a picture from its item
-view, they looked for the box to draw where it is wrong and found none. PW401 put "mark
-where it is wrong" on the Decide screen only, on a sitting's card, so a request made
-from the item where a person is looking at the picture carries words alone.
-
-What to build: the item view's picture takes the same drawn boxes as Decide's, kept in
-the picture's own pixels whatever size it is shown at (the code PW401 wrote is reused,
-not copied), and "Ask for a change" sends them with the words: `revision.ask` keeps them
-as a mask tied to the picture's digest, as `review.answer` does, and the session's first
-message names them, so the agent knows where before it reads the words.
-
-Done when a box drawn on a picture in the item view reaches the revision and the
-session's opening as a mask on that picture.
-
 ## Block V — Parts every game repeats, installed already proved
 
 ### §PW368 Declared states and transitions

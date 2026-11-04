@@ -342,6 +342,37 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
     await page.getByText('A yes allows this one call, never the next.').waitFor()
   })
 
+  it('keeps a box drawn on a picture in the item view as the mask of its revision', async () => {
+    fake = fakeClaude()
+    const page = await launch('en', { [AGENT_VAR]: JSON.stringify(fake.argv) })
+    await open(page, root)
+    await choose(page, /^Pictures/, /^docs\/renders\/icon\.png/)
+    await page.getByPlaceholder('What should change, in your words').fill('the rim, here')
+    // Where it is wrong, drawn where the change is asked (§PW687).
+    await page.getByText('Mark where it is wrong (optional)').click()
+    // Measured once the picture under it has drawn, and in view, as Decide's is.
+    await page.getByRole('img', { name: 'Draw on docs/renders/icon.png where it is wrong' }).waitFor()
+    const canvas = page.locator('[data-mark] canvas')
+    await canvas.scrollIntoViewIfNeeded()
+    const frame = (await canvas.boundingBox())!
+    await page.mouse.move(frame.x + 1, frame.y + 1)
+    await page.mouse.down()
+    // The fixture is 2 pixels square, so the box spans the whole of it.
+    await page.mouse.move(frame.x + frame.width - 1, frame.y + frame.height - 1, { steps: 5 })
+    await page.mouse.up()
+    await page.getByText('Boxes drawn where it is wrong: 1').waitFor()
+    await page.getByRole('button', { name: 'Ask, and open a Claude Code session on it' }).click()
+    // The session hears where before it reads the words, and the revision keeps the mask.
+    const turn = page.getByRole('listitem').filter({ hasText: 'Where: a box drawn on the picture' })
+    await turn.waitFor({ timeout: 30_000 })
+    const listed = spawnSync('python', ['-m', 'polyweave', 'revision.open', '--item', 'docs/renders/icon.png', '--root', game, '--json'])
+    const found = JSON.parse(listed.stdout.toString()) as { revisions: { words: string; mask?: string; marks?: unknown[] }[] }
+    const asked = found.revisions.find((one) => one.words === 'the rim, here')!
+    expect(asked.marks).toHaveLength(1)
+    expect(asked.mask).toMatch(/marks\/.*icon\.png$/)
+    expect(existsSync(join(game, asked.mask!))).toBe(true)
+  })
+
   it('follows the project: an item changed on disk is marked, not swapped silently', async () => {
     const page = await launch('en')
     await open(page, root)

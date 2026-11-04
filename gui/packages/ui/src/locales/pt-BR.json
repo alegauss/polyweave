@@ -80,7 +80,12 @@
     "fit": "Caber no painel",
     "alone": "Ver sozinha em tamanho real",
     "close": "Fechar",
-    "dimensions": "{{width}} × {{height}} px"
+    "dimensions": "{{width}} × {{height}} px",
+    "mark": "Marcar onde está errado (opcional)",
+    "marked": "Caixas desenhadas onde está errado: {{count}}",
+    "mark_alt": "Desenhe em {{name}} onde está errado",
+    "mark_help": "Arraste sobre a imagem para desenhar uma caixa onde a mudança é desejada. As caixas vão com suas palavras.",
+    "clear_marks": "Limpar as caixas"
   },
   "session": {
     "ask": "Pedir uma mudança",

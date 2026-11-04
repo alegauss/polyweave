@@ -12,6 +12,7 @@ import {
   page,
   said,
   type AnswerBody,
+  type Box,
   type Kind,
   type Opened,
   type Overrule,
@@ -110,8 +111,14 @@ ipcMain.handle(CHANNELS.reviewCanon, async (_event, project: string) =>
   ((await call((await held.opened(project)).client, 'review.canon', { root: project })) as { boards: unknown[] })
     .boards,
 )
-ipcMain.handle(CHANNELS.revise, async (_event, project: string, item: string, words: string) =>
-  (await held.opened(project)).client.call('revision.ask', { item, words, root: project }),
+// Boxes drawn on a picture go as its marks, which revision.ask keeps as a mask (§PW687).
+ipcMain.handle(CHANNELS.revise, async (_event, project: string, item: string, words: string, boxes?: Box[]) =>
+  (await held.opened(project)).client.call('revision.ask', {
+    item,
+    words,
+    ...(boxes?.length ? { marks: boxes.map((box) => ({ box })) } : {}),
+    root: project,
+  }),
 )
 ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: string) => {
   const client = (await held.opened(project)).client

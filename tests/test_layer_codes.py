@@ -110,4 +110,5 @@ def test_the_kernels_codes_file_is_no_longer_the_whole_table():
     kernel = Path(C.__file__).read_text(encoding="utf-8")
     # 1,399 lines until prov.stale (§PW36, 2026-11-03): a kernel operation's own code,
     # where the bar is against a layer's codes coming back, not the kernel's growing.
-    assert len(kernel.splitlines()) < 1410
+    # 1,411 with review.bad-marks (§PW687, 2026-11-04), revision.ask's own.
+    assert len(kernel.splitlines()) < 1420

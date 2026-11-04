@@ -1276,6 +1276,12 @@ KERNEL_CODES: dict[str, Code] = {
         when="revision.ask given a mask path with no file there",
         doors=("pass a mask image under the project",),
     ),
+    "review.bad-marks": Code(
+        means="a revision's marks are not boxes on a picture, or came with a mask too",
+        when="revision.ask given marks on an item that is not a picture, a box that "
+        "is not four numbers, or marks and a mask together",
+        doors=("draw the boxes on a picture, four numbers each, and leave mask out",),
+    ),
     "review.bad-span": Code(
         means="a revision's span is not a stretch of time",
         when="span not two numbers, a negative start, or a start not before the end",

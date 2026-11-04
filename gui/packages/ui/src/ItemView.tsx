@@ -6,9 +6,10 @@ import { Button, Textarea } from '@viglet/viglet-design-system'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { Bridge, Item, Shown } from '@pw/core'
+import type { Box, Bridge, Item, Shown } from '@pw/core'
 
 import { Conversation } from './Conversation'
+import { Marker } from './Marker'
 
 type Brief = Record<string, any>
 
@@ -71,6 +72,8 @@ export function ItemView({
   const [real, setReal] = useState(false)
   const [alone, setAlone] = useState(false)
   const [size, setSize] = useState<{ width: number; height: number } | null>(null)
+  // Boxes drawn on the picture where it is wrong, sent with the words (§PW687).
+  const [boxes, setBoxes] = useState<Box[]>([])
   const [talking, setTalking] = useState<{ revision: string; first: string; waiting: string | null } | null>(
     null,
   )
@@ -78,7 +81,7 @@ export function ItemView({
   // Kept as a revision first, then a session opened on that revision (§PW306).
   const request = async (said: string) => {
     try {
-      const { revision } = await bridge.revise(project, item.id, said)
+      const { revision } = await bridge.revise(project, item.id, said, seen === 'picture' ? boxes : [])
       const { first, waiting } = await bridge.startSession(project, revision)
       // What it was, kept as the session starts, so each change shows beside it (§PW307).
       setBefore(file)
@@ -302,6 +305,22 @@ export function ItemView({
         <section className="flex flex-col gap-2">
           <h3 className="font-medium">{t('session.ask')}</h3>
           <Textarea value={words} placeholder={t('session.words')} onChange={(e) => setWords(e.target.value)} />
+          {seen === 'picture' && source && (
+            <details data-mark className="text-sm">
+              <summary className="cursor-pointer text-muted-foreground">
+                {boxes.length ? t('item.marked', { count: boxes.length }) : t('item.mark')}
+              </summary>
+              <Marker
+                name={item.id}
+                source={source}
+                alt={t('item.mark_alt', { name: item.id })}
+                help={t('item.mark_help')}
+                clear={t('item.clear_marks')}
+                boxes={boxes}
+                onBoxes={setBoxes}
+              />
+            </details>
+          )}
           <Button className="self-start" disabled={!words.trim()} onClick={() => void request(words.trim())}>
             {t('session.open')}
           </Button>

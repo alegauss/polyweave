@@ -71,7 +71,10 @@ back to a purchase (`provenance.generated`), and what was made from it. The wind
 a picture fitted to the panel, so the whole of it sits beside the request box, with its
 real width and height said beside it, a toggle to its real size, and a click that shows it
 alone at full size (§PW685). Below it are its last gate's two lanes, the kept beside the
-refused. The window plays a sound (looped where its family is a loop), and shows a line in each locale with
+refused. Beside the request box a picture takes the same drawn boxes as a Decide card,
+from one `ui/src/Marker.tsx`. They go with the words as `revision.ask`'s `marks`, which
+keeps them as a mask tied to the picture's digest, and the session's first message names
+them before the words (§PW687). The window plays a sound (looped where its family is a loop), and shows a line in each locale with
 its speaker and its verdict. Any other kind is offered as the call that would draw it, such
 as `shape.turntable` for a mesh or `vfx.preview` for an effect, for the agent session to
 run. The window never runs one, because it is a reader and not an editor. A file reaches

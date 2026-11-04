@@ -73,13 +73,20 @@ def ask(
     span: Annotated[
         list, Param("for a sound, [start, end] in seconds", unit="s")
     ] = (),
+    marks: Annotated[
+        list,
+        Param("for a picture, boxes drawn on it: {box: [left, top, right, bottom]}, "
+              "in its own pixels"),
+    ] = (),
     root: Annotated[str, ROOT] = ".",
 ) -> dict:
     """Keep a person's request to change one item, against what they were looking at.
 
     Written on a person's behalf: the words are theirs, never the agent's own idea of
     what the item needs. The digest is the item's as it is now, so a later read can say
-    whether the item has moved since the request was made.
+    whether the item has moved since the request was made. Boxes drawn on a picture
+    become a mask the picture's size, kept with the picture's digest as an answer's
+    marks are (§PW687), so the session knows where before it reads the words.
     """
     rows = _rows(root)
     if item not in rows:
@@ -104,8 +111,19 @@ def ask(
         "words": words.strip(),
         "at": _now(),
     }
+    if mask and len(marks):
+        raise PolyweaveError(
+            "review.bad-marks",
+            "a revision came with a mask and with boxes, and it keeps one place",
+            "pass the boxes, or the mask, not both",
+        )
     if mask:
         event["mask"] = _masked(mask, root)
+    if len(marks):
+        mark = _marked(rows[item], marks, root)
+        event["mask"] = mark["mask"]
+        event["marks"] = mark["shapes"]
+        event["marked"] = mark["sha256"]
     if len(span):
         event["span"] = _span(span)
     return _append(event, root)
@@ -124,6 +142,32 @@ def _masked(mask: str, root: str) -> str:
             "pass a mask image under the project, black where the change is wanted",
         )
     return provenance.relative(where, here)
+
+
+def _marked(row: dict, marks, root: str) -> dict:
+    """Boxes drawn on an item's picture as the mask an answer's marks make (§PW687)."""
+    from polyweave.kernel.config import load
+    from polyweave.loop import review
+
+    artefact = row.get("artefact") or ""
+    shapes = [s for s in marks if isinstance(s, dict) and _box(s.get("box"))]
+    if row.get("kind") != "picture" or not artefact or len(shapes) != len(marks):
+        raise PolyweaveError(
+            "review.bad-marks",
+            f"{row['id']} took {len(marks)} mark(s), and a mark is a box drawn on a "
+            "picture, {box: [left, top, right, bottom]} in its own pixels",
+            "draw the boxes on a picture the inventory lists, four numbers each",
+            given=row["id"],
+            example='marks = [{"box": [10, 12, 48, 40]}]',
+        )
+    named = {"name": Path(artefact).stem, "new": artefact}
+    return review._mark(named, [{"box": [float(v) for v in s["box"]]} for s in shapes],
+                        load(root))
+
+
+def _box(box) -> bool:
+    return (isinstance(box, list | tuple) and len(box) == 4
+            and all(isinstance(v, int | float) for v in box))
 
 
 def _span(span) -> list[float]:

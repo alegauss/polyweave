@@ -80,7 +80,12 @@
     "fit": "Fit the panel",
     "alone": "See it alone at full size",
     "close": "Close",
-    "dimensions": "{{width}} × {{height}} px"
+    "dimensions": "{{width}} × {{height}} px",
+    "mark": "Mark where it is wrong (optional)",
+    "marked": "Boxes drawn where it is wrong: {{count}}",
+    "mark_alt": "Draw on {{name}} where it is wrong",
+    "mark_help": "Drag over the picture to draw a box where the change is wanted. The boxes go with your words.",
+    "clear_marks": "Clear the boxes"
   },
   "session": {
     "ask": "Ask for a change",

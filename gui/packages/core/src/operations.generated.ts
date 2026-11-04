@@ -2122,6 +2122,8 @@ export interface RevisionAskArgs {
   mask?: string
   /** for a sound, [start, end] in seconds; in s; default [] */
   span?: unknown[]
+  /** for a picture, boxes drawn on it: {box: [left, top, right, bottom]}, in its own pixels; default [] */
+  marks?: unknown[]
   /** the project the item is in; default "." */
   root?: string
 }

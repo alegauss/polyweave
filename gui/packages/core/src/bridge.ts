@@ -3,7 +3,7 @@
 // every path and every process stays on the shell's side of it.
 
 import type { Server } from './client'
-import type { AnswerBody, Board, Difference, Overrule, State, Words } from './desk'
+import type { AnswerBody, Board, Box, Difference, Overrule, State, Words } from './desk'
 import type { Engine } from './engine'
 import type { Kind, Page } from './inventory'
 
@@ -70,7 +70,7 @@ export interface Bridge {
   /** `review.canon`: every style family's canon board (§PW402). */
   reviewCanon(project: string): Promise<Board[]>
   /** Keep a person's request to change an item, with `revision.ask` (§PW301). */
-  revise(project: string, item: string, words: string): Promise<{ revision: string }>
+  revise(project: string, item: string, words: string, boxes?: Box[]): Promise<{ revision: string }>
   /** Open the session on a revision; one revision has one session, kept by its id. */
   startSession(
     project: string,

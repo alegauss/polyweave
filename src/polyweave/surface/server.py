@@ -52,7 +52,8 @@ TOOL_BUDGET = 4500
 #: 39,740 with verdict.target (§PW620), a person's bar, which is the loop's own.
 #: 40,965 with accept.first (§PW637), a picture's first spec, the loop's own too.
 #: 41,537 with provenance.borrow's origin and original (§PW678, 2026-11-04).
-CORE_TOOLS = 41_800
+#: 41,859 with revision.ask's marks, boxes drawn in the item view (§PW687, 2026-11-04).
+CORE_TOOLS = 42_100
 
 #: What the heaviest session a real consumer opens may cost, every layer on: Spinhold's,
 #: which declares no [layers]. 129,979 when this was set. It is not raised by a line

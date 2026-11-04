@@ -8,6 +8,8 @@ export interface Revision {
   digest: string | null
   words: string
   mask?: string
+  /** Boxes drawn on a picture, in its own pixels, that the mask was made from (§PW687). */
+  marks?: { box: number[] }[]
   span?: number[]
   moved?: boolean
 }
@@ -47,6 +49,13 @@ export function opening(revision: Revision, brief: Record<string, unknown>): str
     }`,
     `What they said: ${revision.words}`,
   ]
+  if (revision.marks?.length) {
+    const boxes = revision.marks.map((one) => `[${one.box.map((v) => Math.round(v)).join(', ')}]`)
+    lines.push(
+      `Where: ${boxes.length === 1 ? 'a box' : `${boxes.length} boxes`} drawn on the picture, ` +
+        `[left, top, right, bottom] in its own pixels: ${boxes.join(', ')}`,
+    )
+  }
   if (revision.mask) lines.push(`Where: the mask ${revision.mask}, black where the change is wanted`)
   if (revision.span?.length === 2) {
     lines.push(`When: from ${revision.span[0]} s to ${revision.span[1]} s`)

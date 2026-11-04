@@ -90,6 +90,36 @@ def test_a_span_must_be_a_stretch_of_time(tree):
     assert asked["span"] == [1.0, 2.5]
 
 
+def test_boxes_drawn_on_a_picture_are_kept_as_its_mask(tree):
+    # Drawn in the item view, in the picture's own pixels (§PW687).
+    asked = revision.ask(
+        "art/icon.png", "the rim, here", marks=[{"box": [1, 2, 4, 5]}], root=str(tree)
+    )
+    assert asked["marks"] == [{"box": [1.0, 2.0, 4.0, 5.0]}]
+    assert asked["marked"] == provenance.sha256_of(tree / "art" / "icon.png")[0]
+    with Image.open(tree / asked["mask"]) as mask:
+        assert mask.size == (8, 8)
+        assert mask.getpixel((2, 3)) == 0
+        assert mask.getpixel((7, 7)) == 255
+    opened = revision.open_(root=str(tree))["revisions"][0]
+    assert opened["mask"] == asked["mask"]
+    assert opened["marks"] == asked["marks"]
+
+
+@pytest.mark.parametrize(
+    "how",
+    [
+        {"marks": [{"box": [1, 2, 3]}]},
+        {"marks": [{"outline": [[0, 0], [1, 1], [0, 1]]}]},
+        {"marks": [{"box": [1, 2, 4, 5]}], "mask": "art/rim.mask.png"},
+    ],
+)
+def test_marks_that_are_not_boxes_on_a_picture_are_refused(tree, how):
+    with pytest.raises(PolyweaveError) as refused:
+        revision.ask("art/icon.png", "here", root=str(tree), **how)
+    assert refused.value.code == "review.bad-marks"
+
+
 def test_each_turn_is_kept_on_its_revision_in_order(tree):
     # §PW306: the request and how it was talked through travel together.
     asked = revision.ask("art/icon.png", "a warmer rim", root=str(tree))["revision"]

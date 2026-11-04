@@ -15,7 +15,6 @@ import {
   choices,
   drawn,
   holding,
-  inPixels,
   last,
   listed,
   measuredOf,
@@ -23,7 +22,6 @@ import {
   progress,
   say,
   sittingOf,
-  spanned,
   status,
   title,
   unanswered,
@@ -42,10 +40,10 @@ import {
 } from '@pw/core'
 
 import { Advanced } from './Advanced'
+import { Loading, Marker as Drawn } from './Marker'
 import { Model, type View } from './Model'
 
-/** Where a file will show once it has come across the desk. */
-export const Loading = () => <div data-loading className="h-24 w-48 animate-pulse rounded bg-muted" />
+export { Loading }
 
 /** A project file as a data URL, read once across the desk. */
 export function useShown(desk: Desk, path: string | null): string | null {
@@ -66,9 +64,9 @@ export function useShown(desk: Desk, path: string | null): string | null {
 }
 
 /**
- * Where it is wrong, drawn over the member's own picture (§PW174). A drag draws a box in
- * the picture's own pixels, whatever size it is shown at; `review.answer` turns the boxes
- * into a mask the picture's size and keeps it with the answer.
+ * Where it is wrong, drawn over the member's own picture (§PW174): the shared marker, in
+ * the review catalog's words; `review.answer` turns the boxes into a mask the picture's
+ * size and keeps it with the answer.
  */
 function Marker({
   desk,
@@ -83,64 +81,16 @@ function Marker({
   boxes: Box[]
   onBoxes: (boxes: Box[]) => void
 }) {
-  const source = useShown(desk, member.new ?? null)
-  const picture = useRef<HTMLImageElement>(null)
-  const canvas = useRef<HTMLCanvasElement>(null)
-  const [start, setStart] = useState<[number, number] | null>(null)
-  const [moving, setMoving] = useState<Box | null>(null)
-  const at = (event: React.PointerEvent): [number, number] => {
-    const frame = canvas.current!.getBoundingClientRect()
-    const shown = picture.current!
-    return inPixels(event.clientX - frame.left, event.clientY - frame.top, shown.naturalWidth, shown.clientWidth)
-  }
-  const paint = () => {
-    const shown = picture.current
-    const pen = canvas.current?.getContext('2d')
-    if (!shown || !pen || !canvas.current) return
-    canvas.current.width = shown.clientWidth
-    canvas.current.height = shown.clientHeight
-    const k = shown.naturalWidth / (shown.clientWidth || 1)
-    pen.strokeStyle = '#ff3b30'
-    pen.lineWidth = 2
-    for (const box of moving ? [...boxes, moving] : boxes) {
-      pen.strokeRect(box[0] / k, box[1] / k, (box[2] - box[0]) / k, (box[3] - box[1]) / k)
-    }
-  }
-  useEffect(paint)
-  const alt = say(words, 'mark_alt', { name: member.name })
   return (
-    <div data-marker={member.name} className="flex flex-col gap-2">
-      <p className="text-xs text-muted-foreground">{say(words, 'mark_help')}</p>
-      <div className="relative inline-block self-start">
-        {!source && <Loading />}
-        {source && (
-          <img
-            ref={picture}
-            src={source}
-            alt={alt}
-            onLoad={paint}
-            className="block max-h-96 w-auto min-w-48 [image-rendering:pixelated]"
-          />
-        )}
-        <canvas
-          ref={canvas}
-          aria-label={alt}
-          className="absolute inset-0 h-full w-full cursor-crosshair touch-none"
-          onPointerDown={(event) => setStart(at(event))}
-          onPointerMove={(event) => start && setMoving([...start, ...at(event)] as Box)}
-          onPointerUp={(event) => {
-            if (!start) return
-            const box = spanned(start, at(event))
-            if (box) onBoxes([...boxes, box])
-            setStart(null)
-            setMoving(null)
-          }}
-        />
-      </div>
-      <Button type="button" size="sm" variant="outline" className="self-start" onClick={() => onBoxes([])}>
-        {say(words, 'clear_marks')}
-      </Button>
-    </div>
+    <Drawn
+      name={member.name}
+      source={useShown(desk, member.new ?? null)}
+      alt={say(words, 'mark_alt', { name: member.name })}
+      help={say(words, 'mark_help')}
+      clear={say(words, 'clear_marks')}
+      boxes={boxes}
+      onBoxes={onBoxes}
+    />
   )
 }
 
