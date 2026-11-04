@@ -8,8 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW682** (deps: —) **picture.buy on Ideogram 4.0 answers a 16x9 request in 4:5, and neither answer nor record warns (PW659 is back)** — A caller trusting the ratio crops the picture, and the person finds it on the site. → §PW682
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

@@ -37,32 +37,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW682 A picture in another ratio than asked is named
-
-**Where.** Dumont's `wordpress/bin/demo-photos.mjs` (D265) buys guide photos with
-`picture.buy --model 4.0 --aspect_ratio 16x9 --transparent false --out
-demo/photos/guide/<slug>.png --json`.
-
-**What came back (2026-11-04).** Every guide bought that day is 1792x2240, a 4:5
-portrait, for a 16x9 request: `how-to-wash-a-down-jacket.png.prov.json` records
-`details.aspect_ratio: "16x9"` and `details.resolution: "1792x2240"`, and neither the
-answer nor the record carries a warning. PW659 shipped for exactly this, so it is back,
-or the warning it added does not reach this path.
-
-**What it cost.** The demo seed cut each photo to 800x450 from its centre, so a guide
-page showed a band through the middle of a portrait (the person's torso, no head, no
-jacket). The person found it on the site. Workaround: the seed now letterboxes every
-photo whole on black (`demo/seed/images.php`, `tarnfell_import_photo`), and the plugin's
-thumbnails use `object-fit: contain`.
-
-**What polyweave should do.** When the returned ratio is not the one asked, say so in
-the answer (`ok` with a warning naming both ratios, or a refusal the caller can retry),
-and record it in `.prov.json` as a mismatch rather than only as two fields to compare. A
-batch (PW680) lists those mismatches in its report.
-
-**Done when.** A 16x9 request answered in 4:5 is named in the answer and in the record,
-and a test drives it with the Ideogram response shape seen here.
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

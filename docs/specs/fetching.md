@@ -330,6 +330,15 @@ not an accept, a picture bought again since the verdict, or no verdict at all is
 as before; withdrawing the verdict on the review page is how a kept picture is bought
 again. The agent never writes that verdict itself.
 
+**A picture drawn at another shape than asked is named** (§PW682). 4.0 answered Dumont's
+16x9 guides at 1792x2240, a 4:5 portrait, and a seed cut each from its middle. Where the
+drawn width over height sits more than 2% from `aspect_ratio`, the picture is kept, the
+charge stands, and the answer carries a `picture.aspect-differs` finding naming both,
+with the remedy (crop with `picture.copies`, or keep it). The record keeps it too, as
+`mismatch.aspect_ratio` with what was `asked` and what was `got`, so a caller reading
+the file's record later sees it, and a batch bought with `picture.batch` lists every
+such picture under `mismatches`.
+
 **A batch is planned before it spends** (§PW680). A consumer's loop of `picture.buy`
 calls spent first: a run meant to retake 5 photos started re-buying 38 before a person
 stopped it. `picture.batch(entries)` takes the entries as `picture.buy` takes them, each

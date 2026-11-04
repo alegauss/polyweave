@@ -611,6 +611,25 @@ def test_a_picture_drawn_at_another_shape_is_kept_and_named(
     assert "picture.copies" in found["remedy"]
 
 
+def test_a_16x9_answered_in_4_5_is_named_in_the_answer_the_record_and_a_batch(
+    tmp_path, service, monkeypatch
+):
+    """§PW682: Dumont's guides came back 1792x2240 for 16x9; nothing warned."""
+    from polyweave.layers.picture import picture as P
+
+    monkeypatch.setattr(S, "download", lambda link: _drawn(1792, 2240))
+    entry = buy(tmp_path, out="guide.png", aspect_ratio="16x9", transparent=False)
+    (found,) = entry["findings"]
+    assert (found["asked"], found["got"]) == ("16x9", "1792x2240")
+    record = provenance.read("guide.png", root=tmp_path)
+    assert record["mismatch"] == {"aspect_ratio": {"asked": "16x9", "got": "1792x2240"}}
+    done = P.batch(entries=[{"out": "other.png", "prompt": "a guide", "model": "4.0",
+                             "aspect_ratio": "16x9", "transparent": False,
+                             "service": "ideogram"}], plan=False, root=tmp_path)
+    assert [(one["out"], one["got"]) for one in done["mismatches"]] == [
+        ("other.png", "1792x2240")]
+
+
 def test_a_picture_drawn_at_the_shape_asked_carries_no_finding(
     tmp_path, service, monkeypatch
 ):
@@ -618,6 +637,7 @@ def test_a_picture_drawn_at_the_shape_asked_carries_no_finding(
     monkeypatch.setattr(S, "download", lambda link: _drawn(1312, 736))
     entry = buy(tmp_path, aspect_ratio="16:9", transparent=False)
     assert "findings" not in entry
+    assert "mismatch" not in provenance.read("refs/booster.png", root=tmp_path)
     assert purchase.read(tmp_path) == [entry]
 
 

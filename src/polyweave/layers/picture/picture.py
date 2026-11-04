@@ -273,6 +273,13 @@ def buy(
                 "credits": price}
     entry = S.buy(ideogram.SERVICE, order, report)
     differs = _aspect_differs(aspect_ratio, config.root / out)
+    if differs:
+        # In the record too, not only the answer (§PW682): a caller reading the file's
+        # record later, or a batch that never looked at the answer, sees it named.
+        record = provenance.read(str(config.root / out), root=config.root)
+        record["mismatch"] = {"aspect_ratio": {"asked": differs["asked"],
+                                               "got": differs["got"]}}
+        provenance.write(record, config.root)
     return {**entry, **({"background": background} if background else {}),
             **({"findings": [differs]} if differs else {})}
 
@@ -387,8 +394,14 @@ def batch(
             detail=answer)
     by_out = {one["out"]: one for one in entries}
     bought = [buy(report, root=root, **by_out[one["out"]]) for one in buying]
-    return {**answer, "bought": bought,
-            "says": f"bought {len(bought)} of {len(planned)} ({said})"}
+    # A picture drawn at another shape than asked, named for the whole run (§PW682).
+    shapes = [{"out": one.get("out") or by_out_one["out"], **finding}
+              for one, by_out_one in zip(bought, buying, strict=True)
+              for finding in one.get("findings") or ()
+              if finding.get("code") == "picture.aspect-differs"]
+    return {**answer, "bought": bought, **({"mismatches": shapes} if shapes else {}),
+            "says": f"bought {len(bought)} of {len(planned)} ({said})"
+            + (f"; {len(shapes)} drawn at another shape than asked" if shapes else "")}
 
 
 def kept(path, root) -> dict | None:

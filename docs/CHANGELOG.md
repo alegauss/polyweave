@@ -77,6 +77,7 @@
 - ✅ **PW675** **A video.cut cannot name a Pixabay clip or photo by its id, only a path some earlier fetch happened to write** — A cut's clip may name a stock file by service and id; video.cut fetches it once into [stock] dir, reuses the copy, and refuses one that is gone (design recorded in `docs/specs/video.md`).
 - ✅ **PW679** **picture.buy buys a picture a person already approved again when the prompt that asks for it is reworded** — A bought picture a person accepted keeps their verdict in its record, so picture.buy answers kept and spends nothing when its prompt is reworded (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW680** **No way to see which pictures a batch would buy, why each one, and what it costs, before it spends** — picture.batch says per entry why it would be bought and the cost against the ceiling, buying nothing, then buys exactly what that plan named (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW682** **picture.buy on Ideogram 4.0 answers a 16x9 request in 4:5, and neither answer nor record warns (PW659 is back)** — A picture drawn at another shape than asked is named in the answer, in its record as mismatch.aspect_ratio, and in a batch's mismatches (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 
