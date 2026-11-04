@@ -397,6 +397,8 @@ def probe(
     probe_path = here / script.removeprefix("res://")
     ran = engine.run(
         probe_path, expect=r"^level:", root=here, headless=True,
+        frames=int(table.get("probe_frames") or 0) or None,
+        timeout=float(table.get("probe_timeout") or 0) or None,
         args=("--", f"level={engine._as_res(where, here)}", f"seeds={count}"))
     log = Path(ran["log"])
     output = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""

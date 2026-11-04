@@ -74,6 +74,31 @@ DECLARED = ('[levels]\nprobe = "res://probe.gd"\nseeds = 4\n\n[levels.measures]\
             'stars = { unit = "stars", direction = "higher" }\n')
 
 
+def test_the_probe_runs_under_its_own_bounds_where_the_project_sets_them(
+        tmp_path, monkeypatch):
+    """§PW206: Cottony's 50 deals a level outrun a capture's 6000 frames and 180 s."""
+    from polyweave.layers.engine import engine
+
+    asked = {}
+
+    def ran(script, **how):
+        asked.update(how)
+        log = tmp_path / "probe.log"
+        lines = [f"level: seed={n} won=1 stars=1\n" for n in (1, 2, 3, 4)]
+        log.write_text("".join(lines), encoding="utf-8")
+        return {"ok": True, "log": str(log), "why": "", "verdict": "ok"}
+
+    monkeypatch.setattr(engine, "run", ran)
+    root = _project(tmp_path, DECLARED.replace(
+        "seeds = 4\n", "seeds = 4\nprobe_frames = 400000\nprobe_timeout = 900\n"))
+    (root / "probe.gd").write_text("extends SceneTree\n", encoding="utf-8")
+    levels.probe("levels/one.json", root=str(root))
+    assert (asked["frames"], asked["timeout"]) == (400000, 900.0)
+    (root / "polyweave.toml").write_text(DECLARED, encoding="utf-8")
+    levels.probe("levels/one.json", root=str(root))
+    assert (asked["frames"], asked["timeout"]) == (None, None)
+
+
 def test_a_project_with_no_probe_or_no_level_is_refused(tmp_path):
     root = _project(tmp_path)
     with pytest.raises(PolyweaveError) as refused:

@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 3 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 6 },
+  { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -67,10 +67,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW206",
-    block: "R",
-    symptom: "Cottony's levels are still tuned by a curve nobody measured",
-    why: "The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do.",
+    id: "PW682",
+    block: "D",
+    symptom: "picture.buy on Ideogram 4.0 answers a 16x9 request in 4:5, and neither answer nor record warns (PW659 is back)",
+    why: "A caller trusting the ratio crops the picture, and the person finds it on the site.",
     deps: [],
   },
   {
@@ -160,4 +160,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW659", "PW449", "PW450", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW659", "PW449", "PW450", "PW206", "PW311", "PW368"];

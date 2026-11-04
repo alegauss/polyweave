@@ -42,6 +42,8 @@
 
 ## Block R — Levels measured before a person plays them
 
+- ⏸ **PW206** (deps: PW204 ✅, PW205 ✅) **Cottony's levels are still tuned by a curve nobody measured** — set aside (Waits on the owner's curve and Cottony RK189's star bar.): No curve the owner agreed holds the 20 yet, so no accept specs, and make_levels.py and the fallback curve stay until then. → §PW206
+
 ## Block S — Playing the game, not only rendering it
 
 ## Block T — Adopting polyweave in a project

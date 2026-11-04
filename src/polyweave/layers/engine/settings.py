@@ -52,6 +52,10 @@ TABLES: dict[str, Any] = {
         "out": "",
         "timeout": 120,
         "probe": "",
+        # The probe's own frame budget and wall clock, 0 for [engine]'s: a level played
+        # over many seeds needs more than a capture settles in (§PW206).
+        "probe_frames": 0,
+        "probe_timeout": 0,
         "seeds": 100,
         "percentiles": [10, 50, 90],
         "measures": {},

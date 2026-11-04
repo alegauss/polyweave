@@ -704,7 +704,8 @@ moves_left = { unit = "moves",  direction = "higher" }
 stars      = { unit = "stars",  direction = "higher" }
 ```
 
-`level.probe(level)` runs the probe headless, under `[engine]`'s frames and timeout, with
+`level.probe(level)` runs the probe headless, under `[levels] probe_frames` and
+`probe_timeout` where set and `[engine]`'s frames and timeout where not, with
 `level=res://…` and `seeds=N` after `--`. The probe plays seeds 1 to N and prints one line
 a seed: `level: seed=1 won=1 moves_left=4 stars=2`. Each line must carry the seed and
 every declared measure as `name=number` and nothing else; a measure missing, one

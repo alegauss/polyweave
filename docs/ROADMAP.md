@@ -10,6 +10,7 @@
 
 - 📋 **PW679** (deps: —) **picture.buy buys a picture a person already approved again when the prompt that asks for it is reworded** — A consumer can only compare prompts, so one reworded scene re-buys every good picture in it. → §PW679
 - 📋 **PW680** (deps: —) **No way to see which pictures a batch would buy, why each one, and what it costs, before it spends** — A loop of picture.buy calls spends first, so a run buying 38 where 5 were meant is stopped by hand. → §PW680
+- 📋 **PW682** (deps: —) **picture.buy on Ideogram 4.0 answers a 16x9 request in 4:5, and neither answer nor record warns (PW659 is back)** — A caller trusting the ratio crops the picture, and the person finds it on the site. → §PW682
 
 ## Block E — One world with the engine
 
@@ -39,7 +40,6 @@
 
 ## Block R — Levels measured before a person plays them
 
-- 📋 **PW206** (deps: PW204 ✅, PW205 ✅) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
 - 📋 **PW327** (deps: PW205 ✅) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both. → §PW327
 - 📋 **PW608** (deps: —) **a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help** — Each level key is written again in the reader, the editor and the docs, and the three drift apart. → §PW608
 - 📋 **PW609** (deps: PW203 ✅) **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed. → §PW609
@@ -105,6 +105,13 @@
 - **picture.buy sends the ratio in the field 4.0 draws by** A 16x9 request on 4.0 comes
   back within two percent of 16:9, proved by one paid request the owner chooses to make
   and recorded in the learned schema.
+
+## Done when — PW206
+
+- **the 20 levels pass a set spec the owner agreed, and make_levels.py is gone** A set
+  spec and per-level accept specs over the probe records hold the bounds the owner set
+  on the verdict page (stars measured by a careful player, Cottony RK189), and the
+  runtime fallback curve is fitted from the accepted levels.
 
 ## Non-goals
 

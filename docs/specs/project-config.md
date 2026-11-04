@@ -115,6 +115,8 @@ out         = "{dir}/{stem}.tres"            # where the command writes the game
 timeout     = 120                            # seconds the command may take
 probe       = "res://tools/level_probe.gd"  # prints level: seed=N name=value a seed
 seeds       = 100              # seeds 1 to N a level is played over
+probe_frames  = 0              # the probe's frame budget, 0 for [engine] frames
+probe_timeout = 0              # the probe's wall clock in seconds, 0 for [engine] timeout
 percentiles = [10, 50, 90]     # each measure read at these and its mean
 measures    = { won = { unit = "0 or 1", direction = "higher" } }  # what it prints
 

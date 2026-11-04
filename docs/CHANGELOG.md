@@ -549,6 +549,7 @@
 - ✅ **PW203** **A level declared as data cannot reach the engine without each game's own converter** — level.compile holds a level source to its schema, runs the project's own command and records the file the game loads, or the source the game reads (design recorded in `docs/specs/engine.md`).
 - ✅ **PW204** **A level's difficulty has no bar a search can aim at, and a level set has no curve to hold** — level.curve holds a level set to its declared shape, and search.sweep's level producer turns a level's keys, compiled and probed, toward its spec (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW205** **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — Spinhold's phases pass level.validate, compile, probe and curve with no polyweave change, its probe reading waves by analysis: peak alive 39, 54, 75.
+- ✅ **PW206 (declared and probed)** **Cottony's levels are still tuned by a curve nobody measured** — Cottony's 20 levels hold a schema, are recorded and probed by the careless bot (level 20 wins 66%), each with a record.
 
 ## Block S — Playing the game, not only rendering it
 
