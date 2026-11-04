@@ -202,7 +202,9 @@ from polyweave.surface.capabilities import capabilities
 #: 171,952 with level.curve, a level set held to its declared shape (§PW204,
 #: 2026-11-04).
 #: 172,854 with level.trace, a playtest's events read per second (§PW327, 2026-11-04).
-DESCRIBE = 173_300
+#: 173,320 with level.fields, a level schema's fields for a game's editor (§PW608,
+#: 2026-11-04).
+DESCRIBE = 174_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -364,7 +366,8 @@ DESCRIBE = 173_300
 #: 2026-11-03).
 #: 189,136 with level.curve and level.bad-set (§PW204, 2026-11-04).
 #: 190,038 with level.trace (§PW327, 2026-11-04).
-CAPABILITIES = 190_500
+#: 190,504 with level.fields (§PW608, 2026-11-04).
+CAPABILITIES = 191_200
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

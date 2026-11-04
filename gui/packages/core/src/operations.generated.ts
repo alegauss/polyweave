@@ -894,6 +894,14 @@ export interface LevelCurveArgs {
   root?: string
 }
 
+/** Each field of the project's level schema, for a game's own editor (§PW608). */
+export interface LevelFieldsArgs {
+  /** where to write them as JSON, under the project; nowhere if empty */
+  out?: string
+  /** the project whose level schema this is; default "." */
+  root?: string
+}
+
 /** Play one level with the game's own probe and read back what it measured. */
 export interface LevelProbeArgs {
   /** the level file the probe plays, under the project */
@@ -2902,6 +2910,7 @@ export interface Operations {
   "kit.update": KitUpdateArgs
   "level.compile": LevelCompileArgs
   "level.curve": LevelCurveArgs
+  "level.fields": LevelFieldsArgs
   "level.probe": LevelProbeArgs
   "level.trace": LevelTraceArgs
   "level.validate": LevelValidateArgs
@@ -3057,7 +3066,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -3131,6 +3140,7 @@ export const OPERATIONS = [
   "kit.update",
   "level.compile",
   "level.curve",
+  "level.fields",
   "level.probe",
   "level.trace",
   "level.validate",

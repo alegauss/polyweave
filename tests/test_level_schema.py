@@ -189,6 +189,31 @@ def test_with_no_command_the_source_is_what_the_game_loads(tmp_path):
     assert [one["role"] for one in record["inputs"]] == ["schema"]
 
 
+def test_each_field_says_what_a_game_s_editor_needs_of_it(tmp_path):
+    from polyweave.kernel import provenance
+
+    schema = json.loads(json.dumps(SCHEMA))
+    group = schema["properties"]["stage"]["items"]["properties"]["wave"]["items"][
+        "properties"]["group"]["items"]["properties"]
+    group["count"].update({"x-step": 1, "x-unit": "enemies", "default": 6,
+                           "description": "how many fly in"})
+    root = _project(tmp_path, schema=schema)
+    said = level_schema.fields(out="tools/fields.json", root=str(root))
+    by = {one["path"]: one for one in said["fields"]}
+    assert by["stage[].wave[].group[].count"] == {
+        "path": "stage[].wave[].group[].count", "required": True, "type": "integer",
+        "min": 1, "max": 40, "step": 1, "unit": "enemies", "default": 6,
+        "help": "how many fly in"}
+    assert by["stage[].wave[].group[].enemy"]["entity"] is True
+    assert by["stage[].wave[].group[].side"]["choices"] == ["left", "right"]
+    assert by["stage"]["required"] is True and by["line"]["required"] is False
+    assert list(by)[:3] == ["line", "stage", "stage[]"]
+    written = json.loads((root / "tools" / "fields.json").read_text("utf-8"))
+    assert written["fields"] == said["fields"]
+    record = provenance.read("tools/fields.json", root=str(root))
+    assert record["kind"] == "level"
+
+
 def test_a_json_level_is_read_as_json(tmp_path):
     root = _project(tmp_path)
     (root / "waves" / "one.waves.toml").unlink()

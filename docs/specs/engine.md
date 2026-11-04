@@ -665,14 +665,23 @@ files  = ["game/waves/phase_*.waves.toml"]   # the files held to it, TOML or JSO
 `level.validate(level="")` holds every file `files` matches, or the one named, to the
 schema. It reads the part of JSON Schema a level needs: `type`, `properties`, `required`,
 `additionalProperties` (true or false), `items`, `enum`, `minimum`, `maximum`, `minItems`
-and `maxItems`, besides `title`, `description`, `default`, `examples`, `$schema` and
-`$id`. Any other keyword is `level.no-schema` with where it is, because a check that
+and `maxItems`, besides `title`, `description`, `default`, `examples`, `$schema`, `$id`,
+`x-unit` and `x-step`. Any other keyword is `level.no-schema` with where it is, because a check that
 skips what it does not read passes what it never checked. `"x-entity": true` on a string
 says it names an entity of the world (`docs/specs/world.md`), so a wave spawning an enemy
 the world never declared is found with a near name. The answer is `ok`, `files` and
 `findings`, each with its `file`, the place `at` (`stage[0].wave[1].group[2].enemy`) and
 what it `said`. No schema is `level.no-schema`; a file named or matched that is not there
 is `level.no-level`.
+
+The same schema is what a game's own editor builds its fields from (§PW608), so a key's
+bounds, unit and meaning are declared once. `"x-unit"` names a number's unit and
+`"x-step"` the step an editor moves it by, beside `minimum`, `maximum`, `default`,
+`enum` and `description`. `level.fields(out="")` answers every field in the schema's
+order: its dotted `path` (`stage[].wave[].group[].count`, `[]` for a list's items), and
+where declared its `type`, `min`, `max`, `step`, `unit`, `default`, `choices`, `help`,
+whether it is `required` and whether it names a world `entity`. With `out` it writes them
+as JSON, recorded as a `level` with the schema as its input, for the game to load.
 
 `level.compile(level)` turns one source into the file the game loads. It holds the
 source to the schema first, and a source with findings is `level.invalid`, the findings

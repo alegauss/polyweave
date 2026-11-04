@@ -77,7 +77,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW608",
     block: "R",
     symptom: "a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help",
-    why: "Each level key is written again in the reader, the editor and the docs, and the three drift apart.",
+    why: "The engine still has no typed reader generated from the schema, and a field's help is not in the string table.",
     deps: [],
   },
   {

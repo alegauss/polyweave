@@ -32,7 +32,7 @@ from polyweave.kernel.errors import PolyweaveError
 #: The keywords read; any other is refused.
 KEYWORDS = frozenset({
     "type", "properties", "required", "additionalProperties", "items", "enum",
-    "minimum", "maximum", "minItems", "maxItems", "x-entity",
+    "minimum", "maximum", "minItems", "maxItems", "x-entity", "x-unit", "x-step",
     "$schema", "$id", "title", "description", "default", "examples",
 })
 TYPES = {"object": dict, "array": list, "string": str, "boolean": bool,
@@ -256,6 +256,62 @@ def compile_level(
         "says": f"{level} holds its schema and compiled to {loaded}" if command
         else f"{level} holds its schema and is what the game loads; recorded",
     }
+
+
+#: What a field says of itself to a game's tools, from the keyword it is read off.
+_SAID = (("type", "type"), ("minimum", "min"), ("maximum", "max"), ("x-step", "step"),
+         ("x-unit", "unit"), ("default", "default"), ("enum", "choices"),
+         ("description", "help"), ("x-entity", "entity"))
+
+
+def _fields(node: dict, at: str = "", required: bool = False) -> list[dict]:
+    """Every field a schema declares, its dotted path (`[]` for a list's items) and
+    what a tool needs of it, in the schema's own order (§PW608)."""
+    out = []
+    if at:
+        one = {"path": at, "required": required}
+        one.update({name: node[key] for key, name in _SAID if key in node})
+        out.append(one)
+    wanted = set(node.get("required") or [])
+    for name, child in (node.get("properties") or {}).items():
+        out += _fields(child, f"{at}.{name}" if at else name, name in wanted)
+    if isinstance(node.get("items"), dict):
+        out += _fields(node["items"], f"{at}[]", False)
+    return out
+
+
+@operation("level.fields")
+def fields(
+    out: Annotated[str, Param("where to write them as JSON, under the project; "
+                              "nowhere if empty")] = "",
+    root: Annotated[str, Param("the project whose level schema this is")] = ".",
+) -> dict:
+    """Each field of the project's level schema, for a game's own editor (§PW608).
+
+    Per field its dotted path, type, min and max, step and unit (`x-step`, `x-unit`),
+    default, choices, help (`description`), whether it is required and whether it names
+    a world entity, read off `[levels] schema` so the editor, the reader and the docs
+    say one declaration. `out` writes them as JSON, recorded with the schema.
+    """
+    from polyweave.kernel import provenance
+    from polyweave.kernel.files import write_atomic
+
+    config = load(root)
+    here = config.root
+    named, schema = _schema(here, config.table("levels"))
+    listed = _fields(schema)
+    answer: dict = {"schema": named, "fields": listed}
+    if out:
+        target = here / out
+        write_atomic(target, json.dumps({"schema": named, "fields": listed}, indent=1)
+                     + "\n")
+        provenance.write(provenance.build(
+            "level", target, root=here,
+            inputs=[provenance.source("schema", here / named, root=here)]), root=here)
+        answer["written"] = provenance.relative(target, here)
+    answer["says"] = (f"{len(listed)} field(s) in {named}"
+                      + (f", written to {answer['written']}" if out else ""))
+    return answer
 
 
 @operation("level.validate")
