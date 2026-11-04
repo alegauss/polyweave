@@ -649,6 +649,7 @@
 - ✅ **PW618** **the window's watch test counts one burst of writes as two on a loaded Linux runner, turning the gates red** — The watch test holds the watcher to the window's own 300 ms quiet, settles and zeroes its count before writing, so a late inotify event cannot read as a burst.
 - ✅ **PW684** **the window's inventory reads all 2,019 of Spinhold's items before it shows any, in one column with no tab per kind** — A project opens on its first inventory page, with a tab per kind counted by the payload, a path search and a list drawing only rows in view (design recorded in `gui/README.md`).
 - ✅ **PW685** **the item view draws a picture at its real size, so a tall capture runs far past the request box** — A picture fits the item panel beside its request box, says its real size, toggles to it in one click and opens alone at full size (design recorded in `gui/README.md`).
+- ✅ **PW686** **the project screen is a narrow centred column, so a wide window leaves most of itself blank** — An open project takes the window's whole width, its list a share a person drags or moves by key, the item filling the rest with prose kept to reading length (design recorded in `gui/README.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

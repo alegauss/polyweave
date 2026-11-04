@@ -25,7 +25,8 @@
     "where_judged": "Where it is judged",
     "search": "Find by path",
     "reading": "{{read}} of {{total}} read",
-    "no_match": "Nothing here matches."
+    "no_match": "Nothing here matches.",
+    "resize": "Drag to resize the list"
   },
   "record": {
     "sound": "sound",

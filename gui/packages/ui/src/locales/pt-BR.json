@@ -25,7 +25,8 @@
     "where_judged": "Onde é julgado",
     "search": "Buscar pelo caminho",
     "reading": "{{read}} de {{total}} lidos",
-    "no_match": "Nada aqui corresponde."
+    "no_match": "Nada aqui corresponde.",
+    "resize": "Arraste para redimensionar a lista"
   },
   "record": {
     "sound": "íntegro",

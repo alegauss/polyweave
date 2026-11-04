@@ -120,6 +120,16 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
     await open(page, root)
     await choose(page, /^Lines/, /^line:TITLE/)
     await page.getByRole('heading', { level: 2, name: 'line:TITLE' }).waitFor()
+    // The project takes the window's width, not a centred column (§PW686), and the list is
+    // a share a person can move.
+    const wide = await page.locator('[data-layout]').boundingBox()
+    const across = await page.evaluate(() => (globalThis as unknown as { innerWidth: number }).innerWidth)
+    expect(wide!.width).toBeGreaterThan(across * 0.9)
+    const divider = page.getByRole('separator', { name: 'Drag to resize the list' })
+    const was = Number(await divider.getAttribute('aria-valuenow'))
+    await divider.focus()
+    await page.keyboard.press('ArrowRight')
+    expect(Number(await divider.getAttribute('aria-valuenow'))).toBe(was + 40)
     await expect.poll(() => page.getByRole('definition').allTextContents()).toEqual(['Starship'])
     await page.getByText('No person has judged this line yet.').waitFor()
 

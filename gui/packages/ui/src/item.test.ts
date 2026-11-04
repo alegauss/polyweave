@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { Item } from '@pw/core'
 
 import { offered, shown, viewer } from './ItemView'
-import { kept, matching, ROW, tabs, windowed } from './Project'
+import { kept, LIST, matching, NARROWEST, resized, ROW, tabs, windowed } from './Project'
 
 const item = (over: Partial<Item>): Item => ({
   id: 'x',
@@ -82,5 +82,13 @@ describe('an item seen', () => {
     expect(shown(false)).toContain('max-w-full')
     expect(shown(false)).toContain('max-h-[50vh]')
     expect(shown(true)).toBe('max-w-none')
+  })
+
+  it('lets the list be dragged wider or narrower, never past what leaves the item room', () => {
+    expect(resized(LIST, 3840)).toBe(LIST)
+    expect(resized(10, 3840)).toBe(NARROWEST)
+    expect(resized(5000, 3840)).toBe(Math.floor(3840 * 0.6))
+    // A window too narrow to share still gives the list its narrowest.
+    expect(resized(5000, 300)).toBe(NARROWEST)
   })
 })

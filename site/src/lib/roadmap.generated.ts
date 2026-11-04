@@ -45,20 +45,13 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 0 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 2 },
+  { block: "U", title: "A window on everything a project governs", open: 1 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
   { block: "X", title: "The site on the shared design system", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW686",
-    block: "U",
-    symptom: "the project screen is a narrow centred column, so a wide window leaves most of itself blank",
-    why: "The list and the item are cramped side by side while the margins take most of the screen.",
-    deps: [],
-  },
   {
     id: "PW687",
     block: "U",

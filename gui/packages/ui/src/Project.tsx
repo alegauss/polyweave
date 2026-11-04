@@ -4,7 +4,7 @@
 // operation that would.
 
 import { Button, Input } from '@viglet/viglet-design-system'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { KINDS, type Bridge, type Desk, type Item, type Kind, type Opened } from '@pw/core'
@@ -73,6 +73,21 @@ export function windowed(
   const from = Math.min(count, Math.max(0, Math.floor(top / ROW) - spare))
   const to = Math.min(count, Math.ceil((top + view) / ROW) + spare)
   return { from, to: Math.max(from, to) }
+}
+
+/** The list's width on a wide window before a person drags it, in pixels (§PW686). */
+export const LIST = 480
+
+/** The narrowest the list can be dragged to. */
+export const NARROWEST = 260
+
+/**
+ * The list's width once dragged to `wanted` in a window `width` wide (§PW686): never
+ * under the narrowest, and never so wide the item is left less than two fifths.
+ */
+export function resized(wanted: number, width: number): number {
+  const widest = Math.max(NARROWEST, Math.floor(width * 0.6))
+  return Math.round(Math.min(widest, Math.max(NARROWEST, wanted)))
 }
 
 /** One kind's rows, drawn a screenful at a time as the list scrolls. */
@@ -164,6 +179,9 @@ export function Project({
   const [filter, setFilter] = useState<Filter>('all')
   const [query, setQuery] = useState('')
   const [tab, setTab] = useState<Kind | null>(null)
+  // The list's share of a wide window, which a person drags; the item fills the rest.
+  const [share, setShare] = useState(LIST)
+  const drag = useRef<{ x: number; from: number } | null>(null)
   const [chosen, setChosen] = useState<Item | null>(null)
   // The digest of the item as the person was last shown it: a change to it is marked,
   // never swapped in silently, and the new one is shown when they ask (§PW310).
@@ -265,7 +283,11 @@ export function Project({
           </Button>
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <div
+        data-layout
+        className="grid grid-cols-1 gap-6 lg:grid-cols-[var(--list)_auto_minmax(0,1fr)] lg:gap-x-2"
+        style={{ '--list': `${share}px` } as CSSProperties}
+      >
         <div className="flex min-w-0 flex-col gap-2">
           {total === 0 && <p className="text-muted-foreground">{t('project.empty')}</p>}
           {total > 0 && drawn.length === 0 && (
@@ -294,7 +316,29 @@ export function Project({
             </div>
           )}
         </div>
-        <div>
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label={t('project.resize')}
+          aria-valuenow={share}
+          tabIndex={0}
+          onPointerDown={(e) => {
+            e.currentTarget.setPointerCapture(e.pointerId)
+            drag.current = { x: e.clientX, from: share }
+          }}
+          onPointerMove={(e) => {
+            if (drag.current) {
+              setShare(resized(drag.current.from + e.clientX - drag.current.x, window.innerWidth))
+            }
+          }}
+          onPointerUp={() => (drag.current = null)}
+          onKeyDown={(e) => {
+            const step = e.key === 'ArrowLeft' ? -40 : e.key === 'ArrowRight' ? 40 : 0
+            if (step) setShare(resized(share + step, window.innerWidth))
+          }}
+          className="hidden w-2 cursor-col-resize rounded-full hover:bg-muted focus-visible:bg-muted lg:block"
+        />
+        <div className="min-w-0">
           {chosen && moved.includes(chosen.id) && seenAt !== chosenDigest && (
             <div data-changed className="mb-2 flex items-center gap-2 rounded-md bg-amber-50 p-2 text-sm">
               <span className="flex-1">{t('item.changed')}</span>

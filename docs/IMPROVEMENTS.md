@@ -189,20 +189,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW686 The project screen across the window's width
-
-Met by the owner on 2026-11-04 (PW311), on a 3840-pixel-wide screen: the project screen
-is a narrow centred column with wide empty margins on both sides, so the list and the
-item are cramped side by side while most of the window is blank.
-
-What to build: the project screen uses the window's width. The list takes a fixed,
-resizable share on the left and the item fills the rest, with a sensible maximum line
-length kept for prose only. On a narrow window the two stack, as now. The layout is
-`ui`'s alone; nothing in `core` or the payloads changes.
-
-Done when, at 3840 wide, the item panel shows a picture, its facts and the request box
-without the side margins taking more than a small share of the window.
-
 ### §PW687 Marks drawn where the change is asked
 
 Met by the owner on 2026-11-04 (PW311): asking for a change to a picture from its item

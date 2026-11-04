@@ -125,7 +125,8 @@ export function ItemView({
   const dependents = (brief?.['dependents'] as { artefact: string; kind: string }[]) ?? []
 
   return (
-    <article className="flex flex-col gap-4 rounded-lg border p-4">
+    // A wide panel keeps prose at a reading length; pictures and lists take its width.
+    <article className="flex flex-col gap-4 rounded-lg border p-4 [&_p]:max-w-prose">
       <div className="flex items-center gap-2">
         <h2 className="flex-1 truncate font-mono text-base">{item.id}</h2>
         {item.artefact && onJudge && (

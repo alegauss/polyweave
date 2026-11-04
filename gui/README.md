@@ -55,8 +55,11 @@ interface: no `ipcRenderer`, no module, no path.
 
 ## One item, beside what it was held to
 
-The project screen opens on the inventory's first page and reads the rest behind it
-(§PW684). The list has one tab per kind the payload counts, each with that count, so the
+The project screen takes the window's whole width (§PW686). The list sits on the left at
+a share a person drags, or moves with the arrow keys, and the item fills the rest, with
+its prose held to a reading length. On a narrow window the two stack.
+
+It opens on the inventory's first page and reads the rest behind it (§PW684). The list has one tab per kind the payload counts, each with that count, so the
 tabs sum to the inventory before its last page lands. A tab draws only the rows in view,
 so a kind of thousands scrolls without drawing every row. The list can be narrowed to
 what waits on a person, what needs attention (a record changed, missing, outdated, or

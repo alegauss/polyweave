@@ -143,7 +143,9 @@ export function App({ bridge }: { bridge: Bridge }) {
   )
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 p-8">
+    // An open project takes the window's whole width (§PW686); the list of projects keeps
+    // a reading column.
+    <main className={shown ? 'flex flex-col gap-6 p-6' : 'mx-auto flex max-w-5xl flex-col gap-6 p-8'}>
       {failed && (
         <p role="alert" className="text-destructive">
           {t('error.failed', { message: failed })}

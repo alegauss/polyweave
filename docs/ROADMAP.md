@@ -42,7 +42,6 @@
 
 ## Block U — A window on everything a project governs
 
-- 📋 **PW686** (deps: —) **the project screen is a narrow centred column, so a wide window leaves most of itself blank** — The list and the item are cramped side by side while the margins take most of the screen. → §PW686
 - 📋 **PW687** (deps: —) **the item view has no way to mark where a picture is wrong, so a change asked from it carries words alone** — The boxes exist only on the Decide screen, where the owner did not look for them. → §PW687
 
 ## Block V — Parts every game repeats, installed already proved
