@@ -140,6 +140,55 @@ def _moved(now: dict, before: dict | None) -> dict:
     return out
 
 
+#: What a level's acceptance spec reads off its probe (§PW204): one name, the measure
+#: and the place in its spread being the predicate's `probed` and `at`.
+LEVEL: dict[str, str] = {
+    "level": "a measure the game's level probe printed (probed=), at a percentile or "
+    "its mean (at=, p50 unless said), off the record level.probe wrote beside it",
+}
+
+
+def predicate(p, subject, root: str | Path, seen: dict) -> dict:
+    """A level predicate for accept.check, read off `<level>.probe.json` and refused
+    where the level changed since it was probed or was never probed (§PW204)."""
+    here = Path(root)
+    where = Path(p.of) if p.of else Path(subject)
+    where = where if where.is_absolute() else here / where
+    probed = str(p.arguments.get("probed") or "")
+    at = str(p.arguments.get("at") or "p50")
+    key = f"level:{where}"
+    if key not in seen:
+        target = where.with_name(where.stem + ".probe.json")
+        if not where.is_file() or not target.is_file():
+            raise PolyweaveError(
+                "level.unprobed", f"{where.name} has no probe record beside it",
+                f"run level.probe on {provenance.relative(where, here)} first",
+                given=str(where))
+        record = provenance.read(str(target), root=here)
+        level_in = next((one for one in record.get("inputs", [])
+                         if one.get("role") == "level"), {})
+        digest, _ = provenance.sha256_of(where)
+        if level_in.get("sha256") != digest:
+            raise PolyweaveError(
+                "level.unprobed",
+                f"{where.name} changed since it was probed, so its record says "
+                "nothing of it now",
+                f"run level.probe on {provenance.relative(where, here)} again",
+                given=str(where))
+        seen[key] = json.loads(target.read_text(encoding="utf-8"))["measured"]
+    measured = seen[key]
+    if probed not in measured or at not in measured[probed]:
+        raise PolyweaveError(
+            "level.bad-measures",
+            f"the probe of {where.name} reports no "
+            f"{probed or '(probed unset)'} at {at}",
+            f"name probed= one of {', '.join(measured)} and at= one of "
+            f"{', '.join(next(iter(measured.values()), {}))}",
+            given=probed)
+    return {"value": float(measured[probed][at]), "of": str(where),
+            "probed": probed, "at": at}
+
+
 @operation("level.probe", kind="capture")
 def probe(
     level: Annotated[str, Param("the level file the probe plays, under the project")],

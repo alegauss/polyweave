@@ -47,6 +47,11 @@ CODES: dict[str, Code] = {
         when="a command that exited non-zero, wrote nothing at out, or has no out",
         doors=("run the command by hand on the source", "declare [levels] out"),
     ),
+    "level.unprobed": Code(
+        means="a level spec was checked with no probe record that still describes it",
+        when="no <level>.probe.json beside it, or a level changed since it was probed",
+        doors=("run level.probe on the level, then check again",),
+    ),
     "level.no-level": Code(
         means="the level file named is not there",
         when="a path one folder off, or a level not yet written",

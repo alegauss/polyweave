@@ -448,6 +448,39 @@ flash in a scene nobody captured is not found. A spec bounds `flashes` and
 that holds fewer than two frames is `capture.no-frames`, and frames with no rate are
 `capture.no-rate`.
 
+## A level
+
+A level is measured by the game's own probe (§PW202; [engine.md](engine.md)), and a spec
+bounds what it recorded (§PW204). `level` names one of the probe's declared measures
+with `probed` and where in its spread with `at`: `p10`, `p50` (the default), `p90` or
+whichever `[levels] percentiles` declares, or `mean`, which for a 0 or 1 measure is its
+rate. The file checked (the spec's `artefact`), or the file `of` names, is the level,
+and the value is read off the `<level>.probe.json` beside it:
+
+```toml
+asset    = "level_020"
+artefact = "data/levels/level_020.json"
+
+[[predicate]]
+id = "wins"
+measure = "level"
+probed = "won"
+at = "mean"
+min = 0.45
+max = 0.70
+
+[[predicate]]
+id = "three-stars"
+measure = "level"
+probed = "stars"
+at = "p90"
+min = 3
+```
+
+A level with no probe record, or one changed since it was probed, is `level.unprobed`,
+never last week's number; a measure or a place the record does not carry is
+`level.bad-measures`.
+
 ## A video
 
 A teaser `video.cut` wrote is measured off the MP4 itself (§PW429; [video.md](video.md)):

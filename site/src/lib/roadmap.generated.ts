@@ -56,7 +56,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW204",
     block: "R",
     symptom: "A level's difficulty has no bar a search can aim at, and a level set has no curve to hold",
-    why: "Cottony's curve constants were set by feel and never measured, so a level can be unwinnable or trivial and nothing fails.",
+    why: "A level set still has no curve to hold, and no search turns a level's parameters toward its bounds.",
     deps: [],
   },
   {

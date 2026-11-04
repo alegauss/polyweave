@@ -38,6 +38,11 @@ LAYER = Layer(
             measures="polyweave.layers.engine.flashes:FLASHES",
             target="polyweave.layers.engine.flashes:predicate",
         ),
+        Subject(
+            about="a level, by what the game's probe measured of it",
+            measures="polyweave.layers.engine.levels:LEVEL",
+            target="polyweave.layers.engine.levels:predicate",
+        ),
     ),
     pictures={
         key: "polyweave.layers.engine.contrast:picture_measure"
@@ -115,6 +120,8 @@ LAYER = Layer(
             "internal", "contrast as a picture measure, for measure"),
         "polyweave.layers.engine.flashes:predicate": (
             "internal", "a flash predicate, for accept.check"),
+        "polyweave.layers.engine.levels:predicate": (
+            "internal", "a level predicate off its probe record, for accept.check"),
         "polyweave.layers.engine.traces:read": (
             "internal", "a run trace's samples; game.compare_runs"),
         "polyweave.layers.engine.traces:compare": (

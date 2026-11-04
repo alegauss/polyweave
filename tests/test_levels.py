@@ -85,6 +85,82 @@ def test_a_project_with_no_probe_or_no_level_is_refused(tmp_path):
     assert refused.value.code == "level.no-level"
 
 
+SPEC = """asset = "one"
+artefact = "levels/one.json"
+
+[[predicate]]
+id = "wins"
+measure = "level"
+probed = "won"
+at = "mean"
+min = 0.45
+max = 0.70
+
+[[predicate]]
+id = "three-stars"
+measure = "level"
+probed = "stars"
+at = "p90"
+min = 3
+"""
+
+
+def _probed(root, won=0.6, stars=3.0):
+    """A level as level.probe leaves it: its record beside it, the level an input."""
+    target = root / "levels" / "one.probe.json"
+    target.write_text(json.dumps({"measured": {
+        "won": {"mean": won, "p50": 1.0}, "stars": {"mean": 2.0, "p90": stars}}}),
+        encoding="utf-8")
+    provenance.write(provenance.build(
+        "capture", target, root=root,
+        inputs=[provenance.source("level", root / "levels" / "one.json", root=root)]),
+        root=root)
+    (root / "one.accept.toml").write_text(SPEC, encoding="utf-8")
+
+
+def test_a_level_spec_is_checked_off_the_probe_s_record(tmp_path):
+    from polyweave.loop import accept
+
+    root = _project(tmp_path, DECLARED)
+    _probed(root)
+    said = accept.checked("one.accept.toml", "levels/one.json", root=str(root))
+    assert said["passed"] is True
+    assert [(one["id"], one["value"]) for one in said["predicates"]] == [
+        ("wins", 0.6), ("three-stars", 3.0)]
+    _probed(root, won=0.9, stars=2.0)
+    said = accept.checked("one.accept.toml", "levels/one.json", root=str(root))
+    assert said["failed"] == ["wins", "three-stars"]
+
+
+def test_a_level_changed_since_its_probe_or_never_probed_is_refused(tmp_path):
+    from polyweave.loop import accept
+
+    root = _project(tmp_path, DECLARED)
+    (root / "one.accept.toml").write_text(SPEC, encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        accept.checked("one.accept.toml", "levels/one.json", root=str(root))
+    assert refused.value.code == "level.unprobed"
+    _probed(root)
+    (root / "levels" / "one.json").write_text('{"moves": 12}', encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        accept.checked("one.accept.toml", "levels/one.json", root=str(root))
+    assert refused.value.code == "level.unprobed"
+    assert "changed since it was probed" in refused.value.message
+
+
+def test_a_measure_the_probe_did_not_record_is_refused(tmp_path):
+    from polyweave.loop import accept
+
+    root = _project(tmp_path, DECLARED)
+    _probed(root)
+    (root / "one.accept.toml").write_text(SPEC.replace('probed = "won"',
+                                                       'probed = "lives"'),
+                                          encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        accept.checked("one.accept.toml", "levels/one.json", root=str(root))
+    assert refused.value.code == "level.bad-measures"
+
+
 #: A probe that plays nothing: its numbers follow from the seed and the level's moves,
 #: so two runs agree and a changed level moves them.
 PROBE = """extends SceneTree

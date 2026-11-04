@@ -41,6 +41,9 @@ FIELDS = ("id", "measure", "region", "weight", "of", *BOUNDS)
 ARGUMENTS = (
     "target", "against", "display", "delta", "targets", "ring", "radius", "behind",
     "concept", "crease",
+    # A level's probed measure and where in its spread (§PW204): won at p50, stars at
+    # p90, read off the record level.probe wrote.
+    "probed", "at",
 )
 
 

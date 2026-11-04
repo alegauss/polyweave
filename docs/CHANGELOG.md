@@ -547,6 +547,7 @@
 - ✅ **PW201** **Nobody knows if a scripted bot's win rate tracks how hard a level feels to a person** — The owner played Cottony's levels 10 to 20: the careless bot's falling win rate orders them right, but the feel is three stars out of reach, so the block measures stars too.
 - ✅ **PW202** **A game's own headless play of a level has no way to report what it measured** — level.probe runs the game's own probe over seeds and reads each declared measure at its percentiles, refusing a line that says less or more (design recorded in `docs/specs/engine.md`).
 - ✅ **PW203** **A level declared as data cannot reach the engine without each game's own converter** — level.compile holds a level source to its schema, runs the project's own command and records the file the game loads, or the source the game reads (design recorded in `docs/specs/engine.md`).
+- ✅ **PW204 (a level's own bounds)** **A level's difficulty has no bar a search can aim at, and a level set has no curve to hold** — A level's accept spec bounds what the game's probe recorded (measure level, probed and at), refused where the level changed since it was probed.
 
 ## Block S — Playing the game, not only rendering it
 
