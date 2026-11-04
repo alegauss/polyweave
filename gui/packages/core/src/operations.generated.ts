@@ -1398,6 +1398,16 @@ export interface PictureAgainstParentArgs {
   root?: string
 }
 
+/** Plan a batch of pictures before it spends, then buy exactly what the plan named. */
+export interface PictureBatchArgs {
+  /** each picture as picture.buy takes it: out, prompt, … */
+  entries?: unknown[]
+  /** say what would be bought and its cost; buy nothing; default true */
+  plan?: boolean
+  /** the project whose ledger this is; default "." */
+  root?: string
+}
+
 /** Buy one picture against the service's ceiling and keep it before anything else. */
 export interface PictureBuyArgs {
   /** where it is written, under the project */
@@ -2972,6 +2982,7 @@ export interface Operations {
   "panel.build": PanelBuildArgs
   "panel.capture": PanelCaptureArgs
   "picture.against_parent": PictureAgainstParentArgs
+  "picture.batch": PictureBatchArgs
   "picture.buy": PictureBuyArgs
   "picture.collect": PictureCollectArgs
   "picture.copies": PictureCopiesArgs
@@ -3092,7 +3103,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.batch" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -3204,6 +3215,7 @@ export const OPERATIONS = [
   "panel.build",
   "panel.capture",
   "picture.against_parent",
+  "picture.batch",
   "picture.buy",
   "picture.collect",
   "picture.copies",

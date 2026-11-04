@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW680** (deps: —) **No way to see which pictures a batch would buy, why each one, and what it costs, before it spends** — A loop of picture.buy calls spends first, so a run buying 38 where 5 were meant is stopped by hand. → §PW680
 - 📋 **PW682** (deps: —) **picture.buy on Ideogram 4.0 answers a 16x9 request in 4:5, and neither answer nor record warns (PW659 is back)** — A caller trusting the ratio crops the picture, and the person finds it on the site. → §PW682
 
 ## Block E — One world with the engine

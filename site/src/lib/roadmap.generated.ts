@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW680",
-    block: "D",
-    symptom: "No way to see which pictures a batch would buy, why each one, and what it costs, before it spends",
-    why: "A loop of picture.buy calls spends first, so a run buying 38 where 5 were meant is stopped by hand.",
-    deps: [],
-  },
   {
     id: "PW682",
     block: "D",

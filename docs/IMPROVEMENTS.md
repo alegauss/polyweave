@@ -37,32 +37,6 @@ about the picture.
 Workaround in the project: the bought pictures are centre-cropped to the asked ratio
 with Pillow in the same one-off re-encode that PW658 covers.
 
-### §PW680 A batch of pictures planned before it buys
-
-**Where it happened.** Dumont's demo store (`wordpress/bin/demo-photos.mjs`, D265) buys
-68 photos by calling `picture.buy` once per photo in a loop, deciding in the script
-which are missing or stale. Nothing tells the person, before money moves, how many
-pictures a run will buy, which ones, why each one, or what it will cost against the
-ceiling.
-
-**What went wrong (2026-11-04).** A small prompt change was meant to retake 5 photos.
-The loop started re-buying about 38, and only the person noticing the files churn
-stopped it, twice, after money had been spent. The script was then given a `--dry-run`
-of its own that lists `would buy <path>` and prints where each recorded prompt differs
-from the new one.
-
-**What polyweave should do.** A batch operation over a manifest (a list of `{out,
-prompt, model, aspect_ratio, ...}` entries, as many `picture.buy` calls would take):
-with `plan` it answers, per entry, `current`, `kept` (the sibling line), `missing` or
-`changed` with the first difference between the recorded and the new prompt, plus the
-count and the price against the remaining ceiling, and buys nothing; without it, it buys
-exactly the entries the plan named. The plan is what a person reads before agreeing to
-the spend, and the loop leaves the consumer's script.
-
-**Done when.** One call names everything a run would buy with its reason and its total
-cost, before spending; the same manifest then buys only those; and Dumont's script drops
-its own staleness check and dry run for it.
-
 ### §PW682 A picture in another ratio than asked is named
 
 **Where.** Dumont's `wordpress/bin/demo-photos.mjs` (D265) buys guide photos with

@@ -330,6 +330,19 @@ not an accept, a picture bought again since the verdict, or no verdict at all is
 as before; withdrawing the verdict on the review page is how a kept picture is bought
 again. The agent never writes that verdict itself.
 
+**A batch is planned before it spends** (§PW680). A consumer's loop of `picture.buy`
+calls spent first: a run meant to retake 5 photos started re-buying 38 before a person
+stopped it. `picture.batch(entries)` takes the entries as `picture.buy` takes them, each
+with its `out`, and with `plan` (the default) buys nothing: each entry passes through
+`picture.buy`'s own doors, its style, its key and its schema, without being sent, and
+says why it would be bought, `missing`, `changed` with the `difference` where its
+recorded prompt and the new one first part, or `unrecorded`, and its `credits`; a
+`current` entry, the same prompt, and a `kept` one are not bought. The answer counts
+`to_buy`, totals `credits` by service against what is `remaining` of each ceiling, and
+says whether it `fits`. With `plan` off it buys exactly the entries the plan names, and
+refuses with `fetch.over-budget` where they would not fit. A Scenario service is not
+planned yet.
+
 **A picture charged for and never delivered is owed** (§PW179). By the time its link is
 read, the service has charged, so a failed download meets two rules: the ledger never names
 an asset that is not there, and the ceiling never misses a charge. The charge goes to

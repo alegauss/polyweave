@@ -25,6 +25,7 @@ picture is drawn; 3.0 answers with the picture's link at once.
 from __future__ import annotations
 
 import json
+from contextvars import ContextVar
 from typing import Annotated
 
 import numpy as np
@@ -46,6 +47,10 @@ from polyweave.services.client import reached as _reached
 from polyweave.services.ideogram import MODELS
 
 from . import style
+
+#: Set while picture.batch plans: picture.buy then passes every door and stops before
+#: anything is sent, answering what it would send and its price (§PW680).
+_PLANNING: ContextVar[bool] = ContextVar("picture_planning", default=False)
 
 
 @operation("picture.buy", kind="fetch", injects=("report",), spends=True)
@@ -122,6 +127,10 @@ def buy(
     from . import scenario
 
     if scenario.serves(load(root), service):
+        if _PLANNING.get():
+            raise PolyweaveError(
+                "fetch.bad-choice", "a batch cannot plan a Scenario picture yet",
+                "buy it on its own with picture.buy", given=service)
         # A Scenario service draws from the model the family's canon trained (§PW450).
         return scenario.bought(report, out=out, prompt=prompt, family=family,
                                aspect_ratio=aspect_ratio, seed=seed, service=service,
@@ -258,10 +267,128 @@ def buy(
                if drawn_from else {}),
         },
     )
+    if _PLANNING.get():
+        # picture.batch's plan (§PW680): every door above passed, nothing is sent.
+        return {"planned": True, "out": out, "prompt": sent, "service": name,
+                "credits": price}
     entry = S.buy(ideogram.SERVICE, order, report)
     differs = _aspect_differs(aspect_ratio, config.root / out)
     return {**entry, **({"background": background} if background else {}),
             **({"findings": [differs]} if differs else {})}
+
+
+#: What an entry of a batch may say: picture.buy's own fields, and nothing else.
+_ENTRY = ("out", "prompt", "json_prompt", "transparent", "model", "aspect_ratio",
+          "rendering_speed", "seed", "family", "entity", "world", "service")
+
+
+def _first_difference(was: str | None, now: str) -> str:
+    """Where a recorded prompt and a new one first part, in a few words each side."""
+    import difflib
+
+    before, after = (was or "").split(), now.split()
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(
+            a=before, b=after, autojunk=False).get_opcodes():
+        if tag != "equal":
+            lead = " ".join(before[max(0, i1 - 3):i1])
+            return (f"…{lead} [{' '.join(before[i1:i2]) or '—'}] → "
+                    f"[{' '.join(after[j1:j2]) or '—'}]")
+    return "the same words"
+
+
+def _planned(entry: dict, root) -> dict:
+    """One entry's reason to buy or not, and what it would cost (§PW680)."""
+    unknown = sorted(set(entry) - set(_ENTRY))
+    if unknown or not entry.get("out"):
+        raise PolyweaveError(
+            "fetch.missing-field",
+            f"a batch entry names {', '.join(unknown) or 'no out'}",
+            f"give each entry an out and picture.buy's own fields: {', '.join(_ENTRY)}",
+            given=unknown[0] if unknown else None)
+    token = _PLANNING.set(True)
+    try:
+        asked = buy(None, root=root, **entry)
+    finally:
+        _PLANNING.reset(token)
+    if asked.get("kept"):
+        return {"out": entry["out"], "reason": "kept", "verdict": asked["verdict"],
+                "credits": 0}
+    here = load(root).root
+    where = here / entry["out"]
+    one = {"out": entry["out"], "service": asked["service"],
+           "credits": asked["credits"]}
+    if not where.is_file():
+        return {**one, "reason": "missing"}
+    try:
+        was = provenance.read(str(where), root=here).get("prompt")
+    except PolyweaveError:
+        return {**one, "reason": "unrecorded"}
+    if was == asked["prompt"]:
+        return {"out": entry["out"], "reason": "current", "credits": 0}
+    return {**one, "reason": "changed",
+            "difference": _first_difference(was, asked["prompt"])}
+
+
+#: The reasons a batch entry is bought for; current and kept ones are not.
+_TO_BUY = ("missing", "changed", "unrecorded")
+
+
+@operation("picture.batch", kind="fetch", injects=("report",), spends=True)
+def batch(
+    report=None,
+    entries: Annotated[
+        list, Param("each picture as picture.buy takes it: out, prompt, …")
+    ] = None,
+    *,
+    plan: Annotated[bool, Param("say what would be bought and its cost; buy nothing")]
+    = True,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Plan a batch of pictures before it spends, then buy exactly what the plan named.
+
+    Each entry goes through picture.buy's own doors without sending anything, and says
+    why it would be bought: `missing`, `changed` with where its recorded prompt and the
+    new one first part, or `unrecorded`; a `current` one (the same prompt) and a `kept`
+    one (a person's accept) are not. The answer counts them and prices them against
+    what is left of each service's ceiling. With `plan` off it buys those and only
+    those (§PW680).
+    """
+    if not isinstance(entries, list) or not entries:
+        raise PolyweaveError("fetch.missing-field", "a batch was asked with no entries",
+                             "pass entries, each as picture.buy takes one")
+    planned = [_planned(dict(one), root) for one in entries]
+    buying = [one for one in planned if one["reason"] in _TO_BUY]
+    costs: dict[str, float] = {}
+    for one in buying:
+        name = one["service"]
+        costs[name] = round(costs.get(name, 0.0) + one["credits"], 4)
+    left = {name: purchase.remaining(root, service=name)["left"] for name in costs}
+    fits = all(costs[name] <= left[name] for name in costs)
+    answer = {
+        "entries": planned,
+        "to_buy": len(buying),
+        "credits": costs,
+        "remaining": left,
+        "fits": fits,
+    }
+    counts = {r: sum(one["reason"] == r for one in planned)
+              for r in ("missing", "changed", "unrecorded", "current", "kept")}
+    said = ", ".join(f"{n} {r}" for r, n in counts.items() if n)
+    if plan:
+        return {**answer, "says": f"{len(buying)} of {len(planned)} would be bought "
+                f"({said}), costing {costs or 'nothing'}"
+                + ("" if fits else ", past what is left of the ceiling")
+                + "; nothing was spent"}
+    if not fits:
+        raise PolyweaveError(
+            "fetch.over-budget",
+            f"the batch would spend {costs}, past what is left: {left}",
+            "buy fewer, or raise the ceiling: a person's call, never the agent's",
+            detail=answer)
+    by_out = {one["out"]: one for one in entries}
+    bought = [buy(report, root=root, **by_out[one["out"]]) for one in buying]
+    return {**answer, "bought": bought,
+            "says": f"bought {len(bought)} of {len(planned)} ({said})"}
 
 
 def kept(path, root) -> dict | None:

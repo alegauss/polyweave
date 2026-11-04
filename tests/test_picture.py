@@ -131,6 +131,42 @@ def test_a_picture_nobody_kept_or_one_rejected_is_bought_again(tmp_path, service
     assert len(purchase.read(tmp_path)) == 3
 
 
+def test_a_batch_plans_what_it_would_buy_and_buys_only_that(tmp_path, service):
+    """§PW680: a loop meant to retake 5 photos re-bought 38 before anyone saw why."""
+    from polyweave.layers.picture import picture as P
+
+    buy(tmp_path, out="a.png", prompt="a jacket, zips open")
+    buy(tmp_path, out="b.png", prompt="a rock")
+    entries = [
+        {"out": "a.png", "prompt": "a jacket, zips closed", "service": "ideogram"},
+        {"out": "b.png", "prompt": "a rock", "service": "ideogram"},
+        {"out": "c.png", "prompt": "a lamp", "service": "ideogram"},
+    ]
+    asked = len(service.sent)
+    plan = P.batch(entries=entries, root=tmp_path)
+    assert len(service.sent) == asked and len(purchase.read(tmp_path)) == 2
+    reasons = {one["out"]: one["reason"] for one in plan["entries"]}
+    assert reasons == {"a.png": "changed", "b.png": "current", "c.png": "missing"}
+    (changed,) = [one for one in plan["entries"] if one["out"] == "a.png"]
+    assert changed["difference"] == "…a jacket, zips [open] → [closed]"
+    assert plan["to_buy"] == 2 and plan["credits"] == {"ideogram": 0.16}
+    assert plan["fits"] is True
+    done = P.batch(entries=entries, plan=False, root=tmp_path)
+    assert len(done["bought"]) == 2
+    assert len(purchase.read(tmp_path)) == 4
+    again = P.batch(entries=entries, root=tmp_path)
+    assert again["to_buy"] == 0
+
+
+def test_a_batch_entry_buy_does_not_take_is_refused(tmp_path, service):
+    from polyweave.layers.picture import picture as P
+
+    with pytest.raises(PolyweaveError) as refused:
+        P.batch(entries=[{"out": "a.png", "prompt": "x", "colour": "red"}],
+                root=tmp_path)
+    assert refused.value.code == "fetch.missing-field"
+
+
 def test_it_is_charged_to_its_own_services_ceiling(tmp_path, service):
     buy(tmp_path)
     assert purchase.spent(tmp_path, "ideogram") == 0.08
