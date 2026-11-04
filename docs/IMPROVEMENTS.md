@@ -109,32 +109,6 @@ model and the members.
 
 ## Block R — Levels measured before a person plays them
 
-### §PW201 Whether a bot's win rate says how hard a level feels
-
-The block rests on one premise: that a cheap simulated player, run headlessly over many
-seeds, ranks a game's levels by difficulty the way a person playing them would. If it
-does, a level's difficulty becomes a number a search can aim at. If it does not, every
-later line tunes against noise.
-
-The spike ran in Cottony on 2026-09-28. A throwaway bot, gitignored at Cottony's
-.polyweave/spike/bot.gd, played the 20 shipped levels over 200 seeds each, first taking
-the hint's swap and then greedily. Both won 95 to 100% of deals on every level. Their
-moves left fell from 25 and 30 at level 1 to 12 and 18 at level 20, in the same order.
-The owner, playing, felt no difference.
-
-So the bot and the person agree that nothing here is hard. That cannot answer the
-premise, since a set with no spread tests no ranking. It also suggests that moves left
-is not what a player feels, and a chance of losing is. Cottony filed RK150 to give its
-curve a loss within reach.
-
-Once RK150 lands, rerun the bot. The owner then plays eight levels spread across its
-ranking, and says whether the order matches what they felt and where it does not. An
-agent does not judge the proxy it built.
-
-If yes, the findings go into the designs below: which bot, how many seeds, and which
-percentile carries the feel. If no, the open lines are retired with the spike as the
-reason.
-
 ### §PW202 A level probe the game runs and polyweave reads
 
 A match-3 bot and a shooter's threat count have nothing in common except their shape. A
@@ -181,24 +155,24 @@ file a person owns.
 ### §PW204 Difficulty bounds and a search over a level's parameters
 
 Once a probe reports measures and a level compiles from a declaration, a level's
-difficulty works like any other asset property. The acceptance spec already states
-bounds on measures. A `*.accept.toml` for a level bounds the probe's measures at a
-percentile: win rate at the median between 0.45 and 0.70, and moves left at the tenth
-percentile no lower than one. `accept.check` reads the probe's record and passes or
-fails.
+difficulty works like any other asset property. A `*.accept.toml` for a level bounds the
+probe's measures at a percentile: win rate at the median between 0.45 and 0.70, moves
+left at the tenth percentile no lower than one, and, where a game scores a level in
+stars, the share of deals reaching its top score. PW201 is why the last one is there:
+the owner felt Cottony's level 20 hard because three stars were out of reach, while the
+bot still won 65% of deals and never counted stars. `accept.check` reads the probe's
+record and passes or fails.
 
-A level set needs one more kind of bound, because a game's difficulty is a curve and not
-a single level. A set spec names its levels in order and states the shape: difficulty
-never falls by more than a declared step between neighbours, rises across each region,
-and dips after a boss. Each is checked against the measures and reported as the pair of
-levels that broke it.
+A level set needs one more kind of bound, because a game's difficulty is a curve. A set
+spec names its levels in order and states the shape: difficulty never falls by more than
+a declared step between neighbours, rises across each region, and dips after a boss.
+Each is checked against the measures and reported as the pair that broke it.
 
 `search.sweep` then searches a level's declared parameters (Cottony's target and moves,
 a wave's count and interval) for values that pass. Every candidate is compiled and
-probed, and all of them run locally at no cost. What the search returns is a proposal.
-Which candidate ships, and whether a level that passes also feels right, are decided on
-the verdict page with the bot's numbers shown next to it, because the bot is a proxy
-that PW201 tested once and a person holds to account afterwards.
+probed locally at no cost. What the search returns is a proposal. Which candidate ships,
+and whether a level that passes also feels right, are decided on the verdict page with
+the bot's numbers beside it, because the bot is a proxy a person holds to account.
 
 ### §PW205 A second genre: Starship's waves measured without a bot
 

@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 9 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
-  { block: "T", title: "Adopting polyweave in a project", open: 0 },
+  { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 1 },
   { block: "W", title: "A core that grows by layers", open: 0 },
@@ -57,14 +57,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "A game's own headless play of a level has no way to report what it measured",
     why: "Only the game can play its own rules, so polyweave needs a contract for what the game's probe prints, not a simulator of its own.",
-    deps: ["PW201"],
+    deps: [],
   },
   {
     id: "PW203",
     block: "R",
     symptom: "A level declared as data cannot reach the engine without each game's own converter",
     why: "Cottony writes JSON from a curve and Starship hand-edits .tres waves, so neither level is validated, linked to the world or recorded before it lands.",
-    deps: ["PW201"],
+    deps: [],
   },
   {
     id: "PW204",
@@ -116,6 +116,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW678",
+    block: "T",
+    symptom: "a file borrowed after sound.loop cut it records only its scratch path: no origin service, original or derivation step",
+    why: "A shipped asset made outside polyweave cannot say where it came from, so its credit and licence are typed by hand and drift.",
+    deps: [],
+  },
+  {
     id: "PW677",
     block: "V",
     symptom: "engine.preset_search answers no sheet for the presets that lose quality, though it writes one",
@@ -160,4 +167,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW659", "PW449", "PW450", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW659", "PW449", "PW450", "PW311", "PW368"];
