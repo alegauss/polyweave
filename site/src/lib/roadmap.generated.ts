@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 4 },
+  { block: "R", title: "Levels measured before a person plays them", open: 3 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -85,13 +85,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand",
     why: "Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed.",
-    deps: [],
-  },
-  {
-    id: "PW480",
-    block: "R",
-    symptom: "reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted",
-    why: "With the warp-in (PW641) the lull is empty, but a death burst still reads as one and a chain is no pod, so stretches miss the sheet.",
     deps: [],
   },
   {
@@ -153,4 +146,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW659", "PW449", "PW450", "PW206", "PW327", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW659", "PW449", "PW450", "PW206", "PW327", "PW480", "PW311", "PW368"];

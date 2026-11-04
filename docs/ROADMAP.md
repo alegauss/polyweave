@@ -42,7 +42,6 @@
 
 - 📋 **PW608** (deps: —) **a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help** — Each level key is written again in the reader, the editor and the docs, and the three drift apart. → §PW608
 - 📋 **PW609** (deps: PW203 ✅) **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed. → §PW609
-- 📋 **PW480** (deps: —) **reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted** — With the warp-in (PW641) the lull is empty, but a death burst still reads as one and a chain is no pod, so stretches miss the sheet. → §PW480
 - 📋 **PW681** (deps: —) **a level set's curve cannot bound how much harder a level may get as a ratio, so Spinhold's peak_step stays in check.gd** — level.curve's step is absolute, and the owner's rule is each phase's peak at most 1.5 times the one before. → §PW681
 
 ## Block S — Playing the game, not only rendering it

@@ -245,17 +245,19 @@ Landed: `motion` against the scene's scroll, `reference.sample`, and through PW6
 kind's `warp`, which keeps only tracks born at a flash just before them. The lull counts
 no track and the phase 282 (`docs/specs/fetching.md`).
 
-Left is the count stretch by stretch against `art/reference/resogun/phase1-sheet.md`.
-Measured 2026-11-03 at warp tolerance 0.05, the twelve stretches read 53, 10, 5, 7, 7,
-19, 5, 22, 22, 11, 7, 26 against about 9, 8, 5, 3, 21, 38, 15, 22, 10, 20, 15, 12. Two
-errors remain.
+Left is the count stretch by stretch against `art/reference/resogun/phase1-sheet.md`. At
+warp tolerance 0.05 the twelve stretches read 53, 10, 5, 7, 7, 19, 5, 22, 22, 11, 7, 26
+against about 9, 8, 5, 3, 21, 38, 15, 22, 10, 20, 15, 12.
 
-- Kills over-count: a death burst is white like a warp-in and its debris is born at it.
-  Ignoring a flash near a track that just ended cut the opening from 53 to 35 but the
-  chain run from 19 to 10, since the noise tracks the gate drops end everywhere. A burst
-  has to be told by its own look: size, colour spread, how fast it fades.
-- Chains are rings, not pods, and are under-counted. A kind told by its silhouette, the
-  island's mask against its sample's foreground, would make a chain a kind of its own.
+Measured 2026-11-04, the opening's excess is not death bursts. Treating as a burst only
+a flash just after a kept track died, and dropping tracks born at one alone, moved the
+total from 194 to 194. The 33 tracks born at 5.5 s, where the sheet has three or four
+pods high on the right, are clusters of short tracks round the screen's middle and its
+floor: the ship, its shots and what they hit. What would separate them is the player,
+followed as a kind of its own and its surroundings left out, a mask a call can take.
+
+Chains are rings, not pods, and are under-counted (19 against 38 in the chain run). A
+kind told by its silhouette would make a chain a kind of its own.
 
 Done when each stretch's count is within the sheet's own uncertainty, which the owner's
 sheet decides.
