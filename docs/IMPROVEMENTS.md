@@ -211,23 +211,6 @@ kind told by its silhouette would make a chain a kind of its own.
 Done when each stretch's count is within the sheet's own uncertainty, which the owner's
 sheet decides.
 
-### §PW681 A curve's rise bounded as a ratio
-
-Met adopting the level contract in Spinhold on 2026-11-04 (PW205). `level.curve`'s set
-spec says a curve's shape in absolute steps: `step`, the most difficulty may fall
-between neighbours, `regions` that end harder than they start, and `dips`. Spinhold's
-owner set a rule in `game/waves/threat.toml` that is a ratio: each phase's peak threat
-alive at most `peak_step` = 1.5 times the phase before. A set spec cannot say that, so
-`game/waves/phases.levels.toml` holds the rise and `dev/check.gd`'s `check_phase_waves`
-keeps holding the ratio, the half polyweave should own.
-
-What to build: a set spec key `most_rise`, the most a neighbour may get harder as a
-ratio of the one before (1.5), read off the same measure and direction, a break answered
-as the pair with rule `rise`. A ratio needs a measure that is positive and grows with
-difficulty, so a measure whose `higher` is easier, or one that reaches zero, is refused
-with `level.bad-set` rather than read upside down. Then Spinhold drops the ratio from
-`check_phase_waves` and names `phases.levels.toml` instead.
-
 ### §PW683 A level field's help in every locale
 
 Split from PW608 on 2026-11-04, when `level.fields` and `level.reader` landed. A level

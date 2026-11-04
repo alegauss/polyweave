@@ -241,6 +241,33 @@ def _curve_findings(names: list[str], hard: list[float], step: float, regions: l
     return found
 
 
+def _rises(spec: dict, names: list[str], values: list[float], direction: str,
+           probed: str) -> list[dict]:
+    """Each neighbour harder than `most_rise` times the one before (§PW681). A ratio is
+    read only off a measure that grows with difficulty and never reaches zero."""
+    most = spec.get("most_rise")
+    if most is None:
+        return []
+    if not isinstance(most, int | float) or isinstance(most, bool) or most < 1:
+        raise PolyweaveError(
+            "level.bad-set", f"most_rise is {most!r}",
+            "write most_rise as a ratio from 1, such as 1.5", given=str(most))
+    if direction != "lower" or any(v <= 0 for v in values):
+        raise PolyweaveError(
+            "level.bad-set",
+            f"most_rise reads {probed} as a ratio, and it "
+            + ("is easier as it grows" if direction != "lower" else "reaches zero"),
+            "bound a ratio on a positive measure that grows harder (direction lower)",
+            given=probed)
+    found = []
+    for i in range(len(values) - 1):
+        if values[i + 1] > most * values[i] + 1e-9:
+            found.append({"rule": "rise", "pair": [names[i], names[i + 1]],
+                          "said": f"{names[i + 1]} is {values[i + 1] / values[i]:.2f} "
+                          f"times {names[i]}, past the most rise of {most}"})
+    return found
+
+
 @operation("level.curve")
 def curve(
     set: Annotated[str, Param("the set spec, a *.levels.toml under the project")],
@@ -285,6 +312,7 @@ def curve(
         names.append(Path(str(one)).stem)
         values.append(_value(_recorded(path, here), probed, at, path))
     found = _curve_findings(names, [sign * v for v in values], step, regions, dips)
+    found += _rises(spec, names, values, measures[probed]["direction"], probed)
     return {
         "ok": not found,
         "probed": probed,

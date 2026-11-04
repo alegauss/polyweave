@@ -226,6 +226,59 @@ def test_each_break_of_the_curve_is_the_pair_that_broke_it(tmp_path):
     assert [one["rule"] for one in dipless["findings"]] == ["dip"]
 
 
+THREAT = ('[levels]\nprobe = "res://probe.gd"\nseeds = 1\n\n[levels.measures]\n'
+          'peak = { unit = "threat alive", direction = "lower" }\n'
+          'won = { unit = "0 or 1", direction = "higher" }\n')
+
+
+def _phases(root, peaks, **shape):
+    """Phases probed at a peak threat each, and a set spec over them (§PW681)."""
+    names = []
+    for n, peak in enumerate(peaks, start=1):
+        level = root / "levels" / f"p{n}.json"
+        level.write_text(json.dumps({"n": n}), encoding="utf-8")
+        target = root / "levels" / f"p{n}.probe.json"
+        target.write_text(json.dumps({"measured": {"peak": {"p50": peak},
+                                                   "won": {"p50": 1.0}}}),
+                          encoding="utf-8")
+        provenance.write(provenance.build(
+            "capture", target, root=root,
+            inputs=[provenance.source("level", level, root=root)]), root=root)
+        names.append(f"levels/p{n}.json")
+    lines = [f"levels = {json.dumps(names)}", 'probed = "peak"']
+    lines += [f"{k} = {json.dumps(v)}" for k, v in shape.items()]
+    (root / "phases.levels.toml").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return "phases.levels.toml"
+
+
+def test_a_rise_past_its_ratio_is_the_pair_that_broke_it(tmp_path):
+    """Spinhold's peak_step: each phase's peak at most 1.5 times the one before."""
+    root = _project(tmp_path, THREAT)
+    held = levels.curve(_phases(root, [39.1, 54.4, 74.8], most_rise=1.5),
+                        root=str(root))
+    assert held["ok"] is True
+    broke = levels.curve(_phases(root, [39.1, 54.4, 90.0], most_rise=1.5),
+                         root=str(root))
+    assert [(one["rule"], one["pair"]) for one in broke["findings"]] == [
+        ("rise", ["p2", "p3"])]
+    assert "1.65 times p2" in broke["findings"][0]["said"]
+
+
+@pytest.mark.parametrize("probed, peaks, rise", [("won", [1.0, 1.0], 1.5),
+                                                 ("peak", [0.0, 3.0], 1.5),
+                                                 ("peak", [2.0, 3.0], 0.5)])
+def test_a_ratio_on_a_measure_it_cannot_be_read_off_is_refused(tmp_path, probed, peaks,
+                                                               rise):
+    root = _project(tmp_path, THREAT)
+    spec = _phases(root, peaks, most_rise=rise)
+    text = (root / spec).read_text(encoding="utf-8").replace(
+        'probed = "peak"', f'probed = "{probed}"')
+    (root / spec).write_text(text, encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        levels.curve(spec, root=str(root))
+    assert refused.value.code == "level.bad-set"
+
+
 @pytest.mark.parametrize("shape", [{"regions": [[3, 1]]}, {"dips": [9]},
                                    {"step": -1}])
 def test_a_set_that_says_no_shape_is_refused(tmp_path, shape):

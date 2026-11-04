@@ -491,7 +491,13 @@ at      = "mean"           # p50 unless said
 step    = 0.05             # the most difficulty may fall between neighbours, 0 unless said
 regions = [[1, 10], [11, 20]]  # each ends harder than it starts, by position from 1
 dips    = [10]             # the level after position 10 is easier: a breather after a boss
+most_rise = 1.5            # each level at most this many times as hard as the one before
 ```
+
+`most_rise` bounds a rise as a ratio (§PW681), as Spinhold's owner holds each phase's
+peak to at most 1.5 times the phase before; a break is the pair with rule `rise`. A
+ratio is read only off a measure that grows harder (its direction `lower`) and stays
+above zero; any other, or a `most_rise` under 1, is `level.bad-set`.
 
 Harder is read off the measure's declared direction: a measure where `higher` is better
 for the player (a win rate) makes a level harder as it falls. Each break is answered as
