@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { Item } from '@pw/core'
 
-import { offered, viewer } from './ItemView'
+import { offered, shown, viewer } from './ItemView'
 import { kept, matching, ROW, tabs, windowed } from './Project'
 
 const item = (over: Partial<Item>): Item => ({
@@ -76,5 +76,11 @@ describe('an item seen', () => {
     expect(windowed(5, 9999, 720).to - windowed(5, 9999, 720).from).toBeGreaterThanOrEqual(0)
     // A view not measured yet is taken as one screen, never as none.
     expect(windowed(2019, 0, 0).to).toBeGreaterThan(0)
+  })
+
+  it('fits a picture inside the panel unless its real size is asked for', () => {
+    expect(shown(false)).toContain('max-w-full')
+    expect(shown(false)).toContain('max-h-[50vh]')
+    expect(shown(true)).toBe('max-w-none')
   })
 })

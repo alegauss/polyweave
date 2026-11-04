@@ -13,6 +13,14 @@ import { Conversation } from './Conversation'
 type Brief = Record<string, any>
 
 /** How each kind is seen; the ones the window draws itself carry the file across. */
+/**
+ * How a picture is drawn (§PW685): fitted, the whole of it inside the panel's width and
+ * half the window's height, never scaled past its real size; real, pixel for pixel.
+ */
+export function shown(real: boolean): string {
+  return real ? 'max-w-none' : 'h-auto max-h-[50vh] w-auto max-w-full object-contain'
+}
+
 export function viewer(item: Item): 'picture' | 'sound' | 'line' | 'operation' {
   if (item.kind === 'line') return 'line'
   if (!item.artefact) return 'operation'
@@ -58,6 +66,11 @@ export function ItemView({
   const [before, setBefore] = useState<Shown | null>(null)
   const seen = viewer(item)
   const [words, setWords] = useState('')
+  // A picture fits the panel unless asked for at its real size, and opens alone at full
+  // size on a click; its real width and height are said either way (§PW685).
+  const [real, setReal] = useState(false)
+  const [alone, setAlone] = useState(false)
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null)
   const [talking, setTalking] = useState<{ revision: string; first: string; waiting: string | null } | null>(
     null,
   )
@@ -123,19 +136,66 @@ export function ItemView({
       </div>
       {failed && <p role="alert" className="text-destructive">{t('error.failed', { message: failed })}</p>}
 
-      <div data-viewer={seen} className="overflow-auto rounded-md bg-muted/40 p-2">
+      <div data-viewer={seen} className="min-w-0 rounded-md bg-muted/40 p-2">
         {seen === 'picture' && source && (
-          <div className="flex gap-4">
-            {changed && (
-              <figure data-before>
-                <img src={was!} alt={item.id} className="max-w-none" style={{ imageRendering: 'pixelated' }} />
-                <figcaption className="text-xs text-muted-foreground">{t('item.before')}</figcaption>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              {size && (
+                <span data-dimensions className="mr-auto font-mono">
+                  {t('item.dimensions', { width: size.width, height: size.height })}
+                </span>
+              )}
+              <Button size="sm" variant="outline" aria-pressed={real} onClick={() => setReal(!real)}>
+                {real ? t('item.fit') : t('item.real_size')}
+              </Button>
+            </div>
+            <div data-fit={real ? 'real' : 'panel'} className={real ? 'flex gap-4 overflow-auto' : 'flex gap-4'}>
+              {changed && (
+                <figure data-before className={real ? 'shrink-0' : 'min-w-0 flex-1'}>
+                  <img src={was!} alt={item.id} className={shown(real)} style={{ imageRendering: 'pixelated' }} />
+                  <figcaption className="text-xs text-muted-foreground">{t('item.before')}</figcaption>
+                </figure>
+              )}
+              <figure className={real ? 'shrink-0' : 'min-w-0 flex-1'}>
+                <button
+                  type="button"
+                  className="block cursor-zoom-in"
+                  title={t('item.alone')}
+                  aria-label={t('item.alone')}
+                  onClick={() => setAlone(true)}
+                >
+                  <img
+                    src={source}
+                    alt={item.id}
+                    className={shown(real)}
+                    style={{ imageRendering: 'pixelated' }}
+                    onLoad={(e) =>
+                      setSize({ width: e.currentTarget.naturalWidth, height: e.currentTarget.naturalHeight })
+                    }
+                  />
+                </button>
+                {changed && <figcaption className="text-xs text-muted-foreground">{t('item.now')}</figcaption>}
               </figure>
+            </div>
+            {alone && (
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={item.id}
+                tabIndex={-1}
+                ref={(element) => element?.focus()}
+                onKeyDown={(e) => e.key === 'Escape' && setAlone(false)}
+                className="fixed inset-0 z-50 flex flex-col gap-2 overflow-auto bg-background/95 p-4"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 truncate font-mono text-sm">{item.id}</span>
+                  <Button size="sm" onClick={() => setAlone(false)}>
+                    {t('item.close')}
+                  </Button>
+                </div>
+                <img src={source} alt={item.id} className="max-w-none self-start" style={{ imageRendering: 'pixelated' }} />
+              </div>
             )}
-            <figure>
-              <img src={source} alt={item.id} className="max-w-none" style={{ imageRendering: 'pixelated' }} />
-              {changed && <figcaption className="text-xs text-muted-foreground">{t('item.now')}</figcaption>}
-            </figure>
           </div>
         )}
         {seen === 'sound' && source && (

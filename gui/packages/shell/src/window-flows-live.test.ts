@@ -125,6 +125,15 @@ describe.skipIf(!existsSync(MAIN))('the window, as a person drives it', () => {
 
     await choose(page, /^Pictures/, /^docs\/renders\/icon\.png/)
     await page.getByRole('img', { name: 'docs/renders/icon.png' }).waitFor()
+    // Fitted to the panel, its real size said beside it, and real size one click (§PW685).
+    await page.locator('[data-dimensions]').getByText(/^\d+ × \d+ px$/).waitFor()
+    expect(await page.locator('[data-fit]').getAttribute('data-fit')).toBe('panel')
+    await page.getByRole('button', { name: 'Real size' }).click()
+    expect(await page.locator('[data-fit]').getAttribute('data-fit')).toBe('real')
+    await page.getByRole('button', { name: 'See it alone at full size' }).click()
+    await page.getByRole('dialog', { name: 'docs/renders/icon.png' }).waitFor()
+    await page.keyboard.press('Escape')
+    expect(await page.getByRole('dialog').count()).toBe(0)
     // Both lanes: the kept icon and the refused one beside it, with why it was refused.
     await page.getByRole('heading', { level: 3, name: 'Its last gate' }).waitFor()
     const refused = page.getByRole('listitem').filter({ hasText: 'docs/renders/other.png' })

@@ -189,21 +189,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW685 A picture fitted beside what is asked of it
-
-Met by the owner on 2026-11-04 (PW311). The item view draws a picture at its real size
-(the README's "a picture at its real size"), so a tall capture such as Spinhold's
-`art/renders/ring.png` runs far below the fold with a sideways scroll bar, and asking
-for a change means scrolling away from the picture to reach the box.
-
-What to build: the picture fits the panel by default, the whole of it visible beside the
-item's facts and the request box, with a toggle to its real size (and back) and a click
-to see it alone at full size. Its real width and height are said beside it, so fitting
-it hides nothing a person judges by.
-
-Done when every picture in Spinhold's inventory shows whole beside its request box
-without scrolling, and real size is one click.
-
 ### §PW686 The project screen across the window's width
 
 Met by the owner on 2026-11-04 (PW311), on a 3840-pixel-wide screen: the project screen

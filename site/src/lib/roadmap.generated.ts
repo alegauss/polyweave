@@ -45,20 +45,13 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 0 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 3 },
+  { block: "U", title: "A window on everything a project governs", open: 2 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
   { block: "X", title: "The site on the shared design system", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW685",
-    block: "U",
-    symptom: "the item view draws a picture at its real size, so a tall capture runs far past the request box",
-    why: "Asking for a change means scrolling away from the picture the request is about.",
-    deps: [],
-  },
   {
     id: "PW686",
     block: "U",

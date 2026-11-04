@@ -74,7 +74,12 @@
     "before": "Before",
     "now": "Now",
     "changed": "This item changed on disk while you looked at it.",
-    "see_new": "See the new one"
+    "see_new": "See the new one",
+    "real_size": "Real size",
+    "fit": "Fit the panel",
+    "alone": "See it alone at full size",
+    "close": "Close",
+    "dimensions": "{{width}} × {{height}} px"
   },
   "session": {
     "ask": "Ask for a change",
