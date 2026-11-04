@@ -886,6 +886,14 @@ export interface LevelCompileArgs {
   root?: string
 }
 
+/** A level set's difficulty held to the shape its spec declares (§PW204). */
+export interface LevelCurveArgs {
+  /** the set spec, a *.levels.toml under the project */
+  set: string
+  /** the project whose levels these are; default "." */
+  root?: string
+}
+
 /** Play one level with the game's own probe and read back what it measured. */
 export interface LevelProbeArgs {
   /** the level file the probe plays, under the project */
@@ -2879,6 +2887,7 @@ export interface Operations {
   "kit.prove": KitProveArgs
   "kit.update": KitUpdateArgs
   "level.compile": LevelCompileArgs
+  "level.curve": LevelCurveArgs
   "level.probe": LevelProbeArgs
   "level.validate": LevelValidateArgs
   "loop.assets": LoopAssetsArgs
@@ -3106,6 +3115,7 @@ export const OPERATIONS = [
   "kit.prove",
   "kit.update",
   "level.compile",
+  "level.curve",
   "level.probe",
   "level.validate",
   "loop.assets",

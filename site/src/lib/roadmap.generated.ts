@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 7 },
+  { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -67,13 +67,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW204",
-    block: "R",
-    symptom: "A level's difficulty has no bar a search can aim at, and a level set has no curve to hold",
-    why: "A level set still has no curve to hold, and no search turns a level's parameters toward its bounds.",
-    deps: [],
-  },
-  {
     id: "PW205",
     block: "R",
     symptom: "A shooter's waves have no measure of threat, so the level contract is proven on one genre only",
@@ -85,7 +78,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "Cottony's levels are still tuned by a curve nobody measured",
     why: "The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do.",
-    deps: ["PW204", "PW205"],
+    deps: ["PW205"],
   },
   {
     id: "PW327",

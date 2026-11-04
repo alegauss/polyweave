@@ -52,6 +52,12 @@ CODES: dict[str, Code] = {
         when="no <level>.probe.json beside it, or a level changed since it was probed",
         doors=("run level.probe on the level, then check again",),
     ),
+    "level.bad-set": Code(
+        means="a level set's spec does not say a shape over its levels",
+        when="a file that is not TOML, fewer than two levels, no probed measure, or a "
+        "step, region or dip outside the set's positions (§PW204)",
+        doors=('write levels = [...], probed = "won", step, regions and dips',),
+    ),
     "level.no-level": Code(
         means="the level file named is not there",
         when="a path one folder off, or a level not yet written",

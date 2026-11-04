@@ -1,6 +1,6 @@
 """What the engine layer adds, read by the kernel (§PW500)."""
 
-from polyweave.kernel.layer import Layer, Subject
+from polyweave.kernel.layer import Layer, Producer, Subject
 
 LAYER = Layer(
     name="engine",
@@ -32,6 +32,15 @@ LAYER = Layer(
     requires=("godot",),
     kinds=("capture", "level"),
     ships="polyweave.layers.engine.driving:ships",
+    # A level's declared parameters turned by search.sweep, each candidate compiled and
+    # probed (§PW204).
+    producers=(
+        Producer(
+            name="level",
+            about="a level with its searched values put in, compiled and probed",
+            target="polyweave.layers.engine.levels:sample",
+        ),
+    ),
     subjects=(
         Subject(
             about="the flashes of a captured run",
@@ -59,7 +68,8 @@ LAYER = Layer(
     # 29,966 with game.replay_rates, one run flown at several frame rates (§PW640).
     # 30,604 with level.probe, a level played by the game's own probe (§PW202).
     # 31,011 with level.validate, level files held to the project's schema (§PW203).
-    tools=31_600,
+    # 31,831 with level.curve, a level set held to its declared shape (§PW204).
+    tools=32_300,
     census={
         "polyweave.layers.engine.at_rig": (
             "internal", "a model drawn at a staged rig, the part render.in_game asks"),
@@ -120,6 +130,8 @@ LAYER = Layer(
             "internal", "contrast as a picture measure, for measure"),
         "polyweave.layers.engine.flashes:predicate": (
             "internal", "a flash predicate, for accept.check"),
+        "polyweave.layers.engine.levels:sample": (
+            "internal", "one level candidate, the producer search.sweep turns"),
         "polyweave.layers.engine.levels:predicate": (
             "internal", "a level predicate off its probe record, for accept.check"),
         "polyweave.layers.engine.traces:read": (

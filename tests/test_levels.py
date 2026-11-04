@@ -161,6 +161,98 @@ def test_a_measure_the_probe_did_not_record_is_refused(tmp_path):
     assert refused.value.code == "level.bad-measures"
 
 
+def _set(root, wins, **shape):
+    """Levels one by one with the win rate each was probed at, and a set spec over
+    them in that order."""
+    names = []
+    for n, won in enumerate(wins, start=1):
+        level = root / "levels" / f"l{n}.json"
+        level.write_text(json.dumps({"n": n}), encoding="utf-8")
+        target = root / "levels" / f"l{n}.probe.json"
+        target.write_text(json.dumps({"measured": {"won": {"mean": won}}}),
+                          encoding="utf-8")
+        provenance.write(provenance.build(
+            "capture", target, root=root,
+            inputs=[provenance.source("level", level, root=root)]), root=root)
+        names.append(f"levels/l{n}.json")
+    lines = [f"levels = {json.dumps(names)}", 'probed = "won"', 'at = "mean"']
+    lines += [f"{key} = {json.dumps(value)}" for key, value in shape.items()]
+    (root / "all.levels.toml").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return "all.levels.toml"
+
+
+def test_a_set_whose_difficulty_rises_holds_its_curve(tmp_path):
+    root = _project(tmp_path, DECLARED)
+    said = levels.curve(_set(root, [0.95, 0.9, 0.92, 0.7], step=0.05,
+                             regions=[[1, 4]]), root=str(root))
+    assert said["ok"] is True
+    assert said["values"] == {"l1": 0.95, "l2": 0.9, "l3": 0.92, "l4": 0.7}
+
+
+def test_each_break_of_the_curve_is_the_pair_that_broke_it(tmp_path):
+    root = _project(tmp_path, DECLARED)
+    said = levels.curve(_set(root, [0.9, 0.7, 0.95, 0.6, 0.65], step=0.05,
+                             regions=[[1, 3]], dips=[4]), root=str(root))
+    found = {(one["rule"], tuple(one["pair"])) for one in said["findings"]}
+    assert found == {("step", ("l2", "l3")), ("region", ("l1", "l3"))}
+    # the dip after l4 is easier than l4, as declared, so it is no break
+    dipless = levels.curve(_set(root, [0.9, 0.7, 0.6, 0.5, 0.4], dips=[4]),
+                           root=str(root))
+    assert [one["rule"] for one in dipless["findings"]] == ["dip"]
+
+
+@pytest.mark.parametrize("shape", [{"regions": [[3, 1]]}, {"dips": [9]},
+                                   {"step": -1}])
+def test_a_set_that_says_no_shape_is_refused(tmp_path, shape):
+    root = _project(tmp_path, DECLARED)
+    with pytest.raises(PolyweaveError) as refused:
+        levels.curve(_set(root, [0.9, 0.8, 0.7], **shape), root=str(root))
+    assert refused.value.code == "level.bad-set"
+
+
+def test_a_searched_value_goes_to_its_dotted_path_and_keeps_its_type():
+    level = {"moves": 20, "goals": [{"count": 8, "share": 0.5}]}
+    levels._set_at(level, "moves", 33.6)
+    levels._set_at(level, "goals.0.share", 0.75)
+    levels._set_at(level, "goals.0.count", 11.0)
+    assert level == {"moves": 34, "goals": [{"count": 11, "share": 0.75}]}
+    assert isinstance(level["goals"][0]["count"], int)
+    with pytest.raises(PolyweaveError) as refused:
+        levels._set_at(level, "goals.3.count", 1)
+    assert refused.value.code == "level.bad-set"
+
+
+SEARCHED = """asset = "one"
+
+[[predicate]]
+id = "three-stars"
+measure = "level"
+probed = "stars"
+at = "p90"
+min = 3
+
+[search.moves]
+min = 10
+max = 40
+step = 10
+"""
+
+
+def test_a_search_turns_a_level_until_its_probe_passes(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    from polyweave.loop import search
+
+    root = _project(tmp_path, DECLARED)
+    (root / "probe.gd").write_text(PROBE, encoding="utf-8")
+    (root / "one.accept.toml").write_text(SEARCHED, encoding="utf-8")
+    found = search.sweep("one.accept.toml", out="work/one.json", producer="level",
+                         fixed={"level": "levels/one.json"}, budget=6, points=4,
+                         root=str(root))
+    assert found["best"]["moves"] >= 30
+    assert (root / "work" / "one.probe.json").is_file()
+
+
 #: A probe that plays nothing: its numbers follow from the seed and the level's moves,
 #: so two runs agree and a changed level moves them.
 PROBE = """extends SceneTree

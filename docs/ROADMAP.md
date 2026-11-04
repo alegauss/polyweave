@@ -39,9 +39,8 @@
 
 ## Block R — Levels measured before a person plays them
 
-- ⏳ **PW204** (deps: PW202 ✅, PW203 ✅) **A level's difficulty has no bar a search can aim at, and a level set has no curve to hold** — A level set still has no curve to hold, and no search turns a level's parameters toward its bounds. → §PW204
 - 📋 **PW205** (deps: PW202 ✅, PW203 ✅) **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once. → §PW205
-- 📋 **PW206** (deps: PW204 ⏳, PW205) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
+- 📋 **PW206** (deps: PW204 ✅, PW205) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
 - 📋 **PW327** (deps: PW205) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both. → §PW327
 - 📋 **PW608** (deps: —) **a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help** — Each level key is written again in the reader, the editor and the docs, and the three drift apart. → §PW608
 - 📋 **PW609** (deps: PW203 ✅) **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed. → §PW609
@@ -106,13 +105,6 @@
 - **picture.buy sends the ratio in the field 4.0 draws by** A 16x9 request on 4.0 comes
   back within two percent of 16:9, proved by one paid request the owner chooses to make
   and recorded in the learned schema.
-
-## Done when — PW204
-
-- **a level set's curve is checked and a level's parameters are searched** A set spec
-  names levels in order and its shape (no fall past a step, a rise per region), each
-  break reported as the pair; search.sweep compiles and probes candidates of a level's
-  declared parameters and proposes ones that pass, judged on the verdict page.
 
 ## Non-goals
 

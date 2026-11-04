@@ -160,28 +160,6 @@ model and the members.
 
 ## Block R — Levels measured before a person plays them
 
-### §PW204 Difficulty bounds and a search over a level's parameters
-
-Once a probe reports measures and a level compiles from a declaration, a level's
-difficulty works like any other asset property. A `*.accept.toml` for a level bounds the
-probe's measures at a percentile: win rate at the median between 0.45 and 0.70, moves
-left at the tenth percentile no lower than one, and, where a game scores a level in
-stars, the share of deals reaching its top score. PW201 is why the last one is there:
-the owner felt Cottony's level 20 hard because three stars were out of reach, while the
-bot still won 65% of deals and never counted stars. `accept.check` reads the probe's
-record and passes or fails.
-
-A level set needs one more kind of bound, because a game's difficulty is a curve. A set
-spec names its levels in order and states the shape: difficulty never falls by more than
-a declared step between neighbours, rises across each region, and dips after a boss.
-Each is checked against the measures and reported as the pair that broke it.
-
-`search.sweep` then searches a level's declared parameters (Cottony's target and moves,
-a wave's count and interval) for values that pass. Every candidate is compiled and
-probed locally at no cost. What the search returns is a proposal. Which candidate ships,
-and whether a level that passes also feels right, are decided on the verdict page with
-the bot's numbers beside it, because the bot is a proxy a person holds to account.
-
 ### §PW205 A second genre: Starship's waves measured without a bot
 
 A bot that plays a shooter well is a project of its own, so Starship cannot prove the
@@ -202,9 +180,9 @@ cases.
 over these measures states that rule and the ones it misses, such as no spike of more
 than a declared factor between neighbouring waves. The line is done when both genres
 pass through `level.probe` and `level.compile` with no change to polyweave between them,
-and the set spec follows once §PW204 lands. A change needed for the second genre is the
-evidence that the first one leaked in, which is what the non-goal "One genre's level
-format built in" forbids.
+and the set spec follows once PW204 (`docs/specs/measurements.md`) lands. A change
+needed for the second genre is the evidence that the first one leaked in, which is what
+the non-goal "One genre's level format built in" forbids.
 
 ### §PW206 Cottony's levels made through polyweave
 

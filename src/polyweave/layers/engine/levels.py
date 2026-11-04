@@ -33,7 +33,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import numpy as np
 
@@ -148,6 +148,41 @@ LEVEL: dict[str, str] = {
 }
 
 
+def _recorded(where: Path, here: Path) -> dict:
+    """What level.probe measured of a level, refused where the level was never probed
+    or changed since (§PW204)."""
+    target = where.with_name(where.stem + ".probe.json")
+    if not where.is_file() or not target.is_file():
+        raise PolyweaveError(
+            "level.unprobed", f"{where.name} has no probe record beside it",
+            f"run level.probe on {provenance.relative(where, here)} first",
+            given=str(where))
+    record = provenance.read(str(target), root=here)
+    level_in = next((one for one in record.get("inputs", [])
+                     if one.get("role") == "level"), {})
+    digest, _ = provenance.sha256_of(where)
+    if level_in.get("sha256") != digest:
+        raise PolyweaveError(
+            "level.unprobed",
+            f"{where.name} changed since it was probed, so its record says "
+            "nothing of it now",
+            f"run level.probe on {provenance.relative(where, here)} again",
+            given=str(where))
+    return json.loads(target.read_text(encoding="utf-8"))["measured"]
+
+
+def _value(measured: dict, probed: str, at: str, where: Path) -> float:
+    if probed not in measured or at not in measured[probed]:
+        raise PolyweaveError(
+            "level.bad-measures",
+            f"the probe of {where.name} reports no "
+            f"{probed or '(probed unset)'} at {at}",
+            f"name probed= one of {', '.join(measured)} and at= one of "
+            f"{', '.join(next(iter(measured.values()), {}))}",
+            given=probed)
+    return float(measured[probed][at])
+
+
 def predicate(p, subject, root: str | Path, seen: dict) -> dict:
     """A level predicate for accept.check, read off `<level>.probe.json` and refused
     where the level changed since it was probed or was never probed (§PW204)."""
@@ -158,35 +193,167 @@ def predicate(p, subject, root: str | Path, seen: dict) -> dict:
     at = str(p.arguments.get("at") or "p50")
     key = f"level:{where}"
     if key not in seen:
-        target = where.with_name(where.stem + ".probe.json")
-        if not where.is_file() or not target.is_file():
-            raise PolyweaveError(
-                "level.unprobed", f"{where.name} has no probe record beside it",
-                f"run level.probe on {provenance.relative(where, here)} first",
-                given=str(where))
-        record = provenance.read(str(target), root=here)
-        level_in = next((one for one in record.get("inputs", [])
-                         if one.get("role") == "level"), {})
-        digest, _ = provenance.sha256_of(where)
-        if level_in.get("sha256") != digest:
-            raise PolyweaveError(
-                "level.unprobed",
-                f"{where.name} changed since it was probed, so its record says "
-                "nothing of it now",
-                f"run level.probe on {provenance.relative(where, here)} again",
-                given=str(where))
-        seen[key] = json.loads(target.read_text(encoding="utf-8"))["measured"]
-    measured = seen[key]
-    if probed not in measured or at not in measured[probed]:
-        raise PolyweaveError(
-            "level.bad-measures",
-            f"the probe of {where.name} reports no "
-            f"{probed or '(probed unset)'} at {at}",
-            f"name probed= one of {', '.join(measured)} and at= one of "
-            f"{', '.join(next(iter(measured.values()), {}))}",
-            given=probed)
-    return {"value": float(measured[probed][at]), "of": str(where),
+        seen[key] = _recorded(where, here)
+    return {"value": _value(seen[key], probed, at, where), "of": str(where),
             "probed": probed, "at": at}
+
+
+def _curve_rules(spec: dict, count: int) -> tuple[float, list, list]:
+    step = spec.get("step", 0.0)
+    regions = spec.get("regions", [])
+    dips = spec.get("dips", [])
+    if (not isinstance(step, int | float) or step < 0
+            or not isinstance(regions, list) or not isinstance(dips, list)
+            or not all(isinstance(r, list) and len(r) == 2
+                       and all(isinstance(i, int) and 1 <= i <= count for i in r)
+                       and r[0] < r[1] for r in regions)
+            or not all(isinstance(i, int) and 1 <= i < count for i in dips)):
+        raise PolyweaveError(
+            "level.bad-set",
+            "the set's step, regions or dips do not say a shape over its levels",
+            "write step as a number from 0, regions as [[first, last], ...] and dips "
+            f"as positions, each from 1 to {count}, first before last")
+    return float(step), regions, dips
+
+
+def _curve_findings(names: list[str], hard: list[float], step: float, regions: list,
+                   dips: list) -> list[dict]:
+    """Each place a set's difficulty breaks its declared shape, as the pair of levels
+    that broke it. `hard` rises as a level gets harder."""
+    found = []
+    dipped = set(dips)
+    for i in range(len(hard) - 1):
+        fell = hard[i] - hard[i + 1]
+        if i + 1 in dipped:
+            if fell <= 0:
+                found.append({"rule": "dip", "pair": [names[i], names[i + 1]],
+                              "said": f"{names[i + 1]} is no easier than "
+                              f"{names[i]}, after which the set dips"})
+        elif fell > step:
+            found.append({"rule": "step", "pair": [names[i], names[i + 1]],
+                          "said": f"{names[i + 1]} is easier than {names[i]} by "
+                          f"{round(fell, 4)}, past the step of {step}"})
+    for first, last in regions:
+        if hard[last - 1] <= hard[first - 1]:
+            found.append({"rule": "region", "pair": [names[first - 1], names[last - 1]],
+                          "said": f"{names[last - 1]} is no harder than "
+                          f"{names[first - 1]}, though the region rises"})
+    return found
+
+
+@operation("level.curve")
+def curve(
+    set: Annotated[str, Param("the set spec, a *.levels.toml under the project")],
+    root: Annotated[str, Param("the project whose levels these are")] = ".",
+) -> dict:
+    """A level set's difficulty held to the shape its spec declares (§PW204).
+
+    The spec names its `levels` in order, the probe's `probed` measure and `at` where
+    in its spread, and the shape: `step`, the most difficulty may fall between
+    neighbours, `regions` that each end harder than they start, and `dips`, positions
+    the next level is easier after. Each break is answered as the pair of levels.
+    """
+    import tomllib
+
+    config = load(root)
+    here = config.root
+    where = here / set
+    try:
+        spec = tomllib.loads(where.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        raise PolyweaveError("level.bad-set", f"{set} is not a TOML file to read",
+                             "write the set spec as TOML at that path",
+                             detail=str(exc)) from exc
+    files = spec.get("levels")
+    probed = str(spec.get("probed") or "")
+    if not isinstance(files, list) or len(files) < 2 or not probed:
+        raise PolyweaveError(
+            "level.bad-set",
+            f"{set} names no two levels in order, or no probed measure",
+            'write levels = ["data/levels/level_001.json", ...] and probed = "won"')
+    at = str(spec.get("at") or "p50")
+    measures = _measures(config.table("levels").get("measures"))
+    if probed not in measures:
+        raise PolyweaveError(
+            "level.bad-measures", f"{set} reads {probed!r}, which [levels.measures] "
+            "does not declare", f"name one of {', '.join(measures)}", given=probed)
+    step, regions, dips = _curve_rules(spec, len(files))
+    sign = -1.0 if measures[probed]["direction"] == "higher" else 1.0
+    names, values = [], []
+    for one in files:
+        path = here / str(one)
+        names.append(Path(str(one)).stem)
+        values.append(_value(_recorded(path, here), probed, at, path))
+    found = _curve_findings(names, [sign * v for v in values], step, regions, dips)
+    return {
+        "ok": not found,
+        "probed": probed,
+        "at": at,
+        "values": dict(zip(names, values, strict=True)),
+        "findings": found,
+        "says": f"{len(names)} levels by {probed} at {at}: "
+        + ("the curve holds its shape" if not found
+           else f"{len(found)} break(s), the first {found[0]['said']}"),
+    }
+
+
+def _set_at(document: Any, path: str, value: Any) -> None:
+    """Put `value` at a dotted path (`moves`, `goals.0.count`), keeping an integer one
+    an integer, and refusing a path the level does not have."""
+    keys = path.split(".")
+    node = document
+    for key in keys[:-1]:
+        if isinstance(node, list):
+            node = node[int(key)] if key.isdigit() and int(key) < len(node) else None
+        else:
+            node = node.get(key) if isinstance(node, dict) else None
+        if node is None:
+            break
+    last = keys[-1]
+    held = (isinstance(node, list) and last.isdigit() and int(last) < len(node)) or (
+        isinstance(node, dict) and last in node)
+    if not held:
+        raise PolyweaveError(
+            "level.bad-set", f"the level has no {path} for a search to turn",
+            "name each [search.<param>] as the dotted path of a key the level holds, "
+            "such as moves or goals.0.count", given=path)
+    was = node[int(last)] if isinstance(node, list) else node[last]
+    turned = round(value) if isinstance(was, int) and not isinstance(was, bool) \
+        else value
+    if isinstance(node, list):
+        node[int(last)] = turned
+    else:
+        node[last] = turned
+
+
+def sample(report: Any, *, out: str, rung: Any = None, root: str = ".",
+           inline: bool = False, level: str = "", **values: Any) -> dict:
+    """One candidate of a level for search.sweep (§PW204): the level `fixed` names with
+    each searched value put in, written at `out` as JSON, compiled and probed, so the
+    spec's level predicates read it like any level."""
+    from .level_schema import compile_level
+
+    here = load(root).root
+    source = here / level if level else None
+    if source is None or not source.is_file() or source.suffix.lower() != ".json":
+        raise PolyweaveError(
+            "level.bad-set", f"a level search was given {level or 'no level'} to turn",
+            'pass fixed = {"level": "data/levels/level_020.json"}, a JSON level under '
+            "the project", given=level or None)
+    document = json.loads(source.read_text(encoding="utf-8-sig"))
+    for path, value in values.items():
+        _set_at(document, path, value)
+    target = Path(out)
+    target = target if target.is_absolute() else here / target
+    target.parent.mkdir(parents=True, exist_ok=True)
+    write_atomic(target, json.dumps(document, indent=1) + "\n")
+    candidate = provenance.relative(target, here)
+    # Held to the schema and compiled where the project declares one; with none, the
+    # candidate is the file the game reads.
+    if load(here).table("levels").get("schema"):
+        candidate = compile_level(candidate, root=str(here))["compiled"]
+    probe(candidate, root=str(here))
+    return {"artefact": candidate, "values": values}
 
 
 @operation("level.probe", kind="capture")

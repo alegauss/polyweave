@@ -481,6 +481,37 @@ A level with no probe record, or one changed since it was probed, is `level.unpr
 never last week's number; a measure or a place the record does not carry is
 `level.bad-measures`.
 
+A game's difficulty is a curve, so a set of levels has a shape of its own.
+`level.curve(set)` reads a `*.levels.toml`:
+
+```toml
+levels  = ["data/levels/level_001.json", "data/levels/level_002.json", "..."]
+probed  = "won"            # one of [levels.measures]
+at      = "mean"           # p50 unless said
+step    = 0.05             # the most difficulty may fall between neighbours, 0 unless said
+regions = [[1, 10], [11, 20]]  # each ends harder than it starts, by position from 1
+dips    = [10]             # the level after position 10 is easier: a breather after a boss
+```
+
+Harder is read off the measure's declared direction: a measure where `higher` is better
+for the player (a win rate) makes a level harder as it falls. Each break is answered as
+the `pair` of levels with its `rule` (`step`, `region`, `dip`) and what it `said`, and
+`values` holds each level's number. Every level is read off its probe record as a
+predicate is, so one unprobed is `level.unprobed`; a spec that names fewer than two
+levels, no measure, or a position outside the set is `level.bad-set`.
+
+A level's own spec is also what a search aims at. `search.sweep(spec, producer="level",
+fixed={"level": "data/levels/level_020.json"}, out="work/level_020.candidate.json")`
+turns each `[search.<param>]` the spec names, a dotted path of a key the level holds
+(`moves`, `goals.0.count`, an integer kept an integer). Each candidate is the JSON level
+with its values put in, written at `out`, compiled with `level.compile` where `[levels]
+schema` is declared, and probed with `level.probe`; the spec is checked against its
+record, all locally at no cost.
+Where `[levels] compile` writes the game's file elsewhere, name it as `judged`. A path
+the level does not hold, or no JSON level in `fixed`, is `level.bad-set`. What the
+search returns is a proposal: whether the level also feels right is the verdict page's,
+because the probe is a proxy a person holds to account (§PW201).
+
 ## A video
 
 A teaser `video.cut` wrote is measured off the MP4 itself (§PW429; [video.md](video.md)):
