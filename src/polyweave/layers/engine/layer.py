@@ -71,7 +71,8 @@ LAYER = Layer(
     # 31,011 with level.validate, level files held to the project's schema (§PW203).
     # 31,831 with level.curve, a level set held to its declared shape (§PW204).
     # 32,638 with level.trace, a playtest's events read per second (§PW327).
-    tools=33_100,
+    # 33,468 with level.fields and level.reader, a schema's fields and reader (§PW608).
+    tools=33_900,
     census={
         "polyweave.layers.engine.at_rig": (
             "internal", "a model drawn at a staged rig, the part render.in_game asks"),

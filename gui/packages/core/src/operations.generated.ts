@@ -912,6 +912,14 @@ export interface LevelProbeArgs {
   root?: string
 }
 
+/** Write the typed reader a game loads its levels through, from its schema. */
+export interface LevelReaderArgs {
+  /** where the script goes, a .gd under the project */
+  out: string
+  /** the project whose level schema this is; default "." */
+  root?: string
+}
+
 /** What players met in a level: each event per second and in all, and how many were alive, averaged over the runs their traces record (§PW327). */
 export interface LevelTraceArgs {
   /** the runs' event traces under the project */
@@ -2912,6 +2920,7 @@ export interface Operations {
   "level.curve": LevelCurveArgs
   "level.fields": LevelFieldsArgs
   "level.probe": LevelProbeArgs
+  "level.reader": LevelReaderArgs
   "level.trace": LevelTraceArgs
   "level.validate": LevelValidateArgs
   "loop.assets": LoopAssetsArgs
@@ -3142,6 +3151,7 @@ export const OPERATIONS = [
   "level.curve",
   "level.fields",
   "level.probe",
+  "level.reader",
   "level.trace",
   "level.validate",
   "loop.assets",

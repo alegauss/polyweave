@@ -74,13 +74,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW608",
-    block: "R",
-    symptom: "a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help",
-    why: "The engine still has no typed reader generated from the schema, and a field's help is not in the string table.",
-    deps: [],
-  },
-  {
     id: "PW609",
     block: "R",
     symptom: "an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand",
@@ -92,6 +85,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "a level set's curve cannot bound how much harder a level may get as a ratio, so Spinhold's peak_step stays in check.gd",
     why: "level.curve's step is absolute, and the owner's rule is each phase's peak at most 1.5 times the one before.",
+    deps: [],
+  },
+  {
+    id: "PW683",
+    block: "R",
+    symptom: "a level field's help reaches a game's editor in the schema's language only, outside the string table",
+    why: "words.check never holds it, so the editor's help reads untranslated in every other locale.",
     deps: [],
   },
   {

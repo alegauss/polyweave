@@ -551,7 +551,7 @@
 - ✅ **PW205** **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — Spinhold's phases pass level.validate, compile, probe and curve with no polyweave change, its probe reading waves by analysis: peak alive 39, 54, 75.
 - ✅ **PW206 (declared and probed)** **Cottony's levels are still tuned by a curve nobody measured** — Cottony's 20 levels hold a schema, are recorded and probed by the careless bot (level 20 wins 66%), each with a record.
 - ✅ **PW327 (the trace read)** **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — level.trace reads runs' event traces, each event per second and in all and how many were alive, averaged over the runs.
-- ✅ **PW608 (field metadata)** **a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help** — level.fields reads each field of the level schema, its type, bounds, step, unit, default, choices and help, as JSON a game's editor builds from.
+- ✅ **PW608** **a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help** — level.reader writes a typed GDScript reader from the level schema; Cottony's 20 levels and Spinhold's 3 phases read through it with no error (design recorded in `docs/specs/engine.md`).
 
 ## Block S — Playing the game, not only rendering it
 

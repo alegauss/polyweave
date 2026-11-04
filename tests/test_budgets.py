@@ -447,7 +447,8 @@ HELP_VERB = 5_100
 #: 34,573 with render.in_game and level.probe (§PW495, §PW202, 2026-11-03).
 #: 34,871 with level.validate and level.compile (§PW203, 2026-11-03).
 #: 35,251 with level.curve and level.trace (§PW204, §PW327, 2026-11-04).
-HELP_TOP = 35_500
+#: 35,548 with level.fields and level.reader (§PW608, 2026-11-04).
+HELP_TOP = 35_900
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

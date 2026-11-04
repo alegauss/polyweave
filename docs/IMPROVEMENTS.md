@@ -262,32 +262,6 @@ kind told by its silhouette would make a chain a kind of its own.
 Done when each stretch's count is within the sheet's own uncertainty, which the owner's
 sheet decides.
 
-### §PW608 A level schema's reader and field metadata for the engine
-
-Found in spinhold while planning its stage editor (RK264, RK269, RK281). The keys of a
-level file, their bounds, units and what each means live in three places in that game:
-the reader's list of accepted keys and its refusals, the editor's table of bounds and
-steps, and the doc comments a person reads. Each new key is added three times, and they
-already disagree on what a person may type.
-
-PW203 (`docs/specs/engine.md`) makes the schema a project's declaration (`[levels]
-schema`) and checks a level against it. That covers the checking. What the engine still
-lacks is the rest of what a declared schema knows:
-
-- **a typed reader**: `tables.check --write` already writes a typed script from a
-  declared table; the same for a nested level document (tables of arrays of tables, inline
-  tables, enumerations, cross-references to other entries), refusing a key by name as
-  the schema does;
-- **field metadata for tools**: per field its type, bounds, step, unit, default, the
-  values an enumeration allows and a one-line help, exported as a resource or JSON a
-  game's own editor or debug panel builds its inspector from;
-- **help in every locale**: the help text routed through the string table, so
-  `words.check` holds it like any other line.
-
-A level editor is the game's, not polyweave's (non-goal "A graphical editor"); this
-gives that editor its fields from the one declaration. Proven on two genres' schemas, as
-PW205 (Spinhold's waves, `game/waves/waves.schema.json`) asks of the level contract.
-
 ### §PW609 A draft level from an accepted transcription
 
 Found in spinhold (RK198, RK258, and the library of pieces RK274 plans). A reference
@@ -326,6 +300,25 @@ as the pair with rule `rise`. A ratio needs a measure that is positive and grows
 difficulty, so a measure whose `higher` is easier, or one that reaches zero, is refused
 with `level.bad-set` rather than read upside down. Then Spinhold drops the ratio from
 `check_phase_waves` and names `phases.levels.toml` instead.
+
+### §PW683 A level field's help in every locale
+
+Split from PW608 on 2026-11-04, when `level.fields` and `level.reader` landed. A level
+schema's `description` is a field's one-line help, and `level.fields` hands it to a
+game's own editor as written: in the language the schema was written in, and outside the
+string table the game's other lines go through, so `words.check` never holds it and a
+player of the editor in another locale reads it untranslated.
+
+What to build: `level.fields` gives each field with help a stable key derived from its
+path (`LEVEL_STAGE_WAVE_GROUP_COUNT_HELP`) beside the help itself, and a call writes the
+missing keys into the project's string table (`[words]`'s table, the one `words.check`
+reads), the schema's text as the source language's line and the other locales left for a
+person or a translation pass, never invented. The editor then shows `tr(key)`. A help
+changed in the schema reads as a changed source line, so its translations read stale.
+
+The editor stays the game's (non-goal "A graphical editor"); this gives it translated
+help. The words layer owns the string table, so this reaches it as a named part (as
+`engine.draw_at_rig` reaches the engine), not an import of the engine into words.
 
 ## Block S — Playing the game, not only rendering it
 

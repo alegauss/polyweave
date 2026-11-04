@@ -683,6 +683,16 @@ where declared its `type`, `min`, `max`, `step`, `unit`, `default`, `choices`, `
 whether it is `required` and whether it names a world `entity`. With `out` it writes them
 as JSON, recorded as a `level` with the schema as its input, for the game to load.
 
+`level.reader(out)` writes the reader a game loads its levels through, from the same
+schema, so the reader's keys are not typed a second time: a GDScript with one inner class
+for each object the schema declares (`_Level`, then `_Stage`, `_StageWave` and so on by
+path, behind an underscore so a game's own global `class_name Level` is not hidden), each field typed (`int`, `float`, `String`, `bool`, a class, or an `Array` of
+one), and `read(data)`, which takes the level as the game parsed it, TOML or JSON, and
+answers `level` and `errors`. Each error names its place as `level.validate` does: a key
+the schema does not declare where it closes `additionalProperties`, one required and
+missing, a type, a bound or a choice broken. The script is rewritten only where its text
+changed, recorded as a `level` with the schema as its input.
+
 `level.compile(level)` turns one source into the file the game loads. It holds the
 source to the schema first, and a source with findings is `level.invalid`, the findings
 in its detail. Then it runs `[levels] compile`, the project's own command as a list of

@@ -214,6 +214,66 @@ def test_each_field_says_what_a_game_s_editor_needs_of_it(tmp_path):
     assert record["kind"] == "level"
 
 
+def test_the_reader_has_a_typed_class_for_each_object(tmp_path):
+    root = _project(tmp_path)
+    made = level_schema.reader("levels/level_reader.gd", root=str(root))
+    text = (root / "levels" / "level_reader.gd").read_text(encoding="utf-8")
+    assert made["written"] is True
+    for name in ("class _Level:", "class _Stage:", "class _StageWave:",
+                 "class _StageWaveGroup:", "\tvar count: int",
+                 "\tvar time_limit: float",
+                 "static func read(data: Dictionary) -> Dictionary:"):
+        assert name in text
+    again = level_schema.reader("levels/level_reader.gd", root=str(root))
+    assert again["written"] is False
+
+
+READS = """extends SceneTree
+
+func _initialize() -> void:
+\tvar reader = load("res://levels/level_reader.gd")
+\tvar good: Dictionary = JSON.parse_string(%s)
+\tvar read: Dictionary = reader.read(good)
+\tprint("good: %%d %%d %%s" %% [read["errors"].size(),
+\t\tread["level"].stage[0].wave[0].group[0].count,
+\t\tread["level"].stage[0].wave[0].group[0].enemy])
+\tvar bad: Dictionary = JSON.parse_string(%s)
+\tprint("bad: " + " | ".join(reader.read(bad)["errors"]))
+\tquit()
+"""
+
+
+def test_godot_reads_a_level_through_the_generated_reader(tmp_path):
+    import os
+
+    from polyweave.layers.engine import engine
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = _project(tmp_path)
+    (root / "project.godot").write_text("config_version=5\n", encoding="utf-8")
+    level_schema.reader("levels/level_reader.gd", root=str(root))
+    good = {"stage": [{"wave": [{"time_limit": 12.0,
+                                 "group": [{"enemy": "drone", "count": 10}]}]}]}
+    bad = {"stage": [{"wave": [{"time_limit": "long",
+                                "group": [{"count": 0, "side": "up"}]}]}],
+           "bonus": 1}
+    (root / "reads.gd").write_text(READS % (json.dumps(json.dumps(good)),
+                                            json.dumps(json.dumps(bad))),
+                                   encoding="utf-8")
+    ran = engine.run("reads.gd", root=root, headless=True, expect=r"^bad: ")
+    assert ran["ok"] is True, ran["why"]
+    log = (root / ".polyweave" / "engine" / "reads.log").read_text("utf-8")
+    assert "good: 0 10 drone" in log
+    said = log.split("bad: ", 1)[1].splitlines()[0]
+    for place in ("bonus is no key the schema declares",
+                  "stage[0].wave[0].time_limit is no number",
+                  "stage[0].wave[0].group[0].enemy is required and missing",
+                  "stage[0].wave[0].group[0].count is past its least, 1",
+                  "stage[0].wave[0].group[0].side is none of its choices"):
+        assert place in said, said
+
+
 def test_a_json_level_is_read_as_json(tmp_path):
     root = _project(tmp_path)
     (root / "waves" / "one.waves.toml").unlink()

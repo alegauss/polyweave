@@ -314,6 +314,168 @@ def fields(
     return answer
 
 
+#: GDScript's spelling of each JSON Schema type a field may hold.
+_GD = {"integer": "int", "number": "float", "string": "String", "boolean": "bool"}
+
+
+def _class_name(path: list[str]) -> str:
+    """An inner class's name off its path, behind an underscore: a game's own
+    `class_name Level` is global, and an inner class of that name hides it and the
+    reader fails to load (Cottony's did, 2026-11-04)."""
+    return "_" + ("".join(part[:1].upper() + part[1:] for part in
+                          "_".join(path).replace("-", "_").split("_") if part)
+                  or "Level")
+
+
+def _gd_check(kind: str, value: str) -> str:
+    return {"integer": f"({value} is int or ({value} is float and "
+                       f"{value} == floorf({value})))",
+            "number": f"({value} is int or {value} is float)",
+            "string": f"{value} is String",
+            "boolean": f"{value} is bool"}[kind]
+
+
+def _reader_class(node: dict, path: list[str], classes: list[str]) -> str:
+    """One inner class for an object node, its children written first, and its name."""
+    name = _class_name(path)
+    properties = node.get("properties") or {}
+    wanted = set(node.get("required") or [])
+    lines = [f"class {name}:"]
+    reads = []
+    for key, child in properties.items():
+        kind = child.get("type")
+        if kind == "object":
+            inner = _reader_class(child, [*path, key], classes)
+            lines.append(f"\tvar {key}: {inner} = null")
+            reads.append((key, child, "object", inner))
+        elif kind == "array" and isinstance(child.get("items"), dict) \
+                and child["items"].get("type") == "object":
+            inner = _reader_class(child["items"], [*path, key], classes)
+            lines.append(f"\tvar {key}: Array = []")
+            reads.append((key, child, "objects", inner))
+        elif kind in _GD:
+            lines.append(f"\tvar {key}: {_GD[kind]}")
+            reads.append((key, child, kind, None))
+        else:
+            lines.append(f"\tvar {key}: Variant = null")
+            reads.append((key, child, "any", None))
+    keys = ", ".join(f'"{k}"' for k in properties)
+    lines += ["",
+              f"\tstatic func of(d: Dictionary, at: String, errors: Array) -> {name}:",
+              f"\t\tvar it := {name}.new()"]
+    if node.get("additionalProperties") is False:
+        lines += ["\t\tfor key in d:",
+                  f"\t\t\tif not key in [{keys}]:",
+                  '\t\t\t\terrors.append("%s%s is no key the schema declares" % '
+                  '[at + "." if at else "", key])']
+    for key, child, kind, inner in reads:
+        where = f'(at + ".{key}" if at else "{key}")'
+        lines.append(f'\t\tif d.has("{key}"):')
+        lines.append(f'\t\t\tvar v: Variant = d["{key}"]')
+        if kind == "object":
+            lines += ["\t\t\tif v is Dictionary:",
+                      f"\t\t\t\tit.{key} = {inner}.of(v, {where}, errors)",
+                      "\t\t\telse:",
+                      f'\t\t\t\terrors.append("%s is no object" % {where})']
+        elif kind == "objects":
+            lines += ["\t\t\tif v is Array:",
+                      "\t\t\t\tfor i in v.size():",
+                      "\t\t\t\t\tif v[i] is Dictionary:",
+                      f'\t\t\t\t\t\tit.{key}.append({inner}.of(v[i], "%s[%d]" % '
+                      f"[{where}, i], errors))",
+                      "\t\t\t\t\telse:",
+                      '\t\t\t\t\t\terrors.append("%s[%d] is no object" % '
+                      f"[{where}, i])",
+                      "\t\t\telse:",
+                      f'\t\t\t\terrors.append("%s is no list" % {where})']
+        elif kind in _GD:
+            lines += [f"\t\t\tif {_gd_check(kind, 'v')}:",
+                      f"\t\t\t\tit.{key} = {_GD[kind]}(v)" if kind != "string"
+                      else f"\t\t\t\tit.{key} = v"]
+            for bound, word, compare in (("minimum", "least", "<"),
+                                         ("maximum", "most", ">")):
+                if bound in child and kind in ("integer", "number"):
+                    lines += [f"\t\t\t\tif it.{key} {compare} {child[bound]}:",
+                              f'\t\t\t\t\terrors.append("%s is past its {word}, '
+                              f'{child[bound]}" % {where})']
+            if "enum" in child:
+                choices = ", ".join(json.dumps(c) for c in child["enum"])
+                lines += [f"\t\t\t\tif not it.{key} in [{choices}]:",
+                          f'\t\t\t\t\terrors.append("%s is none of its choices" % '
+                          f"{where})"]
+            lines += ["\t\t\telse:",
+                      f'\t\t\t\terrors.append("%s is no {kind}" % {where})']
+        else:
+            lines.append(f"\t\t\tit.{key} = v")
+            if "enum" in child:
+                choices = ", ".join(json.dumps(c) for c in child["enum"])
+                lines += [f"\t\t\tif not v in [{choices}]:",
+                          f'\t\t\t\terrors.append("%s is none of its choices" % '
+                          f"{where})"]
+        if key in wanted:
+            lines += ["\t\telse:",
+                      f'\t\t\terrors.append("%s is required and missing" % {where})']
+    lines += ["\t\treturn it", ""]
+    classes.append("\n".join(lines))
+    return name
+
+
+def _reader(schema: dict, named: str) -> str:
+    """The typed reader a game loads its levels through, written from the schema."""
+    classes: list[str] = []
+    _reader_class(schema, [], classes)
+    return "\n".join([
+        f"# One level as {named} declares it, generated by level.reader;",
+        "# write it again rather than by hand (polyweave, §PW608).",
+        "extends RefCounted",
+        "",
+        "",
+        "## the level the game parsed, typed, and every place it breaks the schema",
+        "static func read(data: Dictionary) -> Dictionary:",
+        "\tvar errors: Array = []",
+        '\tvar level := _Level.of(data, "", errors)',
+        '\treturn {"level": level, "errors": errors}',
+        "",
+        "",
+        *classes,
+    ])
+
+
+@operation("level.reader")
+def reader(
+    out: Annotated[str, Param("where the script goes, a .gd under the project")],
+    root: Annotated[str, Param("the project whose level schema this is")] = ".",
+) -> dict:
+    """Write the typed reader a game loads its levels through, from its schema.
+
+    A GDScript with one class per object the schema declares, typed fields, and
+    `read(data)`, which takes the level the game parsed and answers `level` and
+    `errors`, each naming its place: a key the schema does not declare, one missing, a
+    type, a bound or a choice broken (§PW608). Written again where the schema changed.
+    """
+    from polyweave.kernel import provenance
+    from polyweave.kernel.files import write_atomic
+
+    config = load(root)
+    here = config.root
+    named, schema = _schema(here, config.table("levels"))
+    if not out.endswith(".gd"):
+        raise PolyweaveError("level.no-level", f"{out} is not a .gd script to write",
+                             "name the reader as a .gd under the project", given=out)
+    target = here / out
+    text = _reader(schema, named)
+    changed = not target.is_file() or target.read_text(encoding="utf-8") != text
+    if changed:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        write_atomic(target, text)
+        provenance.write(provenance.build(
+            "level", target, root=here,
+            inputs=[provenance.source("schema", here / named, root=here)]), root=here)
+    return {"reader": provenance.relative(target, here), "written": changed,
+            "says": f"{out} reads a level as {named} declares it"
+            + ("" if changed else ", unchanged")}
+
+
 @operation("level.validate")
 def validate(
     level: Annotated[str, Param("one level file; every [levels] files match if empty")]
