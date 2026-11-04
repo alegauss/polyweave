@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 1 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
   { block: "X", title: "The site on the shared design system", open: 0 },
 ];
@@ -92,13 +92,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "T",
     symptom: "a file borrowed after sound.loop cut it records only its scratch path: no origin service, original or derivation step",
     why: "A shipped asset made outside polyweave cannot say where it came from, so its credit and licence are typed by hand and drift.",
-    deps: [],
-  },
-  {
-    id: "PW677",
-    block: "V",
-    symptom: "engine.preset_search answers no sheet for the presets that lose quality, though it writes one",
-    why: "It reads verdict.sheet's answer under a key that answer never has, so a person is never handed the presets to judge.",
     deps: [],
   },
 ];

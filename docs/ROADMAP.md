@@ -53,8 +53,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW677** (deps: —) **engine.preset_search answers no sheet for the presets that lose quality, though it writes one** — It reads verdict.sheet's answer under a key that answer never has, so a person is never handed the presets to judge. → §PW677
-
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system

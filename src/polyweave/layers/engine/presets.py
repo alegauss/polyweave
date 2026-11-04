@@ -163,8 +163,9 @@ def preset_search(
                 "new": _relative(one["shot"], here)} for one in members]
     sheet = None
     if members:
-        sheet = verdict.sheet(members, out=_relative(out / "sheet.png", here),
-                              root=str(here)).get("out")
+        # verdict.sheet answers the path as `sheet` (§PW677), absolute.
+        sheet = _relative(verdict.sheet(members, out=_relative(out / "sheet.png", here),
+                                        root=str(here))["sheet"], here)
     dearest = max(costs, key=costs.get) if costs else None
     return {
         "ok": all(one["fits"] for one in chosen.values()),

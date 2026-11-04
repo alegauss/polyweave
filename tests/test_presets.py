@@ -5,6 +5,7 @@ The grid and the choice run anywhere; a search needs $GODOT and a route that dra
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 
@@ -57,6 +58,32 @@ def test_a_machine_with_nothing_that_draws_is_skipped_and_said(tmp_path, monkeyp
                                   root=str(tmp_path))
     assert found["ok"] is None
     assert "no route draws" in found["skipped"]
+
+
+def test_the_sheet_of_lossy_presets_is_named_in_the_answer(tmp_path, monkeypatch):
+    """§PW677: the sheet was written and the answer's `sheet` was always null."""
+    from types import SimpleNamespace
+
+    from PIL import Image
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    monkeypatch.setattr(offscreen, "route_for",
+                        lambda *_, **__: SimpleNamespace(name="stub"))
+
+    def captured(script, *, args, **how):
+        said = dict(arg.split("=", 1) for arg in args if "=" in arg)
+        scale = float(json.loads(said["settings"])["scale"])
+        Image.new("RGB", (32, 32), (int(200 * scale), 40, 40)).save(said["shot"])
+        log = tmp_path / f"run-{scale}.log"
+        log.write_text(f"PRESET p95_ms={10.0 * scale} p99_ms={12.0 * scale}\n",
+                       encoding="utf-8")
+        return {"log": str(log)}
+
+    monkeypatch.setattr(offscreen, "capture", captured)
+    found = presets.preset_search("res://main.tscn", budgets={"low": 6.0},
+                                  grid={"scale": [1.0, 0.5]}, root=str(tmp_path))
+    assert found["sheet"] and (tmp_path / found["sheet"]).is_file()
+    assert not found["sheet"].startswith(str(tmp_path))
 
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")

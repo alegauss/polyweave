@@ -712,6 +712,7 @@
 - ✅ **PW556** **a pad whose name hides its maker is named in the wrong buttons, and the player cannot say which family it is** — A player chooses a pad's button names on the remap screen, kept by its name; every prompt and menu follows the choice at once (design recorded in `docs/specs/kit.md`).
 - ✅ **PW557** **the players kit copies no ui_accept or ui_cancel per player, so one player's menu cannot answer their own A and B alone** — Each joined player gets their own copy of the menu actions on their pad, and the first player's answer their pad alone once two play (design recorded in `docs/specs/kit.md`).
 - ✅ **PW595** **kit.update deletes the .import and .uid files Godot keeps beside the kit's core, so the game loses every icon** — kit.install and kit.update keep the .import and .uid of each core file still there, drop one with its file, and never hash them (design recorded in `src/polyweave/layers/kits/__init__.py`).
+- ✅ **PW677** **engine.preset_search answers no sheet for the presets that lose quality, though it writes one** — engine.preset_search now answers the sheet of lossy presets by its path, so a person is handed them to judge; a test holds it with no engine.
 
 ## Block W — A core that grows by layers
 

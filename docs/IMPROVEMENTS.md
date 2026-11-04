@@ -379,23 +379,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW677 The preset sheet that is written and never named
-
-Found on 2026-11-03 while building `render.in_game` (PW495), which uses the same call.
-
-`engine.preset_search` writes a sheet of every preset that loses quality and answers it
-as `sheet`, so a person judges them (`src/polyweave/layers/engine/presets.py`). It reads
-the sheet's path as `verdict.sheet(...).get("out")`, and `verdict.sheet` answers
-`{"sheet": ..., "members": ..., "choices": ...}`, with no `out`. The sheet is written,
-but the answer's `sheet` is always null, so an agent following the answer never hands it
-to the person and the says line still tells them to judge it.
-
-What to build: read `["sheet"]`, as a path relative to the project the way the rest of
-the answer spells its pictures, and add a test where one preset loses quality and the
-answer's `sheet` is a file on disk. A test of this exists only behind `$GODOT`, which is
-why the gate never saw it: the shape of `verdict.sheet`'s answer can be checked without
-an engine by stubbing the capture.
-
 ## Block W — A core that grows by layers
 
 ## Block X — The site on the shared design system
