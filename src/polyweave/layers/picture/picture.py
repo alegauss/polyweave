@@ -68,7 +68,9 @@ def buy(
         bool, Param("cut from its background; a style family's pictures are if unset")
     ] = None,
     model: Annotated[str, Param("the model", choices=tuple(MODELS))] = "4.0",
-    aspect_ratio: Annotated[str, Param("as the service spells it")] = None,
+    aspect_ratio: Annotated[
+        str, Param("as 16x9; 4.0 is sent its size of that shape")
+    ] = None,
     rendering_speed: Annotated[str, Param("as the service spells it")] = None,
     seed: Annotated[int, Param("for a picture that can be asked for again")] = None,
     family: Annotated[
@@ -104,7 +106,9 @@ def buy(
     the family's canon, from a text prompt; `model` is then the trained one (§PW450).
 
     A picture drawn at another shape than `aspect_ratio` asked is kept, and the answer
-    carries a `picture.aspect-differs` finding naming both (§PW659).
+    carries a `picture.aspect-differs` finding naming both (§PW659). 4.0 takes no ratio,
+    so it is sent as the largest `resolution` of that shape, and a ratio 4.0 has no
+    size of is refused before anything is spent.
 
     It is cut from its background where `transparent` asks, or, unset, where a style
     family is in force; otherwise it keeps the background it was drawn with, and the
@@ -210,8 +214,10 @@ def buy(
                 f"{said['why']}), so it is not bought again; withdraw the verdict on "
                 "the review page to buy it again"}
     payload: dict = {prompt_field if json_prompt is None else "json_prompt": sent}
+    drawn_at = _drawn_at(model, aspect_ratio)
     for field, value in (
-        ("aspect_ratio", aspect_ratio),
+        ("resolution", drawn_at),
+        ("aspect_ratio", None if drawn_at else aspect_ratio),
         ("rendering_speed", rendering_speed),
         ("seed", seed),
     ):
@@ -255,6 +261,8 @@ def buy(
                 "transparent": bool(transparent),
                 "rendering_speed": rendering_speed,
                 "aspect_ratio": aspect_ratio,
+                # The size the ratio was sent as, on a model with no ratio (§PW659).
+                **({"asked_resolution": drawn_at} if drawn_at else {}),
                 "json_prompt": json_prompt,
                 "family": held_to[0] if held_to else None,
                 # The canon pictures sent as style references, by digest, so a second
@@ -447,6 +455,39 @@ def judged(member: dict, *, accepted: bool, choice: str, why: str, when: str,
 ASPECT_SLACK = 0.02
 
 
+def _ratio(asked: str | None) -> float | None:
+    """Width over height of a ratio spelled `16x9` or `16:9`, or None."""
+    import re
+
+    sides = re.fullmatch(r"\s*(\d+)\s*[x:]\s*(\d+)\s*", str(asked or ""))
+    if not sides or not all(int(one) for one in sides.groups()):
+        return None
+    return int(sides[1]) / int(sides[2])
+
+
+def _drawn_at(model: str, asked: str | None) -> str | None:
+    """The `resolution` a ratio is sent as, on a model that takes no ratio (§PW659).
+
+    4.0 drops `aspect_ratio` in silence and picks a shape from the prompt, so a 16x9
+    came back 2496x1664 and was paid for. A ratio it draws no size of is refused here,
+    before anything is spent, with the sizes nearest in shape.
+    """
+    wanted = _ratio(asked)
+    if wanted is None or model not in ideogram.RESOLUTIONS:
+        return None
+    size, near = ideogram.resolution(model, wanted, ASPECT_SLACK)
+    if size is None:
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            f"{model} draws at a list of sizes, and none of them is {asked}",
+            f"ask an aspect_ratio one of its sizes has; nearest in shape: "
+            f"{', '.join(near)}",
+            given=asked,
+            allowed=list(ideogram.RESOLUTIONS[model]),
+        )
+    return size
+
+
 def _aspect_differs(asked: str | None, path) -> dict | None:
     """The finding where the picture drawn is not the shape asked for (§PW659).
 
@@ -455,19 +496,16 @@ def _aspect_differs(asked: str | None, path) -> dict | None:
     they disagree. The money is spent by now, so this is named, not refused: a crop is
     a decision about the picture.
     """
-    import re
-
     from PIL import Image as PILImage
 
-    sides = re.fullmatch(r"\s*(\d+)\s*[x:]\s*(\d+)\s*", str(asked or ""))
-    if not sides or not path.is_file() or not all(int(one) for one in sides.groups()):
+    wanted = _ratio(asked)
+    if wanted is None or not path.is_file():
         return None
     try:
         with PILImage.open(path) as drawn:
             width, height = drawn.size
     except OSError:
         return None
-    wanted = int(sides[1]) / int(sides[2])
     if not height or abs(width / height - wanted) <= ASPECT_SLACK * wanted:
         return None
     return {

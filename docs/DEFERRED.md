@@ -8,8 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- ⏸ **PW659** (deps: —) **picture.buy on Ideogram 4.0 returns another aspect ratio than asked, and the record holds both with no warning** — set aside (Waits for a paid probe the owner chooses.): Which 4.0 field carries the ratio is unproved. → §PW659
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

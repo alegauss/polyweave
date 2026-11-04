@@ -8,35 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW659 The aspect ratio a 4.0 buy asked for
-
-Met in the Shio repository, `marketplace/quilhara/` (Shio SH1254), buying ten
-photographs on Ideogram 4.0 through `picture.buy`.
-
-```
-python -m polyweave picture.buy --root . --out assets/source/home-coast.png \
-  --transparent false --aspect_ratio 16x9 --prompt "..."
-python -m polyweave picture.buy --root . --out assets/source/about-map.png \
-  --transparent false --aspect_ratio 3x2 --prompt "..."
-```
-
-The answers were `credits: 0.06` and no warning. The files are 2496x1664 (3:2) for the
-16x9 request and 1792x2240 (4:5) for the 3x2 one; the record says `details.aspect_ratio:
-"3x2"` beside `details.resolution: "1792x2240"`, two fields that contradict each other
-with nothing saying so. The same 16x9 request sent straight to the 3.0 endpoint earlier
-in the session came back 1312x736, so either 4.0 spells the parameter differently (or
-takes `resolution` instead), or it treats the ratio as a hint and the prompt overrides
-it.
-
-What polyweave should do: send the ratio in whatever form 4.0 honours (schema.read for
-the service would settle which), and compare the returned resolution with the ratio
-asked. A mismatch is a named finding on the answer (`picture.aspect-differs`, asked and
-got), not a silent record, because the caller has already paid and a crop is a decision
-about the picture.
-
-Workaround in the project: the bought pictures are centre-cropped to the asked ratio
-with Pillow in the same one-off re-encode that PW658 covers.
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

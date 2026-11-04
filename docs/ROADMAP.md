@@ -77,12 +77,6 @@
   five or more, and a picture bought from the model passes or fails the family's gate
   with its record naming the model and its members.
 
-## Done when — PW659
-
-- **picture.buy sends the ratio in the field 4.0 draws by** A 16x9 request on 4.0 comes
-  back within two percent of 16:9, proved by one paid request the owner chooses to make
-  and recorded in the learned schema.
-
 ## Done when — PW206
 
 - **the 20 levels pass a set spec the owner agreed, and make_levels.py is gone** A set

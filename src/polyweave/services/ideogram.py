@@ -32,6 +32,48 @@ MODELS = {
     "3.0": ("ideogram-v3", "prompt", False),
 }
 
+#: The sizes 4.0 draws at, which is how it takes a shape (§PW659). It has no
+#: `aspect_ratio`: the field is dropped in silence and the shape picked from the prompt,
+#: so a 16x9 came back 2496x1664. `resolution` is read, and a value outside this list is
+#: refused with it (probed 2026-11-04 with no prompt, which draws nothing).
+RESOLUTIONS = {
+    "4.0": (
+        "2048x2048", "1440x2880", "2880x1440", "1664x2496", "2496x1664", "1792x2240",
+        "2240x1792", "1440x2560", "2560x1440", "1600x2560", "2560x1600", "1728x2304",
+        "2304x1728", "1296x3168", "3168x1296", "1152x2944", "2944x1152", "1248x3328",
+        "3328x1248", "1280x3072", "3072x1280", "1024x3072", "3072x1024", "1024x1024",
+        "896x1120", "1120x896", "864x1152", "1152x864", "832x1248", "1248x832",
+        "800x1280", "1280x800", "720x1280", "1280x720", "720x1440", "1440x720",
+        "512x1536", "1536x512",
+    ),
+}
+
+
+def resolution(model: str, wanted: float, slack: float) -> tuple[str | None, list[str]]:
+    """The size `model` draws at `wanted` width over height, within `slack`.
+
+    The closest in shape and, among equals, the largest. None where the model takes a
+    ratio as it is, or draws no size of that shape; the second value is then the three
+    sizes nearest in shape, for the refusal.
+    """
+    sizes = RESOLUTIONS.get(model)
+    if not sizes:
+        return None, []
+
+    def shape(size: str) -> float:
+        width, height = size.split("x")
+        return int(width) / int(height)
+
+    def area(size: str) -> int:
+        width, height = size.split("x")
+        return int(width) * int(height)
+
+    near = sorted(sizes, key=lambda one: (abs(shape(one) - wanted), -area(one)))
+    if abs(shape(near[0]) - wanted) <= slack * wanted:
+        return near[0], []
+    return None, near[:3]
+
+
 #: What the service allows in flight on an account by default. More than this and it
 #: answers 429, so the client never holds more open than this in one process.
 INFLIGHT = 10

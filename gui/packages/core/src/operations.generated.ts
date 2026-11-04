@@ -1422,7 +1422,7 @@ export interface PictureBuyArgs {
   transparent?: boolean
   /** the model; default "4.0" */
   model?: "4.0" | "3.0"
-  /** as the service spells it */
+  /** as 16x9; 4.0 is sent its size of that shape */
   aspect_ratio?: string
   /** as the service spells it */
   rendering_speed?: string

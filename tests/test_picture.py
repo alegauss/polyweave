@@ -641,6 +641,37 @@ def test_a_picture_drawn_at_the_shape_asked_carries_no_finding(
     assert purchase.read(tmp_path) == [entry]
 
 
+@pytest.mark.parametrize(("asked", "size"), [
+    ("16x9", "2560x1440"), ("3:2", "2496x1664"), ("4x5", "1792x2240"),
+    ("1x1", "2048x2048"),
+])
+def test_a_ratio_goes_to_4_0_as_the_resolution_it_draws_by(
+    tmp_path, service, asked, size
+):
+    """§PW659: 4.0 has no aspect_ratio; it dropped one in silence and drew 2496x1664."""
+    buy(tmp_path, aspect_ratio=asked, transparent=False)
+    _, _, payload = service.sent[0]
+    assert payload["resolution"] == size
+    assert "aspect_ratio" not in payload
+    details = provenance.read("refs/booster.png", root=tmp_path)["details"]
+    assert (details["aspect_ratio"], details["asked_resolution"]) == (asked, size)
+
+
+def test_a_ratio_goes_to_3_0_as_it_was_asked(tmp_path, service):
+    buy(tmp_path, model="3.0", aspect_ratio="16x9", transparent=False)
+    _, _, payload = service.sent[0]
+    assert payload["aspect_ratio"] == "16x9" and "resolution" not in payload
+
+
+def test_a_ratio_4_0_has_no_size_of_is_refused_before_anything_is_spent(
+    tmp_path, service
+):
+    error = refused(tmp_path, aspect_ratio="21x9", transparent=False)
+    assert error.code == "fetch.bad-choice"
+    assert "3072x1280" in error.remedy
+    assert service.sent == [] and purchase.read(tmp_path) == []
+
+
 def test_a_service_out_of_credit_is_said_so_by_its_own_code(tmp_path, service):
     """§PW670: Dumont's 15th photo met a 402, and the remedy read as a 401's."""
     service.status, service.answer = 402, b'{"detail": "Insufficient credits"}'
