@@ -105,6 +105,13 @@
   back within two percent of 16:9, proved by one paid request the owner chooses to make
   and recorded in the learned schema.
 
+## Done when — PW203
+
+- **a level source compiles to the engine's own resource, recorded** level.compile runs
+  the project's declared command on a source the schema holds, writes the file the game
+  loads with a record naming source, schema and command hash, and a game's own levels
+  (Cottony's, through PW206) are made that way.
+
 ## Non-goals
 
 - **A graphical editor** The caller here is an agent in a terminal, so a surface only a
