@@ -69,6 +69,36 @@ def test_a_file_of_this_project_can_be_borrowed_too(tmp_path):
     assert found["artefact"] == "game/ui/logo.png"
 
 
+def test_a_file_made_outside_keeps_its_maker_original_and_step(tmp_path):
+    """§PW678: a Gemini track, looped, borrowed; the record said only a scratch path."""
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    (scratch / "market.mp3").write_bytes(b"the track as downloaded")
+    (scratch / "market.loop.mp3").write_bytes(b"the track, looped")
+    provenance.write(provenance.build(
+        "sound", scratch / "market.loop.mp3", engine={"name": "sound.loop"},
+        inputs=[provenance.source("track", scratch / "market.mp3", root=scratch)],
+        params={"bars": 63, "bpm": 120.0}, root=scratch), scratch)
+    game = tmp_path / "game"
+    game.mkdir()
+    found = provenance.borrow(
+        str(scratch / "market.loop.mp3"), "music/music.mp3",
+        origin="Google Gemini (Lyria)", original=str(scratch / "market.mp3"),
+        credit="Music: Monday Market Open", root=str(game))
+    made = found["made"]
+    assert made["origin"] == "Google Gemini (Lyria)"
+    assert made["original"]["sha256"] == provenance.sha256_of(scratch / "market.mp3")[0]
+    assert made["step"]["by"] == "sound.loop"
+    assert made["step"]["params"]["bars"] == 63
+    listed = provenance.credits(root=str(game), all=True)
+    (one,) = [a for a in listed["artefacts"] if a["file"] == "music/music.mp3"]
+    assert one["chain"] == ("Google Gemini (Lyria) -> market.mp3 -> sound.loop "
+                            "(bars 63, bpm 120.0) -> music/music.mp3")
+    url = provenance.borrow(str(scratch / "market.mp3"), "music/raw.mp3",
+                            original="https://gemini.example/track/1", root=str(game))
+    assert url["made"] == {"original": {"url": "https://gemini.example/track/1"}}
+
+
 @pytest.mark.parametrize("path, out", [("nowhere.png", "ui/x.png"),
                                        ("art/logo.png", "art/logo.png")])
 def test_a_borrow_with_nothing_to_take_is_refused(tmp_path, path, out):

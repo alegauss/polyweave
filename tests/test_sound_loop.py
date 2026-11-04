@@ -59,6 +59,13 @@ def test_a_track_is_cut_on_its_bars_and_its_wrap_does_not_click(tmp_path):
     assert bars == pytest.approx(round(bars), abs=0.05)
     heard = sound.measure(tmp_path / "loop.wav")
     assert heard["duration"] == pytest.approx(found["seconds"], abs=0.001)
+    # The loop names the track it was cut from, so what is made from it can (§PW678).
+    from polyweave.kernel import provenance
+
+    record = provenance.read("loop.wav", root=str(tmp_path))
+    assert record["engine"]["name"] == "sound.loop"
+    assert record["inputs"][0]["path"] == "track.wav"
+    assert record["params"]["bars"] == found["bars"]
 
 
 @needs_ffmpeg

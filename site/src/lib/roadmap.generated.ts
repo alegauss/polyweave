@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 2 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
-  { block: "T", title: "Adopting polyweave in a project", open: 1 },
+  { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
@@ -85,13 +85,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "a level field's help reaches a game's editor in the schema's language only, outside the string table",
     why: "words.check never holds it, so the editor's help reads untranslated in every other locale.",
-    deps: [],
-  },
-  {
-    id: "PW678",
-    block: "T",
-    symptom: "a file borrowed after sound.loop cut it records only its scratch path: no origin service, original or derivation step",
-    why: "A shipped asset made outside polyweave cannot say where it came from, so its credit and licence are typed by hand and drift.",
     deps: [],
   },
 ];

@@ -1622,6 +1622,10 @@ export interface ProvenanceBorrowArgs {
   licence?: string
   /** the credit its licence requires; the credits screen shows it */
   credit?: string
+  /** who or what made the original outside any project, e.g. a service */
+  origin?: string
+  /** the original it was made from: a file, hashed, or a URL */
+  original?: string
   /** the project the records are under; default "." */
   root?: string
 }

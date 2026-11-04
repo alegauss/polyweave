@@ -255,6 +255,16 @@ def loop(
         says = "the seam stands out from the track: listen across it before using this"
     else:
         says = f"{bars} bars at {tempo:.2f} BPM, the seam like any ordinary moment"
+    # The loop names the track it was cut from by its hash, so a file borrowed from it,
+    # or one made from it here, says where it came from (§PW678).
+    from polyweave.kernel import provenance
+
+    provenance.write(provenance.build(
+        "sound", target, engine={"name": "sound.loop"},
+        inputs=[provenance.source("track", source, root=here)],
+        params={"bars": int(bars), "bpm": round(float(tempo), 2), "start": int(start),
+                "quality": int(quality)},
+        measurements={**seam, "passed": not stands_out}, root=here), here)
     return {
         "loop": out,
         "seconds": round(length / RATE, 3),

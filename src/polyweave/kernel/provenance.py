@@ -1054,7 +1054,28 @@ def _manifested(record: dict, by_path: dict[str, dict], services: dict) -> dict:
         "made_at": record.get("produced_at", ""),
         "licence": licence,
         **({"via": via} if via else {}),
+        **({"chain": _chain(record)} if record.get("made") else {}),
     }
+
+
+def _chain(record: dict) -> str:
+    """A borrowed file's way here in words: its original's maker, the step that made
+    the file borrowed, and the borrowed file itself (§PW678)."""
+    made = record["made"]
+    parts = []
+    if made.get("origin"):
+        parts.append(made["origin"])
+    original = made.get("original") or {}
+    if original:
+        parts.append(original.get("url") or Path(original.get("path", "")).name)
+    step = made.get("step") or {}
+    if step:
+        said = ", ".join(f"{k} {v}" for k, v in (step.get("params") or {}).items()
+                         if isinstance(v, int | float | str))
+        parts.append(f"{step.get('by') or step.get('kind')}"
+                     + (f" ({said})" if said else ""))
+    parts.append(record["artefact"]["path"])
+    return " -> ".join(parts)
 
 
 def _people(where: Path) -> list[dict]:
@@ -1079,6 +1100,12 @@ def borrow(
     credit: Annotated[
         str, Param("the credit its licence requires; the credits screen shows it")
     ] = "",
+    origin: Annotated[
+        str, Param("who or what made the original outside any project, e.g. a service")
+    ] = "",
+    original: Annotated[
+        str, Param("the original it was made from: a file, hashed, or a URL")
+    ] = "",
     root: Annotated[str, ROOT] = ".",
 ) -> dict:
     """Copy an artefact another project made into this one, recording where from.
@@ -1088,10 +1115,17 @@ def borrow(
     every game that borrowed a studio's badge learns it changed (§PW325). A path in this
     project works too, for a file kept apart from the engine's tree. Borrowing again
     takes the source as it is now.
+
+    A file made outside any project keeps where it came from (§PW678): `origin` names
+    the service or person that made the original, `original` the file (hashed) or URL
+    it was made from, and a record beside the borrowed file, a `sound.loop` cut from it
+    say, is kept as the step between, so the credits name the whole chain.
     """
     import shutil
 
     where = Path(root).resolve()
+    # The parameter names who made the original; from here `origin` is the file.
+    origin_by = origin
     origin = Path(path) if Path(path).is_absolute() else where / path
     if not origin.is_file():
         raise PolyweaveError(
@@ -1111,11 +1145,13 @@ def borrow(
     landed.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(origin, landed)
     taken = _from(origin)
+    made = _made_outside(origin, origin_by=origin_by, original=original)
     record = build(
         "borrow", landed,
         engine={"name": "provenance.borrow"},
         inputs=[source("borrowed", origin, root=where)],
         extra={"borrowed": taken,
+               **({"made": made} if made else {}),
                **({"licence": licence} if licence else {}),
                **({"credit": credit} if credit else {})},
         root=where,
@@ -1123,7 +1159,42 @@ def borrow(
     write(record, where)
     return {"artefact": record["artefact"]["path"], "borrowed": taken,
             "sha256": record["artefact"]["sha256"],
+            **({"made": made} if made else {}),
             **({"credit": credit} if credit else {})}
+
+
+def _made_outside(borrowed: Path, *, origin_by: str, original: str) -> dict:
+    """Where a borrowed file came from before it was borrowed (§PW678): who made the
+    original, the original itself, and the step a record beside the file names."""
+    made: dict[str, Any] = {}
+    if origin_by:
+        made["origin"] = origin_by
+    if original:
+        if "://" in original:
+            made["original"] = {"url": original}
+        else:
+            path = Path(original)
+            if not path.is_file():
+                raise PolyweaveError(
+                    "prov.missing-input", f"there is no original at {original}",
+                    "name the original as a file that is there, or a URL",
+                    given=original)
+            digest, _ = sha256_of(path)
+            made["original"] = {"path": path.resolve().as_posix(), "sha256": digest}
+    beside = borrowed.with_name(borrowed.name + SUFFIX)
+    if beside.is_file():
+        try:
+            step = json.loads(beside.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            step = {}
+        if isinstance(step, dict) and step.get("kind"):
+            made["step"] = {"kind": step["kind"],
+                            "by": (step.get("engine") or {}).get("name", ""),
+                            "params": step.get("params") or {},
+                            "inputs": [{k: one.get(k)
+                                        for k in ("role", "path", "sha256")}
+                                       for one in step.get("inputs") or ()]}
+    return made
 
 
 def _from(origin: Path) -> dict:

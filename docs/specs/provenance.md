@@ -56,6 +56,15 @@ apart from the engine's tree. `licence` and `credit` are recorded where given, t
 being what the licence requires a game to show (§PW350). A source that is not a file, or an `out` that is the
 source itself, is `prov.missing-input`.
 
+A file made outside any project says where it came from (§PW678). `origin` names who or
+what made the original (`"Google Gemini (Lyria)"`), and `original` the original itself,
+a file hashed or a URL. A record beside the borrowed file, a loop `sound.loop` cut from
+the original say, which now records its track and its bars, is kept as the `step` between
+them. All three land under the record's `made`, and `provenance.credits(all=True)` says
+the whole `chain`: `Google Gemini (Lyria) -> market.mp3 -> sound.loop (bars 63, bpm
+120.0) -> music/music.mp3`. An `original` naming a file that is not there is
+`prov.missing-input`.
+
 **Every text artefact and record is written with LF**, on every platform (§PW228). The
 digest is taken over the bytes, and Windows' text mode writes CRLF, so a record made there
 failed on any checkout that normalises line endings to LF although nothing had changed.
