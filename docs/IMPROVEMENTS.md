@@ -189,6 +189,69 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
+### §PW684 An inventory by kind that opens on what it shows
+
+Met by the owner on 2026-11-04, opening Spinhold in the window for PW311. The inventory
+lists 2,019 items in one column, meshes first (156 of them), so a picture is found only
+by scrolling past every mesh, and the page waits until every item is read before it
+shows anything.
+
+What to build: the inventory gets one tab per kind (meshes, pictures, sounds, lines, and
+the rest the payload names), each with its count, the filters (waiting on a person, need
+attention, open revision) kept across tabs, and a search by path. A tab draws its first
+screenful at once and the rest as it scrolls (a virtual list), so a project of thousands
+opens on what it shows rather than on everything. The kinds and counts still come from
+the operation's payload, as the window's rule says, never from a scan of its own.
+
+Done when Spinhold's window shows its first items without waiting for the whole list, a
+picture is two clicks away (its tab, then it, or a typed name), and the tabs' counts sum
+to the inventory's.
+
+### §PW685 A picture fitted beside what is asked of it
+
+Met by the owner on 2026-11-04 (PW311). The item view draws a picture at its real size
+(the README's "a picture at its real size"), so a tall capture such as Spinhold's
+`art/renders/ring.png` runs far below the fold with a sideways scroll bar, and asking
+for a change means scrolling away from the picture to reach the box.
+
+What to build: the picture fits the panel by default, the whole of it visible beside the
+item's facts and the request box, with a toggle to its real size (and back) and a click
+to see it alone at full size. Its real width and height are said beside it, so fitting
+it hides nothing a person judges by.
+
+Done when every picture in Spinhold's inventory shows whole beside its request box
+without scrolling, and real size is one click.
+
+### §PW686 The project screen across the window's width
+
+Met by the owner on 2026-11-04 (PW311), on a 3840-pixel-wide screen: the project screen
+is a narrow centred column with wide empty margins on both sides, so the list and the
+item are cramped side by side while most of the window is blank.
+
+What to build: the project screen uses the window's width. The list takes a fixed,
+resizable share on the left and the item fills the rest, with a sensible maximum line
+length kept for prose only. On a narrow window the two stack, as now. The layout is
+`ui`'s alone; nothing in `core` or the payloads changes.
+
+Done when, at 3840 wide, the item panel shows a picture, its facts and the request box
+without the side margins taking more than a small share of the window.
+
+### §PW687 Marks drawn where the change is asked
+
+Met by the owner on 2026-11-04 (PW311): asking for a change to a picture from its item
+view, they looked for the box to draw where it is wrong and found none. PW401 put "mark
+where it is wrong" on the Decide screen only, on a sitting's card, so a request made
+from the item where a person is looking at the picture carries words alone.
+
+What to build: the item view's picture takes the same drawn boxes as Decide's, kept in
+the picture's own pixels whatever size it is shown at (the code PW401 wrote is reused,
+not copied), and "Ask for a change" sends them with the words: `revision.ask` keeps them
+as a mask tied to the picture's digest, as `review.answer` does, and the session's first
+message names them, so the agent knows where before it reads the words.
+
+Done when a box drawn on a picture in the item view reaches the revision and the
+session's opening as a mask on that picture.
+
 ## Block V — Parts every game repeats, installed already proved
 
 ### §PW368 Declared states and transitions
