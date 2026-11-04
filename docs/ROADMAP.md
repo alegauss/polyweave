@@ -77,15 +77,6 @@
   five or more, and a picture bought from the model passes or fails the family's gate
   with its record naming the model and its members.
 
-## Done when — PW480
-
-- **A kind's sample is cut and read from a frame by one call** reference.sample(frames,
-  at, box, name) writes the crop under the project and answers its colour, so no
-  throwaway script picks a kind's colour.
-- **Resogun's phase 1 counts its pods, not its city** On Spinhold's resogun_p1 frames
-  the count per frame follows the pods by eye on the sheets, with silhouette or warp-in
-  where motion alone is not enough.
-
 ## Done when — PW659
 
 - **picture.buy sends the ratio in the field 4.0 draws by** A 16x9 request on 4.0 comes
