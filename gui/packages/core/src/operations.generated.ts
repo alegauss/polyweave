@@ -878,6 +878,14 @@ export interface KitUpdateArgs {
   root?: string
 }
 
+/** Turn one level source into the file the game loads, checked and recorded. */
+export interface LevelCompileArgs {
+  /** the level source to compile, under the project */
+  level: string
+  /** the project whose level this is; default "." */
+  root?: string
+}
+
 /** Play one level with the game's own probe and read back what it measured. */
 export interface LevelProbeArgs {
   /** the level file the probe plays, under the project */
@@ -2870,6 +2878,7 @@ export interface Operations {
   "kit.list": KitListArgs
   "kit.prove": KitProveArgs
   "kit.update": KitUpdateArgs
+  "level.compile": LevelCompileArgs
   "level.probe": LevelProbeArgs
   "level.validate": LevelValidateArgs
   "loop.assets": LoopAssetsArgs
@@ -3096,6 +3105,7 @@ export const OPERATIONS = [
   "kit.list",
   "kit.prove",
   "kit.update",
+  "level.compile",
   "level.probe",
   "level.validate",
   "loop.assets",

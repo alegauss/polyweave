@@ -110,6 +110,9 @@ pairs     = [{ one = "runs/play.jsonl", other = "runs/editor.jsonl" }]  # what a
 [levels]                       # a game's levels: level.validate (PW203), level.probe (PW202)
 schema      = "data/level.schema.json"      # the project's JSON Schema for one level file
 files       = ["data/levels/*.json"]        # the level files held to it
+compile     = ["python", "tools/compile_level.py", "{source}", "{out}"]  # level.compile
+out         = "{dir}/{stem}.tres"            # where the command writes the game's file
+timeout     = 120                            # seconds the command may take
 probe       = "res://tools/level_probe.gd"  # prints level: seed=N name=value a seed
 seeds       = 100              # seeds 1 to N a level is played over
 percentiles = [10, 50, 90]     # each measure read at these and its mean

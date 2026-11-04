@@ -109,26 +109,6 @@ model and the members.
 
 ## Block R — Levels measured before a person plays them
 
-### §PW203 A level declaration compiled by the game's own step
-
-Landed 2026-11-03: `level.validate` holds every file `[levels] files` matches to the
-project's own JSON Schema, `[levels] schema`, in the part of JSON Schema a level needs,
-and checks an `x-entity` string against the world's ids (`docs/specs/engine.md`).
-
-What is left is the compile half. `level.compile` runs the project's declared compile
-command, which turns a source a person or an agent edits into the engine's own resource,
-and writes a provenance sidecar naming the source, the schema and the command's hash.
-The compiled file is still what the game loads, so nothing at runtime depends on
-polyweave, and a hand-tuned level stays a source file a person owns.
-
-Neither consumer has that step yet, which is why it waited. Spinhold's game reads its
-`*.waves.toml` as it is, so there the source is the resource and compiling is nothing
-but the record. Cottony's JSON is written by `tools/make_levels.py` from a curve, not
-from a source per level: PW206 is where Cottony's levels become declarations, and the
-compile command is shaped by what that step needs (the curve's constants, the level
-number) rather than guessed ahead of it. Build it with PW206, or with a second game
-whose levels are compiled.
-
 ### §PW204 Difficulty bounds and a search over a level's parameters
 
 Once a probe reports measures and a level compiles from a declaration, a level's
@@ -248,9 +228,9 @@ the reader's list of accepted keys and its refusals, the editor's table of bound
 steps, and the doc comments a person reads. Each new key is added three times, and they
 already disagree on what a person may type.
 
-§PW203 makes the schema a project's declaration (`[levels] schema`) and checks a level
-against it. That covers the checking. What the engine still lacks is the rest of what a
-declared schema knows:
+PW203 (`docs/specs/engine.md`) makes the schema a project's declaration (`[levels]
+schema`) and checks a level against it. That covers the checking. What the engine still
+lacks is the rest of what a declared schema knows:
 
 - **a typed reader**: `tables.check --write` already writes a typed script from a
   declared table; the same for a nested level document (tables of arrays of tables, inline
@@ -277,12 +257,12 @@ have been carried over this way, each a long session of retyping and a source of
 the transcription had already settled.
 
 polyweave should take that step: `reference.draft` (or a mode of `level.compile`) turns
-an accepted transcription into a draft level in the project's own declared schema
-(§PW203). The mapping is the project's, declared once beside the schema: which column of
-a row becomes which field, how a row's time becomes the level's clock, how a named
-formation or kind maps to the project's names, what a row with no mapping becomes. No
-genre is compiled in: a shooter maps rows to spawn groups, a rhythm game to notes, a
-platformer to placed objects.
+an accepted transcription into a draft level in the project's own declared schema (PW203
+(`docs/specs/engine.md`)). The mapping is the project's, declared once beside the
+schema: which column of a row becomes which field, how a row's time becomes the level's
+clock, how a named formation or kind maps to the project's names, what a row with no
+mapping becomes. No genre is compiled in: a shooter maps rows to spawn groups, a rhythm
+game to notes, a platformer to placed objects.
 
 The draft is written with its provenance naming the transcription, its verdicts and the
 mapping, marked as a draft so a person still tunes it; rows a person corrected carry

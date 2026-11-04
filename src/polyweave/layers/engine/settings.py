@@ -45,6 +45,12 @@ TABLES: dict[str, Any] = {
         # The project's JSON Schema for one level, and the files held to it (§PW203).
         "schema": "",
         "files": [],
+        # The project's command turning one source into the file the game loads, with
+        # {source} and {out} filled in, where it writes ({dir} and {stem} of the source)
+        # and how long it may take; no command is a source the game loads as it is.
+        "compile": [],
+        "out": "",
+        "timeout": 120,
         "probe": "",
         "seeds": 100,
         "percentiles": [10, 50, 90],

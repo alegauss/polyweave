@@ -37,6 +37,16 @@ CODES: dict[str, Code] = {
         "part of JSON Schema level.validate reads (§PW203)",
         doors=("write it in type, properties, required, items, enum and bounds",),
     ),
+    "level.invalid": Code(
+        means="a level source breaks its schema, so it is not compiled",
+        when="level.compile on a source level.validate has findings for",
+        doors=("fix each place the detail names, then compile again",),
+    ),
+    "level.compile-failed": Code(
+        means="the project's compile command did not write the game's file",
+        when="a command that exited non-zero, wrote nothing at out, or has no out",
+        doors=("run the command by hand on the source", "declare [levels] out"),
+    ),
     "level.no-level": Code(
         means="the level file named is not there",
         when="a path one folder off, or a level not yet written",

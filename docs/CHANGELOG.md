@@ -546,7 +546,7 @@
 - ✅ **PW641** **after PW480, reference.objects still counts a parallax city as moving enemies, so Resogun's phase 1 cannot be counted** — A kind's warp keeps only tracks born at a flash just before, so Resogun's lull counts none (79 before) and its phase 282 tracks (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW201** **Nobody knows if a scripted bot's win rate tracks how hard a level feels to a person** — The owner played Cottony's levels 10 to 20: the careless bot's falling win rate orders them right, but the feel is three stars out of reach, so the block measures stars too.
 - ✅ **PW202** **A game's own headless play of a level has no way to report what it measured** — level.probe runs the game's own probe over seeds and reads each declared measure at its percentiles, refusing a line that says less or more (design recorded in `docs/specs/engine.md`).
-- ✅ **PW203 (level.validate)** **A level declared as data cannot reach the engine without each game's own converter** — level.validate holds each declared level file to the project's JSON Schema and its world, naming the file, the place and what is wrong.
+- ✅ **PW203** **A level declared as data cannot reach the engine without each game's own converter** — level.compile holds a level source to its schema, runs the project's own command and records the file the game loads, or the source the game reads (design recorded in `docs/specs/engine.md`).
 
 ## Block S — Playing the game, not only rendering it
 

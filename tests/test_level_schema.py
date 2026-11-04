@@ -116,6 +116,79 @@ def test_no_schema_or_no_level_is_refused(tmp_path):
     assert refused.value.code == "level.no-schema"
 
 
+#: A compiler of the project's own: the TOML source to the JSON the game loads.
+COMPILER = """import json, sys, tomllib
+from pathlib import Path
+source, out = sys.argv[1], sys.argv[2]
+data = tomllib.loads(Path(source).read_text(encoding="utf-8"))
+if data.get("line", {}).get("speed") == 0:
+    sys.exit("speed 0 is no level")
+Path(out).write_text(json.dumps(data), encoding="utf-8")
+"""
+
+
+def _compiling(tmp_path):
+    root = _project(tmp_path)
+    (root / "tools").mkdir()
+    (root / "tools" / "compile_level.py").write_text(COMPILER, encoding="utf-8")
+    with (root / "polyweave.toml").open("a", encoding="utf-8") as table:
+        table.write('compile = ["python", "tools/compile_level.py", "{source}", '
+                    '"{out}"]\nout = "{dir}/{stem}.json"\n')
+    return root
+
+
+def test_a_source_compiles_to_the_file_the_game_loads_and_is_recorded(tmp_path):
+    import sys
+
+    from polyweave.kernel import provenance
+
+    root = _compiling(tmp_path)
+    text = (root / "polyweave.toml").read_text(encoding="utf-8")
+    (root / "polyweave.toml").write_text(text.replace('"python"',
+                                                      json.dumps(sys.executable)),
+                                         encoding="utf-8")
+    made = level_schema.compile_level("waves/one.waves.toml", root=str(root))
+    assert made["compiled"] == "waves/one.waves.json"
+    loaded = json.loads((root / "waves" / "one.waves.json").read_text("utf-8"))
+    assert loaded["stage"][0]["wave"][0]["group"][0]["enemy"] == "drone"
+    record = provenance.read("waves/one.waves.json", root=str(root))
+    assert record["kind"] == "level"
+    assert {one["role"]: one["path"] for one in record["inputs"]} == {
+        "level": "waves/one.waves.toml", "schema": "data/level.schema.json",
+        "compiler": "tools/compile_level.py"}
+
+
+def test_an_invalid_source_or_a_failing_command_is_refused(tmp_path):
+    import sys
+
+    root = _compiling(tmp_path)
+    text = (root / "polyweave.toml").read_text(encoding="utf-8")
+    (root / "polyweave.toml").write_text(text.replace('"python"',
+                                                      json.dumps(sys.executable)),
+                                         encoding="utf-8")
+    source = root / "waves" / "one.waves.toml"
+    source.write_text(WAVES.replace("count = 10", "count = 0"), encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        level_schema.compile_level("waves/one.waves.toml", root=str(root))
+    assert refused.value.code == "level.invalid"
+    assert "group[0].count" in refused.value.message
+    source.write_text(WAVES.replace("speed = 24.0", "speed = 0"), encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        level_schema.compile_level("waves/one.waves.toml", root=str(root))
+    assert refused.value.code == "level.compile-failed"
+    assert not (root / "waves" / "one.waves.json").exists()
+
+
+def test_with_no_command_the_source_is_what_the_game_loads(tmp_path):
+    from polyweave.kernel import provenance
+
+    root = _project(tmp_path)
+    made = level_schema.compile_level("waves/one.waves.toml", root=str(root))
+    assert made["compiled"] == "waves/one.waves.toml"
+    record = provenance.read("waves/one.waves.toml", root=str(root))
+    assert [one["role"] for one in record["inputs"]] == ["schema"]
+
+
 def test_a_json_level_is_read_as_json(tmp_path):
     root = _project(tmp_path)
     (root / "waves" / "one.waves.toml").unlink()

@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 8 },
+  { block: "R", title: "Levels measured before a person plays them", open: 7 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -53,25 +53,18 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW203",
-    block: "R",
-    symptom: "A level declared as data cannot reach the engine without each game's own converter",
-    why: "A level source still has no compile step that writes the engine's resource with a record; it waits on PW206 or a game that compiles.",
-    deps: [],
-  },
-  {
     id: "PW204",
     block: "R",
     symptom: "A level's difficulty has no bar a search can aim at, and a level set has no curve to hold",
     why: "Cottony's curve constants were set by feel and never measured, so a level can be unwinnable or trivial and nothing fails.",
-    deps: ["PW203"],
+    deps: [],
   },
   {
     id: "PW205",
     block: "R",
     symptom: "A shooter's waves have no measure of threat, so the level contract is proven on one genre only",
     why: "A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once.",
-    deps: ["PW203"],
+    deps: [],
   },
   {
     id: "PW206",
@@ -99,7 +92,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand",
     why: "Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed.",
-    deps: ["PW203"],
+    deps: [],
   },
   {
     id: "PW480",

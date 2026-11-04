@@ -88,7 +88,8 @@ CORE_TOOLS = 41_400
 #: 147,606 with provenance.outdated's under and strict (§PW36, 2026-11-03).
 #: 148,458 with render.in_game (§PW495, 2026-11-03).
 #: 148,995 with level.probe (§PW202, 2026-11-03).
-SESSION_BUDGET = 149_500
+#: 149,816 with level.validate and level.compile (§PW203, 2026-11-03).
+SESSION_BUDGET = 150_200
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

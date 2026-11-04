@@ -674,9 +674,18 @@ the world never declared is found with a near name. The answer is `ok`, `files` 
 what it `said`. No schema is `level.no-schema`; a file named or matched that is not there
 is `level.no-level`.
 
-Compiling a level into the engine's own resource, recorded, is still to come (§PW203):
-today Spinhold's game reads its TOML as it is, and Cottony's JSON is written from a curve
-rather than from a source a person edits.
+`level.compile(level)` turns one source into the file the game loads. It holds the
+source to the schema first, and a source with findings is `level.invalid`, the findings
+in its detail. Then it runs `[levels] compile`, the project's own command as a list of
+arguments with `{source}` and `{out}` filled in (`{dir}` and `{stem}` of the source fill
+`[levels] out`), from the project's root under `[levels] timeout` seconds. A command
+that exits non-zero, writes nothing at `out`, or is declared with no `out` is
+`level.compile-failed` with what it printed. The compiled file is what the game loads,
+so nothing at runtime needs polyweave, and it is recorded as a `level`: the source, the
+schema and every argument of the command that is a file under the project, as a
+`compiler` with its digest, so a changed compiler reads outdated. With no `compile`
+declared, the source is what the game loads, as Spinhold's `*.waves.toml` are: the call
+holds it to the schema and records it beside itself, with the schema as its input.
 
 ## A level played by the game's own probe
 

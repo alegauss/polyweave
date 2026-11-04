@@ -36,13 +36,12 @@
 
 ## Block R — Levels measured before a person plays them
 
-- ⏳ **PW203** (deps: PW201 ✅) **A level declared as data cannot reach the engine without each game's own converter** — A level source still has no compile step that writes the engine's resource with a record; it waits on PW206 or a game that compiles. → §PW203
-- 📋 **PW204** (deps: PW202 ✅, PW203 ⏳) **A level's difficulty has no bar a search can aim at, and a level set has no curve to hold** — Cottony's curve constants were set by feel and never measured, so a level can be unwinnable or trivial and nothing fails. → §PW204
-- 📋 **PW205** (deps: PW202 ✅, PW203 ⏳) **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once. → §PW205
+- 📋 **PW204** (deps: PW202 ✅, PW203 ✅) **A level's difficulty has no bar a search can aim at, and a level set has no curve to hold** — Cottony's curve constants were set by feel and never measured, so a level can be unwinnable or trivial and nothing fails. → §PW204
+- 📋 **PW205** (deps: PW202 ✅, PW203 ✅) **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once. → §PW205
 - 📋 **PW206** (deps: PW204, PW205) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
 - 📋 **PW327** (deps: PW205) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both. → §PW327
 - 📋 **PW608** (deps: —) **a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help** — Each level key is written again in the reader, the editor and the docs, and the three drift apart. → §PW608
-- 📋 **PW609** (deps: PW203 ⏳) **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed. → §PW609
+- 📋 **PW609** (deps: PW203 ✅) **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — Retyping what a person already settled row by row costs a session per stage and brings back the slips the sitting removed. → §PW609
 - 📋 **PW480** (deps: —) **reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted** — With the warp-in (PW641) the lull is empty, but a death burst still reads as one and a chain is no pod, so stretches miss the sheet. → §PW480
 
 ## Block S — Playing the game, not only rendering it
@@ -104,13 +103,6 @@
 - **picture.buy sends the ratio in the field 4.0 draws by** A 16x9 request on 4.0 comes
   back within two percent of 16:9, proved by one paid request the owner chooses to make
   and recorded in the learned schema.
-
-## Done when — PW203
-
-- **a level source compiles to the engine's own resource, recorded** level.compile runs
-  the project's declared command on a source the schema holds, writes the file the game
-  loads with a record naming source, schema and command hash, and a game's own levels
-  (Cottony's, through PW206) are made that way.
 
 ## Non-goals
 

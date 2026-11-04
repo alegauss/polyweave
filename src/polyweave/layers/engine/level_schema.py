@@ -138,6 +138,126 @@ def _read(path: Path) -> Any:
     return json.loads(text) if path.suffix.lower() == ".json" else tomllib.loads(text)
 
 
+def _schema(here: Path, table: dict) -> tuple[str, dict]:
+    named = str(table.get("schema") or "")
+    if not named:
+        raise _no_schema("polyweave.toml declares no [levels] schema",
+                         'write [levels] schema = "data/level.schema.json", a JSON '
+                         "Schema for one level file")
+    try:
+        schema = json.loads((here / named).read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise _no_schema(f"{named} is not a JSON file to read",
+                         "write the schema as JSON at that path",
+                         detail=str(exc)) from exc
+    _checked(schema)
+    return named, schema
+
+
+def _findings(paths: list[Path], schema: dict, here: Path) -> list[dict]:
+    entities = None
+    if _uses_entities(schema):
+        from polyweave.layers.words import world
+
+        entities = set(world.declared(None, here)[1])
+    findings = []
+    for path in paths:
+        name = path.relative_to(here).as_posix()
+        try:
+            value = _read(path)
+        except (ValueError, tomllib.TOMLDecodeError) as exc:
+            findings.append({"file": name, "at": "(the file)",
+                             "said": f"not readable: {exc}"})
+            continue
+        findings += [{"file": name, **one} for one in _held(value, schema, entities)]
+    return findings
+
+
+def _filled(text: str, source: Path, out: Path | None, here: Path) -> str:
+    rel = source.relative_to(here)
+    return text.format(source=rel.as_posix(), dir=rel.parent.as_posix(),
+                       stem=source.stem, out=out.relative_to(here).as_posix()
+                       if out else "")
+
+
+@operation("level.compile")
+def compile_level(
+    level: Annotated[str, Param("the level source to compile, under the project")],
+    root: Annotated[str, Param("the project whose level this is")] = ".",
+) -> dict:
+    """Turn one level source into the file the game loads, checked and recorded.
+
+    Holds the source to `[levels] schema` first and refuses it with its findings. Then
+    runs `[levels] compile`, the project's own command with `{source}` and `{out}`
+    filled in, and holds it to writing `[levels] out`. The record names the source,
+    the schema and the command, each file it names with its digest. With no command
+    the source is what the game loads, and only the record is written (§PW203).
+    """
+    import hashlib
+    import subprocess
+
+    from polyweave.kernel import provenance
+
+    config = load(root)
+    here = config.root
+    table = config.table("levels")
+    named, schema = _schema(here, table)
+    source = here / level
+    if not source.is_file():
+        raise PolyweaveError("level.no-level", f"there is no level at {level}",
+                             "name the level source as a path under the project",
+                             given=level)
+    findings = _findings([source], schema, here)
+    if findings:
+        first = findings[0]
+        raise PolyweaveError(
+            "level.invalid",
+            f"{level} breaks its schema in {len(findings)} place(s), the first "
+            f"{first['at']}: {first['said']}",
+            "fix each place level.validate names, then compile again",
+            detail=findings)
+    command = [str(one) for one in table.get("compile") or []]
+    target = source
+    ran: dict = {}
+    if command:
+        template = str(table.get("out") or "")
+        if not template:
+            raise PolyweaveError(
+                "level.compile-failed", "[levels] compile is declared with no out",
+                'write [levels] out = "{dir}/{stem}.json", where the command writes')
+        target = here / _filled(template, source, None, here)
+        argv = [_filled(one, source, target, here) for one in command]
+        before = target.stat().st_mtime_ns if target.is_file() else None
+        done = subprocess.run(  # noqa: S603 - the project's own declared command
+            argv, cwd=here, capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=float(table.get("timeout", 120)), check=False)
+        wrote = target.is_file() and target.stat().st_mtime_ns != before
+        if done.returncode != 0 or not wrote:
+            raise PolyweaveError(
+                "level.compile-failed",
+                f"{' '.join(argv)} " + (f"exited {done.returncode}" if done.returncode
+                                        else f"wrote nothing at {target.name}"),
+                "run the command by hand on the source and read what it says",
+                detail=(done.stderr or done.stdout)[-2000:])
+        ran = {"command": argv, "exit": done.returncode}
+    inputs = [provenance.source("level", source, root=here)] if command else []
+    inputs.append(provenance.source("schema", here / named, root=here))
+    inputs += [provenance.source("compiler", here / one, root=here)
+               for one in command if (here / one).is_file()]
+    provenance.write(provenance.build(
+        "level", target, inputs=inputs,
+        params={"compile": command, "command_sha256": hashlib.sha256(
+            "\0".join(command).encode()).hexdigest()[:16]},
+        root=here), root=here)
+    loaded = provenance.relative(target, here)
+    return {
+        "compiled": loaded,
+        **ran,
+        "says": f"{level} holds its schema and compiled to {loaded}" if command
+        else f"{level} holds its schema and is what the game loads; recorded",
+    }
+
+
 @operation("level.validate")
 def validate(
     level: Annotated[str, Param("one level file; every [levels] files match if empty")]
@@ -154,19 +274,7 @@ def validate(
     config = load(root)
     here = config.root
     table = config.table("levels")
-    named = str(table.get("schema") or "")
-    if not named:
-        raise _no_schema("polyweave.toml declares no [levels] schema",
-                         'write [levels] schema = "data/level.schema.json", a JSON '
-                         "Schema for one level file")
-    where = here / named
-    try:
-        schema = json.loads(where.read_text(encoding="utf-8-sig"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise _no_schema(f"{named} is not a JSON file to read",
-                         "write the schema as JSON at that path",
-                         detail=str(exc)) from exc
-    _checked(schema)
+    named, schema = _schema(here, table)
     if level:
         files = [here / level]
     else:
@@ -179,21 +287,7 @@ def validate(
             else "[levels] files matches no level file",
             "name a level file under the project, or list its pattern in "
             '[levels] files, such as ["data/levels/*.json"]', given=level or None)
-    entities = None
-    if _uses_entities(schema):
-        from polyweave.layers.words import world
-
-        entities = set(world.declared(None, here)[1])
-    findings = []
-    for path in files:
-        name = path.relative_to(here).as_posix()
-        try:
-            value = _read(path)
-        except (ValueError, tomllib.TOMLDecodeError) as exc:
-            findings.append({"file": name, "at": "(the file)",
-                             "said": f"not readable: {exc}"})
-            continue
-        findings += [{"file": name, **one} for one in _held(value, schema, entities)]
+    findings = _findings(files, schema, here)
     return {
         "ok": not findings,
         "files": len(files),

@@ -198,7 +198,8 @@ from polyweave.surface.capabilities import capabilities
 #: (§PW495, 2026-11-03).
 #: 170,596 with level.probe, a level played by the game's own probe (§PW202,
 #: 2026-11-03).
-DESCRIBE = 171_200
+#: 171,500 with level.validate and level.compile (§PW203, 2026-11-03).
+DESCRIBE = 171_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -356,7 +357,9 @@ DESCRIBE = 171_200
 #: 186,912 with render.in_game and render.not-a-bake and render.no-game (§PW495,
 #: 2026-11-03).
 #: 187,685 with level.probe and its five level.* codes (§PW202, 2026-11-03).
-CAPABILITIES = 188_400
+#: 188,649 with level.validate, level.compile and their three codes (§PW203,
+#: 2026-11-03).
+CAPABILITIES = 189_100
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -434,7 +437,8 @@ HELP_VERB = 5_100
 #: 33,999 with accept.first and game.replay_rates (§PW637, §PW640).
 #: 34,288 with stock.find and stock.fetch (§PW673, 2026-10-31).
 #: 34,573 with render.in_game and level.probe (§PW495, §PW202, 2026-11-03).
-HELP_TOP = 34_800
+#: 34,871 with level.validate and level.compile (§PW203, 2026-11-03).
+HELP_TOP = 35_100
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

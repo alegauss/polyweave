@@ -30,7 +30,7 @@ LAYER = Layer(
     # A level's entity references are read off the world (§PW203).
     uses=("words",),
     requires=("godot",),
-    kinds=("capture",),
+    kinds=("capture", "level"),
     ships="polyweave.layers.engine.driving:ships",
     subjects=(
         Subject(
