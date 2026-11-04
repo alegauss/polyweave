@@ -113,5 +113,5 @@ def test_a_spoken_take_is_the_sounds_verdict_by_the_words_layers_own_claim():
 
 def test_describe_says_where_each_kind_of_verdict_lives():
     judges = describe("verdict.judge")["declares"]["judges"]
-    assert set(judges) == {"canon", "heard", "line", "row"}
+    assert set(judges) == {"bought", "canon", "heard", "line", "row"}
     assert all(about for about in judges.values())
