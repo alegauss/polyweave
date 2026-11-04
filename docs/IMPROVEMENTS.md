@@ -160,30 +160,6 @@ model and the members.
 
 ## Block R — Levels measured before a person plays them
 
-### §PW205 A second genre: Starship's waves measured without a bot
-
-A bot that plays a shooter well is a project of its own, so Starship cannot prove the
-level contract by playing. It can prove it by analysis, and that is the useful test: a
-probe that reads a wave without running it has to fit the same handshake as one that
-plays a board over 200 seeds.
-
-Starship's probe loads a compiled wave `.tres` headlessly. From each group's count, delay and interval it lays the spawns on a timeline and reports four measures:
-- the peak and median enemies alive at once, per second of the wave;
-- a threat total weighted per enemy kind, with the weights in the project's config;
-- the share of the `time_limit` that the last spawn leaves for clearing;
-- how many humans a keeper wave puts at risk at once.
-
-Seeds are irrelevant here and pass as one, which the contract must allow without special
-cases.
-
-`check_phase_waves` already asserts that the enemy total rises each phase. A set spec
-over these measures states that rule and the ones it misses, such as no spike of more
-than a declared factor between neighbouring waves. The line is done when both genres
-pass through `level.probe` and `level.compile` with no change to polyweave between them,
-and the set spec follows once PW204 (`docs/specs/measurements.md`) lands. A change
-needed for the second genre is the evidence that the first one leaked in, which is what
-the non-goal "One genre's level format built in" forbids.
-
 ### §PW206 Cottony's levels made through polyweave
 
 Cottony is where the level loop pays for itself first. Its 20 shipped levels are JSON
@@ -210,20 +186,29 @@ spike bot, swept with engine.sweep, put level 20 at 64 to 66% wins, against the 
 Found in starship while planning its Block V (RK176, RK177): the owner finds the waves
 unbalanced and wants balance measured, not felt.
 
-§PW205 measures what a wave declares. It cannot measure what happened when a person
-played it, and it still reads `.tres`: starship's waves are now authored in
-`game/waves/phase_<n>.waves.toml` (RK122), and Block V adds formations, rails, `follow`
-and `sway` (RK172 to RK174), so a probe must read the compiled spawn timeline, not the
-file format.
+PW205 measures what a wave declares: Spinhold's `dev/level_probe.gd` reads each
+`phase_<n>.waves.toml` through `WaveFile`, so formations, rails, `follow` and `sway`
+arrive as spawns, and reports the phase's threat, peak and median alive and longest gap
+through `level.probe`, held as a curve by `game/waves/phases.levels.toml`. It cannot
+measure what happened when a person played the phase, and it answers totals, not
+seconds.
 
-What starship needs from polyweave:
+What starship still needs from polyweave:
 
-- **A trace contract.** The game writes one event per line, each stamped with phase, wave and second: `spawn` (kind, weight), `kill` (kind, time alive), `hit` and `life_lost`. polyweave reads one trace or many and gives, per second, damage taken, kills and enemies alive, averaged across runs.
-- **The declared curve beside it.** From the spawn timeline and the per-kind weights (§PW205), the pressure entering and alive in the two bounding cases (every enemy killed on landing; nothing killed until the time limit), and the longest gap with nothing to shoot.
-- **A spec over both.** Bounds such as "alive pressure never above N", "never more than 2.5 s with nothing to shoot" (starship's multiplier window) and "each phase's peak above the one before", checked by `accept.check` and failing with the rule named. A person sets the bounds; the feel stays a verdict.
+- **A trace contract.** The game writes one event per line, each stamped with phase,
+  wave and second: `spawn` (kind, weight), `kill` (kind, time alive), `hit` and
+  `life_lost`. polyweave reads one trace or many and gives, per second, damage taken,
+  kills and enemies alive, averaged across runs.
+- **The declared curve beside it.** The same pressure per second, entering and alive in
+  the two bounding cases (every enemy killed on landing; nothing killed until the time
+  limit), laid under the trace so where players struggle is read against what the wave
+  asked.
+- **A spec over both.** Bounds such as "alive pressure never above N" and "each phase's
+  peak above the one before", checked by `accept.check` and failing with the rule
+  named. A person sets the bounds; the feel stays a verdict.
 
-Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
-against this line.
+Until it lands, starship keeps the per-second pass in `dev/pressure.gd`, named against
+this line.
 
 ### §PW480 Objects told from a scene of their own colour
 
@@ -273,7 +258,7 @@ lacks is the rest of what a declared schema knows:
 
 A level editor is the game's, not polyweave's (non-goal "A graphical editor"); this
 gives that editor its fields from the one declaration. Proven on two genres' schemas, as
-§PW205 asks of the level contract.
+PW205 (Spinhold's waves, `game/waves/waves.schema.json`) asks of the level contract.
 
 ### §PW609 A draft level from an accepted transcription
 
@@ -296,6 +281,23 @@ game to notes, a platformer to placed objects.
 The draft is written with its provenance naming the transcription, its verdicts and the
 mapping, marked as a draft so a person still tunes it; rows a person corrected carry
 their corrected value, and a row nobody answered is refused, not guessed.
+
+### §PW681 A curve's rise bounded as a ratio
+
+Met adopting the level contract in Spinhold on 2026-11-04 (PW205). `level.curve`'s set
+spec says a curve's shape in absolute steps: `step`, the most difficulty may fall
+between neighbours, `regions` that end harder than they start, and `dips`. Spinhold's
+owner set a rule in `game/waves/threat.toml` that is a ratio: each phase's peak threat
+alive at most `peak_step` = 1.5 times the phase before. A set spec cannot say that, so
+`game/waves/phases.levels.toml` holds the rise and `dev/check.gd`'s `check_phase_waves`
+keeps holding the ratio, the half polyweave should own.
+
+What to build: a set spec key `most_rise`, the most a neighbour may get harder as a
+ratio of the one before (1.5), read off the same measure and direction, a break answered
+as the pair with rule `rise`. A ratio needs a measure that is positive and grows with
+difficulty, so a measure whose `higher` is easier, or one that reaches zero, is refused
+with `level.bad-set` rather than read upside down. Then Spinhold drops the ratio from
+`check_phase_waves` and names `phases.levels.toml` instead.
 
 ## Block S — Playing the game, not only rendering it
 
