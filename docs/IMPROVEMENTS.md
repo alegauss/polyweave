@@ -111,25 +111,23 @@ model and the members.
 
 ### §PW203 A level declaration compiled by the game's own step
 
-Both consumers already treat levels as data. Cottony has 20 JSON files written by
-`make_levels.py` from a difficulty curve. Starship has 15 `.tres` waves under three
-phases, and its own comment says a harder wave is a different file, never a multiplier
-in code. What neither has is a layer that checks a level before the engine sees it, ties
-it to the world, and records how it was made.
+Landed 2026-11-03: `level.validate` holds every file `[levels] files` matches to the
+project's own JSON Schema, `[levels] schema`, in the part of JSON Schema a level needs,
+and checks an `x-entity` string against the world's ids (`docs/specs/engine.md`).
 
-A `*.level.toml` is the source a person or an agent edits. Its schema is the project's,
-declared in `[levels] schema` as a JSON Schema, because the plugin must not know what a
-wave or a goal is. `level.validate` checks it against that schema. Where the project
-declares a world (`docs/specs/world.md`), every field the schema marks as an entity
-reference must name one of its ids, so a wave that spawns an enemy the world never
-declared fails with the line and a remedy.
+What is left is the compile half. `level.compile` runs the project's declared compile
+command, which turns a source a person or an agent edits into the engine's own resource,
+and writes a provenance sidecar naming the source, the schema and the command's hash.
+The compiled file is still what the game loads, so nothing at runtime depends on
+polyweave, and a hand-tuned level stays a source file a person owns.
 
-`level.compile` runs the project's declared compile command, which turns the source into
-the engine's own resource: Starship's `.tres` or Cottony's JSON. It then writes a
-provenance sidecar naming the source, the schema and the command's hash. The compiled
-file is still what the game loads, so nothing at runtime depends on polyweave. A
-hand-tuned level, like the files `make_levels.py` refuses to overwrite, stays a source
-file a person owns.
+Neither consumer has that step yet, which is why it waited. Spinhold's game reads its
+`*.waves.toml` as it is, so there the source is the resource and compiling is nothing
+but the record. Cottony's JSON is written by `tools/make_levels.py` from a curve, not
+from a source per level: PW206 is where Cottony's levels become declarations, and the
+compile command is shaped by what that step needs (the curve's constants, the level
+number) rather than guessed ahead of it. Build it with PW206, or with a second game
+whose levels are compiled.
 
 ### §PW204 Difficulty bounds and a search over a level's parameters
 

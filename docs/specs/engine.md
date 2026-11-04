@@ -650,6 +650,34 @@ over and hoping to catch the drift. A record keeps the `ticks_per_second` it was
 and the proof plays it back at that rate. A game without the kit is
 `game.no-determinism`, and fewer than two distinct whole rates is `game.bad-rates`.
 
+## A level checked before the engine sees it
+
+Both consumers keep levels as data already, Cottony's JSON and Spinhold's
+`*.waves.toml`, and neither was checked before the game read it (§PW203). The project
+declares the schema, since a wave and a goal are a genre's words and not polyweave's:
+
+```toml
+[levels]
+schema = "data/level.schema.json"            # JSON Schema for one level file
+files  = ["game/waves/phase_*.waves.toml"]   # the files held to it, TOML or JSON
+```
+
+`level.validate(level="")` holds every file `files` matches, or the one named, to the
+schema. It reads the part of JSON Schema a level needs: `type`, `properties`, `required`,
+`additionalProperties` (true or false), `items`, `enum`, `minimum`, `maximum`, `minItems`
+and `maxItems`, besides `title`, `description`, `default`, `examples`, `$schema` and
+`$id`. Any other keyword is `level.no-schema` with where it is, because a check that
+skips what it does not read passes what it never checked. `"x-entity": true` on a string
+says it names an entity of the world (`docs/specs/world.md`), so a wave spawning an enemy
+the world never declared is found with a near name. The answer is `ok`, `files` and
+`findings`, each with its `file`, the place `at` (`stage[0].wave[1].group[2].enemy`) and
+what it `said`. No schema is `level.no-schema`; a file named or matched that is not there
+is `level.no-level`.
+
+Compiling a level into the engine's own resource, recorded, is still to come (§PW203):
+today Spinhold's game reads its TOML as it is, and Cottony's JSON is written from a curve
+rather than from a source a person edits.
+
 ## A level played by the game's own probe
 
 Only a game can play its own rules, so polyweave owns the handshake and never the

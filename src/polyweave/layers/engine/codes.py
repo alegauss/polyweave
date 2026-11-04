@@ -31,6 +31,12 @@ CODES: dict[str, Code] = {
         "direction other than higher or lower",
         doors=('declare each as name = { unit = "...", direction = "higher" }',),
     ),
+    "level.no-schema": Code(
+        means="there is no level schema to check against, or one not read whole",
+        when="no [levels] schema, a file that is not JSON, or a keyword outside the "
+        "part of JSON Schema level.validate reads (§PW203)",
+        doors=("write it in type, properties, required, items, enum and bounds",),
+    ),
     "level.no-level": Code(
         means="the level file named is not there",
         when="a path one folder off, or a level not yet written",

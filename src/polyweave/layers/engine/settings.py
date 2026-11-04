@@ -42,6 +42,9 @@ TABLES: dict[str, Any] = {
     # the percentiles each measure is read at, and `[levels.measures]`, each measure the
     # probe prints with its unit and direction.
     "levels": {
+        # The project's JSON Schema for one level, and the files held to it (§PW203).
+        "schema": "",
+        "files": [],
         "probe": "",
         "seeds": 100,
         "percentiles": [10, 50, 90],

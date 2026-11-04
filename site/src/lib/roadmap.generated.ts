@@ -56,7 +56,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW203",
     block: "R",
     symptom: "A level declared as data cannot reach the engine without each game's own converter",
-    why: "Cottony writes JSON from a curve and Starship hand-edits .tres waves, so neither level is validated, linked to the world or recorded before it lands.",
+    why: "A level source still has no compile step that writes the engine's resource with a record; it waits on PW206 or a game that compiles.",
     deps: [],
   },
   {
@@ -92,7 +92,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "a declared level schema gives the engine no typed reader and gives a game's tools no field bounds, units or help",
     why: "Each level key is written again in the reader, the editor and the docs, and the three drift apart.",
-    deps: ["PW203"],
+    deps: [],
   },
   {
     id: "PW609",

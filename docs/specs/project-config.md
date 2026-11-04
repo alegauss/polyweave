@@ -107,7 +107,9 @@ time      = "frame"            # the key a trace line is stamped by: frame, or t
 tolerance = { position = 0.5 } # how far a field may part; a field not named must be equal
 pairs     = [{ one = "runs/play.jsonl", other = "runs/editor.jsonl" }]  # what a gate holds
 
-[levels]                       # the game's own level probe, level.probe (PW202)
+[levels]                       # a game's levels: level.validate (PW203), level.probe (PW202)
+schema      = "data/level.schema.json"      # the project's JSON Schema for one level file
+files       = ["data/levels/*.json"]        # the level files held to it
 probe       = "res://tools/level_probe.gd"  # prints level: seed=N name=value a seed
 seeds       = 100              # seeds 1 to N a level is played over
 percentiles = [10, 50, 90]     # each measure read at these and its mean
