@@ -12,29 +12,30 @@
 
 Seen in the viglet marketing repository (`D:\Git\viglet\marketing`, task VM3), moving
 the WordPress demo's narration from a `sound.speak` loop to `voice.lines --script`
-(PW665), as the Viglet Shio promo next to it already buys.
+(PW665). The dry answer listed all 18 pt-BR takes on disk to buy and none current,
+though each `.prov.json` has the line's text as `prompt`, the same voice and
+`eleven_v3`.
 
-The call: `voice.lines --script demo/narration/lines.json --spend false --root
-turing/wordpress --json`. The 18 pt-BR takes on disk were bought with `sound.speak
---text <line> --voice <id> --model eleven_v3 --out demo/narration/pt-BR/<key>.mp3`; each
-`.prov.json` has the line's text as `prompt`, the same voice and model. The dry answer
-listed all 18 to buy and none current.
+The cause is `_still` in `sound_buy.py`: a take is current only with `details.line`,
+which `sound.speak` never writes. The table path has the same cause for a take bought
+with `sound.speak --entity`, whose `details.entity.sha256` already matches.
 
-The two records differ in what voice.lines seems to key on: a `voice.lines` take carries
-`details.line` and an `inputs` entry for the lines file; a `sound.speak` take carries
-`details.cue` and `details.entity` and no input. So a take is current only to the
-operation that bought it, and a project switching from `sound.speak` to `voice.lines`
-pays for every take again, for audio that is byte for byte what it would get.
+Not silently current: `eleven_v3` is in `LANGUAGE_HELD`, so `voice.lines` sends
+`language_code` and `sound.speak` never did (PW412: unheld, a voice read Portuguese with
+an English mouth), and the audio is not what `voice.lines` would have bought.
 
-Expected: `voice.lines` reads a take as current when the file exists and its provenance
-has the line's spoken text as `prompt`, with the same voice and model, whichever
-operation bought it, and then writes the fields it needs (`details.line`, the input)
-into that record, so the next plan is fast. A `--adopt` dry answer that names which
-takes it would take over would make the move checkable before any spend.
+Expected: the dry answer lists such takes as `adoptable`, apart from `current`, naming
+the operation that bought them and whether the language was held. `adopt=true` writes
+`details.line`, the input and `adopted: true` into each record, so later plans see them
+as current. One change in `_still`, for the script and the table path.
+
+Tests: the `prompt` compared stripped (`voice.lines` strips, `sound.speak` does not); a
+draft never adoptable; the file's hash must match; another voice, delivery or model
+stays a buy; without `adopt` nothing is written and nothing counted current.
 
 Workaround: the WordPress narration stays on its `sound.speak` loop
-(`turing/wordpress/bin/story-narration.mjs`), reading currency through the shared
-`video-maker/narration/takes.mjs`; only the Shio promo buys through `voice.lines`.
+(`turing/wordpress/bin/story-narration.mjs`); only the Shio promo buys through
+`voice.lines`.
 
 ## Block E — One world with the engine
 
@@ -79,28 +80,27 @@ verdict, and each gap it met is a filed line.
 ### §PW690 Capturing a web page as a clip
 
 **Where it happened.** `alegauss/visibility`, task VS52: the Shio promo video
-(`video/shio-promo/roteiro.md`) needs its console and site scenes filmed by script on a
-clean Shio instance (the Marketplace install of the Quilhara showcase, the review queue,
-the Universal Editor, the bilingual site, a members-only page), so that a UI change is a
-new run and not a new recording. The same need came up before in Dumont's WordPress
-plugin video, which films a WooCommerce store with its own `tests/e2e/story/*.mjs` and
-`bin/story-video.mjs`.
+(`video/shio-promo/roteiro.md`) films its console and site scenes by script on a clean
+Shio instance (Marketplace install, review queue, Universal Editor, bilingual site, a
+members-only page), so a UI change is a new run and not a new recording. Dumont's
+WordPress plugin video did the same with its own `bin/story-video.mjs`.
 
-**What polyweave offers.** `describe capture.movie` films "every frame between two marks
-the script prints, at the engine's fixed rate", which runs a game engine. `video.cut`
-cuts and encodes runs polyweave captured. Nothing records a browser page, so the only
-path is a project script around Playwright's `recordVideo`.
+**What polyweave offers.** `capture.movie` runs a game engine. `video.cut` already takes
+a recorded file as a clip (`video = "<file>"`) and records its hash as an input, so a
+Playwright `.webm` can be cut today. What is missing is the record of how the clip was
+made, and the broken-page refusal every project rewrites
+(`video/shio-promo/capturar-cenas.mjs` refuses a console error, a failed request or a
+broken image).
 
-**The workaround.** `video/shio-promo/capturar-cenas.mjs` in visibility drives Chromium
-with Playwright, records each scene to `video/shio-promo/cenas/<id>.webm` at 1920x1080,
-and refuses a scene whose page logs a console error, fails a request or shows a broken
-image (the rule Shio's `showcase-screenshots.mjs` applies to screenshots).
+**What polyweave could do.** A capture whose source is a URL, a viewport and declared
+steps (go to, click, type, wait for, scroll), writing a clip file with its `.prov.json`:
+the URL, the steps and each step's time mark. Not a `sequence.json` of frames: a browser
+records in real time, with no fixed tick.
 
-**What polyweave could do.** A capture operation whose source is a URL and a declared
-list of steps (go to, click, type, wait for, scroll) instead of an engine script,
-writing the same run record `video.cut` already reads: frames or a clip, the marks of
-each step, and a refusal when the page logged an error or an image did not load. Then
-`video.cut` cuts a web product's video as it cuts a game trailer.
+Tests: a typed value from a secret names its environment variable and never lands in the
+record; an allow-list of requests that may fail (an expected 401) without refusing;
+waits on a condition, never a sleep; with no Playwright installed, a refusal naming the
+install, as the speech engines do.
 
 ## Block N — Pictures held to a canon
 

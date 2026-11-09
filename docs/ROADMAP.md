@@ -8,7 +8,7 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW691** (deps: —) **voice.lines plans again takes sound.speak bought with the same prompt, voice and model, so moving to it rebuys them** — A project switching its narration to voice.lines pays for every take a second time, for the same audio. → §PW691
+- 📋 **PW691** (deps: —) **voice.lines plans again takes sound.speak bought with the same words, voice and model, and cannot take them over** — A project moving its narration to voice.lines pays for every take again; they differ only where the model holds the language, so taking them over is the person's call. → §PW691
 
 ## Block E — One world with the engine
 
@@ -28,7 +28,7 @@
 
 ## Block M — What a game needs beyond the look
 
-- 📋 **PW690** (deps: —) **No capture records a web page, so a product video films its browser scenes with a project script around Playwright** — A web product's promo cannot use video.cut's run records or provenance, and every project rewrites the same recorder and the same broken-page checks. → §PW690
+- 📋 **PW690** (deps: —) **No capture records a web page, so a product video films its browser scenes with a project script around Playwright** — A web product's clip enters video.cut with no record of the page and steps it came from, and every project rewrites the same recorder and broken-page checks. → §PW690
 
 ## Block N — Pictures held to a canon
 
