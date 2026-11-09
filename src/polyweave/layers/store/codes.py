@@ -13,6 +13,7 @@ AREAS: dict[str, str] = {
     "compose": "putting an asset where it will actually be seen",
     "store": "a store's capsule set, cut from one key art and a logo",
     "video": "a teaser cut together from captured runs, scored and encoded",
+    "web": "a web page filmed as a clip from declared steps",
 }
 
 CODES: dict[str, Code] = {
@@ -76,6 +77,36 @@ CODES: dict[str, Code] = {
         when="a video bound in a spec on a path with no file, or a file that is not a "
         "video",
         doors=("cut it again with video.cut",),
+    ),
+    # -- web: a page filmed as a clip (§PW690) -----------------------------------
+    "web.no-source": Code(
+        means="the visit named is not there, or is not TOML",
+        when="capture.web given a path with no file, or a file that does not parse",
+        doors=("name a *.web.toml under the project", "fix the line the detail names"),
+    ),
+    "web.bad-visit": Code(
+        means="a visit declares something it cannot play",
+        when="a key it does not take, a url not http, a viewport not two numbers, no "
+        "step, a step doing none or two things, a wait given seconds, a secret the "
+        "environment lacks, or an out not a .webm",
+        doors=("fix the key the refusal names",),
+    ),
+    "web.no-playwright": Code(
+        means="Playwright or its Chromium is not installed",
+        when="capture.web on a machine without the playwright package or its browser",
+        doors=("pip install playwright", "python -m playwright install chromium"),
+    ),
+    "web.step-failed": Code(
+        means="a step did not finish in the browser",
+        when="a click, type or wait on a selector the page never showed in time, or a "
+        "page that would not load; the detail is what the browser said",
+        doors=("fix the selector the refusal names", "raise [web] timeout"),
+    ),
+    "web.broken-page": Code(
+        means="the page broke while it was filmed, so no clip was kept",
+        when="a console error, an uncaught exception, a failed request, an error "
+        "status or a broken image that [web] allow does not name",
+        doors=("fix the page", "name what may fail in [web] allow"),
     ),
     # -- store: a store's capsules from one key art -------------------------------
     "store.unknown": Code(

@@ -97,7 +97,9 @@ CORE_TOOLS = 42_100
 #: 152,490 with reference.draft (§PW609, 2026-11-04).
 #: 153,419 with picture.batch (§PW680, 2026-11-04).
 #: 154,506 with picture.upscale (§PW689, 2026-11-04).
-SESSION_BUDGET = 155_000
+#: 155,042 with capture.web, a web page filmed as a clip, which every product video
+#: had scripted around Playwright on its own (§PW690, 2026-11-09).
+SESSION_BUDGET = 155_600
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

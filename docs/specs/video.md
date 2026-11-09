@@ -76,6 +76,53 @@ each stock copy as an input with the role `stock`, so `provenance.credits all=tr
 follows it to the service's licence and `provenance.dependents` on a copy finds the cuts
 that carry it.
 
+**A web page is filmed into a clip by `capture.web`** (§PW690), so a product video's
+browser scenes come with the record of what was visited, and no project writes its own
+recorder. The visit is a `*.web.toml`:
+
+```toml
+[web]
+url      = "http://localhost:2710/"     # where it starts; a step's path joins it
+viewport = [1920, 1080]                 # the clip's size, two whole numbers
+out      = "video/scenes/install.webm"  # beside the visit as <name>.webm otherwise
+timeout  = 15                           # seconds one step may take
+allow    = ["/api/session"]             # what may fail: part of a URL or console text
+
+[[step]]
+go = "/console"                         # a path under url, or a whole URL
+[[step]]
+type = "#password"                      # with text, or secret naming an env variable
+secret = "SHIO_PASSWORD"
+[[step]]
+click = "text=Install"
+name  = "install"                       # the step's mark, answered under marks
+[[step]]
+wait  = "#review-queue"                 # a selector reaching a state, never seconds
+state = "visible"                       # visible, hidden, attached or detached
+[[step]]
+scroll = 600                            # pixels; negative is up
+[[step]]
+hold = 2.0                              # seconds the camera stays, for the viewer
+```
+
+`capture.web(source, out=, root=)` plays the steps in Playwright's Chromium while it
+records, and writes the WebM, which a `[[clip]]` takes as `video = "<file>"`. Its record
+(kind `capture`, engine `capture.web` with the browser's version) names the visit as an
+input with the role `visit`, and keeps the URL, viewport, allow-list and every step with
+the second it started (`at`) and ended (`done`) since the recording began. A browser
+records in real time, so there is no `sequence.json`. A secret is kept by its variable's
+name; its value is read only to type it, and reaches neither the record nor the answer.
+
+A console error, an uncaught page error, a failed request, a response of 400 or above,
+or an image that loaded no pixels (checked after every step) is `web.broken-page`, unless
+an `allow` entry is part of its URL or message; nothing is kept. A step that does not
+finish within `timeout` is `web.step-failed`, naming the step and what the browser said.
+A key it does not take, a `url` not `http(s)`, no step, a step doing none or two things,
+a `wait` given seconds, a secret the environment lacks or an `out` not `.webm` is
+`web.bad-visit`, before a browser opens; a missing file is `web.no-source`. No
+`playwright` package, or no Chromium for it, is `web.no-playwright`, whose remedy is
+`pip install playwright` and `python -m playwright install chromium`.
+
 **Each language is a sound track of its own** (§PW671). A narrated cut declares its
 languages and lays each take where it is said:
 

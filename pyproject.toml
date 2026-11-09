@@ -47,6 +47,9 @@ stems = ["demucs>=4"]
 # Outlining an SVG's live text before the engine draws it (§PW453). Optional the same
 # way: an SVG with no text never imports it, and one with text refuses by name.
 text = ["fonttools>=4.40"]
+# Filming a web page as a clip (§PW690). Optional the same way: capture.web refuses by
+# name without it, and needs `python -m playwright install chromium` once after.
+web = ["playwright>=1.40"]
 
 # `polyweave <operation>` once pip has installed it: the same command line as
 # `python -m polyweave`, which the plugin's server and hooks keep using.

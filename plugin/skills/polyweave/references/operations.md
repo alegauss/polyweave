@@ -26,7 +26,7 @@
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
 | Music | `music.validate`, `music.to_midi`, `music.from_midi` (a MIDI as a score), `music.from_audio` (a recording as a score), `music.render`, `music.track`, `sound.synth`, `sound.loop`, `sound.stems` (a recorded track), `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build`, `vfx.preview`, `panel.build`, `panel.capture`, `picture.sew`, `icons.build` |
-| A teaser | `video.cut` |
+| A teaser | `video.cut`, `capture.web` (a web page as a clip) |
 | A project's look | `style.read`, `style.drift` (before a person looks), `style.train` |
 | Buy a drawing | `picture.buy`, `picture.batch`, `picture.gate`, `picture.letters`, `picture.describe`, `picture.vary`, `picture.upscale`, `picture.against_parent`, `picture.fit`, `picture.collect` |
 | A stock picture, with its licence | `stock.find`, `stock.fetch` (Pixabay, Pexels; no cost) |

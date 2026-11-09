@@ -425,6 +425,7 @@
 - ✅ **PW286** **a path ribbon adds a point every frame, so it is cut short at high frame rates, where its cost is timed** — A path ribbon adds a point each step seconds or gap metres, so it trails 7.2 m at both 60 and 600 fps, and an amount under lifetime/step is refused (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW284** **a trail's ribbon and its particles are two vfx effects, so the game places two scenes and a person judges two halves** — An effect can be made of parts, one scene under a Node3D measured and watched as one; Starship's trails build as 7 scenes and 7 sheets (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW598** **vfx.preview's stills show one particle frozen in place across the life, so a person never sees the effect move** — A movie run's window is moved off the desktop, not minimised, so vfx.preview films effects alive, framed by reach (design recorded in `src/polyweave/layers/engine/godot/quiet_draw.gd`).
+- ✅ **PW690** **No capture records a web page, so a product video films its browser scenes with a project script around Playwright** — capture.web films a declared visit in Chromium as a WebM for video.cut, recording the URL and step marks, and refuses a broken page (design recorded in `docs/specs/video.md`).
 
 ## Block N — Pictures held to a canon
 

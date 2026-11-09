@@ -77,31 +77,6 @@ verdict, and each gap it met is a filed line.
 
 ## Block M — What a game needs beyond the look
 
-### §PW690 Capturing a web page as a clip
-
-**Where it happened.** `alegauss/visibility`, task VS52: the Shio promo video
-(`video/shio-promo/roteiro.md`) films its console and site scenes by script on a clean
-Shio instance (Marketplace install, review queue, Universal Editor, bilingual site, a
-members-only page), so a UI change is a new run and not a new recording. Dumont's
-WordPress plugin video did the same with its own `bin/story-video.mjs`.
-
-**What polyweave offers.** `capture.movie` runs a game engine. `video.cut` already takes
-a recorded file as a clip (`video = "<file>"`) and records its hash as an input, so a
-Playwright `.webm` can be cut today. What is missing is the record of how the clip was
-made, and the broken-page refusal every project rewrites
-(`video/shio-promo/capturar-cenas.mjs` refuses a console error, a failed request or a
-broken image).
-
-**What polyweave could do.** A capture whose source is a URL, a viewport and declared
-steps (go to, click, type, wait for, scroll), writing a clip file with its `.prov.json`:
-the URL, the steps and each step's time mark. Not a `sequence.json` of frames: a browser
-records in real time, with no fixed tick.
-
-Tests: a typed value from a secret names its environment variable and never lands in the
-record; an allow-list of requests that may fail (an expected 401) without refusing;
-waits on a condition, never a sleep; with no Playwright installed, a refusal naming the
-install, as the speech engines do.
-
 ## Block N — Pictures held to a canon
 
 ### §PW450 Buying a picture from Scenario

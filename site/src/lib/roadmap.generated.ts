@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,6 +52,13 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
+  {
+    id: "PW691",
+    block: "D",
+    symptom: "voice.lines plans again takes sound.speak bought with the same words, voice and model, and cannot take them over",
+    why: "A project moving its narration to voice.lines pays for every take again; they differ only where the model holds the language, so taking them over is the person's call.",
+    deps: [],
+  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [

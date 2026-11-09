@@ -138,6 +138,16 @@ export interface CaptureRunArgs {
   timeout?: number
 }
 
+/** Film a web page as a clip, playing the declared steps in a recording browser. */
+export interface CaptureWebArgs {
+  /** the *.web.toml, as a path under the project */
+  source: string
+  /** where the WebM is written; the visit's own out otherwise */
+  out?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Build a declared camera move, its shots cut one to the next, into a Godot scene. */
 export interface ClipCameraArgs {
   /** the *.camera.toml, relative to the project */
@@ -2905,6 +2915,7 @@ export interface Operations {
   "capture.declared": CaptureDeclaredArgs
   "capture.movie": CaptureMovieArgs
   "capture.run": CaptureRunArgs
+  "capture.web": CaptureWebArgs
   "clip.camera": ClipCameraArgs
   "clip.compiled": ClipCompiledArgs
   "clip.new": ClipNewArgs
@@ -3139,6 +3150,7 @@ export const OPERATIONS = [
   "capture.declared",
   "capture.movie",
   "capture.run",
+  "capture.web",
   "clip.camera",
   "clip.compiled",
   "clip.new",
