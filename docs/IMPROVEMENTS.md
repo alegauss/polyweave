@@ -48,6 +48,32 @@ verdict, and each gap it met is a filed line.
 
 ## Block M — What a game needs beyond the look
 
+### §PW690 Capturing a web page as a clip
+
+**Where it happened.** `alegauss/visibility`, task VS52: the Shio promo video
+(`video/shio-promo/roteiro.md`) needs its console and site scenes filmed by script on a
+clean Shio instance (the Marketplace install of the Quilhara showcase, the review queue,
+the Universal Editor, the bilingual site, a members-only page), so that a UI change is a
+new run and not a new recording. The same need came up before in Dumont's WordPress
+plugin video, which films a WooCommerce store with its own `tests/e2e/story/*.mjs` and
+`bin/story-video.mjs`.
+
+**What polyweave offers.** `describe capture.movie` films "every frame between two marks
+the script prints, at the engine's fixed rate", which runs a game engine. `video.cut`
+cuts and encodes runs polyweave captured. Nothing records a browser page, so the only
+path is a project script around Playwright's `recordVideo`.
+
+**The workaround.** `video/shio-promo/capturar-cenas.mjs` in visibility drives Chromium
+with Playwright, records each scene to `video/shio-promo/cenas/<id>.webm` at 1920x1080,
+and refuses a scene whose page logs a console error, fails a request or shows a broken
+image (the rule Shio's `showcase-screenshots.mjs` applies to screenshots).
+
+**What polyweave could do.** A capture operation whose source is a URL and a declared
+list of steps (go to, click, type, wait for, scroll) instead of an engine script,
+writing the same run record `video.cut` already reads: frames or a clip, the marks of
+each step, and a refusal when the page logged an error or an image did not load. Then
+`video.cut` cuts a web product's video as it cuts a game trailer.
+
 ## Block N — Pictures held to a canon
 
 ### §PW450 Buying a picture from Scenario

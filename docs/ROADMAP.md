@@ -26,6 +26,8 @@
 
 ## Block M — What a game needs beyond the look
 
+- 📋 **PW690** (deps: —) **No capture records a web page, so a product video films its browser scenes with a project script around Playwright** — A web product's promo cannot use video.cut's run records or provenance, and every project rewrites the same recorder and the same broken-page checks. → §PW690
+
 ## Block N — Pictures held to a canon
 
 ## Block O — A person sees and answers
