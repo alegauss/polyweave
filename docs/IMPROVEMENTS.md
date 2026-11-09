@@ -8,35 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW691 voice.lines and takes another operation bought
-
-Seen in the viglet marketing repository (`D:\Git\viglet\marketing`, task VM3), moving
-the WordPress demo's narration from a `sound.speak` loop to `voice.lines --script`
-(PW665). The dry answer listed all 18 pt-BR takes on disk to buy and none current,
-though each `.prov.json` has the line's text as `prompt`, the same voice and
-`eleven_v3`.
-
-The cause is `_still` in `sound_buy.py`: a take is current only with `details.line`,
-which `sound.speak` never writes. The table path has the same cause for a take bought
-with `sound.speak --entity`, whose `details.entity.sha256` already matches.
-
-Not silently current: `eleven_v3` is in `LANGUAGE_HELD`, so `voice.lines` sends
-`language_code` and `sound.speak` never did (PW412: unheld, a voice read Portuguese with
-an English mouth), and the audio is not what `voice.lines` would have bought.
-
-Expected: the dry answer lists such takes as `adoptable`, apart from `current`, naming
-the operation that bought them and whether the language was held. `adopt=true` writes
-`details.line`, the input and `adopted: true` into each record, so later plans see them
-as current. One change in `_still`, for the script and the table path.
-
-Tests: the `prompt` compared stripped (`voice.lines` strips, `sound.speak` does not); a
-draft never adoptable; the file's hash must match; another voice, delivery or model
-stays a buy; without `adopt` nothing is written and nothing counted current.
-
-Workaround: the WordPress narration stays on its `sound.speak` loop
-(`turing/wordpress/bin/story-narration.mjs`); only the Shio promo buys through
-`voice.lines`.
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

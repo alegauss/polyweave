@@ -593,6 +593,9 @@ def lines(
     script: Annotated[
         str, Param("a plain lines file to speak in place of the game's table")
     ] = None,
+    adopt: Annotated[
+        bool, Param("take over the adoptable takes sound.speak bought, buying none")
+    ] = False,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
     """Voice the string table's lines as a set, each in its speaker's voice (§PW322).
@@ -606,6 +609,11 @@ def lines(
     an `out` pattern with `{key}` and `{locale}` for the whole file, an optional `model`
     and delivery (`stability`, `similarity`, `style`, `speed`), and `lines`, each a
     `key`, `locale` and `text`. A narration outside a game needs no table and no world.
+
+    A take sound.speak bought with a line's words, voice and model is `adoptable`
+    (§PW691): listed apart, still priced in the plan, since it may differ where the
+    model holds the language. `adopt` writes the line into its record and counts it
+    current instead.
     """
     from polyweave.layers.words import words
     from polyweave.layers.words.world import declared, voice_digest, voice_in
@@ -614,7 +622,7 @@ def lines(
     here = config.root
     if script:
         return _scripted(report, script, locale=locale, keys=keys, spend=spend, out=out,
-                         model=model, service=service, config=config)
+                         model=model, service=service, adopt=adopt, config=config)
     if not config.get("words.voiced"):
         raise PolyweaveError(
             "words.no-voiced",
@@ -634,7 +642,8 @@ def lines(
         )
     name = config.service(service, model=model)
     prices = config.services()[name].get("prices") or {}
-    plan, current, unvoiced = [], [], []
+    plan, current, unvoiced, adoptable = [], [], [], []
+    table_at = provenance.relative(source, here)
     for row in rows:
         who = (row["cells"].get(column) or "").strip()
         if not who or (speaker and who != speaker):
@@ -661,9 +670,19 @@ def lines(
                 locale=one, key=re.sub(r"[^\w.-]+", "_", row["key"])
             )
             line = {"key": row["key"], "locale": one, "sha256": words.said_digest(text)}
-            if _still(here / land, line, voice_digest(entities[who], one), model, here):
+            digest = voice_digest(entities[who], one)
+            if _still(here / land, line, digest, model, here):
                 current.append({**at, "out": land})
                 continue
+            taken = _adoptable(here / land, text, digest, model, here)
+            if taken and adopt:
+                _adopted(taken, {**line, "table": table_at},
+                         [provenance.source("world", world_file, root=here),
+                          provenance.source("words", source, root=here)], here)
+                current.append({**at, "out": land, "adopted": True})
+                continue
+            if taken:
+                adoptable.append({**at, "out": land, **_offered(model)})
             plan.append({**at, "out": land, "text": text, "characters": len(text),
                          "price": price, "line": line,
                          **({"draft": True} if _draft(here / land, here) else {})})
@@ -672,6 +691,7 @@ def lines(
     answer = {
         "voice": [{k: v for k, v in one.items() if k != "line"} for one in plan],
         "current": current,
+        **({"adoptable": adoptable} if adoptable else {}),
         "unvoiced": unvoiced,
         "characters": sum(one["characters"] for one in plan),
         "price": total,
@@ -684,7 +704,6 @@ def lines(
     }
     if not spend or not plan:
         return answer
-    table_at = provenance.relative(source, here)
     voiced, stopped = [], []
     for index, one in enumerate(plan):
         drawn_from, own = (
@@ -773,7 +792,7 @@ def _script(path: Path) -> dict:
 
 
 def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
-              config) -> dict:
+              adopt, config) -> dict:
     """`voice.lines` over a plain lines file (§PW665): Dumont's narration was spoken by
     a loop of its own over sound.speak, skipping the takes already current."""
     from polyweave.layers.words.words import said_digest
@@ -787,7 +806,8 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
                 if said.get(k) is not None}
     name = config.service(service, model=model)
     prices = config.services()[name].get("prices") or {}
-    plan, current = [], []
+    plan, current, adoptable = [], [], []
+    script_at = provenance.relative(where, here)
     for one in said["lines"]:
         if (locale and one["locale"] != locale) or (keys and one["key"] not in keys):
             continue
@@ -799,6 +819,15 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
         if _still(here / land, line, None, model, here, said_by=(voice, delivery)):
             current.append(at)
             continue
+        taken = _adoptable(here / land, text, None, model, here,
+                           said_by=(voice, delivery))
+        if taken and adopt:
+            _adopted(taken, {**line, "script": script_at},
+                     [provenance.source("words", where, root=here)], here)
+            current.append({**at, "adopted": True})
+            continue
+        if taken:
+            adoptable.append({**at, **_offered(model)})
         price = client.priced(name, prices, model, None, len(text),
                                   bought="spoken line")["price"]
         plan.append({**at, "text": text, "characters": len(text), "price": price,
@@ -806,7 +835,8 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
     left = purchase.remaining(str(here), service=name)
     answer = {
         "voice": [{k: v for k, v in one.items() if k != "line"} for one in plan],
-        "current": current, "unvoiced": [],
+        "current": current, **({"adoptable": adoptable} if adoptable else {}),
+        "unvoiced": [],
         "characters": sum(one["characters"] for one in plan),
         "price": round(sum(one["price"] for one in plan), 6),
         "left": left["left"], "unit": left["unit"], "spent": False,
@@ -826,8 +856,7 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
                 report, f"{route}?output_format={FORMAT}", request, words=one["text"],
                 cue=None, out=one["out"], model=model, service=name, root=here,
                 details={"voice": voice, "delivery": delivery, "spoken": True,
-                         "line": {**one["line"],
-                                  "script": provenance.relative(where, here)}},
+                         "line": {**one["line"], "script": script_at}},
                 inputs=[provenance.source("words", where, root=here)],
             )
         except PolyweaveError as refused:
@@ -874,34 +903,77 @@ def _draft(where: Path, here: Path) -> bool:
     return (record.get("params") or {}).get("rung") == "draft"
 
 
-def _still(where: Path, line: dict, voice: str | None, model: str, here: Path,
-           *, said_by: tuple[str, dict] | None = None) -> bool:
-    """Whether a take already says this line, in this voice, on this model: the world's
-    voice by its digest, or, for a lines file, `said_by`'s voice id and delivery."""
+def _take(where: Path, voice: str | None, model: str, here: Path,
+          said_by: tuple[str, dict] | None) -> dict | None:
+    """The record of a bought take at a path, in this voice on this model and still the
+    file it describes, or None."""
     if not where.is_file():
-        return False
+        return None
     try:
         record = provenance.read(str(where), root=here)
     except PolyweaveError:
-        return False
+        return None
     if (record.get("params") or {}).get("rung") == "draft":
         # A placeholder never satisfies a line, so a game cannot ship it by accident.
-        return False
+        return None
     details = record.get("details") or {}
-    said = details.get("line") or {}
     spoken_by = (
         (details.get("voice"), details.get("delivery") or {}) == said_by
         if said_by is not None
         else (details.get("entity") or {}).get("sha256") == voice
     )
-    return (
-        said.get("sha256") == line["sha256"]
-        and spoken_by
+    if not (
+        spoken_by
         and (record.get("engine") or {}).get("model") == model
         and provenance.sha256_of(where)[0] == (record.get("artefact") or {}).get(
             "sha256"
         )
-    )
+    ):
+        return None
+    return record
+
+
+def _still(where: Path, line: dict, voice: str | None, model: str, here: Path,
+           *, said_by: tuple[str, dict] | None = None) -> bool:
+    """Whether a take already says this line, in this voice, on this model: the world's
+    voice by its digest, or, for a lines file, `said_by`'s voice id and delivery."""
+    record = _take(where, voice, model, here, said_by)
+    said = ((record or {}).get("details") or {}).get("line") or {}
+    return record is not None and said.get("sha256") == line["sha256"]
+
+
+def _adoptable(where: Path, text: str, voice: str | None, model: str, here: Path,
+               *, said_by: tuple[str, dict] | None = None) -> dict | None:
+    """The record of a take sound.speak bought with this line's words, voice and model,
+    which voice.lines can take over rather than buy again (§PW691), or None.
+
+    sound.speak keeps the words as `prompt` and no `details.line`, so `_still` never
+    counts it. Its words are compared stripped, as voice.lines strips a line.
+    """
+    record = _take(where, voice, model, here, said_by)
+    if record is None:
+        return None
+    details = record.get("details") or {}
+    if details.get("line") or not details.get("spoken"):
+        return None
+    return record if str(record.get("prompt") or "").strip() == text else None
+
+
+def _adopted(record: dict, line: dict, inputs: list[dict], here: Path) -> None:
+    """Write a line into a take's record, so later plans count it current (§PW691)."""
+    held = {(one.get("role"), one.get("path")) for one in record.get("inputs") or []}
+    record["inputs"] = [*(record.get("inputs") or []),
+                        *(one for one in inputs
+                          if (one["role"], one["path"]) not in held)]
+    record["details"] = {**(record.get("details") or {}), "line": line, "adopted": True}
+    provenance.write(record, root=here)
+
+
+def _offered(model: str) -> dict:
+    """How an adoptable take differs from one voice.lines would buy: who bought it, and
+    whether its language was held, None where the model cannot hold one (§PW412)."""
+    return {"bought_by": "sound.speak",
+            "language_held": False if model in LANGUAGE_HELD else None}
 
 
 #: How to install each local engine, for a refusal to say.

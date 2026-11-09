@@ -6,6 +6,7 @@ take can be measured on the sitting it lands in.
 
 from __future__ import annotations
 
+import json
 import shutil
 
 import pytest
@@ -199,3 +200,101 @@ def test_a_lines_file_with_no_voice_is_refused_by_name(tmp_path, project):
         sound_buy.lines(script="script.toml", root=str(tmp_path))
     assert refused.value.code == "sound.bad-script"
     assert "no voice" in refused.value.message
+
+
+# -- takes sound.speak bought, taken over (§PW691) -----------------------------------
+
+
+def _spoken(tmp_path, text, out, **kw):
+    sound_buy.speak(text=text, out=out, root=str(tmp_path), **kw)
+    return tmp_path / out
+
+
+def test_a_take_sound_speak_bought_is_adoptable_and_adopt_takes_it_over(
+    tmp_path, project
+):
+    """The marketing repository's 18 takes were all offered to buy again (§PW691)."""
+    script = tmp_path / "demo" / "script.json"
+    script.parent.mkdir()
+    script.write_text(SCRIPT, encoding="utf-8")
+    # sound.speak keeps the words unstripped; voice.lines strips a line.
+    take = _spoken(tmp_path, "Busca, sem um plugin. ",
+                   "demo/narration/pt_BR/chapter-1.mp3", voice="narrator-voice",
+                   speed=0.95)
+    sent = len(project.sent)
+    record = provenance.read(str(take), root=str(tmp_path))
+
+    plan = sound_buy.lines(script="demo/script.json", root=str(tmp_path))
+    assert plan["adoptable"] == [{
+        "key": "chapter-1", "locale": "pt_BR",
+        "out": "demo/narration/pt_BR/chapter-1.mp3", "bought_by": "sound.speak",
+        "language_held": None}]
+    # Without adopt it is still a buy, and nothing is written or counted current.
+    assert [one["locale"] for one in plan["voice"]] == ["en", "pt_BR"]
+    assert plan["current"] == []
+    assert provenance.read(str(take), root=str(tmp_path)) == record
+
+    taken = sound_buy.lines(script="demo/script.json", adopt=True, root=str(tmp_path))
+    assert taken["current"] == [{"key": "chapter-1", "locale": "pt_BR",
+                                 "out": "demo/narration/pt_BR/chapter-1.mp3",
+                                 "adopted": True}]
+    assert [one["locale"] for one in taken["voice"]] == ["en"]
+    assert len(project.sent) == sent
+    adopted = provenance.read(str(take), root=str(tmp_path))
+    assert adopted["details"]["adopted"] is True
+    assert adopted["details"]["line"]["script"] == "demo/script.json"
+    assert "words" in [one["role"] for one in adopted["inputs"]]
+    again = sound_buy.lines(script="demo/script.json", root=str(tmp_path))
+    assert [one["locale"] for one in again["current"]] == ["pt_BR"]
+    assert "adoptable" not in again
+
+
+def test_a_take_in_another_delivery_a_draft_or_an_edited_file_is_never_adoptable(
+    tmp_path, project
+):
+    script = tmp_path / "script.json"
+    script.write_text(SCRIPT, encoding="utf-8")
+    out = "demo/narration/pt_BR/chapter-1.mp3"
+    take = _spoken(tmp_path, "Busca, sem um plugin.", out, voice="narrator-voice")
+
+    def offered():
+        return sound_buy.lines(script="script.json", locale="pt_BR",
+                               root=str(tmp_path)).get("adoptable", [])
+
+    assert offered() == []  # spoken at the voice's own speed, not the file's 0.95
+    take.unlink()
+    take = _spoken(tmp_path, "Busca, sem um plugin.", out, voice="other-voice",
+                   speed=0.95)
+    assert offered() == []
+    take.unlink()
+    take = _spoken(tmp_path, "Busca, sem plugin.", out, voice="narrator-voice",
+                   speed=0.95)
+    assert offered() == []
+    take.unlink()
+    take = _spoken(tmp_path, "Busca, sem um plugin.", out, voice="narrator-voice",
+                   speed=0.95)
+    assert len(offered()) == 1
+    sidecar = provenance.sidecar(take, tmp_path)
+    kept = sidecar.read_text(encoding="utf-8")
+    drafted = json.loads(kept)
+    drafted["params"] = {"rung": "draft"}
+    sidecar.write_text(json.dumps(drafted), encoding="utf-8")
+    assert offered() == []
+    sidecar.write_text(kept, encoding="utf-8")
+    take.write_bytes(take.read_bytes() + b"\0")
+    assert offered() == []
+    assert sound_buy.lines(script="script.json", adopt=True,
+                           root=str(tmp_path))["current"] == []
+
+
+def test_a_take_spoken_for_an_entity_is_adoptable_for_its_table_row(tmp_path, project):
+    take = _spoken(tmp_path, "Aguente firme", "audio/voice/pt_BR/HOLD.mp3",
+                   entity="ada")
+    plan = sound_buy.lines(locale="pt_BR", root=str(tmp_path))
+    assert [(o["key"], o["speaker"], o["bought_by"]) for o in plan["adoptable"]] == [
+        ("HOLD", "ada", "sound.speak")]
+    taken = sound_buy.lines(locale="pt_BR", adopt=True, root=str(tmp_path))
+    assert taken["current"][0]["adopted"] is True and taken["voice"] == []
+    line = provenance.read(str(take), root=str(tmp_path))["details"]["line"]
+    assert line["table"] == "text/strings.csv" and line["key"] == "HOLD"
+    assert provenance.outdated(root=str(tmp_path))["outdated"] == []

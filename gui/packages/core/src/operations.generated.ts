@@ -2844,6 +2844,8 @@ export interface VoiceLinesArgs {
   service?: string
   /** a plain lines file to speak in place of the game's table */
   script?: string
+  /** take over the adoptable takes sound.speak bought, buying none; default false */
+  adopt?: boolean
   /** the project whose ledger this is; default "." */
   root?: string
 }

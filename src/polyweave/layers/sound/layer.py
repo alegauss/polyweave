@@ -41,8 +41,9 @@ LAYER = Layer(
     config="polyweave.layers.sound.settings",
     # 11,222 with sound.stems (§PW558); 12,181 with music.from_midi (§PW559); 13,303
     # with music.from_audio (§PW559); 13,904 with music.track, a track's peaks and beat
-    # grid for a game's own tools (§PW611).
-    tools=14_100,
+    # grid for a game's own tools (§PW611). 14,121 with voice.lines' adopt, the takes
+    # sound.speak bought taken over rather than bought again (§PW691).
+    tools=14_400,
     census={
         "polyweave.layers.sound.sound": (
             "internal", "what sound.measure and a sound bound read"),

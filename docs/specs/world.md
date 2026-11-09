@@ -164,6 +164,19 @@ voice id, delivery and model; the record's `details.line` names the `script`, wh
 its `words` input. A file with no voice, no `{key}` in `out`, or a line short of a field
 is `sound.bad-script`.
 
+**A take `sound.speak` bought can be taken over** (§PW691). Its record keeps the words as
+`prompt` and no `details.line`, so it is never `current`, and a project moving its
+narration to `voice.lines` was offered every take to buy again. Where such a take is at
+a row's path, in the same voice (the world's digest, or the file's voice id and
+delivery) and model, its file still the one recorded, not a draft, and its `prompt`
+stripped is the row's words, the plan lists it under `adoptable`, with `bought_by`
+(`sound.speak`) and `language_held`: false where the model holds a language, since
+`sound.speak` never sent `language_code` and the take may differ there, null where the
+model cannot. It stays in the plan and its price, since whether it is good enough is the
+person's call. `adopt=true` takes them over instead, buying none: each record gains
+`details.line`, the `words` input (and `world` for a table) and `details.adopted`, and
+the take is answered as `current` with `adopted`. Without `adopt` nothing is written.
+
 Each take's record names its row (`details.line`: the key, the locale, the table and the
 SHA-256 of the words spoken) and has the table as an input with the role `words`. So
 `provenance.outdated` counts an edit to the table against a take only where that row's
