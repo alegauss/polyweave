@@ -8,6 +8,34 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+### §PW691 voice.lines and takes another operation bought
+
+Seen in the viglet marketing repository (`D:\Git\viglet\marketing`, task VM3), moving
+the WordPress demo's narration from a `sound.speak` loop to `voice.lines --script`
+(PW665), as the Viglet Shio promo next to it already buys.
+
+The call: `voice.lines --script demo/narration/lines.json --spend false --root
+turing/wordpress --json`. The 18 pt-BR takes on disk were bought with `sound.speak
+--text <line> --voice <id> --model eleven_v3 --out demo/narration/pt-BR/<key>.mp3`; each
+`.prov.json` has the line's text as `prompt`, the same voice and model. The dry answer
+listed all 18 to buy and none current.
+
+The two records differ in what voice.lines seems to key on: a `voice.lines` take carries
+`details.line` and an `inputs` entry for the lines file; a `sound.speak` take carries
+`details.cue` and `details.entity` and no input. So a take is current only to the
+operation that bought it, and a project switching from `sound.speak` to `voice.lines`
+pays for every take again, for audio that is byte for byte what it would get.
+
+Expected: `voice.lines` reads a take as current when the file exists and its provenance
+has the line's spoken text as `prompt`, with the same voice and model, whichever
+operation bought it, and then writes the fields it needs (`details.line`, the input)
+into that record, so the next plan is fast. A `--adopt` dry answer that names which
+takes it would take over would make the move checkable before any spend.
+
+Workaround: the WordPress narration stays on its `sound.speak` loop
+(`turing/wordpress/bin/story-narration.mjs`), reading currency through the shared
+`video-maker/narration/takes.mjs`; only the Shio promo buys through `voice.lines`.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion

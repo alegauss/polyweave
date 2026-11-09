@@ -8,6 +8,8 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+- 📋 **PW691** (deps: —) **voice.lines plans again takes sound.speak bought with the same prompt, voice and model, so moving to it rebuys them** — A project switching its narration to voice.lines pays for every take a second time, for the same audio. → §PW691
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
