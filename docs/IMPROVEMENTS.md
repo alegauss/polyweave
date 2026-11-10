@@ -8,6 +8,24 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+### §PW692 video.buy through Scenario
+
+Met in viglet/marketing (the Viglet Shio promo's opening, 2026-11-09): the project
+wanted a short opening video generated from a prompt on Scenario, and polyweave has no
+verb for it. `picture.buy` reaches Scenario's public models (PW688) through
+`generate/custom/<model>` and takes the job's first asset, which is the same route a
+Scenario video model answers on, but the picture layer opens the delivery with PIL and
+measures it as an image, so a video model's mp4 cannot come through it. The project fell
+back to a script of its own that calls Scenario's API directly
+(`shio/promo/bin/intro-video.mjs`), outside the ledger, the budget and the provenance.
+
+Add `video.buy`: a prompt (and optionally a still to start from), a model, a duration
+and an aspect ratio, priced first with Scenario's quote as `picture.buy` is
+(`creativeUnitsCost`), spent inside the project's budget, delivered to `--out` as a
+video with its provenance beside it, and measured as a video (length, size, whether it
+has sound). The service layer's submit, poll and deliver already do the Scenario part;
+what is missing is a verb whose delivery is not a picture.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
