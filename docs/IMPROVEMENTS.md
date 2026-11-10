@@ -26,6 +26,34 @@ video with its provenance beside it, and measured as a video (length, size, whet
 has sound). The service layer's submit, poll and deliver already do the Scenario part;
 what is missing is a verb whose delivery is not a picture.
 
+### §PW693 A remix keeps its parent's transparency
+
+**Where.** marketing/shio/promo, the Viglet Shio promo's thumbnail (VM22), 2026-11-10.
+The parent was another video's transparent presenter
+(`demo/thumbnail/ana-wordpress.png`, bought with `picture.buy --transparent`).
+
+```
+python -m polyweave picture.vary --service ideogram --parent demo/thumbnail/ana-wordpress.png \
+  --out demo/thumbnail/ana-agent.png --change remix --strength 40 --prompt "... transparent background ..."
+```
+
+**What came back.** `ok`, 0.08 credits, a 896x1120 **rgb24 picture on white**. The
+parent was RGBA and the prompt asked for transparency; neither the answer nor the record
+says the cut-out was lost, and `picture.vary` takes no `--transparent`.
+
+**Also.** The first call refused `fetch.unpriced` (no `remix` row in `[service.ideogram]
+prices`). The remedy was right, but nothing says what a remix costs, so the project
+guessed 0.08.
+
+**Workaround.** `shio/promo/bin/thumbnail.mjs`, `cutOut()`: a flood fill of near-white
+from the edges, made transparent in a canvas, with a feathered ring. A guess per
+picture; it fringes hair.
+
+**What polyweave should do.** A remix of a cut-out parent comes back cut out the same
+way, and `picture.vary` takes `--transparent` to ask either way. The answer and the
+record say whether the result is transparent. The refusal for an unpriced remix names
+the service's published price.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion

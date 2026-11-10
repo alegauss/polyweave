@@ -9,6 +9,7 @@
 ## Block D — Fetching from a paid service without surprise
 
 - 📋 **PW692** (deps: —) **A Scenario video model cannot be bought: picture.buy opens every delivery as an image** — A project that needs a generated clip calls Scenario's API by hand, outside the ledger, the budget and the provenance. → §PW692
+- 📋 **PW693** (deps: —) **picture.vary remix of a cut-out parent comes back on white, with no --transparent and no warning** — A thumbnail presenter needs a hand-written background removal in the project, which fringes the hair. → §PW693
 
 ## Block E — One world with the engine
 
