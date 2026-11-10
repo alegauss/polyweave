@@ -54,6 +54,76 @@ way, and `picture.vary` takes `--transparent` to ask either way. The answer and 
 record say whether the result is transparent. The refusal for an unpriced remix names
 the service's published price.
 
+### §PW694 A copy's record stays out of the shipped folder and its credits resolve through its source
+
+**Where it happened.** Viglet Shio, SH1431, 2026-11-10, three marketplace packages
+(`marketplace/ervalume`, `orvalha`, `taipal` in D:\Git\viglet\shio\2026.3). Each cut its
+shipped WebP files with `polyweave picture.copies` from a `*.copies.toml`, which writes
+a `<name>.webp.prov.json` beside every copy in `assets/images/`, the directory the
+package ships. Shio's packager zips that directory, so 24 provenance records would have
+gone into the published packages; Shio added `.*\.prov\.json` to its exclusion list as
+the workaround (`shio-site/scripts/marketplace.mjs`, `NOT_PACKAGED`).
+
+Second, `provenance.credits` lists the copies with an empty prompt, model, seed and
+licence: a copy does not inherit them from its source purchase. One agent wrote a
+one-off Python script to read the source records and build `assets/CREDITS.json` in the
+format the earlier showcase used. A third found no way to make copies without writing a
+copies table first.
+
+**What polyweave should do.** Let a copy's record live outside the shipped directory (a
+records directory declared once, like the sources'), or name it so a packager can ignore
+one pattern it documents. And make a copy's credits resolve through its source:
+`provenance.credits` answers prompt, model, seed, service and licence for a copy from
+the purchase it was cut from, so a credits file is one call.
+
+**Done when.** A project cuts copies into a shipped folder that then holds only the
+copies, and `provenance.credits` over that folder returns each copy's source prompt and
+licence.
+
+### §PW695 A re-bought path marks the purchase it replaced, with the reason
+
+**Where it happened.** Viglet Shio, SH1431, 2026-11-10 (`marketplace/orvalha` and
+`taipal` in D:\Git\viglet\shio\2026.3). After a rejected picture, the agent bought again
+with `picture.buy --out` the same path. The PNG and its `.prov.json` were overwritten,
+which is right, and `polyweave.purchases.json` kept every purchase, which is right for
+the spend. But nothing in the ledger says which purchase a path now holds and which were
+superseded and why: Taipal's `team-portrait` was bought three times, and a reader of the
+ledger sees three equal entries for one file. The credits file had to take "the last
+purchase for each path" by convention.
+
+**What polyweave should do.** When a buy writes a path an earlier purchase wrote, record
+the earlier one as superseded (by which purchase, when), and let the buy carry an
+optional reason (`--replaces-because "malformed hands"`) that lands on the superseded
+entry. The ledger then answers, per path, the purchase it holds and the rejected ones
+with reasons, which is the history a reviewer and the next agent need.
+
+**Done when.** Re-buying a path marks the earlier purchase superseded in the ledger with
+the reason given, and `purchase.ledger` shows per path the held purchase and the
+rejected ones.
+
+### §PW696 A bought photo is checked for the faults generated photos have
+
+**Where it happened.** Viglet Shio, SH1431, 2026-11-10: 24 photographs for three
+marketplace packages (`marketplace/ervalume`, `orvalha`, `taipal` in
+D:\Git\viglet\shio\2026.3), bought with `picture.buy --model 4.0` on Ideogram. Every buy
+answered ok. The owner found by eye a physiotherapy photo whose patient's arm fuses into
+the therapist's hands, and a chef portrait with no thumb. The agents then re-bought 10
+more (0.60 USD): uncountable hands, a cat merging into an arm, pseudo-lettering, a table
+merging into the floor. `picture.gate` only compares a silhouette to an outline.
+
+**What it costs.** The only check on a bought photo is a person's eyes, and an agent
+told to look missed it twice.
+
+**What polyweave should do.** A check on a bought picture, at the buy or run over a set,
+reporting the known faults of generated photos: malformed or fused hands and limbs,
+extra heads, pseudo-text, objects merging. It can call a vision model through a declared
+service, records its findings in the provenance, and answers per picture with the fault
+and where in the frame. A failing purchase stays in the ledger marked not usable, with
+prompt advice (frame hands out, avoid people touching).
+
+**Done when.** The check over the 24 Shio photos flags the two the owner rejected and
+the pseudo-text ones, naming each fault.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
