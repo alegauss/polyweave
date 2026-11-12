@@ -136,6 +136,82 @@ the pseudo-text ones, naming each fault.
 
 ## Block J — A bar a person sets once
 
+### §PW697 An acceptance spec on an encoded video
+
+**Where.** marketing/japode/scion, the three YouTube Shorts cut from the Scion video by
+`japode/scion/bin/short.py` (marketing VM31), 2026-11-12.
+
+**What happened.** Every bar a Short is held to was checked by hand, after the encode,
+with commands typed one by one:
+
+    ffmpeg -hide_banner -i scion-short-2-pt-BR.mp4 -af ebur128=peak=true -f null -
+    ffprobe -v error -show_entries stream=codec_type,duration -of csv=p=0 scion-short-2-pt-BR.mp4
+    ffmpeg -ss 33.5 -i scion-short-2-pt-BR.mp4 -frames:v 1 f.png   (one still per moment, then hstack)
+
+and read by eye: -14.9 LUFS, -1.3 dBTP, video and audio the same length, the end not
+frozen. The first cut held a 3 s frozen end card that no measure caught; it took reading
+other people's Shorts rules to learn it breaks the loop.
+
+**What was expected.** An acceptance spec on an encoded video, as PW113 gave a WAV:
+
+- length between bounds (a Short 20 to 55 s);
+- integrated loudness and true peak (-14 LUFS within 1, under -1 dBTP);
+- video and audio streams of the same length within a frame;
+- no frozen stretch longer than N s, at the end above all (frame difference under a floor);
+- cut cadence: the longest stretch without a visual change (scene score over a threshold) under N s;
+- frame size and rate (1080x1920, 30).
+
+Each predicate reports its measured value, so a failed Short says which bar and by how
+much. video.cut's output could carry the same spec.
+
+**Workaround.** The commands above, in the session; nothing kept.
+
+### §PW698 Burned-in text held to a platform's safe area
+
+**Where.** marketing/japode/scion, the Scion Shorts (`japode/scion/bin/short.py`,
+marketing VM31), 2026-11-12.
+
+**What happened.** A vertical video carries burned-in text (a hook at the top, keyword
+callouts over the picture, word-timed captions below) and the platform draws its own
+interface over the frame: on YouTube Shorts the right column of buttons (about the right
+140 px from y 900 to 1700 at 1080x1920) and the title and channel at the bottom (about
+the bottom 420 px). Whether any line of text reaches those zones was judged by looking
+at four stills scaled to 360 px. The captions were moved left by hand (centre x 500) and
+their font shrunk because a 22-character line at 70 px could reach x 960.
+
+**What was expected.** A predicate that holds the text a video draws to a declared safe
+area, per platform, over the whole length and not four stills:
+
+- the safe area declared in the spec (a box, plus excluded boxes), with YouTube Shorts, Reels and TikTok as named presets a project can override;
+- the text's extent measured, either from the subtitle file the cut burns in (an .ass, laid out by libass at the frame size) or from the rendered frames;
+- the answer names the line, its time and how far it crossed, so the fix is a position or a size and not a guess.
+
+**Workaround.** Stills by hand (`ffmpeg -ss <t> -frames:v 1`, then hstack) and
+eyeballing; the safe-area numbers live only in comments in short.py.
+
+### §PW699 A thumbnail held to its title and the feed size
+
+**Where.** marketing/japode/scion, the Scion video's YouTube thumbnail
+(`japode/scion/bin/thumbnail.py` through `japode/brand/brand.py`, marketing VM30),
+2026-11-12.
+
+**What happened.** The published thumbnail says "O Git não aguentou" and "30 mil merges
+por dia", and the video's title is "30 mil merges por dia: o Git não aguentou e a
+Anthropic...". Every channel guide read that day says a thumbnail must add what the
+title leaves out; nothing checked it, and it was noticed only on reading the first
+report (12.5% click-through on 48 impressions). Legibility at feed size was never
+measured either: the thumbnail was looked at once, full size.
+
+**What was expected.** A picture spec for a thumbnail, with its title as an input:
+
+- legible at feed size: the picture scaled to about 168x94 and its text still readable (text height in px, contrast of text against what is behind it);
+- at most N words of text on it (read from the layout that drew it, or by OCR);
+- shares no meaningful word with the title (stop words per language, pt-BR included);
+- and a sweep over the layout's choices (which words, which picture, which number) that brings two or three variants to the review page, so the Alexandre picks one for YouTube's own A/B test. The agent never picks.
+
+**Workaround.** None; the check was a person reading the title and the picture side by
+side, after publishing.
+
 ## Block K — Reached without reading the source
 
 ### §PW449 Driven from a second MCP client

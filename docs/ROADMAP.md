@@ -26,6 +26,10 @@
 
 ## Block J — A bar a person sets once
 
+- 📋 **PW697** (deps: —) **A spec cannot bound an encoded video: its length, loudness, true peak, a frozen end or the longest stretch without a cut** — A Short was held to every bar by typed ffmpeg commands and stills read by eye, and the frozen end card that breaks its loop passed unseen. → §PW697
+- 📋 **PW698** (deps: —) **Nothing says whether a vertical video's burned-in text reaches the area a platform covers with its buttons and title** — The Scion Shorts' captions were placed by looking at four stills, and a caption under the Shorts buttons is text the viewer never reads. → §PW698
+- 📋 **PW699** (deps: —) **A thumbnail cannot be checked for legibility at feed size, for its word count, or for repeating the video's title** — The Scion thumbnail repeats its title word for word and was only ever looked at full size, and nothing would have caught either before publishing. → §PW699
+
 ## Block K — Reached without reading the source
 
 ## Block L — What a run leaves as evidence
