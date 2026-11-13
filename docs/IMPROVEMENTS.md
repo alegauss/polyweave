@@ -124,6 +124,19 @@ prompt advice (frame hands out, avoid people touching).
 **Done when.** The check over the 24 Shio photos flags the two the owner rejected and
 the pseudo-text ones, naming each fault.
 
+### §PW700 Editorial cards before the cut
+
+In viglet/marketing, the WordPress history uses original typographic cards, dates and
+diagrams, rather than a recorded game. describe video.cut accepts still files and motion
+but not an HTML card declaration; capture.web records HTTP visits rather than
+deterministically rendering a local card to a PNG. The reusable video-maker cards
+renderer uses Playwright to draw HTML and embed local fonts. The illustrated-history
+assembly will reuse it, then encode gentle motion through the existing media runtime. No
+paid image generation is needed. A reusable HTML-to-still operation should accept page
+content or a local page, viewport and output, wait for fonts and images, return the file
+and record its inputs. This is a narrower pre-cut rendering gap, not a claim that PW671
+failed to implement motion or voice tracks.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion

@@ -13,6 +13,7 @@
 - 📋 **PW694** (deps: —) **picture.copies writes a .prov.json beside every copy in the shipped folder, and credits for a copy come back empty** — A packager ships the records unless it excludes them, and a credits file needs a script that reads each source. → §PW694
 - 📋 **PW695** (deps: —) **Buying again to the same path leaves every purchase equal in the ledger, with no mark of which was superseded** — A reviewer cannot tell from the ledger which photo a path holds and which were rejected, or why. → §PW695
 - 📋 **PW696** (deps: —) **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it. → §PW696
+- 📋 **PW700** (deps: —) **No operation renders a declared editorial HTML card to a still for a narrated video** — Japode WordPress must render its timeline graphics through video-maker before video.cut can move those stills. → §PW700
 
 ## Block E — One world with the engine
 
