@@ -57,7 +57,7 @@ web = ["playwright>=1.40"]
 polyweave = "polyweave.surface.cli:main"
 
 [project.urls]
-Homepage = "https://alegauss.github.io/polyweave/"
+Homepage = "https://alegauss.com/polyweave/"
 Source = "https://github.com/alegauss/polyweave"
 Issues = "https://github.com/alegauss/polyweave/issues"
 

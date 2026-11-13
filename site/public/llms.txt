@@ -13,9 +13,9 @@
 This site answers a coding agent in files it can grep. Every route has a Markdown twin
 beside it, the same page converted from the same render, with the navigation, the footer
 and the call to action dropped. Read `<route>/index.md` instead of the HTML: the landing
-page is [`/index.md`](https://alegauss.github.io/polyweave/index.md). The routes, their
+page is [`/index.md`](https://alegauss.com/polyweave/index.md). The routes, their
 twins and their byte sizes are in
-[`manifest.json`](https://alegauss.github.io/polyweave/manifest.json).
+[`manifest.json`](https://alegauss.com/polyweave/manifest.json).
 
 ## Install
 
@@ -87,8 +87,8 @@ organisations with a lot to publish. Run on your own servers, with no per-user l
 
 ## Links
 
-- [Website](https://alegauss.github.io/polyweave/): project page
-- [Manifest](https://alegauss.github.io/polyweave/manifest.json): the routes and their Markdown twins
+- [Website](https://alegauss.com/polyweave/): project page
+- [Manifest](https://alegauss.com/polyweave/manifest.json): the routes and their Markdown twins
 - [GitHub repository](https://github.com/alegauss/polyweave): source
 - [Roadmap](https://github.com/alegauss/polyweave/blob/main/docs/ROADMAP.md): what is still open
 - [Specs](https://github.com/alegauss/polyweave/tree/main/docs/specs): the contracts
