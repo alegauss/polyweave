@@ -45,6 +45,8 @@
 
 ## Block P — Music and sound a game can ship
 
+- 📋 **PW703** (deps: —) **sound.speech returns the transcript without word times needed for spoken video callouts** — Japode dates and names must appear when spoken, so each video transcribes its takes through a separate service loop. → §PW703
+
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them
