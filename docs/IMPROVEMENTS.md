@@ -161,6 +161,32 @@ video/preview/first-decoded.png. The final MP4 has video, AAC and mov_text strea
 Ensure reference.frames samples the actual first decoded video frame at zero and does
 not substitute a blank when a seek or timestamp boundary returns no frame.
 
+### §PW704 A visit filmed the way a person moves
+
+Found filming WordPress admin scenes for the Japode WordPress video (marketing
+repository, `japode/wordpress/visits/wp-*.web.toml`, task VM38), with `python -m
+polyweave capture.web --source visits/wp-plugins.web.toml`.
+
+The clips come back correct but unwatchable as product scenes. A headless Chromium draws
+no pointer, so a click on "Instalar agora" or "Ativar" happens with nothing moving on
+screen; `scroll` is a single `page.mouse.wheel`, so the page jumps 450 px in one frame;
+`type` is `page.fill`, so a search term or a post body appears whole. The editor has to
+cut around each jump, and the viewer never sees what was clicked.
+
+The marketing repository already solved this for a Playwright script:
+`video-maker/story-moves.mjs` injects a pointer before the page's own scripts, moves it
+to a target along a minimum-jerk arc, rings it on a click, scrolls with an eased curve
+at about 200 px/s and types at a hand's pace. A declared visit cannot reach it, so VM38
+held on each mark and cut there.
+
+What capture.web should offer, as visit options rather than new steps:
+- `[web] pointer = true`: draw the pointer and move it to every click and type target before
+  acting, with the click ring.
+- `scroll` eased over a duration (a `speed` or `seconds` key on the step, defaulting to the
+  story-moves pace), so the record's step marks still say when it started and ended.
+- `type` at a hand's pace (`pace` in characters per second) instead of fill, keeping `secret`
+  values out of the record as today.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
