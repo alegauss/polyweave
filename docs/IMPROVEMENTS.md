@@ -137,6 +137,18 @@ content or a local page, viewport and output, wait for fonts and images, return 
 and record its inputs. This is a narrower pre-cut rendering gap, not a claim that PW671
 failed to implement motion or voice tracks.
 
+### §PW701 Creative Commons source clips from public video archives
+
+For japode/wordpress, stock.find and stock.fetch support Pixabay and Pexels only. The
+user requested real footage of Matt Mullenweg, Mike Little and other people named in the
+history. The official WordPress YouTube channels mark FC9wfK1_F8c and CnYi-2Z92hw as
+Creative Commons Attribution. Fetching a bounded excerpt requires yt-dlp metadata
+inspection and section download outside polyweave. Preserve source URL, title, channel,
+reported licence, retrieval date, original in and out points and content hash beside the
+clip. Refuse missing or unapproved reuse licences rather than treating every public
+video as stock. This is a source-ingestion gap; video.cut already accepts the resulting
+local video.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
