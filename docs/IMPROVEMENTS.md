@@ -187,6 +187,25 @@ What capture.web should offer, as visit options rather than new steps:
 - `type` at a hand's pace (`pace` in characters per second) instead of fill, keeping `secret`
   values out of the record as today.
 
+### §PW705 Music from stock, with its licence
+
+Found replacing the music bed of the Japode WordPress video (marketing repository,
+`japode/wordpress/video.toml`, VM38). The bed was a 30-second generated clip looped over
+six minutes, and the owner heard a held note in it twelve times; he asked for an open,
+licensed track instead.
+
+`stock.find` and `stock.fetch` take `kind = picture | video` only, so no music can be
+searched, fetched or recorded with its licence. The track ("Inspired", Kevin MacLeod,
+incompetech.com, CC BY 4.0) was downloaded with curl into
+`japode/wordpress/music/inspired.mp3`; its source, licence and credit line live only in
+`storyboard.json` and the README, with no provenance record beside the file.
+
+What polyweave should offer: `kind = "music"` on `stock.find` / `stock.fetch`, from at
+least one source whose licence is machine-readable (Pixabay Music, Free Music Archive,
+incompetech), with search by mood, genre and minimum length, and a `.prov.json` that
+carries the page, the licence, its URL and the exact attribution text the licence
+requires.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
