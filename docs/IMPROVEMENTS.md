@@ -493,6 +493,15 @@ refusing stale times before placing callouts. sound.speech should expose and per
 service word timings as part of its own answer or artifact, together with the take hash,
 so clients do not pay for or maintain a second transcription path.
 
+VM60 now orchestrates a declared retake, its voice.lines price plan, changed-audio
+transcription and anchor review. Return reusable hash-bound word records directly from
+generation/checking, plus per-stage cost estimates, so callers need not coordinate a
+separately priced Scribe request. Preserve approved voice/model/pronunciation, select
+only explicitly authorized takes, reuse current transcripts and distinguish exact
+declared aliases from uncertain ASR matches. Candidate alignment suggestions must remain
+for review rather than becoming invented accepted timestamps. The marketing bridge
+remains video-maker/prepare.py and narration_words.py.
+
 ### §PW706 Declared narration preflight before purchase
 
 While implementing marketing VM29 in D:/Git/viglet/marketing, `python -m polyweave
