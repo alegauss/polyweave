@@ -290,6 +290,10 @@ much. video.cut's output could carry the same spec.
 
 **Workaround.** The commands above, in the session; nothing kept.
 
+VM47 now refuses any encoded audio stream above the declared ceiling and clears stale QA
+on failure. Include per-stream language and measured-versus-limit diagnostics, with a
+remedy to increase the mix margin.
+
 ### §PW698 Burned-in text held to a platform's safe area
 
 **Where.** marketing/japode/scion, the Scion Shorts (`japode/scion/bin/short.py`,
