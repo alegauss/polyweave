@@ -155,6 +155,12 @@ content or a local page, viewport and output, wait for fonts and images, return 
 and record its inputs. This is a narrower pre-cut rendering gap, not a claim that PW671
 failed to implement motion or voice tracks.
 
+The same gap applies to marketing/japode/brand/brand.py banner(): the 2048-by-1152
+YouTube banner uses local Plus Jakarta fonts, the approved SVG J and a central
+1235-by-338 safe area. Its existing Playwright renderer must still produce the final PNG
+and a safe-area review image. Support self-contained branding pages as well as timeline
+cards.
+
 ### §PW701 Creative Commons source clips from public video archives
 
 For japode/wordpress, stock.find and stock.fetch support Pixabay and Pexels only. The
