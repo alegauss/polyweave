@@ -174,6 +174,11 @@ YouTube banner uses local Plus Jakarta fonts, the approved SVG J and a central
 and a safe-area review image. Support self-contained branding pages as well as timeline
 cards.
 
+VM45 also needs browser-layout evidence that a brand mark occupies its declared corner
+or is absent, including both timed overlay layers. game.text_fit requires a game
+session. Return selected DOM element bounds/visibility alongside the rendered HTML still
+so callers need not write Playwright measurement helpers.
+
 ### §PW701 Creative Commons source clips from public video archives
 
 For japode/wordpress, stock.find and stock.fetch support Pixabay and Pexels only. The
