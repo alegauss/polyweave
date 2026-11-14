@@ -4,6 +4,8 @@
 
 ## Block B — Seeing the result cheaply
 
+- 📋 **PW707** (deps: —) **An exported video's measurements cannot be bound to its exact file in one report** — A caller must coordinate hashes, stream probes, audio levels and opening frames by hand, allowing evidence from different revisions to mix. → §PW707
+
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise
