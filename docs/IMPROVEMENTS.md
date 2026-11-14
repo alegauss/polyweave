@@ -252,6 +252,22 @@ incompetech), with search by mood, genre and minimum length, and a `.prov.json` 
 carries the page, the licence, its URL and the exact attribution text the licence
 requires.
 
+### §PW712 Validate an authored cut before rendering
+
+In viglet/marketing VM56, `python -m polyweave describe video.cut --json` offers source,
+out and root, but no read-only validation result. The illustrated assembly draws all
+cards before it discovers a missing spoken highlight anchor; one omitted article in the
+WordPress outro wastes that render. The caller must validate narration provenance and
+transcript hashes, word anchors, translation coverage, source references, media bounds
+and required fonts in video-maker/preflight.py before drawing or encoding.
+
+Offer a read-only cut preflight that returns all independent actionable findings with
+source file, field, take and beat, using the same resolution as the production cut.
+Probe existing media without rendering or buying anything. A stale transcript or missing
+anchor must fail before any rendering subprocess, for both a dry plan and a real build.
+Do not invent word alignment or regenerate voice. PW706 covers opening-proof estimates
+before purchase; this gap covers a complete already-authored cut before rendering.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
