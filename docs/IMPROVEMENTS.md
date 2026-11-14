@@ -489,6 +489,25 @@ this line.
 
 ## Block T — Adopting polyweave in a project
 
+### §PW710 A product fixture behind a web visit
+
+Marketing VM44 films WordPress and Viglet Shio on clean instances, but capture.web
+exposes only source/out/root and its web declaration names only the URL and actions. No
+instance or container operation appears in describe. Video-maker will declare Docker
+Compose files, service readiness and visit-to-instance references, expose explicit
+up/reset/down/plan commands, and record the container/image inspection beside the
+capture. Add a reusable instance fixture that capture.web can resolve before visiting,
+with explicit reset, bounded readiness, seed/setup steps, and identity evidence.
+Preserve human control over reset and never touch an existing unowned container, volume
+or network. The local wrapper is videomaker.instances; the recording remains
+capture.web.
+
+The real integration refused web.instance with web.bad-visit: '[web] has instance, which
+it does not take'; the remedy allows only allow/out/timeout/url/viewport. The wrapper
+must retain the original visit and forward a hash-addressed compatible copy with
+instance metadata removed, recording both declaration hashes. This compatibility step
+should disappear when capture.web accepts the fixture reference.
+
 ## Block U — A window on everything a project governs
 
 ### §PW311 The window proved on Starship

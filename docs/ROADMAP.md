@@ -62,6 +62,8 @@
 
 ## Block T — Adopting polyweave in a project
 
+- 📋 **PW710** (deps: —) **A web capture cannot declare and reset the clean product instance it films** — Product retakes repeat Docker and seed commands by hand, so the visit cannot prove which instance it recorded. → §PW710
+
 ## Block U — A window on everything a project governs
 
 ## Block V — Parts every game repeats, installed already proved
