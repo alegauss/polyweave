@@ -268,6 +268,23 @@ anchor must fail before any rendering subprocess, for both a dry plan and a real
 Do not invent word alignment or regenerate voice. PW706 covers opening-proof estimates
 before purchase; this gap covers a complete already-authored cut before rendering.
 
+### §PW713 Review a production interval with motion and audio
+
+In viglet/marketing VM57, `python -m polyweave describe video.cut --json` offers a whole
+cut but no selected production interval for motion review. Checking one WordPress
+Gutenberg drag, portrait or opening otherwise requires a full export and separate
+frame-extraction commands. PW708 provides labelled still sheets, which cannot show a
+complete action or judder.
+
+Allow a review interval, take, beat or spoken cue with before/after context, resolved
+against the authored production timeline. Reuse production clips, source trims, frame
+rate, fit, brand, timed callouts and the same audio mix; do not normalize a short
+excerpt independently. Return the exact original interval and shifted cue mapping.
+Render only the overlapping visual pieces and preserve subtitle placement. Verify
+sampled preview frames and cue times against that interval of a full cut. The marketing
+workaround belongs in video-maker/preview.py and uses the existing illustrated
+compositor and stage cache, rather than recreating shots for a demonstration.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
