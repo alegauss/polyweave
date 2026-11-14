@@ -48,6 +48,7 @@
 ## Block P — Music and sound a game can ship
 
 - 📋 **PW703** (deps: —) **sound.speech returns the transcript without word times needed for spoken video callouts** — Japode dates and names must appear when spoken, so each video transcribes its takes through a separate service loop. → §PW703
+- 📋 **PW706** (deps: —) **Voice purchases cannot reject an opening whose first proof arrives too late** — The caller estimates the first proof from spoken words and narrator pace before buying takes, so each video pipeline writes its own guard. → §PW706
 
 ## Block Q — Words held to the world
 
