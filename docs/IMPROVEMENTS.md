@@ -331,6 +331,19 @@ measured either: the thumbnail was looked at once, full size.
 **Workaround.** None; the check was a person reading the title and the picture side by
 side, after publishing.
 
+### §PW709 Timed editorial-label conflicts
+
+In marketing VM43, a caption and a spoken highlight can overlap in time with conflicting
+versions or duplicate labels, and a named-person/event highlight can imply that
+unrelated stock footage depicts that entity. The describe catalogue has game.text_fit
+but no timed editorial-label check. PW698 concerns platform safe areas, a separate
+spatial check. video-maker will compare beat caption visibility intervals with resolved
+highlight intervals and warn on declared person/event metadata mismatches across source
+assets. Add a read-only check over labelled time intervals and optional declared entity
+tags, returning every overlap and unverified entity with source/take/beat identifiers.
+Do not infer a real person's identity from an image or automatically accept semantic
+correspondence.
+
 ## Block K — Reached without reading the source
 
 ### §PW449 Driven from a second MCP client
