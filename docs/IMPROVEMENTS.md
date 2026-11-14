@@ -344,6 +344,9 @@ measured either: the thumbnail was looked at once, full size.
 **Workaround.** None; the check was a person reading the title and the picture side by
 side, after publishing.
 
+VM54 additionally measures title lines after fonts load, fits them to a declared
+subject-free column, and refuses oversized minimum-size titles.
+
 ### §PW709 Timed editorial-label conflicts
 
 In marketing VM43, a caption and a spoken highlight can overlap in time with conflicting
