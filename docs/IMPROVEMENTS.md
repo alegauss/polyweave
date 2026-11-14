@@ -296,26 +296,30 @@ remedy to increase the mix margin.
 
 ### §PW698 Burned-in text held to a platform's safe area
 
-**Where.** marketing/japode/scion, the Scion Shorts (`japode/scion/bin/short.py`,
-marketing VM31), 2026-11-12.
+**Where.** marketing/japode/scion, the Scion Shorts (`japode/scion/bin/short.py`, VM31),
+2026-11-12.
 
-**What happened.** A vertical video carries burned-in text (a hook at the top, keyword
-callouts over the picture, word-timed captions below) and the platform draws its own
-interface over the frame: on YouTube Shorts the right column of buttons (about the right
-140 px from y 900 to 1700 at 1080x1920) and the title and channel at the bottom (about
-the bottom 420 px). Whether any line of text reaches those zones was judged by looking
-at four stills scaled to 360 px. The captions were moved left by hand (centre x 500) and
-their font shrunk because a 22-character line at 70 px could reach x 960.
+**What happened.** Burned-in hooks, callouts and captions compete with platform
+controls. In the observed 1080x1920 frame, Shorts buttons covered roughly x=940..1080,
+y=900..1700, and title/channel text the bottom 420 px. Four stills scaled to 360 px were
+checked by eye. Captions moved left to centre x=500 and shrank because 22 characters at
+70 px could reach x=960. These are observed bounds, not a permanent platform
+specification.
 
-**What was expected.** A predicate that holds the text a video draws to a declared safe
-area, per platform, over the whole length and not four stills:
+**Expected.** Check text against a declared safe box and excluded boxes throughout the
+video. Offer platform presets that projects can override. Measure text extent from the
+burned-in ASS using libass at the frame size, or from rendered frames. Name each line,
+time and crossing distance so callers can change position or size. Keep the declared
+bounds and measurements in the report.
 
-- the safe area declared in the spec (a box, plus excluded boxes), with YouTube Shorts, Reels and TikTok as named presets a project can override;
-- the text's extent measured, either from the subtitle file the cut burns in (an .ass, laid out by libass at the frame size) or from the rendered frames;
-- the answer names the line, its time and how far it crossed, so the fix is a position or a size and not a guess.
+**Workaround.** Manual ffmpeg still extraction and eyeballing; the bounds live in
+short.py comments.
 
-**Workaround.** Stills by hand (`ffmpeg -ss <t> -frames:v 1`, then hstack) and
-eyeballing; the safe-area numbers live only in comments in short.py.
+Marketing VM48 also reserves a configurable player-caption band for landscape and
+vertical videos. Its browser renderer checks actual title/brand/label bounds, and its
+ASS highlights check bottom clearance including the outline. It supports warning or
+refusal and reports collisions. Support both HTML element bounds (PW700) and subtitle
+extents through the same reusable safe-area check.
 
 ### §PW699 A thumbnail held to its title and the feed size
 
