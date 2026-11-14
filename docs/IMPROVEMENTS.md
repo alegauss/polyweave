@@ -179,6 +179,10 @@ or is absent, including both timed overlay layers. game.text_fit requires a game
 session. Return selected DOM element bounds/visibility alongside the rendered HTML still
 so callers need not write Playwright measurement helpers.
 
+VM55 also needs reusable raster layers keyed by effective HTML, embedded fonts, browser
+and renderer versions, with verified output hashes and cache-hit reporting; unchanged
+cards must avoid browser rendering.
+
 ### §PW701 Creative Commons source clips from public video archives
 
 For japode/wordpress, stock.find and stock.fetch support Pixabay and Pexels only. The
