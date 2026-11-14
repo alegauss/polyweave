@@ -268,6 +268,14 @@ anchor must fail before any rendering subprocess, for both a dry plan and a real
 Do not invent word alignment or regenerate voice. PW706 covers opening-proof estimates
 before purchase; this gap covers a complete already-authored cut before rendering.
 
+VM59 also needs declared repetition budgets before export: overlap between selected
+source intervals, total screen time, adjacency and minimum reuse gap, plus optional
+editorial category concentration across distinct files. Tie aliases to the same source
+bytes, name affected beats, and allow explicit reasoned exceptions for continuous
+tutorials or navigation. Warn or refuse according to declared limits, without replacing
+footage or inferring activities from filenames. The marketing checker lives in
+video-maker/repetition.py and shares the production beat timing.
+
 ### §PW713 Review a production interval with motion and audio
 
 In viglet/marketing VM57, `python -m polyweave describe video.cut --json` offers a whole
