@@ -5,6 +5,7 @@
 ## Block B — Seeing the result cheaply
 
 - 📋 **PW707** (deps: —) **An exported video's measurements cannot be bound to its exact file in one report** — A caller must coordinate hashes, stream probes, audio levels and opening frames by hand, allowing evidence from different revisions to mix. → §PW707
+- 📋 **PW708** (deps: —) **Frame contact sheets cannot pair exact shot midpoints with overlapping narration and editorial labels** — Video reviews need custom frame extraction and labelled HTML to catch mismatched shots before a full export. → §PW708
 
 ## Block C — The asset compiler
 

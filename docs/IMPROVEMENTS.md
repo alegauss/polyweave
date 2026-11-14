@@ -22,6 +22,19 @@ videomaker/qa.py until this exists; scene counts remain project editorial metada
 Done when a completed video can be checked in one declared operation without rebuilding
 it, and its report cannot accidentally describe another revision.
 
+### §PW708 Exact shot samples with editorial context
+
+VM41 in D:/Git/viglet/marketing needs one still per declared beat before a full render,
+labelled with the overlapping narration words, production captions and highlights,
+source intervals and person/event/topic tags. `python -m polyweave describe
+reference.frames` offers rate/ranges sampling of one existing video, but cannot accept
+exact shot sample times with editorial labels or assemble an annotated review sheet
+across unrendered source clips. video-maker will reuse its production composition for
+single-frame previews and build a local HTML review sheet. Add a reusable exact-time
+labelled contact-sheet operation, accepting source/time/label records and producing
+images plus a portable HTML sheet; distinguish a source still from the composited
+output. This complements PW700 for drawing cards.
+
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise
