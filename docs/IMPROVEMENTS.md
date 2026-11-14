@@ -285,6 +285,26 @@ sampled preview frames and cue times against that interval of a full cut. The ma
 workaround belongs in video-maker/preview.py and uses the existing illustrated
 compositor and stage cache, rather than recreating shots for a demonstration.
 
+### §PW714 Reviewed media ranges carried into an authored cut
+
+In viglet/marketing VM58, stock.fetch records downloads and reference.register protects
+a source hash, while reference.frames produces previews. None holds an editorial
+catalogue of accepted/rejected source ranges, reasons and explicitly confirmed
+people/events that can feed a storyboard. WordPress footage was rediscovered despite
+prior rejection for blur, unrelated text or a mistaken identity. A filename and public
+availability cannot establish identity or reuse rights.
+
+Keep candidates with source metadata, original provenance, media measurements, hash,
+preview references and explicit rights status. Record human-authored range decisions,
+reviewer/date/reason and identity/event tags. Selection must inherit the recorded
+provenance and remain inside an accepted range with reviewed rights; changed media must
+invalidate approval. Preserve rejected ranges so another search does not silently
+rehabilitate them. Reuse stock.fetch, reference.register, reference.frames and
+provenance.credits instead of duplicating acquisition or sampling. Marketing's adapter
+will live in video-maker/library.py. PW701 separately owns YouTube ingestion. This
+records declared human decisions and never accepts an image or invents a licence on an
+agent's judgment.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
