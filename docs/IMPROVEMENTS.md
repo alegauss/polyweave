@@ -319,6 +319,23 @@ will live in video-maker/library.py. PW701 separately owns YouTube ingestion. Th
 records declared human decisions and never accepts an image or invents a licence on an
 agent's judgment.
 
+### §PW715 Report video build stages as they run
+
+Marketing VM63 repeatedly polls a running `videomaker build` and file timestamps because
+long card renders, clips, joins and audio stages have no live progress. `polyweave
+describe video.cut --json` offers no progress option; the operation inventory offers no
+job/progress status operation. The project needs a thin progress adapter until this is
+available upstream.
+
+Expose flushed human and structured JSON events for validation, rasterization, source
+clips, joins, highlights, mix, mux and verification. Include stage, actionable take or
+asset, completed/total planned units, cache hit/miss, elapsed time and last successful
+stage on failure. Report active units while a subprocess runs, without process polling.
+Never expose credentials, command arguments or large encoder logs. Distinguish known
+planned counts from unknown future work; only show an ETA if supported by measured
+history. Preserve failure records and completed cache stages for resume. Marketing's
+adapter will live in video-maker/videomaker/progress.py.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion

@@ -24,6 +24,7 @@
 - 📋 **PW712** (deps: —) **A cut has no read-only complete preflight before expensive rendering** — Missing anchors and invalid sources force another full build before the caller learns every error. → §PW712
 - 📋 **PW713** (deps: —) **A cut cannot render one selected interval with its production narration and callouts** — Reviewing one action requires another full export, and still sheets cannot show motion or its ending. → §PW713
 - 📋 **PW714** (deps: —) **Fetched media has no reusable catalogue of approved and rejected source ranges** — Rejected or misidentified footage is rediscovered, and selected shots require manual provenance copying. → §PW714
+- 📋 **PW715** (deps: —) **A long video cut exposes no stage progress while rendering or waiting** — Callers poll processes and output timestamps to distinguish slow work from a failed stage. → §PW715
 
 ## Block E — One world with the engine
 
