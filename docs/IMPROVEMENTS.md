@@ -22,6 +22,14 @@ videomaker/qa.py until this exists; scene counts remain project editorial metada
 Done when a completed video can be checked in one declared operation without rebuilding
 it, and its report cannot accidentally describe another revision.
 
+VM62 additionally needs longest motionless intervals inside selected screen recordings,
+with source and cut timestamps. `reference.events` reports flashes rather than pause
+budgets; its source needed inspection to establish that distinction. Expose sampled
+frame-change thresholds, sampling resolution, cursor-only motion policy and reviewed
+holds. Accept a continuous active drag; flag a frozen page inside an otherwise moving
+clip. Never trim automatically. Marketing's temporary measurement lives in
+video-maker/videomaker/pauses.py; retain hard duration limits for cards and photos.
+
 ### §PW708 Exact shot samples with editorial context
 
 VM41 in D:/Git/viglet/marketing needs one still per declared beat before a full render,
