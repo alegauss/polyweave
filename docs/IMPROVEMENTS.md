@@ -157,31 +157,29 @@ the pseudo-text ones, naming each fault.
 
 ### §PW700 Editorial cards before the cut
 
-In viglet/marketing, the WordPress history uses original typographic cards, dates and
-diagrams, rather than a recorded game. describe video.cut accepts still files and motion
-but not an HTML card declaration; capture.web records HTTP visits rather than
-deterministically rendering a local card to a PNG. The reusable video-maker cards
-renderer uses Playwright to draw HTML and embed local fonts. The illustrated-history
-assembly will reuse it, then encode gentle motion through the existing media runtime. No
-paid image generation is needed. A reusable HTML-to-still operation should accept page
-content or a local page, viewport and output, wait for fonts and images, return the file
-and record its inputs. This is a narrower pre-cut rendering gap, not a claim that PW671
-failed to implement motion or voice tracks.
+In viglet/marketing, WordPress history uses original editorial cards, dates and
+diagrams. video.cut accepts still files but not HTML cards; capture.web records HTTP
+visits. The reusable video-maker cards renderer therefore draws self-contained HTML with
+Playwright and embedded fonts before video assembly. This is a pre-cut rasterization
+gap, separate from PW671's motion and voice support; no paid image generation is needed.
 
-The same gap applies to marketing/japode/brand/brand.py banner(): the 2048-by-1152
-YouTube banner uses local Plus Jakarta fonts, the approved SVG J and a central
-1235-by-338 safe area. Its existing Playwright renderer must still produce the final PNG
-and a safe-area review image. Support self-contained branding pages as well as timeline
-cards.
+Provide HTML-to-still rendering from page content or a local file, declared viewport and
+output. Wait for fonts/images, return the file and record its effective inputs. Include
+the marketing/japode/brand/brand.py banner: 2048-by-1152, local Plus Jakarta fonts,
+approved SVG J, central 1235-by-338 safe area, final PNG and safe-area preview.
 
-VM45 also needs browser-layout evidence that a brand mark occupies its declared corner
-or is absent, including both timed overlay layers. game.text_fit requires a game
-session. Return selected DOM element bounds/visibility alongside the rendered HTML still
-so callers need not write Playwright measurement helpers.
+VM45 needs DOM bounds and visibility for brand marks in each declared corner, including
+both timed overlay layers. game.text_fit requires a game session. VM55 needs raster
+caching keyed by HTML, embedded fonts/assets, browser and renderer versions, with
+verified output hashes and cache-hit reporting; unchanged cards must avoid browser
+rendering.
 
-VM55 also needs reusable raster layers keyed by effective HTML, embedded fonts, browser
-and renderer versions, with verified output hashes and cache-hit reporting; unchanged
-cards must avoid browser rendering.
+VM61 adds text guards: corrupted accents such as 'hist?ria', missing font glyphs,
+overflowing/clipped text and protected names split across lines ('WordPre'/'ss').
+Measure actual rendered text against its own box at each viewport/language and report
+field, element, bounds and preview before encoding. Keep valid punctuation, never guess
+accents or silently shrink all titles. Marketing's adapter will be
+video-maker/textcheck.py alongside the existing renderer.
 
 ### §PW701 Creative Commons source clips from public video archives
 
