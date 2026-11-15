@@ -336,6 +336,25 @@ planned counts from unknown future work; only show an ETA if supported by measur
 history. Preserve failure records and completed cache stages for resume. Marketing's
 adapter will live in video-maker/videomaker/progress.py.
 
+### §PW716 Review narrated claims against declared evidence
+
+Marketing VM64 has source URLs on storyboard beats but no evidence mapping for spoken
+dates, versions, statistics or conclusions. The operation inventory exposes artefact
+provenance and visual reviews, not narrated claim records or evidence review. A 2021
+Gutenberg demonstration can illustrate a 2018 event without proving its date.
+
+Support declared claims with stable IDs, language/take/word anchors, supporting URL and
+excerpt or note, source/event/publication/retrieval dates, and human review records.
+Distinguish historical facts, changing statistics, editorial conclusions and
+illustrative footage dates. Produce a review view and reuse approved citations in
+bounded publishing output, preserving all claim metadata separately. Detect edited
+narration/evidence and expired reviews through input fingerprints and explicit review
+deadlines. Never infer approval from a URL, automatically rewrite narration, or conflate
+footage publication with the depicted event. Marketing's temporary checker and review
+view will live in video-maker/videomaker/claims.py, integrated with existing preflight
+and description formatting. Media range/rights review remains PW714; bounded credits
+remain PW711.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
