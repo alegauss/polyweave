@@ -2782,6 +2782,28 @@ export interface VfxPreviewArgs {
   root?: string
 }
 
+/** Buy one generated clip from a Scenario video model against the ceiling (§PW692). */
+export interface VideoBuyArgs {
+  /** where the clip is written, under the project */
+  out?: string
+  /** what happens in it, in words */
+  prompt?: string
+  /** a Scenario video model's id */
+  model?: string
+  /** a still under the project it starts from, if the model takes one */
+  image?: string
+  /** seconds, as the model declares them; from 0 to … */
+  duration?: number
+  /** as 16x9 */
+  aspect_ratio?: string
+  /** for a clip that can be asked for again */
+  seed?: number
+  /** the [service.<name>] to use; needed only where there are several */
+  service?: string
+  /** the project whose ledger this is; default "." */
+  root?: string
+}
+
 /** Cut captured runs together, score and encode them as one MP4, and measure it. */
 export interface VideoCutArgs {
   /** the *.cut.toml, as a path under the project */
@@ -3124,6 +3146,7 @@ export interface Operations {
   "verdict.target": VerdictTargetArgs
   "vfx.build": VfxBuildArgs
   "vfx.preview": VfxPreviewArgs
+  "video.buy": VideoBuyArgs
   "video.cut": VideoCutArgs
   "voice.choose": VoiceChooseArgs
   "voice.design": VoiceDesignArgs
@@ -3137,7 +3160,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.batch" | "picture.buy" | "picture.upscale" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.batch" | "picture.buy" | "picture.upscale" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "video.buy" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -3359,6 +3382,7 @@ export const OPERATIONS = [
   "verdict.target",
   "vfx.build",
   "vfx.preview",
+  "video.buy",
   "video.cut",
   "voice.choose",
   "voice.design",

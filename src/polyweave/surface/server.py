@@ -99,7 +99,9 @@ CORE_TOOLS = 42_100
 #: 154,506 with picture.upscale (§PW689, 2026-11-04).
 #: 155,042 with capture.web, a web page filmed as a clip, which every product video
 #: had scripted around Playwright on its own (§PW690, 2026-11-09).
-SESSION_BUDGET = 155_600
+#: 156,195 with video.buy, a clip bought from a Scenario video model (§PW692,
+#: 2026-11-19).
+SESSION_BUDGET = 156_800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

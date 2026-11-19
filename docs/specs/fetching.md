@@ -519,6 +519,22 @@ picture a person judges. `store.too-small`, where the key art is what is short, 
 the call: `picture.upscale` on the key art with the smallest whole factor that clears
 every shape it named, out beside it as `<stem>@<factor>x<suffix>`.
 
+**A generated clip is bought as a video** (§PW692). `video.buy(out, prompt, model,
+image=, duration=, aspect_ratio=, seed=)` on a Scenario service sends the request a
+video model declares, read for free from `GET /v1/models/<model>`: the prompt, the
+starting still inline as a data URI in the first of `image`, `startImage`, `firstFrame`
+or `firstFrameImage` it declares, the duration among its allowed values or within its
+bounds, and the shape as `_shaped` spells it for a picture. A field the model does not
+declare is `fetch.unknown-field`, an out that is not `.mp4`, `.mov` or `.webm` is
+`fetch.bad-choice`, and a machine with no ffprobe is `video.no-ffmpeg`, all before
+anything is spent. It is priced and dry-run checked as a public model's picture, and
+the job is waited on for `VIDEO_TIMEOUT` (twenty minutes) rather than five. The ledger
+and record say `bought = "video"`, the still is the record's `image` input, and
+`video.measured` reads the clip into the answer's `video` and the record's
+measurements: `video_seconds`, `video_width`, `video_height`, `video_fps`,
+`first_motion` and `audio`. A clip that arrives unreadable stays ledgered, and the
+answer carries the `video.unreadable` finding.
+
 
 A picture service returns an image at a size, margin and position it chose, and an icon or
 a flat sprite needs the project's (§PW171). That fix is mechanical, so `picture.fit` makes it

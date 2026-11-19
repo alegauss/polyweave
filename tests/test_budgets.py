@@ -209,7 +209,9 @@ from polyweave.surface.capabilities import capabilities
 #: 176,857 with picture.upscale and a public Scenario model (§PW688, §PW689,
 #: 2026-11-04).
 #: 177,451 with capture.web, a web page filmed as a clip (§PW690, 2026-11-09).
-DESCRIBE = 178_000
+#: 178,953 with video.buy, a clip bought from a Scenario video model (§PW692,
+#: 2026-11-19).
+DESCRIBE = 179_500
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -378,7 +380,8 @@ DESCRIBE = 178_000
 #: 194,137 with picture.upscale and picture.quoted-over-price (§PW688, §PW689,
 #: 2026-11-04).
 #: 194,882 with capture.web and its five web.* codes (§PW690, 2026-11-09).
-CAPABILITIES = 195_800
+#: 196,452 with video.buy (§PW692, 2026-11-19).
+CAPABILITIES = 197_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -460,7 +463,8 @@ HELP_VERB = 5_100
 #: 35,251 with level.curve and level.trace (§PW204, §PW327, 2026-11-04).
 #: 35,548 with level.fields and level.reader (§PW608, 2026-11-04).
 #: 35,996 with picture.upscale (§PW689, 2026-11-04).
-HELP_TOP = 36_300
+#: 36,295 with video.buy (§PW692, 2026-11-19).
+HELP_TOP = 36_700
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

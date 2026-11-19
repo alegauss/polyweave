@@ -17,7 +17,7 @@ from polyweave.services.purchase import CHEAPER, COUNTED, PRICED_BY, remaining
 #: (§PW669); a picture where neither says.
 BOUGHT = {"mesh": "mesh", "sound": "sound", "sound.speak": "spoken line",
           "voice.lines": "spoken line", "voice.design": "voice design",
-          "picture.describe": "description"}
+          "picture.describe": "description", "video.buy": "clip"}
 
 
 @operation("purchase.quote")

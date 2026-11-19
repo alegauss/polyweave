@@ -26,6 +26,9 @@ HOSTS = ("scenario.com",)
 #: How long training may take before the call stops waiting, and how often it asks.
 TRAIN_TIMEOUT = 3 * 3600
 JOB_TIMEOUT = 300
+#: A video model takes minutes where a picture takes seconds (§PW692); a drawing that
+#: asks with `wait` is waited on that long.
+VIDEO_TIMEOUT = 1200
 POLL_EVERY = 5.0
 
 
@@ -134,7 +137,8 @@ def submit(order: S.Order) -> str:
 def poll(order: S.Order, handle: str, report) -> dict:
     if order.asked["call"] == "train":
         return _trained(order.base, order.key, handle, report)
-    assets = _job(order.base, order.key, handle, report)
+    assets = _job(order.base, order.key, handle, report,
+                  order.asked.get("wait", JOB_TIMEOUT))
     status, said = call("GET", _url(order.base, f"assets/{assets[0]}"), order.key)
     asset = _ok(status, said, f"reading asset {assets[0]}").get("asset") or {}
     if not asset.get("url"):
@@ -190,7 +194,8 @@ def _trained(base: str, key: str, model: str, report) -> dict:
         time.sleep(POLL_EVERY)
 
 
-def _job(base: str, key: str, job: str, report) -> list[str]:
+def _job(base: str, key: str, job: str, report,
+         timeout: float = JOB_TIMEOUT) -> list[str]:
     """Ask after a generation job until it succeeds, and say the assets it made."""
     started = time.monotonic()
     while True:
@@ -214,10 +219,10 @@ def _job(base: str, key: str, job: str, report) -> list[str]:
                 "reword the prompt or ask again; nothing was ledgered",
                 detail=json.dumps(found)[:400],
             )
-        if time.monotonic() - started > JOB_TIMEOUT:
+        if time.monotonic() - started > timeout:
             raise PolyweaveError(
                 "fetch.service-error",
-                f"job {job} was still {state} after {JOB_TIMEOUT}s",
+                f"job {job} was still {state} after {timeout:g}s",
                 f"ask after it later by its id, {job}; nothing was ledgered",
             )
         if report is not None:
@@ -226,6 +231,6 @@ def _job(base: str, key: str, job: str, report) -> list[str]:
 
 
 SERVICE = S.Service(
-    name="scenario", media=("image", "model"), hosts=HOSTS,
+    name="scenario", media=("image", "model", "video"), hosts=HOSTS,
     submit=submit, poll=poll, deliver=deliver,
 )

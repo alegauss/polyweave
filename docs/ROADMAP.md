@@ -11,7 +11,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW692** (deps: —) **A Scenario video model cannot be bought: picture.buy opens every delivery as an image** — A project that needs a generated clip calls Scenario's API by hand, outside the ledger, the budget and the provenance. → §PW692
 - 📋 **PW693** (deps: —) **picture.vary remix of a cut-out parent comes back on white, with no --transparent and no warning** — A thumbnail presenter needs a hand-written background removal in the project, which fringes the hair. → §PW693
 - 📋 **PW694** (deps: —) **picture.copies writes a .prov.json beside every copy in the shipped folder, and credits for a copy come back empty** — A packager ships the records unless it excludes them, and a credits file needs a script that reads each source. → §PW694
 - 📋 **PW695** (deps: —) **Buying again to the same path leaves every purchase equal in the ledger, with no mark of which was superseded** — A reviewer cannot tell from the ledger which photo a path holds and which were rejected, or why. → §PW695

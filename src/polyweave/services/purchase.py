@@ -43,7 +43,7 @@ from polyweave.kernel.errors import PolyweaveError
 from polyweave.kernel.files import read_text_retrying, write_atomic
 
 #: What a project may buy. `kind` in the record stays `fetch` for all of them.
-BOUGHT = ("mesh", "texture", "image", "description", "sound", "model")
+BOUGHT = ("mesh", "texture", "image", "description", "sound", "model", "video")
 
 #: Held while the owed list or the ledger is read and rewritten. Every purchase owes
 #: and settles its charge (§PW516), and pictures are bought ten at a time in one

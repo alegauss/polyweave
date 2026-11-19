@@ -8,6 +8,7 @@ LAYER = Layer(
     summary="What a game shows outside itself: store art, teasers, icons, sheets.",
     modules=(
         "polyweave.layers.store.compose",
+        "polyweave.layers.store.footage",
         "polyweave.layers.store.icons",
         "polyweave.layers.store.store",
         "polyweave.layers.store.video",
@@ -23,7 +24,8 @@ LAYER = Layer(
     parts={"contact.sheet": "polyweave.layers.store.compose:sheet"},
     codes="polyweave.layers.store.codes",
     # 4,353 once capture.web films a product video's browser scenes (§PW690).
-    tools=4_700,
+    # 5,376 with video.buy, a clip bought from a Scenario video model (§PW692).
+    tools=5_800,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),
