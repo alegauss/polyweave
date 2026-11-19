@@ -26,6 +26,10 @@
 - 📋 **PW714** (deps: —) **Fetched media has no reusable catalogue of approved and rejected source ranges** — Rejected or misidentified footage is rediscovered, and selected shots require manual provenance copying. → §PW714
 - 📋 **PW715** (deps: —) **A long video cut exposes no stage progress while rendering or waiting** — Callers poll processes and output timestamps to distinguish slow work from a failed stage. → §PW715
 - 📋 **PW716** (deps: —) **Narrated claims cannot bind evidence, dates and human review to their spoken anchors** — Revisions repeat research and can mistake illustrative footage or stale statistics for evidence. → §PW716
+- 📋 **PW717** (deps: —) **voice.lines accepts a speed for eleven_v3, spends, and records it in the take's provenance although the model ignores it** — A narration paid for at a pace it never got looks current, and the recorded setting marks every other take stale for nothing. → §PW717
+- 📋 **PW718** (deps: —) **No operation brings a picture from Wikimedia Commons: stock.fetch takes only a Pixabay id** — Historical videos rely on public-domain photos, and each one is fetched and its licence recorded by hand. → §PW718
+- 📋 **PW719** (deps: —) **No operation searches the ElevenLabs voice library, nor speaks one line in several voices to compare** — Choosing a narrator for a new audience meant raw API calls and one lines file per candidate voice. → §PW719
+- 📋 **PW720** (deps: —) **voice.lines cannot buy a current take again when its words, voice and model are unchanged** — A take whose accent or delivery drifted can only be re-rolled by rewording a line that was already right or moving files by hand. → §PW720
 
 ## Block E — One world with the engine
 

@@ -355,6 +355,91 @@ view will live in video-maker/videomaker/claims.py, integrated with existing pre
 and description formatting. Media range/rights review remains PW714; bounded credits
 remain PW711.
 
+### §PW717 A delivery setting the model ignores is recorded as applied
+
+Where it happened: viglet/marketing, `japode/wordpress2`, on 2026-11-16. The call was
+`python -m polyweave voice.lines --script narration/lines.json --keys intro --spend true
+--root japode/wordpress2 --json`, with `"model": "eleven_v3"` and `"speed": 1.12` (then
+`1.2`) at the top of the lines file.
+
+What came back: `spent: true`, a take, and a provenance whose `details.delivery.speed`
+records the value. Nothing said the model ignored it. Three takes of the same line
+measured 14.28 s of talking with no speed, 13.30 s at 1.12 and 14.04 s at 1.2:
+take-to-take variation only. eleven_v3 does not apply `voice_settings.speed`.
+
+Expected: a delivery setting the model does not apply should be refused before any
+spending, or at least come back as a warning in the plan (`ignored: ["speed"]`). It
+should not be recorded in the take's provenance as if it shaped the take. The record
+also makes every other take look stale for a change that alters nothing, which pushes a
+re-purchase of the whole narration.
+
+Workaround: viglet/marketing VM72 stretches the bought take with ffmpeg `atempo` inside
+video-maker (`[narration] tempo`), and the `speed` key was dropped from the script.
+
+### §PW718 Wikimedia Commons pictures are fetched by hand
+
+Where it happened: viglet/marketing, the standalone Japode Short about the first
+computer bug, on 2026-11-16. It needs three public-domain pictures from Wikimedia
+Commons: the 1947 Harvard Mark II logbook page (File:First_Computer_Bug,_1945.jpg, Naval
+Surface Warfare Center), Grace Hopper (James S. Davis, US Navy, 1984) and Thomas Edison
+(Bachrach, about 1922).
+
+What came back: `stock.fetch` takes only a Pixabay id. `describe` lists no operation
+that brings a picture from Commons. The WordPress episode's historical portraits
+(Mingus, Strayhorn, Armstrong, Gutenberg) had already been fetched and their
+`.prov.json` written by hand.
+
+Expected: one call that, given a Commons file title, downloads the original and records
+in its provenance the page, the author, the licence short name and URL, the date and the
+hash. These come from the API's `imageinfo` + `extmetadata`, which answers when given a
+descriptive User-Agent. It should refuse a file whose licence is missing or non-free, as
+`stock.fetch` would refuse an unknown id.
+
+Workaround: the marketing session queried the Commons API with curl and wrote each
+`.prov.json` by hand in `japode/primeiro-bug/footage/`.
+
+### §PW719 Voices cannot be searched or compared
+
+Where it happened: viglet/marketing, the standalone Japode Short about the first
+computer bug, on 2026-11-16. The owner asked for a voice in the audience's own age (21
+to 31) in place of the channel's narrator.
+
+What was missing: `describe` lists `voice.design`, `voice.choose` and `voice.lines`, but
+nothing that searches ElevenLabs' shared voice library by language, locale, age, gender
+and use. The session called `GET
+/v1/shared-voices?language=pt&locale=pt-BR&age=young&gender=...` with curl to shortlist
+candidates. It then wrote one lines file per voice in
+`japode/primeiro-bug/narration/samples/` to hear the same sentence in each, because a
+lines file holds a single voice.
+
+Expected:
+- a `voice.find` that answers the library's matches (id, name, accent, age, use, description,
+  usage), kept in the project like `stock.find`;
+- a way to speak one line in several voices as one sitting to compare, priced before spending.
+
+### §PW720 A current take cannot be bought again
+
+Where it happened: urdido (the video framework extracted from marketing's video-maker),
+task UR7. In marketing's `japode/wordpress2` the chapter-1 take bought with eleven_v3 on
+2026-11-16 drifted into European Portuguese between 0:28 and 0:35. The words were right,
+so the owner wanted the same line spoken again.
+
+The call: `python -m polyweave voice.lines --script lines.json --locale pt-BR --spend
+true` (urdido's `prepare` builds the lines file). The take's words, voice, model and
+delivery are unchanged, so the plan lists it under `current` and buys nothing. No
+parameter says "buy this key again even though it is current".
+
+The workaround (urdido UR7): before the quote, `urdido prepare --retake <take>
+--retake-reason "..."` moves the take, its `.prov.json` and its `.words.json` aside as
+`<take>.retake-<time>.*` and records the reason in the narration's `retakes.json`. With
+the file gone, voice.lines plans and prices the line again. A dry plan or a failed
+purchase puts the old take back.
+
+What polyweave should do: a `retake` (or `again`) list of keys on voice.lines (and
+sound.speak) that plans those keys as not current, keeps the replaced take beside the
+new one, and records the reason in the take's provenance. Then a voice or model that
+keeps drifting shows up in the ledger across projects.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
