@@ -75,6 +75,9 @@ def vary(
         int, Param("for a remix: how much of the parent is kept")
     ] = None,
     rendering_speed: Annotated[str, Param("as the service spells it")] = None,
+    transparent: Annotated[
+        bool, Param("cut it from its background; unset, as the parent is")
+    ] = None,
     service: Annotated[str, purchase.SERVICE] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
@@ -86,6 +89,12 @@ def vary(
     new `resolution` and draws only the border it adds. Each is priced by its row of
     `prices`. The endpoints take a text prompt at most, so a family's style is not
     carried into the request; `picture.against_parent` measures it afterwards.
+
+    The service draws every variation on a background. Where `transparent` asks, or,
+    unset, for a remix of a cut-out parent, it is bought to `<stem>.uncut<suffix>` and
+    then cut into `out` by the service's background removal, a second purchase priced
+    by the `remove-background` row; the ceiling is asked for both before either is
+    sent (§PW693). The answer's `background` and the record say which, and why.
     """
     if change not in OPERATIONS:
         raise PolyweaveError(
@@ -120,7 +129,17 @@ def vary(
     name = config.service(service)
     about = config.services()[name]
     base, key = picture._reached(name, about)
-    price = picture._price(name, about.get("prices") or {}, change, rendering_speed)
+    prices = about.get("prices") or {}
+    price = picture._price(name, prices, change, rendering_speed,
+                           published=ideogram.published(change, rendering_speed))
+    background = _background(source, transparent, change)
+    cut_price = None
+    if background["cut"]:
+        cut_price = picture._price(name, prices, ideogram.CUT, None,
+                                   published=ideogram.published(ideogram.CUT, None))
+        # Both asked for at once: a ceiling that allowed the variation and refused its
+        # cut would leave a picture on a background the call said it would not have.
+        purchase.allow(price + cut_price, root=here, service=name)
 
     files = {"image": (source.name, picture.sent_bytes(source), picture._mime(source))}
     payload: dict = (
@@ -135,32 +154,100 @@ def vary(
     if rendering_speed is not None:
         payload["rendering_speed"] = rendering_speed
 
+    drawn_to = _uncut(out) if background["cut"] else out
+    details = {
+        "parent": {
+            "path": parent,
+            "sha256": provenance.sha256_of(source)[0],
+        },
+        "change": change,
+        "frame": resolution,
+        "region": region,
+        "strength": strength,
+        "mask": provenance.relative(mask_path, here) if mask_path else None,
+        # Whose the region was: a person's mark outranks the described boxes.
+        "mask_from": mask_from,
+        "transparent": False,
+    }
     order = S.Order(
         service=name, base=base, key=key, price=price, root=here,
         asked={"path": OPERATIONS[change], "payload": payload, "files": files,
                "prefix": f"{change}:"},
         kept={
-            "out": out,
+            "out": drawn_to,
             "prompt": prompt,
             "reference": parent,
             "bought": "image",
             "engine": {"name": name, "model": "3.0"},
-            "details": {
-                "parent": {
-                    "path": parent,
-                    "sha256": provenance.sha256_of(source)[0],
-                },
-                "change": change,
-                "frame": resolution,
-                "region": region,
-                "strength": strength,
-                "mask": provenance.relative(mask_path, here) if mask_path else None,
-                # Whose the region was: a person's mark outranks the described boxes.
-                "mask_from": mask_from,
-            },
+            "details": details,
         },
     )
-    return S.buy(ideogram.SERVICE, order)
+    entry = S.buy(ideogram.SERVICE, order)
+    if not background["cut"]:
+        return {**entry, "background": background}
+    drawn = here / drawn_to
+    cut = S.Order(
+        service=name, base=base, key=key, price=cut_price, root=here,
+        asked={"path": ideogram.CUT, "payload": {},
+               "files": {"image": (drawn.name, drawn.read_bytes(),
+                                   picture._mime(drawn))},
+               "prefix": "cut:"},
+        kept={
+            "out": out,
+            "prompt": prompt,
+            "reference": parent,
+            "bought": "image",
+            "engine": {"name": name, "model": ideogram.CUT},
+            # The variation's own details, so against_parent and the review page read
+            # the cut picture as the variation it is.
+            "details": {**details, "transparent": True, "uncut": drawn_to},
+            "inputs": [provenance.source("uncut", drawn, here)],
+        },
+    )
+    finished = S.buy(ideogram.SERVICE, cut)
+    return {**finished, "background": background, "uncut": entry}
+
+
+def _uncut(out: str) -> str:
+    """Where a variation is drawn before it is cut from its background."""
+    path = Path(out)
+    return str(path.with_name(f"{path.stem}.uncut{path.suffix or '.png'}")).replace(
+        "\\", "/")
+
+
+#: The share of a parent's pixels that must be see-through for it to read as cut out:
+#: a picture with a few transparent pixels at an edge is not a sprite.
+CUT_OUT = 0.01
+
+
+def _background(source: Path, transparent: bool | None, change: str) -> dict:
+    """Whether the variation is cut from its background, and why (§PW693).
+
+    Unset, a remix of a cut-out parent is cut, because it redraws the whole picture on
+    a background. An edit or a reframe is not, and its answer says the parent was cut
+    out, so the loss is never silent.
+    """
+    if transparent is not None:
+        return {"cut": bool(transparent),
+                "because": "transparent was asked" if transparent
+                else "transparent=false was asked"}
+    from PIL import Image
+
+    alpha = 0.0
+    with Image.open(source) as opened:
+        if "A" in opened.getbands() or "transparency" in opened.info:
+            alpha = float((np.asarray(opened.convert("RGBA"))[..., 3] < 255).mean())
+    if alpha < CUT_OUT:
+        return {"cut": False,
+                "because": "the parent has a background, so the variation keeps one; "
+                "pass transparent for a cut-out"}
+    if change == "remix":
+        return {"cut": True,
+                "because": f"the parent is cut out ({alpha:.0%} of it is see-through), "
+                "and a remix comes back drawn on a background"}
+    return {"cut": False,
+            "because": f"the parent is cut out ({alpha:.0%} of it is see-through), and "
+            f"an {change} is not cut unless asked; pass transparent to cut it too"}
 
 
 def _mask_for(source: Path, region, mask, here: Path, out: str) -> tuple[Path, str]:

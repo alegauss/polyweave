@@ -131,11 +131,95 @@ def test_a_region_must_name_exactly_one_described_element(tmp_path, parent):
 def test_a_remix_sends_its_strength_and_no_mask(tmp_path, parent, monkeypatch):
     came_back(monkeypatch, figure())
     variation.vary(
-        "hero.png", "r.png", "in winter", change="remix", strength=70, root=tmp_path
+        "hero.png", "r.png", "in winter", change="remix", strength=70,
+        transparent=False, root=tmp_path
     )
     assert parent["endpoint"].endswith("/v1/ideogram-v3/remix")
     assert parent["payload"]["image_weight"] == 70
     assert set(parent["files"]) == {"image"}
+
+
+# -- a remix of a cut-out parent comes back cut out (§PW693) -------------------------
+
+
+@pytest.fixture
+def cutting(tmp_path, parent, monkeypatch):
+    """The parent fixture's project, priced for a cut, its calls kept in order."""
+    (tmp_path / C.FILENAME).write_text(
+        PROJECT.replace('"remix" = 0.06', '"remix" = 0.06, "remove-background" = 0.01'),
+        encoding="utf-8")
+    calls = []
+
+    def send(endpoint, key, payload, files=None):
+        calls.append(endpoint.rsplit("/v1/", 1)[1])
+        answer = {"created": "t", "data": [{"seed": 3, "url": "https://p/v.png"}]}
+        return 200, json.dumps(answer).encode()
+
+    monkeypatch.setattr(ideogram, "send", send)
+    came_back(monkeypatch, figure())
+    return calls
+
+
+def test_a_remix_of_a_cut_out_parent_is_cut_out_and_says_so(tmp_path, cutting):
+    entry = variation.vary("hero.png", "r.png", "in winter", change="remix",
+                           root=tmp_path)
+    assert cutting == ["ideogram-v3/remix", "remove-background"]
+    assert entry["background"]["cut"] is True
+    assert "cut out" in entry["background"]["because"]
+    assert entry["uncut"]["artefact"] == "r.uncut.png"
+    record = provenance.read("r.png", root=tmp_path)
+    assert record["details"]["transparent"] is True
+    assert record["details"]["parent"]["path"] == "hero.png"
+    assert record["details"]["uncut"] == "r.uncut.png"
+    assert {one["role"] for one in record["inputs"]} >= {"uncut"}
+    assert provenance.read("r.uncut.png", root=tmp_path)["details"]["transparent"] \
+        is False
+    assert entry["credits"] + entry["uncut"]["credits"] == pytest.approx(0.07)
+
+
+def test_an_edit_of_a_cut_out_parent_says_it_was_not_cut(tmp_path, cutting):
+    entry = variation.vary("hero.png", "v.png", "holding a lantern",
+                           region="left hand", root=tmp_path)
+    assert cutting == ["ideogram-v3/inpaint"]
+    assert entry["background"]["cut"] is False
+    assert "pass transparent" in entry["background"]["because"]
+    assert provenance.read("v.png", root=tmp_path)["details"]["transparent"] is False
+
+
+def test_a_cut_with_no_price_is_refused_before_anything_is_sent(tmp_path, cutting):
+    (tmp_path / C.FILENAME).write_text(PROJECT, encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        variation.vary("hero.png", "r.png", "in winter", change="remix",
+                       root=tmp_path)
+    assert refused.value.code == "fetch.unpriced"
+    assert "remove-background" in refused.value.message
+    assert "publishes 0.01 USD" in refused.value.remedy
+    assert cutting == []
+
+
+def test_a_ceiling_that_covers_the_remix_and_not_its_cut_sends_neither(
+    tmp_path, cutting
+):
+    (tmp_path / C.FILENAME).write_text(
+        PROJECT.replace('"remix" = 0.06', '"remix" = 0.06, "remove-background" = 0.01')
+        .replace("credits = 60", "credits = 0.065"),
+        encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        variation.vary("hero.png", "r.png", "in winter", change="remix",
+                       root=tmp_path)
+    assert refused.value.code == "fetch.over-budget"
+    assert cutting == []
+
+
+def test_an_unpriced_remix_quotes_the_published_price(tmp_path, parent):
+    (tmp_path / C.FILENAME).write_text(
+        PROJECT.replace(', "remix" = 0.06', ""), encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        variation.vary("hero.png", "r.png", "in winter", change="remix",
+                       transparent=False, root=tmp_path)
+    assert refused.value.code == "fetch.unpriced"
+    assert "publishes 0.06 USD" in refused.value.remedy
+    assert parent == {}
 
 
 def test_a_picture_with_no_parent_has_nothing_to_hold_it_against(tmp_path, parent):

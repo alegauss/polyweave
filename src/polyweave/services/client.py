@@ -95,15 +95,16 @@ def mime(path) -> str:
 
 def price(
     name: str, prices: dict, model: str, speed: str | None, count: int | None = None,
-    *, bought: str = "picture",
+    *, bought: str = "picture", published: float | None = None,
 ) -> float:
     """What one call costs, from the declared table, or a refusal (§PW164)."""
-    return priced(name, prices, model, speed, count, bought=bought)["price"]
+    return priced(name, prices, model, speed, count, bought=bought,
+                  published=published)["price"]
 
 
 def priced(
     name: str, prices: dict, model: str, speed: str | None, count: int | None = None,
-    *, bought: str = "picture",
+    *, bought: str = "picture", published: float | None = None,
 ) -> dict:
     """What one call costs and how it was reached, or a refusal (§PW164, §PW320).
 
@@ -116,6 +117,10 @@ def priced(
     The refusal names what the call buys, `bought`, and where the call counts the
     words it sends, the row by the character beside the row by the call (§PW669): an
     unpriced sound model had been refused as a picture, priced per picture.
+
+    `published` is what the service's own price list says the row costs, where the
+    adapter knows it, and the refusal quotes it (§PW693): a project refused for a
+    `remix` row had guessed 0.08 for a call published at 0.06.
     """
     row = f"{model}:{speed}" if speed else model
     if row in prices and isinstance(prices[row], dict):
@@ -141,7 +146,10 @@ def priced(
         f"[service.{name}] prices has no row {row!r}, so what the {bought} costs is "
         f"not known",
         f"add {row!r} = <price of one {bought}> to [service.{name}] prices{by_words}, "
-        f"in the unit of its ceiling",
+        f"in the unit of its ceiling"
+        + (f"; the service publishes {published:g} USD for one, as read when this "
+           f"client was written, so check its price list" if published is not None
+           else ""),
         given=row,
         allowed=sorted(prices),
     )

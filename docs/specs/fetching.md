@@ -304,6 +304,22 @@ placement's pooled ΔE must sit within `[tolerance] delta_e`, or the reframe red
 was asked to keep. The answer names the `placed` scale and offset. What the drawn-in border
 should look like stays the person's.
 
+**A remix of a cut-out parent comes back cut out** (§PW693). The remix, edit and reframe
+routes have no transparent form, and each draws on a background. Where `transparent=true`
+is passed, or, unset, where the change is a remix and at least 1% of the parent's pixels
+are see-through, the variation is bought to `<stem>.uncut<suffix>` beside `out` and then
+sent to `POST /v1/remove-background` (multipart `image`, answered as `data[0].url`, a PNG
+at the size sent), which lands in `out`. The cut is a second purchase priced by the
+`remove-background` row, and the ceiling is asked for both prices together before either
+is sent. Both records carry the variation's details, with `transparent` false on the
+uncut one and true on the cut one, which also names `uncut` and has it as an input. An
+edit or a reframe of a cut-out parent is not cut unless asked, and its answer's
+`background.because` says the parent was cut out. Every answer carries `background`:
+`cut` and why. A `fetch.unpriced` refusal for a row the adapter knows quotes what the
+service publishes for it (`ideogram.PUBLISHED`: 3.0, remix, edit and reframe at 0.03,
+0.06 and 0.09 USD by speed, the cut at 0.01, read 2026-11-19), as a figure to check and
+never one charged from.
+
 **A 4.0 request goes to the asynchronous route** (§PW178): `/v1/ideogram-v4/async/generate`,
 or `.../async/generate-transparent`. 3.0 has none, its `async/generate` answering 404, so
 it goes to `/v1/ideogram-v3/generate` or `.../generate-transparent`, which answer the

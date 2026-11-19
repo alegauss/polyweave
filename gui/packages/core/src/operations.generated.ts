@@ -1562,6 +1562,8 @@ export interface PictureVaryArgs {
   strength?: number
   /** as the service spells it */
   rendering_speed?: string
+  /** cut it from its background; unset, as the parent is */
+  transparent?: boolean
   /** the [service.<name>] to use; needed only where there are several */
   service?: string
   /** the project whose ledger this is; default "." */

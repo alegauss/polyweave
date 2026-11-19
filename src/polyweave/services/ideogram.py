@@ -49,6 +49,28 @@ RESOLUTIONS = {
 }
 
 
+#: The route that cuts a picture from its background, returning a PNG with alpha at the
+#: size it was sent (§PW693). It is the only way a remix, edit or reframe comes back
+#: cut out: those routes have no transparent form.
+CUT = "remove-background"
+
+#: What the service publishes per picture, in USD, by the row a project prices it
+#: under: 3.0's three speeds for a generation, remix, edit and reframe alike, and the
+#: cut (read 2026-11-19). Quoted by a refusal for a missing row, never charged from.
+_SPEEDS = {"TURBO": 0.03, "DEFAULT": 0.06, "QUALITY": 0.09}
+PUBLISHED = {
+    CUT: 0.01,
+    **{f"{call}:{speed}": usd for call in ("3.0", "remix", "edit", "reframe")
+       for speed, usd in _SPEEDS.items()},
+    **{call: _SPEEDS["DEFAULT"] for call in ("3.0", "remix", "edit", "reframe")},
+}
+
+
+def published(model: str, speed: str | None) -> float | None:
+    """What the service publishes for one picture of that row, where it is known."""
+    return PUBLISHED.get(f"{model}:{speed}" if speed else model)
+
+
 def resolution(model: str, wanted: float, slack: float) -> tuple[str | None, list[str]]:
     """The size `model` draws at `wanted` width over height, within `slack`.
 

@@ -82,6 +82,7 @@
 - ✅ **PW689** **store.too-small says give a larger key art, and nothing in the plugin can make one** — picture.upscale buys a larger picture from a Scenario upscaler, recorded against its source, and store.too-small names that call (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW691** **voice.lines plans again takes sound.speak bought with the same words, voice and model, and cannot take them over** — voice.lines lists matching sound.speak takes as adoptable, and adopt=true writes the line into their records so they count current (design recorded in `docs/specs/world.md`).
 - ✅ **PW692** **A Scenario video model cannot be bought: picture.buy opens every delivery as an image** — video.buy buys a clip from a Scenario video model within the ceiling, sends only fields the model declares, and records and measures it as a video (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW693** **picture.vary remix of a cut-out parent comes back on white, with no --transparent and no warning** — A remix of a cut-out parent comes back cut out by a priced second call, picture.vary takes transparent, and an unpriced row quotes the published price (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 
