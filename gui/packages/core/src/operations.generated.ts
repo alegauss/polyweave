@@ -2566,6 +2566,24 @@ export interface StoreThumbnailArgs {
   root?: string
 }
 
+/** Hold each variant to store.thumbnail and lay the first passing ones for a person. */
+export interface StoreThumbnailsArgs {
+  /** the variants the layout drew, each a path or {picture, texts} */
+  variants: unknown[]
+  /** the video's title, as published */
+  title: string
+  /** the title's language, as en or pt-BR; default "en" */
+  language?: string
+  /** the most words each may carry; from 1 to …; default 6 */
+  max_words?: number
+  /** how many passing variants are laid out; from 1 to …; default 3 */
+  keep?: number
+  /** the sitting's folder; the project's if unset */
+  out?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Refuse a picture that drifts from its family's canon by number, saying which way. */
 export interface StyleDriftArgs {
   /** the picture, under the project */
@@ -3169,6 +3187,7 @@ export interface Operations {
   "stock.find": StockFindArgs
   "store.capsules": StoreCapsulesArgs
   "store.thumbnail": StoreThumbnailArgs
+  "store.thumbnails": StoreThumbnailsArgs
   "style.drift": StyleDriftArgs
   "style.read": StyleReadArgs
   "style.train": StyleTrainArgs
@@ -3407,6 +3426,7 @@ export const OPERATIONS = [
   "stock.find",
   "store.capsules",
   "store.thumbnail",
+  "store.thumbnails",
   "style.drift",
   "style.read",
   "style.train",

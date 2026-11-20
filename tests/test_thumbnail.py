@@ -62,3 +62,32 @@ def test_a_missing_thumbnail_is_refused(project):
     with pytest.raises(PolyweaveError) as refused:
         thumbnail("none.png", TITLE, texts=[], root=str(project))
     assert refused.value.code == "store.no-thumbnail"
+
+
+def test_the_passing_variants_are_laid_for_a_person_and_the_rest_say_why(project):
+    from polyweave.layers.store.thumbnail import thumbnails
+
+    drawn = (project / "thumb.png").read_bytes()
+    for name in ("a", "b", "c", "d"):
+        (project / f"{name}.png").write_bytes(drawn)
+    said = thumbnails([
+        {"picture": "a.png", "texts": ["O Git não aguentou"]},
+        {"picture": "b.png", "texts": ["Monorepo quebrou"]},
+        {"picture": "c.png", "texts": ["Fila de espera"]},
+        {"picture": "d.png", "texts": ["Quem pagou a conta"]},
+    ], TITLE, language="pt-BR", keep=2, out="review/thumbs", root=str(project))
+    assert said["laid"] == ["b.png", "c.png"]
+    rest = {one["picture"]: one["why"] for one in said["rest"]}
+    assert set(rest) == {"a.png", "d.png"}
+    assert "repeats" in rest["a.png"]
+    assert "past the 2 laid out" in rest["d.png"]
+    assert said["sitting"]
+    assert (project / "review" / "thumbs" / "thumbnail.png").is_file()
+
+
+def test_no_passing_variant_lays_nothing(project):
+    from polyweave.layers.store.thumbnail import thumbnails
+
+    said = thumbnails([{"picture": "thumb.png", "texts": ["o Git não aguentou"]}],
+                      TITLE, language="pt-BR", root=str(project))
+    assert said["laid"] == [] and said["sitting"] is None

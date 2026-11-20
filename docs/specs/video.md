@@ -263,3 +263,12 @@ the mean relative luminance of the box's lighter and darker parts (split at the 
 mean), at least 3; a line without a box is `unmeasured`. `failed` says each miss in
 words and `passed` is true where there is none. A missing picture is
 `store.no-thumbnail`. Which thumbnail is better stays a person's choice.
+
+`store.thumbnails(variants, title, keep=3, out=)` takes the variants the project's own
+layout drew from its choices (which words, which picture, which number), each a path or
+`{picture, texts}`, holds each to `store.thumbnail`, and lays the first `keep` that pass,
+in the order given, as the family `thumbnail` of a sitting in `out` (else `[paths]
+sittings`/thumbnails, else the work area's), where a person picks the ones to put to the
+platform's A/B test. `rest` names each variant not laid and why: its failures, or that it
+passed past the `keep` laid out. Where none passes, nothing is laid. polyweave draws no
+thumbnail layout itself; the choices are the project's layout's, and the agent never picks.

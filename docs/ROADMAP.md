@@ -38,7 +38,6 @@
 
 ## Block J — A bar a person sets once
 
-- ⏳ **PW699** (deps: —) **A thumbnail cannot be checked for legibility at feed size, for its word count, or for repeating the video's title** — No sweep over a thumbnail layout's choices brings two or three variants to the review page for a person to pick one for an A/B test. → §PW699
 - 📋 **PW709** (deps: —) **Video checks do not report simultaneous editorial labels or names over unrelated footage** — Video-maker must compare timed captions and highlights itself before rendering a cut. → §PW709
 
 ## Block K — Reached without reading the source
@@ -117,13 +116,6 @@
   Spinhold's runs write the event trace, the probe gives the declared pressure per
   second, level.trace lays the two together, and accept.check holds bounds a person set
   (alive never above N, a peak above the phase before), naming the rule broken.
-
-## Done when — PW699
-
-- **Two or three thumbnail variants reach the review page from one layout** One call
-  sweeps a thumbnail layout's declared choices (which words, which picture, which
-  number), holds each variant to store.thumbnail, and lays the passing ones in a sitting
-  where a person picks; the agent never picks.
 
 ## Non-goals
 

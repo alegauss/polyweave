@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 0 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 2 },
+  { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
@@ -162,13 +162,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "voice.lines cannot buy a current take again when its words, voice and model are unchanged",
     why: "A take whose accent or delivery drifted can only be re-rolled by rewording a line that was already right or moving files by hand.",
-    deps: [],
-  },
-  {
-    id: "PW699",
-    block: "J",
-    symptom: "A thumbnail cannot be checked for legibility at feed size, for its word count, or for repeating the video's title",
-    why: "No sweep over a thumbnail layout's choices brings two or three variants to the review page for a person to pick one for an A/B test.",
     deps: [],
   },
   {

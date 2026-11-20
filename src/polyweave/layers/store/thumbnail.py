@@ -186,3 +186,59 @@ def thumbnail(
         "feed": list(FEED), "lines": legible,
         "failed": failed, "passed": not failed,
     }
+
+
+@operation("store.thumbnails")
+def thumbnails(
+    variants: Annotated[
+        list, Param("the variants the layout drew, each a path or {picture, texts}")
+    ],
+    title: Annotated[str, Param("the video's title, as published")],
+    *,
+    language: Annotated[str, Param("the title's language, as en or pt-BR")] = "en",
+    max_words: Annotated[int, Param("the most words each may carry", lo=1)] = 6,
+    keep: Annotated[int, Param("how many passing variants are laid out", lo=1)] = 3,
+    out: Annotated[str, Param("the sitting's folder; the project's if unset")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Hold each variant to store.thumbnail and lay the first passing ones for a person.
+
+    The variants are what the project's own layout drew from its choices (which words,
+    which picture, which number). Each is checked as `store.thumbnail` checks one; the
+    first `keep` that pass, in the order given, are laid in a sitting on the review
+    page, where a person picks the ones to put to the platform's own A/B test. The
+    agent never picks: the answer names what was laid and why the rest were not.
+    """
+    from pathlib import Path
+
+    from polyweave.loop import verdict
+
+    config = load(root)
+    checked, laid = [], []
+    for one in variants:
+        asked = one if isinstance(one, dict) else {"picture": str(one)}
+        said = thumbnail(asked.get("picture", ""), title, texts=asked.get("texts"),
+                         language=language, max_words=max_words, root=root)
+        checked.append(said)
+        if said.get("passed") and len(laid) < keep:
+            laid.append(said["picture"])
+    rest = [{"picture": one["picture"],
+             "why": "; ".join(one["failed"]) if one.get("failed")
+             else one.get("why") or f"it passed, past the {keep} laid out"}
+            for one in checked if one["picture"] not in laid]
+    if not laid:
+        return {"laid": [], "rest": rest, "sitting": None,
+                "says": "no variant passed, so nothing was laid for a person; change "
+                "the layout's choices the failures name and draw them again"}
+    folder = Path(out) if out else verdict._sitting_folder(
+        config, "thumbnails", config.path("paths.work") / "thumbnails")
+    if not folder.is_absolute():
+        folder = config.root / folder
+    sat = verdict.sitting(
+        {"thumbnail": [{"name": Path(one).stem, "new": one} for one in laid]},
+        out=str(folder), root=str(config.root),
+        about=f"Thumbnails for “{title}”: pick the ones to put to the platform's A/B "
+        "test. Each passed its word count, its title and the feed size.")
+    return {"laid": laid, "rest": rest, "sitting": sat["page"],
+            "says": f"{len(laid)} variant(s) laid for a person at {sat['page']}; "
+            f"{len(rest)} not laid, each with why"}

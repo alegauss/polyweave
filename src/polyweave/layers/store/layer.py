@@ -29,7 +29,8 @@ LAYER = Layer(
     # 5,376 with video.buy, a clip bought from a Scenario video model (§PW692).
     # 6,331 with video.safe_area, burned-in text against a platform's controls (§PW698).
     # 7,149 with store.thumbnail, a thumbnail against its title and a feed (§PW699).
-    tools=7_600,
+    # 8,102 with store.thumbnails, the passing variants laid for a person (§PW699).
+    tools=8_600,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),

@@ -107,7 +107,8 @@ CORE_TOOLS = 42_600
 #: (§PW693, §PW694, §PW695, 2026-11-19).
 #: 157,632 with video.safe_area (§PW698, 2026-11-19).
 #: 158,452 with store.thumbnail (§PW699, 2026-11-19).
-SESSION_BUDGET = 159_000
+#: 159,407 with store.thumbnails (§PW699, 2026-11-19).
+SESSION_BUDGET = 160_000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

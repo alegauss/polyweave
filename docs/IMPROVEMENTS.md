@@ -363,32 +363,6 @@ keeps drifting shows up in the ledger across projects.
 
 ## Block J — A bar a person sets once
 
-### §PW699 A thumbnail held to its title and the feed size
-
-**Where.** marketing/japode/scion, the Scion video's YouTube thumbnail
-(`japode/scion/bin/thumbnail.py` through `japode/brand/brand.py`, marketing VM30),
-2026-11-12.
-
-**What happened.** The published thumbnail says "O Git não aguentou" and "30 mil merges
-por dia", and the video's title is "30 mil merges por dia: o Git não aguentou e a
-Anthropic...". Every channel guide read that day says a thumbnail must add what the
-title leaves out; nothing checked it, and it was noticed only on reading the first
-report (12.5% click-through on 48 impressions). Legibility at feed size was never
-measured either: the thumbnail was looked at once, full size.
-
-**What was expected.** A picture spec for a thumbnail, with its title as an input:
-
-- legible at feed size: the picture scaled to about 168x94 and its text still readable (text height in px, contrast of text against what is behind it);
-- at most N words of text on it (read from the layout that drew it, or by OCR);
-- shares no meaningful word with the title (stop words per language, pt-BR included);
-- and a sweep over the layout's choices (which words, which picture, which number) that brings two or three variants to the review page, so the Alexandre picks one for YouTube's own A/B test. The agent never picks.
-
-**Workaround.** None; the check was a person reading the title and the picture side by
-side, after publishing.
-
-VM54 additionally measures title lines after fonts load, fits them to a declared
-subject-free column, and refuses oversized minimum-size titles.
-
 ### §PW709 Timed editorial-label conflicts
 
 In marketing VM43, a caption and a spoken highlight can overlap in time with conflicting
