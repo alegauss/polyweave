@@ -52,6 +52,11 @@ TABLES: dict[str, Any] = {
         # The game's interjections ("uhuu", "vamo"): a transcription spells them its own
         # way ("woohoo", "vamos"), so a take is never failed for how one was heard.
         "interjections": [],
+        # A line's word to the spellings a transcription gives it, as
+        # { WordPress = ["word press"] }: a timed word heard so is a declared alias, and
+        # one heard any other way is uncertain, never a time a callout is placed by
+        # (§PW703).
+        "aliases": {},
         # The free rung a line is drafted on before a character is billed (§PW324):
         # "piper" with `draft_model` (a downloaded .onnx), or "espeak-ng" with
         # `draft_voice` (such as "pt-br"). Empty takes the first one installed.

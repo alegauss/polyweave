@@ -378,27 +378,6 @@ model and the members.
 
 ## Block P — Music and sound a game can ship
 
-### §PW703 Word times from the speech check
-
-In marketing/japode/wordpress the user requested the keyword treatment already used in
-Docker and Scion. describe sound.speech exposes take and text, and its answer for
-narration/pt-BR/intro.mp3 includes said.heard but no timestamped words. Existing
-japode/scion/bin/check-takes.py calls ElevenLabs Scribe directly with
-timestamps_granularity word and saves text, start and end with the audio hash. The
-reusable video-maker transcription helper will carry that workaround for WordPress,
-refusing stale times before placing callouts. sound.speech should expose and persist
-service word timings as part of its own answer or artifact, together with the take hash,
-so clients do not pay for or maintain a second transcription path.
-
-VM60 now orchestrates a declared retake, its voice.lines price plan, changed-audio
-transcription and anchor review. Return reusable hash-bound word records directly from
-generation/checking, plus per-stage cost estimates, so callers need not coordinate a
-separately priced Scribe request. Preserve approved voice/model/pronunciation, select
-only explicitly authorized takes, reuse current transcripts and distinguish exact
-declared aliases from uncertain ASR matches. Candidate alignment suggestions must remain
-for review rather than becoming invented accepted timestamps. The marketing bridge
-remains video-maker/prepare.py and narration_words.py.
-
 ### §PW706 Declared narration preflight before purchase
 
 While implementing marketing VM29 in D:/Git/viglet/marketing, `python -m polyweave

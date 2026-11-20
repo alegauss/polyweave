@@ -49,7 +49,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- ⏳ **PW703** (deps: —) **sound.speech returns the transcript without word times needed for spoken video callouts** — A heard word is not told apart as a declared alias or an uncertain match, so a callout may be placed on a guess no one reviewed. → §PW703
 - 📋 **PW706** (deps: —) **Voice purchases cannot reject an opening whose first proof arrives too late** — The caller estimates the first proof from spoken words and narrator pace before buying takes, so each video pipeline writes its own guard. → §PW706
 
 ## Block Q — Words held to the world
@@ -113,13 +112,6 @@
   Spinhold's runs write the event trace, the probe gives the declared pressure per
   second, level.trace lays the two together, and accept.check holds bounds a person set
   (alive never above N, a peak above the phase before), naming the rule broken.
-
-## Done when — PW703
-
-- **Each timed word says whether it was matched exactly or guessed** Each word
-  sound.speech times is tied to the line's word it stands for, marked exact, a declared
-  alias or uncertain; an uncertain one is a suggestion laid for a person, never an
-  accepted time a callout is placed by.
 
 ## Non-goals
 

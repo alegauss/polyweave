@@ -679,7 +679,7 @@ DIRECTION = re.compile(r"\[[^\[\]]*\]")
 
 def speech(
     path: str | Path, text: str, vocabulary=(), language=None, interjections=(),
-    directions=False, heard=None,
+    directions=False, heard=None, aliases=None,
 ) -> dict:
     """What a spoken take measures against its line (§PW323).
 
@@ -718,6 +718,8 @@ def speech(
         return found
     if isinstance(heard, dict):
         found["words"] = heard.get("words") or []
+        found["aligned"], found["uncertain"] = _aligned(
+            text, found["words"], interjections, aliases or {})
         heard = heard.get("text", "")
     found["said"] = _differs(text, heard, interjections)
     if language:
@@ -758,6 +760,56 @@ def _folded(word: str) -> str:
 
     apart = unicodedata.normalize("NFKD", word.lower())
     return "".join(c for c in apart if not unicodedata.combining(c))
+
+
+def _aligned(line: str, timed: list[dict], interjections=(),
+             aliases: dict | None = None) -> tuple[list[dict], list[dict]]:
+    """Each word of the line with the time it was said, and how sure that is (§PW703).
+
+    `exact` where the transcription heard the word itself, accents folded; `alias`
+    where it heard a spelling `[voice] aliases` declares for it, or the word is an
+    interjection; `uncertain` otherwise, with no time: what was heard in its place is a
+    suggestion in the second list, for a person, never a time a callout is placed by.
+    """
+    import difflib
+
+    wanted = re.findall(r"[\w']+", line)
+    pieces = [(piece, one) for one in timed
+              for piece in re.findall(r"[\w']+", str(one.get("word", "")))]
+    plain_wanted = [_folded(w) for w in wanted]
+    plain_got = [_folded(p) for p, _ in pieces]
+    exclaimed = {_folded(one) for one in interjections}
+    declared = {_folded(word): {" ".join(_folded(s) for s in re.findall(r"[\w']+", one))
+                                for one in spellings}
+                for word, spellings in (aliases or {}).items()}
+    aligned, uncertain = [], []
+
+    def said(word: str, got: list, match: str) -> None:
+        aligned.append({"word": word, "start": got[0][1]["start"] if got else None,
+                        "end": got[-1][1]["end"] if got else None, "match": match})
+
+    matcher = difflib.SequenceMatcher(a=plain_wanted, b=plain_got, autojunk=False)
+    for op, a, b, c, d in matcher.get_opcodes():
+        if op == "equal":
+            for i in range(b - a):
+                said(wanted[a + i], [pieces[c + i]], "exact")
+            continue
+        size, heard_size = b - a, d - c
+        for i in range(size):
+            share = pieces[c + round(i * heard_size / size):
+                           c + round((i + 1) * heard_size / size)] if size else []
+            spelled = " ".join(_folded(p) for p, _ in share)
+            folded = plain_wanted[a + i]
+            if share and (folded in exclaimed or spelled in declared.get(folded, ())):
+                said(wanted[a + i], share, "alias")
+                continue
+            said(wanted[a + i], [], "uncertain")
+            if share:
+                uncertain.append({"word": wanted[a + i],
+                                  "heard": " ".join(p for p, _ in share),
+                                  "start": share[0][1]["start"],
+                                  "end": share[-1][1]["end"]})
+    return aligned, uncertain
 
 
 def _differs(line: str, heard: str, interjections=()) -> dict:
@@ -812,6 +864,7 @@ def expected(where: Path, config) -> dict:
         "vocabulary": _names(config.root),
         "language": language_of(locale) if locale else None,
         "interjections": tuple(config.get("voice.interjections") or ()),
+        "aliases": dict(config.get("voice.aliases") or {}),
         "directions": (record.get("engine") or {}).get("model") in DIRECTED,
     }
 

@@ -225,3 +225,29 @@ def test_an_untimed_transcription_keeps_no_words_file(tmp_path, monkeypatch):
     said = sound.spoken("t.wav", text="Hold fast", root=str(tmp_path))
     assert "words" not in said and "words_file" not in said
     assert not (tmp_path / "t.wav.words.json").exists()
+
+
+def test_each_word_of_the_line_says_how_sure_its_time_is(tmp_path, monkeypatch):
+    """§PW703: an uncertain match is a suggestion for a person, never a placed time."""
+    def timed(path, vocabulary=(), language=None):
+        return {"text": "O word press nasceu em dois mil e tres", "words": [
+            {"word": w, "start": s, "end": s + 0.3, "probability": 0.9}
+            for w, s in (("O", 0.1), ("word", 0.5), ("press", 0.8), ("nasceu", 1.2),
+                         ("em", 1.6), ("dois", 1.8), ("mil", 2.1), ("e", 2.3),
+                         ("três", 2.5))]}
+
+    monkeypatch.setattr(sound, "_transcribed", timed)
+    (tmp_path / "polyweave.toml").write_text(
+        '[voice]\naliases = { WordPress = ["word press"] }\n', encoding="utf-8")
+    take(tmp_path / "t.wav")
+    said = sound.spoken("t.wav", text="O WordPress nasceu em 2003",
+                        root=str(tmp_path))
+    by_word = {one["word"]: one for one in said["aligned"]}
+    assert by_word["O"]["match"] == "exact"
+    alias = by_word["WordPress"]
+    assert alias["match"] == "alias" and alias["start"] == 0.5
+    assert alias["end"] == pytest.approx(1.1)
+    assert by_word["2003"]["match"] == "uncertain" and by_word["2003"]["start"] is None
+    [suggested] = said["uncertain"]
+    assert suggested["word"] == "2003" and suggested["heard"] == "dois mil e três"
+    assert suggested["start"] == 1.8

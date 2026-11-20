@@ -224,8 +224,12 @@ words from the take's record where `text` is unset) answers:
   `<take>.words.json` with the take's SHA-256, the language and the names it was heard
   with (`words_file`); a call on the same bytes, language and names reads them back and
   transcribes nothing (`words_cached` true), and a take made again is heard again. No
-  service is paid for them. Which heard word is a declared alias and which an uncertain
-  match is not yet told apart.
+  service is paid for them. `aligned` lists each word of the line with its time and
+  `match`: `exact` where it was heard itself (accents folded), `alias` where it was
+  heard as a spelling `[voice] aliases` declares for it (`{ WordPress = ["word
+  press"] }`) or it is an interjection, `uncertain` otherwise, with no time. What was
+  heard in an uncertain word's place is in `uncertain` with its time, a suggestion for
+  a person and never a time a callout is placed by.
 
 `failed` names each measure outside the project's `[voice]` bound: `lead_silence` and
 `tail_silence` as maxima, `rate` and `loudness` as `[low, high]` bands, and `said` where
