@@ -62,7 +62,8 @@ CODES: dict[str, Code] = {
     "stock.licence-refused": Code(
         means="a stock service's licence is not one the project allows (§PW672)",
         when="[service.<name>] licences lists the licences the project ships under, "
-        "and the service's is not among them",
+        "and the service's is not among them; or a public video reports no reuse "
+        "licence (§PW701)",
         doors=("add the licence to the list", "take the file from another service"),
     ),
     "stock.gone": Code(
@@ -71,6 +72,16 @@ CODES: dict[str, Code] = {
         when="video.cut on a fresh checkout after the author removed the clip",
         doors=("choose another shot with stock.find",
                "put the file back where [stock] dir keeps it"),
+    ),
+    "stock.no-yt-dlp": Code(
+        means="yt-dlp is not on PATH, and stock.clip reads and fetches with it",
+        when="stock.clip on a machine without yt-dlp (§PW701)",
+        doors=("pip install yt-dlp, or put its binary on PATH",),
+    ),
+    "stock.bad-excerpt": Code(
+        means="an excerpt's bounds or file are not ones stock.clip can fetch",
+        when="end not after start, end past the video, or out not an .mp4 (§PW701)",
+        doors=("give end after start and within the video", "write out as an .mp4"),
     ),
     "stock.no-hit": Code(
         means="the service has no picture by the id stock.fetch was given",

@@ -51,7 +51,10 @@ LAYER = Layer(
     #: 13,616 with their kind, service and video renditions (§PW674, §PW672).
     #: 14,138 with picture.batch, a batch planned before it spends (§PW680).
     #: 14,946 with picture.upscale, a larger picture bought from Scenario (§PW689).
-    tools=15_400,
+    #: 15,882 with picture.vary's transparent, picture.buy's replaces_because and
+    #: stock.clip, a public video's excerpt under a reuse licence (§PW693, §PW695,
+    #: §PW701).
+    tools=16_400,
     census={
         "polyweave.layers.picture.picture:kept": (
             "internal", "a bought picture's accept on its bytes, inside picture.buy"),

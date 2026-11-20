@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 13 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 12 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -64,13 +64,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "Frame contact sheets cannot pair exact shot midpoints with overlapping narration and editorial labels",
     why: "Video reviews need custom frame extraction and labelled HTML to catch mismatched shots before a full export.",
-    deps: [],
-  },
-  {
-    id: "PW701",
-    block: "D",
-    symptom: "stock.fetch cannot fetch a licensed YouTube clip or preserve its licence metadata",
-    why: "Japode histories need footage of their real protagonists, so stock searches alone leave the people out.",
     deps: [],
   },
   {

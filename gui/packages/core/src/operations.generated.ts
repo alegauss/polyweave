@@ -2524,6 +2524,20 @@ export interface SpritesMatchedArgs {
   root?: string
 }
 
+/** Bring one excerpt of a public video in, refused unless its licence allows reuse. */
+export interface StockClipArgs {
+  /** the public video's page, as a YouTube watch URL */
+  url: string
+  /** where the excerpt is written, as an .mp4 */
+  out: string
+  /** seconds into the video it begins; from 0 to …; default 0.0 */
+  start?: number
+  /** seconds into the video it ends; from 0 to … */
+  end?: number
+  /** the project it is brought into; default "." */
+  root?: string
+}
+
 /** Bring one stock picture or video in, recorded with its page and licence. */
 export interface StockFetchArgs {
   /** the hit's id, as stock.find answered it */
@@ -3210,6 +3224,7 @@ export interface Operations {
   "sound.stems": SoundStemsArgs
   "sound.synth": SoundSynthArgs
   "sprites.matched": SpritesMatchedArgs
+  "stock.clip": StockClipArgs
   "stock.fetch": StockFetchArgs
   "stock.find": StockFindArgs
   "store.capsules": StoreCapsulesArgs
@@ -3450,6 +3465,7 @@ export const OPERATIONS = [
   "sound.stems",
   "sound.synth",
   "sprites.matched",
+  "stock.clip",
   "stock.fetch",
   "stock.find",
   "store.capsules",

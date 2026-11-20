@@ -430,6 +430,19 @@ credit. A project that ships only some licences lists them as `[service.<name>]
 licences`, and `stock.fetch` refuses any other with `stock.licence-refused` before
 anything is downloaded; an empty list takes any.
 
+**A public video is taken only under a reuse licence** (§PW701). A history's real
+people are in their own public videos, which are not stock because they are public.
+`stock.clip(url, out, start=0, end=)` reads the video's metadata with `yt-dlp -J`
+(nothing downloaded), and refuses with `stock.licence-refused` a video reporting no
+licence, or one outside `[service.youtube] licences`, or, where the project lists none,
+one whose licence does not say Creative Commons. Then only `start` to `end` is fetched
+(`--download-sections`, cut at keyframes forced there, merged to MP4). The record
+(engine `youtube`, fetcher `yt-dlp`) keeps the page, title, channel, licence, the in and
+out points and the probed length, size and rate, and a `credit` naming the title,
+channel, licence and page, so `provenance.credits` owes the attribution CC BY asks.
+`end` not after `start`, an `end` past the video, or an `out` that is not `.mp4` is
+`stock.bad-excerpt`; no yt-dlp on PATH is `stock.no-yt-dlp`.
+
 ## A mesh is bought through the plugin
 
 `mesh.buy` is the plugin's own Meshy client (§PW183), so a consumer keeps its prompts and

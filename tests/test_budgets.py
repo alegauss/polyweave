@@ -219,7 +219,9 @@ from polyweave.surface.capabilities import capabilities
 #: 2026-11-19).
 #: 182,768 with store.thumbnails (§PW699, 2026-11-19).
 #: 184,172 with capture.card, an HTML card rendered to a still (§PW700, 2026-11-19).
-DESCRIBE = 184_800
+#: 185,291 with capture.card's cache and guards and stock.clip (§PW700, §PW701,
+#: 2026-11-19).
+DESCRIBE = 185_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -394,7 +396,8 @@ DESCRIBE = 184_800
 #: 199,215 with store.thumbnail and store.no-thumbnail (§PW699, 2026-11-19).
 #: 200,330 with store.thumbnails (§PW699, 2026-11-19).
 #: 201,750 with capture.card and web.bad-card (§PW700, 2026-11-19).
-CAPABILITIES = 202_400
+#: 202,909 with stock.clip and its two codes (§PW701, 2026-11-19).
+CAPABILITIES = 203_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

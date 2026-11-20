@@ -109,7 +109,8 @@ CORE_TOOLS = 42_600
 #: 158,452 with store.thumbnail (§PW699, 2026-11-19).
 #: 159,407 with store.thumbnails (§PW699, 2026-11-19).
 #: 160,549 with capture.card (§PW700, 2026-11-19).
-SESSION_BUDGET = 161_200
+#: 161,455 with stock.clip (§PW701, 2026-11-19).
+SESSION_BUDGET = 162_000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

@@ -29,7 +29,7 @@
 | A teaser | `video.cut`, `capture.web` (a page as a clip), `capture.card` (HTML as a still), `video.buy` (paid), `video.safe_area` (captions vs a platform's controls), `store.thumbnail`, `store.thumbnails` (variants for a person) |
 | A project's look | `style.read`, `style.drift` (before a person looks), `style.train` |
 | Buy a drawing | `picture.buy`, `picture.batch`, `picture.gate`, `picture.letters`, `picture.describe`, `picture.vary`, `picture.upscale`, `picture.against_parent`, `picture.fit`, `picture.collect` |
-| A stock picture, with its licence | `stock.find`, `stock.fetch` (Pixabay, Pexels; no cost) |
+| A stock picture, with its licence | `stock.find`, `stock.fetch` (Pixabay, Pexels; no cost), `stock.clip` (CC video) |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `reference.register`, `reference.frames`, `reference.objects`, `reference.sample`, `reference.regions`, `reference.minimap`, `reference.events`, `reference.compare`, `reference.transcription`, `reference.transcribed`, `reference.draft`, `shape.check`, `shape.silhouette`, `shape.turntable` |
 | Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |

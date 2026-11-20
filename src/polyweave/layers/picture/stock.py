@@ -271,6 +271,110 @@ def _allowed(config, service: str) -> str:
     return licence
 
 
+#: The licence words a public video must report to be taken where the project names
+#: none: a video is not stock because it is public (§PW701).
+REUSABLE = ("Creative Commons",)
+
+
+def _run(argv: list[str]) -> str:
+    """One yt-dlp call, its standard output; a failure is a code with what it said."""
+    import shutil
+    import subprocess
+
+    found = shutil.which(argv[0])
+    if not found:
+        raise PolyweaveError(
+            "stock.no-yt-dlp", "a public video is fetched with yt-dlp, which is not on "
+            "PATH", "pip install yt-dlp, or put its binary on PATH")
+    done = subprocess.run([found, *argv[1:]], capture_output=True, text=True,
+                          encoding="utf-8", timeout=900, check=False)
+    if done.returncode != 0:
+        raise PolyweaveError(
+            "fetch.service-error", f"yt-dlp failed on {argv[-1]}",
+            "read the detail; a video that is private or gone cannot be fetched",
+            detail=(done.stderr or "")[-400:])
+    return done.stdout
+
+
+@operation("stock.clip", kind="fetch")
+def clip(
+    url: Annotated[str, Param("the public video's page, as a YouTube watch URL")],
+    out: Annotated[str, Param("where the excerpt is written, as an .mp4")],
+    *,
+    start: Annotated[float, Param("seconds into the video it begins", lo=0.0)] = 0.0,
+    end: Annotated[float, Param("seconds into the video it ends", lo=0.0)] = None,
+    root: Annotated[str, Param("the project it is brought into")] = ".",
+) -> dict:
+    """Bring one excerpt of a public video in, refused unless its licence allows reuse.
+
+    The video's own metadata is read first, for nothing: its title, channel and the
+    licence it reports. A video reporting no licence, or one the project does not allow
+    (`[service.youtube] licences`, or any Creative Commons licence where none is
+    listed), is refused before anything is downloaded. Only `start` to `end` is fetched.
+    The record names the page, title, channel, licence, in and out points and the
+    credit the licence asks, so `provenance.credits` owes it.
+    """
+    config = load(root)
+    here = config.root
+    if end is not None and end <= start:
+        raise PolyweaveError(
+            "stock.bad-excerpt", f"the excerpt ends at {end:g}s, not after {start:g}s",
+            "give end after start, in seconds into the video")
+    target = Path(out) if Path(out).is_absolute() else here / out
+    if target.suffix.lower() != ".mp4":
+        raise PolyweaveError("stock.bad-excerpt", f"the excerpt is written as "
+                             f"{target.name}", "write it as an .mp4", given="out")
+    said = json.loads(_run(["yt-dlp", "-J", "--no-playlist", url]) or "{}")
+    licence = str(said.get("license") or "")
+    allowed = (config.services().get("youtube") or {}).get("licences") or []
+    if not licence or (licence not in allowed if allowed
+                       else not any(word in licence for word in REUSABLE)):
+        raise PolyweaveError(
+            "stock.licence-refused",
+            f"{said.get('title') or url} reports "
+            + (f"the licence {licence!r}, which" if licence else "no licence, and")
+            + " the project does not allow it",
+            "take a video its owner licensed for reuse, or add its licence to "
+            "[service.youtube] licences once a person has read it",
+            given=licence or None, allowed=allowed or list(REUSABLE))
+    length = float(said.get("duration") or 0)
+    until = end if end is not None else length
+    if length and until > length + 0.5:
+        raise PolyweaveError(
+            "stock.bad-excerpt", f"the video runs {length:g}s, and the excerpt ends at "
+            f"{until:g}s", "give end within the video's length")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    _run(["yt-dlp", "--no-playlist", "-f", "bv*+ba/b", "--merge-output-format", "mp4",
+          "--download-sections", f"*{start:g}-{until:g}", "--force-keyframes-at-cuts",
+          "--force-overwrites", "-o", str(target), url])
+    if not target.is_file():
+        raise PolyweaveError(
+            "fetch.nothing-arrived", f"yt-dlp wrote nothing at {out}",
+            "read what it said with yt-dlp itself; nothing was recorded")
+    from polyweave.layers.reference.reference_register import _probe
+
+    probed = _probe(target)
+    page = said.get("webpage_url") or url
+    channel = said.get("channel") or said.get("uploader") or ""
+    title = said.get("title") or ""
+    record = provenance.write(provenance.build(
+        "fetch", target,
+        engine={"name": "youtube", "fetcher": "yt-dlp"},
+        params={"id": said.get("id"), "start": start, "end": until},
+        measurements=probed,
+        extra={"task_id": f"youtube:{said.get('id')}:{start:g}-{until:g}",
+               "credits": 0.0, "licence": licence,
+               "credit": f"“{title}”, {channel}, {licence}: {page}",
+               "source_page": page, "author": channel, "title": title,
+               "author_page": said.get("channel_url") or ""},
+        root=here,
+    ), root=here)
+    return {"file": provenance.relative(target, here), "title": title,
+            "channel": channel, "licence": licence, "page": page,
+            "start": start, "end": until,
+            "record": provenance.relative(Path(record), here), **probed}
+
+
 @operation("stock.fetch", kind="fetch")
 def fetch(
     id: Annotated[int, Param("the hit's id, as stock.find answered it")],  # noqa: A002
