@@ -78,6 +78,11 @@ CODES: dict[str, Code] = {
         "video",
         doors=("cut it again with video.cut",),
     ),
+    "store.no-thumbnail": Code(
+        means="the thumbnail to check is not there",
+        when="store.thumbnail on a path with no file (§PW699)",
+        doors=("name the thumbnail under the project",),
+    ),
     "video.bad-subtitles": Code(
         means="a subtitle file is not there or holds no line, or a size is wrong",
         when="video.safe_area on a missing .ass, one with no Dialogue, or a bad size "

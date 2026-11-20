@@ -12,6 +12,7 @@ LAYER = Layer(
         "polyweave.layers.store.icons",
         "polyweave.layers.store.safe",
         "polyweave.layers.store.store",
+        "polyweave.layers.store.thumbnail",
         "polyweave.layers.store.video",
         "polyweave.layers.store.web",
     ),
@@ -27,7 +28,8 @@ LAYER = Layer(
     # 4,353 once capture.web films a product video's browser scenes (§PW690).
     # 5,376 with video.buy, a clip bought from a Scenario video model (§PW692).
     # 6,331 with video.safe_area, burned-in text against a platform's controls (§PW698).
-    tools=6_800,
+    # 7,149 with store.thumbnail, a thumbnail against its title and a feed (§PW699).
+    tools=7_600,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),

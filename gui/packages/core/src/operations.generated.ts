@@ -2550,6 +2550,22 @@ export interface StoreCapsulesArgs {
   root?: string
 }
 
+/** Hold a thumbnail to its title and to a feed's size, before it is published. */
+export interface StoreThumbnailArgs {
+  /** the thumbnail, under the project */
+  picture: string
+  /** the video's title, as published */
+  title: string
+  /** its lines, as text or {text, box: [l, t, r, b]}; OCR if unset */
+  texts?: unknown[]
+  /** the title's language, as en or pt-BR; default "en" */
+  language?: string
+  /** the most words it may carry; from 1 to …; default 6 */
+  max_words?: number
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Refuse a picture that drifts from its family's canon by number, saying which way. */
 export interface StyleDriftArgs {
   /** the picture, under the project */
@@ -3152,6 +3168,7 @@ export interface Operations {
   "stock.fetch": StockFetchArgs
   "stock.find": StockFindArgs
   "store.capsules": StoreCapsulesArgs
+  "store.thumbnail": StoreThumbnailArgs
   "style.drift": StyleDriftArgs
   "style.read": StyleReadArgs
   "style.train": StyleTrainArgs
@@ -3389,6 +3406,7 @@ export const OPERATIONS = [
   "stock.fetch",
   "stock.find",
   "store.capsules",
+  "store.thumbnail",
   "style.drift",
   "style.read",
   "style.train",

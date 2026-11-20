@@ -215,7 +215,9 @@ from polyweave.surface.capabilities import capabilities
 #: picture.buy's replaces_because (§PW693, §PW694, §PW695, 2026-11-19).
 #: 180,695 with video.safe_area, burned-in text against a platform's controls
 #: (§PW698, 2026-11-19).
-DESCRIBE = 181_300
+#: 181,653 with store.thumbnail, a thumbnail against its title and a feed (§PW699,
+#: 2026-11-19).
+DESCRIBE = 182_200
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -387,7 +389,8 @@ DESCRIBE = 181_300
 #: 196,452 with video.buy (§PW692, 2026-11-19).
 #: 197,035 with the parameters of §PW693, §PW694 and §PW695 (2026-11-19).
 #: 198,235 with video.safe_area and video.bad-subtitles (§PW698, 2026-11-19).
-CAPABILITIES = 198_800
+#: 199,215 with store.thumbnail and store.no-thumbnail (§PW699, 2026-11-19).
+CAPABILITIES = 199_800
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

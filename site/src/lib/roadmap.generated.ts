@@ -168,7 +168,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW699",
     block: "J",
     symptom: "A thumbnail cannot be checked for legibility at feed size, for its word count, or for repeating the video's title",
-    why: "The Scion thumbnail repeats its title word for word and was only ever looked at full size, and nothing would have caught either before publishing.",
+    why: "No sweep over a thumbnail layout's choices brings two or three variants to the review page for a person to pick one for an A/B test.",
     deps: [],
   },
   {

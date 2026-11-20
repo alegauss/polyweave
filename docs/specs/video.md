@@ -247,3 +247,19 @@ Each line that reaches past the safe box or into an excluded one is in `crossed`
 its number, `start`, `end`, text, `box` and each area it `crosses` with `by_px`;
 `passed` is true where none does. A missing file, one with no `Dialogue`, or a bad
 `size` is `video.bad-subtitles`.
+
+## A thumbnail against its title and a feed
+
+`store.thumbnail(picture, title, texts=, language=, max_words=6)` holds a video's
+thumbnail to what a person checked by eye on the Scion video (§PW699). Its text is
+`texts`, each a string or `{text, box: [l, t, r, b]}` from the layout that drew it, or,
+where none is given, what tesseract reads (its TSV, words of confidence 60 and up,
+grouped into lines with their boxes); with neither, the answer is unchecked, never
+passed. `words` is counted against `max_words`. `shared` lists the meaningful words it
+shares with the title: case and accents folded, punctuation dropped, numbers kept, the
+language's stop words (en and pt) aside. At feed size (168x94, the picture scaled to fit)
+each line with a box answers `height_px`, at least 8, and `contrast`, the ratio between
+the mean relative luminance of the box's lighter and darker parts (split at the box's
+mean), at least 3; a line without a box is `unmeasured`. `failed` says each miss in
+words and `passed` is true where there is none. A missing picture is
+`store.no-thumbnail`. Which thumbnail is better stays a person's choice.

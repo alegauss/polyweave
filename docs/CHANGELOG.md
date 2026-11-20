@@ -365,6 +365,7 @@
 - ✅ **PW656** **a first spec's bound on a value near zero is a share of almost nothing, so the same picture redrawn fails it** — A first spec's room is at least a share of the measure's declared range, so the dark glass gets 0.1049; each bound says whence its room (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW697** **A spec cannot bound an encoded video: its length, loudness, true peak, a frozen end or the longest stretch without a cut** — Each sound stream is measured with its language, and a spec on loudness or peak reads the stream furthest past its bound and names it (design recorded in `docs/specs/video.md`).
 - ✅ **PW698** **Nothing says whether a vertical video's burned-in text reaches the area a platform covers with its buttons and title** — video.safe_area places each burned-in .ass line at the video's size and names those that reach a platform's controls, with time and pixels (design recorded in `docs/specs/video.md`).
+- ✅ **PW699 (the thumbnail check)** **A thumbnail cannot be checked for legibility at feed size, for its word count, or for repeating the video's title** — store.thumbnail counts a thumbnail's words, names those it shares with its title, and measures each line's height and contrast at feed size.
 
 ## Block K — Reached without reading the source
 
