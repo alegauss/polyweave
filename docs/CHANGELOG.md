@@ -85,7 +85,7 @@
 - ✅ **PW693** **picture.vary remix of a cut-out parent comes back on white, with no --transparent and no warning** — A remix of a cut-out parent comes back cut out by a priced second call, picture.vary takes transparent, and an unpriced row quotes the published price (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW694** **picture.copies writes a .prov.json beside every copy in the shipped folder, and credits for a copy come back empty** — A [provenance] shipped folder keeps its records under polyweave.records, and credits answer a copy with its source purchase, by folder (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW695** **Buying again to the same path leaves every purchase equal in the ledger, with no mark of which was superseded** — A purchase to a path marks the earlier one superseded with picture.buy's replaces_because; purchase.ledger by_path says what each file holds (design recorded in `docs/specs/fetching.md`).
-- ✅ **PW700 (the render and element bounds)** **No operation renders a declared editorial HTML card to a still for a narrated video** — capture.card renders a local HTML card to a PNG after its fonts load, records what it loaded, and holds named elements to a safe area.
+- ✅ **PW700** **No operation renders a declared editorial HTML card to a still for a narrated video** — capture.card skips the browser for an unchanged card and names each guarded element whose text breaks a letter, overflows, lacks glyphs or splits a name (design recorded in `docs/specs/video.md`).
 
 ## Block E — One world with the engine
 

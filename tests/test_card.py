@@ -46,7 +46,9 @@ class _Page:
                 handler(_Said(type="error", text=text))
 
     def evaluate(self, script, arg=None):
-        if "fonts" in script:
+        if "createTreeWalker" in script:
+            return self.site["guarded"]
+        if "fonts.ready" in script:
             return 1
         if "naturalWidth" in script:
             return []
@@ -100,7 +102,7 @@ def project(tmp_path, monkeypatch):
     (tmp_path / "cards" / "timeline.html").write_text("<h1>2003</h1>", "utf-8")
     (tmp_path / "cards" / "jakarta.woff2").write_bytes(b"wOF2")
     site = {
-        "visited": [], "contexts": [], "errors": [],
+        "visited": [], "contexts": [], "errors": [], "guarded": [],
         "requests": [(tmp_path / "cards" / "jakarta.woff2").resolve().as_uri(),
                      "https://cdn.example/elsewhere.css"],
         "bounds": {".mark": [{"box": [1900, 40, 2010, 120], "visible": True}],
@@ -155,3 +157,36 @@ def test_a_missing_card_or_a_wrong_out_is_refused(project):
     with pytest.raises(PolyweaveError) as refused:
         card("cards/timeline.html", "cards/x.jpg", root=str(root))
     assert refused.value.code == "web.bad-card"
+
+
+def test_an_unchanged_card_is_not_rendered_again_and_a_changed_font_is(project):
+    root, site = project
+    first = card("cards/timeline.html", "cards/c.png", bounds=["h1"], root=str(root))
+    again = card("cards/timeline.html", "cards/c.png", bounds=["h1"], root=str(root))
+    assert first["cached"] is False and again["cached"] is True
+    assert len(site["contexts"]) == 1
+    assert again["elements"] == first["elements"]
+    (root / "cards" / "jakarta.woff2").write_bytes(b"wOF2-new")
+    moved = card("cards/timeline.html", "cards/c.png", bounds=["h1"], root=str(root))
+    assert moved["cached"] is False and len(site["contexts"]) == 2
+    other = card("cards/timeline.html", "cards/c.png", bounds=["h1"], scale=2.0,
+                 root=str(root))
+    assert other["cached"] is False
+
+
+def test_guarded_text_names_each_fault_by_element(project):
+    root, site = project
+    site["guarded"] = [
+        {"selector": "h1", "index": 0, "text": "Nossa hist?ria",
+         "box": [10, 10, 500, 80], "faults": ["broken letter"]},
+        {"selector": "p", "index": 0, "text": "o WordPress cresceu",
+         "box": [10, 90, 300, 200], "faults": ["'WordPress' split across lines"]},
+        {"selector": "p", "index": 1, "text": "tudo certo",
+         "box": [10, 210, 300, 260], "faults": []},
+    ]
+    said = card("cards/timeline.html", "cards/g.png", guard=["h1", "p"],
+                names=["WordPress"], root=str(root))
+    assert said["guarded"] == 3 and said["passed"] is False
+    assert [(one["selector"], one["index"]) for one in said["faults"]] == [
+        ("h1", 0), ("p", 0)]
+    assert said["faults"][1]["faults"] == ["'WordPress' split across lines"]

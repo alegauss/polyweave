@@ -38,6 +38,34 @@ _BOUNDS = """(selectors) => selectors.map(selector => ({
 }))"""
 
 
+#: Each guarded element's text checked as a viewer meets it (§PW700): a letter lost to
+#: a replacement character or a '?' between letters, text past its own box, glyphs no
+#: loaded font has (as `document.fonts.check` answers), and a protected name the line
+#: breaks split.
+_GUARD = """([selectors, names]) => selectors.flatMap(selector =>
+  Array.from(document.querySelectorAll(selector)).map((e, index) => {
+    const text = e.innerText || '', s = getComputedStyle(e);
+    const r = e.getBoundingClientRect();
+    const faults = [];
+    if (/\\uFFFD|\\p{L}\\?\\p{L}/u.test(text)) faults.push('broken letter');
+    if (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1)
+      faults.push('past its box');
+    if (text.trim() && !document.fonts.check(`${s.fontSize} ${s.fontFamily}`, text))
+      faults.push('glyphs no loaded font has');
+    const walker = document.createTreeWalker(e, NodeFilter.SHOW_TEXT);
+    for (let node; (node = walker.nextNode());) for (const name of names) {
+      const at = node.data.indexOf(name);
+      if (at < 0) continue;
+      const range = document.createRange();
+      range.setStart(node, at); range.setEnd(node, at + name.length);
+      const rects = Array.from(range.getClientRects());
+      const tops = new Set(rects.map(q => Math.round(q.top)));
+      if (tops.size > 1) faults.push(`'${name}' split across lines`);
+    }
+    return {selector, index, text, box: [r.left, r.top, r.right, r.bottom], faults};
+  }))"""
+
+
 def _bad(message: str, remedy: str, **extra: Any) -> PolyweaveError:
     return PolyweaveError("web.bad-card", message, remedy, **extra)
 
@@ -57,9 +85,10 @@ def _local(url: str, here: Path) -> Path | None:
 
 
 def _shoot(page_url: str, target: Path, viewport: list, scale: float,
-           selectors: list[str], allow: list[str]) -> tuple[list, list, list, str]:
-    """The page rendered to `target`; what broke, the files it read, the bounds and
-    the browser's version."""
+           selectors: list[str], allow: list[str],
+           guard: tuple[list, list]) -> tuple[list, list, list, list, str]:
+    """The page rendered to `target`; what broke, the files it read, the bounds, the
+    guarded text and the browser's version."""
     sync_playwright, failure = web._playwright()
     broken: list[str] = []
     read: list[str] = []
@@ -92,12 +121,58 @@ def _shoot(page_url: str, target: Path, viewport: list, scale: float,
             broken += [f"broken image: {src}" for src in page.evaluate(
                 web._BROKEN_IMAGES) if not web._allowed(src, allow)]
             bounds = page.evaluate(_BOUNDS, selectors) if selectors else []
+            guarded = page.evaluate(_GUARD, list(guard)) if guard[0] else []
             if not broken:
                 page.screenshot(path=str(target))
         finally:
             context.close()
             browser.close()
-    return broken, read, bounds, version
+    return broken, read, bounds, guarded, version
+
+
+def _renderer() -> str:
+    """The Playwright release, which pins the Chromium it drives: part of a card's
+    key, read without starting a browser."""
+    from importlib import metadata
+
+    try:
+        return f"playwright {metadata.version('playwright')}"
+    except metadata.PackageNotFoundError:
+        return "playwright unknown"
+
+
+def _key(page: Path, params: dict) -> str:
+    import hashlib
+    import json
+
+    from polyweave.kernel import provenance
+
+    held = {"card": provenance.sha256_of(page)[0], "params": params,
+            "renderer": _renderer()}
+    return hashlib.sha256(json.dumps(held, sort_keys=True).encode()).hexdigest()
+
+
+def _cached(target: Path, key: str, here: Path) -> dict | None:
+    """The answer the last render gave, where the still, its key and every file it
+    loaded are as they were; None where anything moved (§PW700)."""
+    from polyweave.kernel import provenance
+
+    if not target.is_file():
+        return None
+    try:
+        record = provenance.read(str(target), root=here)
+    except PolyweaveError:
+        return None
+    params = record.get("params") or {}
+    if params.get("key") != key or "answer" not in params:
+        return None
+    if provenance.sha256_of(target)[0] != record["artefact"]["sha256"]:
+        return None
+    for one in record.get("inputs") or ():
+        source = here / one["path"]
+        if not source.is_file() or provenance.sha256_of(source)[0] != one["sha256"]:
+            return None
+    return params["answer"]
 
 
 @operation("capture.card", kind="capture")
@@ -121,6 +196,12 @@ def card(
     allow: Annotated[
         list, Param("URL parts or console words that may fail without refusing it")
     ] = None,
+    guard: Annotated[
+        list, Param("CSS selectors whose text is checked as a viewer meets it")
+    ] = None,
+    names: Annotated[
+        list, Param("names a line break must not split, as WordPress")
+    ] = None,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
     """Render a local HTML card to a still, after its fonts and pictures have loaded.
@@ -132,6 +213,12 @@ def card(
     viewer sees it; a selector matching nothing is named in `missing`. Where `safe` or
     `exclude` is given, the elements are held to them as `video.safe_area` holds a
     subtitle line, and those that cross are in `crossed`.
+
+    Each element `guard` matches has its text checked: a letter lost to a replacement
+    character or a '?' between letters, text past its own box, glyphs no loaded font
+    has, and any of `names` split across lines; those with a fault are in `faults`.
+    A card whose page, loaded files, arguments and Playwright are as the last render's
+    is not rendered again: the answer is that render's, with `cached` true.
     """
     from polyweave.kernel import provenance
     from polyweave.kernel.config import load
@@ -150,12 +237,20 @@ def card(
         raise _bad(f"viewport is {viewport!r}", "give viewport as [width, height] in "
                    "whole CSS px")
     selectors = [str(one) for one in bounds or ()]
+    guarding = ([str(one) for one in guard or ()], [str(one) for one in names or ()])
+    asked = {"viewport": list(viewport), "scale": float(scale), "bounds": selectors,
+             "safe": safe, "exclude": exclude, "allow": list(allow or ()),
+             "guard": guarding[0], "names": guarding[1]}
+    key = _key(page, asked)
+    held = _cached(target, key, here)
+    if held is not None:
+        return {**held, "cached": True}
     target.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="polyweave-card-") as folder:
         shot = Path(folder) / "card.png"
-        broken, read, found, version = _shoot(page.resolve().as_uri(), shot,
-                                              list(viewport), float(scale), selectors,
-                                              list(allow or ()))
+        broken, read, found, guarded, version = _shoot(
+            page.resolve().as_uri(), shot, list(viewport), float(scale), selectors,
+            list(allow or ()), guarding)
         if broken:
             raise PolyweaveError(
                 "web.broken-page",
@@ -180,17 +275,21 @@ def card(
             if hits and (safe or exclude):
                 crossed.append({"selector": one["selector"], "index": n, "box": box,
                                 "crosses": hits})
-    provenance.write(provenance.build(
-        "capture", target,
-        engine={"name": "capture.card", "browser": f"chromium {version}"},
-        inputs=[provenance.source("card", page, here)]
-        + [provenance.source("loaded", one, here) for one in loaded],
-        params={"viewport": list(viewport), "scale": float(scale),
-                "bounds": selectors, "safe": safe, "exclude": exclude},
-        root=here), root=here)
-    return {
+    faults = [{**one, "box": [round(v, 1) for v in one["box"]]}
+              for one in guarded if one["faults"]]
+    answer = {
         "file": provenance.relative(target, here),
         "loaded": [provenance.relative(one, here) for one in loaded],
         "elements": elements, "missing": missing, "crossed": crossed,
-        "passed": not crossed and not missing,
+        "guarded": len(guarded), "faults": faults,
+        "passed": not crossed and not missing and not faults,
     }
+    provenance.write(provenance.build(
+        "capture", target,
+        engine={"name": "capture.card", "browser": f"chromium {version}",
+                "renderer": _renderer()},
+        inputs=[provenance.source("card", page, here)]
+        + [provenance.source("loaded", one, here) for one in loaded],
+        params={**asked, "key": key, "answer": answer},
+        root=here), root=here)
+    return {**answer, "cached": False}

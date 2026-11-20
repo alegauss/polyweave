@@ -70,36 +70,6 @@ prompt advice (frame hands out, avoid people touching).
 **Done when.** The check over the 24 Shio photos flags the two the owner rejected and
 the pseudo-text ones, naming each fault.
 
-### §PW700 Editorial cards before the cut
-
-In viglet/marketing, WordPress history uses original editorial cards, dates and
-diagrams. video.cut accepts still files but not HTML cards; capture.web records HTTP
-visits. The reusable video-maker cards renderer therefore draws self-contained HTML with
-Playwright and embedded fonts before video assembly. This is a pre-cut rasterization
-gap, separate from PW671's motion and voice support; no paid image generation is needed.
-
-Provide HTML-to-still rendering from page content or a local file, declared viewport and
-output. Wait for fonts/images, return the file and record its effective inputs. Include
-the marketing/japode/brand/brand.py banner: 2048-by-1152, local Plus Jakarta fonts,
-approved SVG J, central 1235-by-338 safe area, final PNG and safe-area preview.
-
-VM45 needs DOM bounds and visibility for brand marks in each declared corner, including
-both timed overlay layers. game.text_fit requires a game session. VM55 needs raster
-caching keyed by HTML, embedded fonts/assets, browser and renderer versions, with
-verified output hashes and cache-hit reporting; unchanged cards must avoid browser
-rendering.
-
-VM61 adds text guards: corrupted accents such as 'hist?ria', missing font glyphs,
-overflowing/clipped text and protected names split across lines ('WordPre'/'ss').
-Measure actual rendered text against its own box at each viewport/language and report
-field, element, bounds and preview before encoding. Keep valid punctuation, never guess
-accents or silently shrink all titles. Marketing's adapter will be
-video-maker/textcheck.py alongside the existing renderer.
-
-Element bounds against a safe area reuse `video.safe_area`'s check (PW698,
-`layers/store/safe.py` `_crossings` and `PRESETS`), so subtitles and HTML cards answer
-the same `crossed` shape.
-
 ### §PW701 Creative Commons source clips from public video archives
 
 For japode/wordpress, stock.find and stock.fetch support Pixabay and Pexels only. The

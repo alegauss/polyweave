@@ -108,6 +108,10 @@ export interface CaptureCardArgs {
   exclude?: Record<string, unknown>
   /** URL parts or console words that may fail without refusing it */
   allow?: unknown[]
+  /** CSS selectors whose text is checked as a viewer meets it */
+  guard?: unknown[]
+  /** names a line break must not split, as WordPress */
+  names?: unknown[]
   /** the project the paths resolve against; default "." */
   root?: string
 }

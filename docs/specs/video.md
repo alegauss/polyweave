@@ -290,3 +290,15 @@ answers every element it matches with its `box` in CSS px and whether it is `vis
 in `missing`. Where `safe` or `exclude` is given, each element is held to them by the
 check `video.safe_area` uses, and those that cross are in `crossed`. A missing card, an
 `out` that is not `.png`, or a bad viewport is `web.bad-card`.
+
+**A card is guarded and not rendered twice.** Each element `guard` (CSS selectors)
+matches has its text checked as a viewer meets it: a letter lost to U+FFFD or a `?`
+between two letters (`hist?ria`), text past its own box (scroll size over client size),
+glyphs no loaded font has (`document.fonts.check` on its computed font, an
+approximation), and any of `names` whose characters land on more than one line
+(`WordPre`/`ss`). Elements with a fault are in `faults` with their selector, index,
+text, box and faults; `guarded` counts what was checked, and a fault fails `passed`. A
+render's key is the page's digest, every argument and the Playwright release (which
+pins its Chromium); the record keeps the key and the answer. A call whose key matches
+the record of the PNG already at `out`, where that PNG and every recorded input still
+hash as recorded, starts no browser and answers the recorded answer with `cached` true.
