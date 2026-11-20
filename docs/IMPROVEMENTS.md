@@ -359,40 +359,6 @@ keeps drifting shows up in the ledger across projects.
 
 ## Block J — A bar a person sets once
 
-### §PW697 An acceptance spec on an encoded video
-
-**Where.** marketing/japode/scion, the three YouTube Shorts cut from the Scion video by
-`japode/scion/bin/short.py` (marketing VM31), 2026-11-12.
-
-**What happened.** Every bar a Short is held to was checked by hand, after the encode,
-with commands typed one by one:
-
-    ffmpeg -hide_banner -i scion-short-2-pt-BR.mp4 -af ebur128=peak=true -f null -
-    ffprobe -v error -show_entries stream=codec_type,duration -of csv=p=0 scion-short-2-pt-BR.mp4
-    ffmpeg -ss 33.5 -i scion-short-2-pt-BR.mp4 -frames:v 1 f.png   (one still per moment, then hstack)
-
-and read by eye: -14.9 LUFS, -1.3 dBTP, video and audio the same length, the end not
-frozen. The first cut held a 3 s frozen end card that no measure caught; it took reading
-other people's Shorts rules to learn it breaks the loop.
-
-**What was expected.** An acceptance spec on an encoded video, as PW113 gave a WAV:
-
-- length between bounds (a Short 20 to 55 s);
-- integrated loudness and true peak (-14 LUFS within 1, under -1 dBTP);
-- video and audio streams of the same length within a frame;
-- no frozen stretch longer than N s, at the end above all (frame difference under a floor);
-- cut cadence: the longest stretch without a visual change (scene score over a threshold) under N s;
-- frame size and rate (1080x1920, 30).
-
-Each predicate reports its measured value, so a failed Short says which bar and by how
-much. video.cut's output could carry the same spec.
-
-**Workaround.** The commands above, in the session; nothing kept.
-
-VM47 now refuses any encoded audio stream above the declared ceiling and clears stale QA
-on failure. Include per-stream language and measured-versus-limit diagnostics, with a
-remedy to increase the mix margin.
-
 ### §PW698 Burned-in text held to a platform's safe area
 
 **Where.** marketing/japode/scion, the Scion Shorts (`japode/scion/bin/short.py`, VM31),

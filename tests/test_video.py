@@ -351,3 +351,33 @@ def test_a_spec_bounds_a_short_and_a_silent_one_is_refused_its_loudness(tmp_path
     with pytest.raises(PolyweaveError) as refused:
         accept.checked("mute.accept.toml", "mute.mp4", root=str(here))
     assert refused.value.code == "video.no-audio"
+
+
+@needs_ffmpeg
+def test_each_language_track_is_held_on_its_own_and_the_one_that_misses_is_named(
+    tmp_path,
+):
+    import subprocess
+
+    here = _project(tmp_path)
+    subprocess.run([
+        shutil.which("ffmpeg"), "-v", "error", "-y",
+        "-f", "lavfi", "-i", "testsrc=size=160x90:rate=10:duration=2",
+        "-f", "lavfi", "-i", "sine=frequency=440:duration=2",
+        "-f", "lavfi", "-i", "sine=frequency=440:duration=2,volume=-30dB",
+        "-map", "0:v", "-map", "1:a", "-map", "2:a", "-c:a", "aac", "-pix_fmt",
+        "yuv420p", "-metadata:s:a:0", "language=eng", "-metadata:s:a:1",
+        "language=por", str(here / "two.mp4")], check=True)
+    said = video.measured(here / "two.mp4")
+    eng, por = said["audio_streams"]
+    assert (eng["language"], por["language"]) == ("eng", "por")
+    assert por["video_loudness"] < eng["video_loudness"] - 20
+    (here / "two.accept.toml").write_text(
+        'asset = "two"\n\n[[predicate]]\nid = "loud"\nmeasure = "video_loudness"\n'
+        "min = -30\n",
+        encoding="utf-8",
+    )
+    checked = accept.checked("two.accept.toml", "two.mp4", root=str(here))
+    assert checked["failed"] == ["loud"]
+    [result] = [one for one in checked["predicates"] if one["id"] == "loud"]
+    assert "(por)" in result["of"]

@@ -193,8 +193,12 @@ Read off the file written, not the declaration, so a spec holds what a viewer ge
 The last six hold an encoded video to a platform's bars (§PW697): a Short is 20 to 55 s,
 -14 LUFS within 1, under -1 dBTP, its streams the same length within a frame, and a
 frozen end card breaks its loop. Loudness and true peak are ffmpeg's EBU R128 meter
-(`ebur128=peak=true`) on the first sound stream; a silent video answers them as `null`,
-and a spec that bounds one is `video.no-audio`. A frame holds still where it moves no
+(`ebur128=peak=true`), read on every sound stream: `audio_streams` lists each with its
+`stream` index, its `language` tag and its three sound measures, and the top-level
+values are the first stream's. A spec bounding a sound measure on a video with several
+streams reads the stream furthest past its bounds, and its `of` names that stream and
+its language, so a failed multi-language cut says which track missed and by how much.
+A silent video answers them as `null`, and a spec that bounds one is `video.no-audio`. A frame holds still where it moves no
 more than `first_motion`'s threshold; a cut is a frame where more than 35% of the
 picture changed by more than 6% at once, and a shot runs from one cut, or the start, to
 the next, or the end.

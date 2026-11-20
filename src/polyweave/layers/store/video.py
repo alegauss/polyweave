@@ -673,7 +673,8 @@ def measured(path: Path) -> dict:
             "-v",
             "error",
             "-show_entries",
-            "format=duration:stream=codec_type,width,height,avg_frame_rate,duration",
+            "format=duration:stream=codec_type,width,height,avg_frame_rate,duration"
+            ":stream_tags=language",
             "-of",
             "json",
             str(path),
@@ -721,10 +722,14 @@ def measured(path: Path) -> dict:
     seconds = float(
         read_back.get("format", {}).get("duration") or len(frames) / (fps or 1)
     )
-    heard = [s for s in streams if s["codec_type"] == "audio"]
+    heard = [_heard(path, picture, at, sound) for at, sound in
+             enumerate(s for s in streams if s["codec_type"] == "audio")]
     return {
         **_held_still(change, fps),
-        **_heard(path, picture, heard[0] if heard else None),
+        **{key: heard[0][key] if heard else None for key in HEARD},
+        # Every sound stream on its own, one per language where a cut declares them,
+        # which a spec's sound measure is held to stream by stream (§PW697).
+        "audio_streams": heard,
         **_rest(seconds, width, height, fps, moved, streams),
     }
 
@@ -753,13 +758,11 @@ def _held_still(change: np.ndarray, fps: float) -> dict:
     }
 
 
-def _heard(path: Path, picture: dict, sound: dict | None) -> dict:
-    """Its sound's integrated loudness and true peak, as ffmpeg's EBU R128 meter reads
-    them, and how far its length is from the picture's; None where it has no sound."""
-    if sound is None:
-        return dict.fromkeys(HEARD)
+def _heard(path: Path, picture: dict, at: int, sound: dict) -> dict:
+    """One sound stream's integrated loudness and true peak, as ffmpeg's EBU R128 meter
+    reads them, and how far its length is from the picture's, with its language."""
     said = subprocess.run(
-        [_ffmpeg(), "-hide_banner", "-nostats", "-i", str(path), "-map", "0:a:0",
+        [_ffmpeg(), "-hide_banner", "-nostats", "-i", str(path), "-map", f"0:a:{at}",
          "-af", "ebur128=peak=true", "-f", "null", "-"],
         capture_output=True, text=True, check=False,
     ).stderr
@@ -774,7 +777,8 @@ def _heard(path: Path, picture: dict, sound: dict | None) -> dict:
     gap = None
     if picture.get("duration") and sound.get("duration"):
         gap = round(abs(float(picture["duration"]) - float(sound["duration"])), 3)
-    return {"video_loudness": number(loud), "video_true_peak": number(peak),
+    return {"stream": at, "language": (sound.get("tags") or {}).get("language", ""),
+            "video_loudness": number(loud), "video_true_peak": number(peak),
             "video_audio_gap": gap}
 
 
@@ -937,6 +941,15 @@ def cut(
     }
 
 
+def _past(value: float | None, p: Any) -> float:
+    """How far a value lies past the predicate's bounds; inside them, how close."""
+    if value is None:
+        return float("inf")
+    low = -float("inf") if p.minimum is None else p.minimum - value
+    high = -float("inf") if p.maximum is None else value - p.maximum
+    return max(low, high)
+
+
 def predicate(p: Any, subject: Any, root: str | Path, seen: dict) -> dict:
     """A video predicate for accept.check, read off the teaser it names or the subject
     (§PW429, §PW503)."""
@@ -945,7 +958,22 @@ def predicate(p: Any, subject: Any, root: str | Path, seen: dict) -> dict:
     key = f"video:{where}"
     if key not in seen:
         seen[key] = measured(where)
-    value = seen[key][p.measure]
+    found = seen[key]
+    if p.measure in HEARD and len(found.get("audio_streams") or ()) > 1:
+        # Each language's stream on its own (§PW697): the one furthest past a bound is
+        # what the predicate reads, and `of` names it.
+        one = max(found["audio_streams"], key=lambda s: _past(s[p.measure], p))
+        named = f"audio stream {one['stream']}" + (
+            f" ({one['language']})" if one["language"] else "")
+        if one[p.measure] is None:
+            raise PolyweaveError(
+                "video.no-audio",
+                f"{where.name}'s {named} reads no {p.measure}",
+                "mix its sound in and encode it again, or drop the predicate",
+                given=p.measure,
+            )
+        return {"value": float(one[p.measure]), "of": f"{where} {named}"}
+    value = found[p.measure]
     if value is None:
         raise PolyweaveError(
             "video.no-audio",
