@@ -147,6 +147,16 @@ def provider(base: str, media: str, default: str) -> Service:
     return every[default]
 
 
+def allows(total: float, *, root, service: str) -> dict:
+    """Ask the ceiling for several purchases one call will make, before the first.
+
+    A variation cut from its background is two purchases (§PW693), and a ceiling that
+    allowed the first and refused the second would leave half of what was asked. Each
+    is still allowed again by `buy` as it is sent.
+    """
+    return purchase.allow(total, root=root, service=service)
+
+
 def buy(adapter: Service, order: Order, report=None) -> dict | list[dict]:
     """Spend on one order through its adapter, against the ceiling; the ledger entry.
 

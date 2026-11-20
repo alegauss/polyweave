@@ -139,7 +139,7 @@ def vary(
                                    published=ideogram.published(ideogram.CUT, None))
         # Both asked for at once: a ceiling that allowed the variation and refused its
         # cut would leave a picture on a background the call said it would not have.
-        purchase.allow(price + cut_price, root=here, service=name)
+        S.allows(price + cut_price, root=here, service=name)
 
     files = {"image": (source.name, picture.sent_bytes(source), picture._mime(source))}
     payload: dict = (
