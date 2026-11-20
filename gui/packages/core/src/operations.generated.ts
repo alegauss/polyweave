@@ -1680,6 +1680,8 @@ export interface ProvenanceCreditsArgs {
   check?: boolean
   /** also list every recorded file with its source and licence; default false */
   all?: boolean
+  /** only the files under this folder, as a package's credits */
+  under?: string
 }
 
 /** Every artefact whose record names this file as an input (§PW119). */

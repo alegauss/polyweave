@@ -10,6 +10,10 @@ below is what makes that answerable.
 ## The sidecar
 
 JSON, written beside every artefact this plugin produces, named `<artefact>.prov.json`.
+A folder `[provenance] shipped` names goes out as it is, so its files' records are kept
+under `[provenance] records` (`polyweave.records` unless set) at the file's own path,
+`<records>/<artefact>.prov.json`, and the shipped folder holds only what ships (§PW694).
+`provenance.sidecar` answers either place, and the walk finds both.
 
 ```json
 {
@@ -114,6 +118,10 @@ own, else the `terms` the project declares under `[service.<name>]` for the serv
 file, or a recorded file it was made from (`via`), was bought from. `unstated` lists the
 files whose licence nothing states, and is absent where there are none. With `out` and
 `check`, a file the records list and the written manifest does not is in `missing`.
+A copy answers for the purchase it was cut from (§PW694): `service`, `model`, `plan`,
+`prompt` and `seed` are those of the first record in its lineage that carries a prompt,
+a task id or a model, and `via` names it. `under` answers only for the files below one
+folder, so a package's credits are one call.
 
 **What a build ships that a generator made is one read** (§PW248). Steam's content survey
 asks whether a game ships generated content, and the honest answer is the lineage of every

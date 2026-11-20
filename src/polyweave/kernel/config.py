@@ -167,6 +167,12 @@ KERNEL_DEFAULTS: dict[str, Any] = {
         # produced — a report nobody can quieten is a report nobody reads, and this one
         # has to stay worth reading for the one week in a year when a mesh goes missing.
         "handmade": [],
+        # Folders that go out as they are, such as a package's images or a site's
+        # assets, as paths or globs relative to the root (§PW694): a record beside each
+        # file there would ship with it, so it is kept under `records` at the file's own
+        # path instead, committed like any record.
+        "shipped": [],
+        "records": "polyweave.records",
     },
     "adoption": {
         # The project's own files that do what a polyweave call does, kept on purpose,

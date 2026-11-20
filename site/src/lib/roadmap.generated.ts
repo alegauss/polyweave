@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 17 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 16 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -64,13 +64,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "Frame contact sheets cannot pair exact shot midpoints with overlapping narration and editorial labels",
     why: "Video reviews need custom frame extraction and labelled HTML to catch mismatched shots before a full export.",
-    deps: [],
-  },
-  {
-    id: "PW694",
-    block: "D",
-    symptom: "picture.copies writes a .prov.json beside every copy in the shipped folder, and credits for a copy come back empty",
-    why: "A packager ships the records unless it excludes them, and a credits file needs a script that reads each source.",
     deps: [],
   },
   {

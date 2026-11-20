@@ -302,12 +302,56 @@ def planned(
 
 
 def sidecar(artefact: str | Path, root: str | Path = ".") -> Path:
-    """Where the record for `artefact` lives: beside it, named after it."""
+    """Where the record for `artefact` lives: beside it, named after it.
+
+    Except in a folder `[provenance] shipped` names, which goes out as it is, so a
+    record beside each file would go out with it (§PW694): Shio's packages would have
+    carried 24. There the record is kept under `[provenance] records` at the file's own
+    path, and the shipped folder holds only what ships.
+    """
     where = Path(root).resolve()
     path = Path(artefact)
     if not path.is_absolute():
         path = where / path
+    apart = _kept_apart(where)
+    if apart is not None:
+        shipped, records = apart
+        named = relative(path, where)
+        if any(named.startswith(folder + "/") or fnmatch(named, folder)
+               for folder in shipped):
+            return where / records / (named + SUFFIX)
     return path.with_name(path.name + SUFFIX)
+
+
+#: `[provenance] shipped` and `records` as last read, by the project's root, with the
+#: config file's stamp: `sidecar` is asked once for every file an inventory walks.
+_APART: dict[Path, tuple[tuple[int, int], tuple[tuple[str, ...], str] | None]] = {}
+
+
+def _kept_apart(where: Path) -> tuple[tuple[str, ...], str] | None:
+    """The shipped folders and where their records go, or None where none is shipped."""
+    from .config import FILENAME
+    from .config import load as load_config
+
+    source = where / FILENAME
+    try:
+        stat = source.stat()
+    except OSError:
+        return None
+    stamp = (stat.st_mtime_ns, stat.st_size)
+    held = _APART.get(where)
+    if held is not None and held[0] == stamp:
+        return held[1]
+    try:
+        settings = load_config(where)
+        shipped = tuple(str(one).strip("/").replace("\\", "/")
+                        for one in settings.get("provenance.shipped") or () if one)
+        records = str(settings.get("provenance.records") or "").strip("/")
+    except PolyweaveError:
+        return None
+    found = (shipped, records) if shipped and records else None
+    _APART[where] = (stamp, found)
+    return found
 
 
 def write(record: dict, root: str | Path = ".") -> Path:
@@ -922,6 +966,9 @@ def credits(
     all: Annotated[  # noqa: A002 - the word the caller reads
         bool, Param("also list every recorded file with its source and licence")
     ] = False,
+    under: Annotated[
+        str, Param("only the files under this folder, as a package's credits")
+    ] = "",
 ) -> dict:
     """The credits a game owes, and what else its licences say.
 
@@ -943,14 +990,20 @@ def credits(
     the service and model, prompt, seed, date and licence (§PW660): the manifest a
     redistributed package names each picture's origin in. A licence is the record's
     own, else the `[service.<name>] terms` of the service it, or a file it was made
-    from, was bought from; `unstated` names the files whose licence nothing states.
+    from, was bought from; `unstated` names the files whose licence nothing states. A
+    copy answers with the service, model, prompt and seed of the purchase it was cut
+    from, named as `via` (§PW694). With `under`, only the files below that folder are
+    answered for, which is a package's credits in one call.
     """
     where = Path(root).resolve()
     owed: dict[str, dict] = {}
     notes: dict[str, dict] = {}
     unlicensed: list[dict] = []
-    records = list(_records(where))
-    by_path = {r["artefact"]["path"]: r for r in records}
+    every = list(_records(where))
+    by_path = {r["artefact"]["path"]: r for r in every}
+    folder = relative(under, where) if under else ""
+    records = [r for r in every
+               if not folder or r["artefact"]["path"].startswith(folder + "/")]
     for record in records:
         made = record["artefact"]["path"]
         # A file made from recorded files owes what they owe (§PW658): a WebP copy of a
@@ -1033,15 +1086,22 @@ def credits(
 
 def _manifested(record: dict, by_path: dict[str, dict], services: dict) -> dict:
     """One recorded file's origin and licence, for `credits(all=True)` (§PW660)."""
-    engine = record.get("engine") or {}
-    details = record.get("details") or {}
+    chain = [record, *_made_from(record, by_path)]
+    # A copy cut from a bought picture answers for the purchase it came from (§PW694):
+    # its own record holds only the cut, and a credits file listed it with no prompt.
+    origin = next((one for one in chain if one.get("prompt") or one.get("task_id")
+                   or (one.get("engine") or {}).get("model")), record)
+    engine = origin.get("engine") or {}
+    details = origin.get("details") or {}
     licence, via = record.get("licence") or "", None
-    for one in [record, *_made_from(record, by_path)]:
+    for one in chain:
         if licence:
             break
         named = (one.get("engine") or {}).get("name", "")
         licence = one.get("licence") or (services.get(named) or {}).get("terms") or ""
         via = one["artefact"]["path"] if licence and one is not record else None
+    if origin is not record:
+        via = origin["artefact"]["path"]
     return {
         "file": record["artefact"]["path"],
         "sha256": record["artefact"].get("sha256", ""),
@@ -1049,8 +1109,8 @@ def _manifested(record: dict, by_path: dict[str, dict], services: dict) -> dict:
         "service": engine.get("name", ""),
         "model": engine.get("model") or details.get("model") or "",
         "plan": engine.get("plan") or engine.get("tier", ""),
-        "prompt": record.get("prompt") or "",
-        "seed": record.get("seed", details.get("seed")),
+        "prompt": origin.get("prompt") or "",
+        "seed": origin.get("seed", details.get("seed")),
         "made_at": record.get("produced_at", ""),
         "licence": licence,
         **({"via": via} if via else {}),

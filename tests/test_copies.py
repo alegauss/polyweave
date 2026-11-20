@@ -218,3 +218,36 @@ def test_every_recorded_file_is_listed_with_its_licence_owed_or_not(tree):
     provenance.credits(root=str(tree), out="CREDITS.json", all=True)
     assert provenance.credits(root=str(tree), out="CREDITS.json", check=True,
                               all=True)["fresh"] is True
+
+
+# -- a shipped folder holds only what ships, and its copies credit their source (§PW694)
+
+
+def test_a_shipped_folder_holds_only_its_copies_and_credits_resolve_through_them(tree):
+    (tree / "polyweave.toml").write_text(
+        '[provenance]\nshipped = ["site/assets"]\n\n'
+        '[service.ideogram]\nterms = "Ideogram paid plan: commercial use"\n',
+        encoding="utf-8")
+    noisy(tree)
+    provenance.write(provenance.build(
+        "fetch", tree / "art" / "photo.png",
+        engine={"name": "ideogram", "model": "4.0"}, seed=7,
+        extra={"prompt": "a quiet coast", "task_id": "ideogram:g1"}, root=tree), tree)
+    bounded(tree, "photo.webp", None)
+    shipped = sorted(p.name for p in (tree / "site" / "assets").iterdir())
+    assert shipped == ["photo.webp"]
+    kept = tree / "polyweave.records" / "site" / "assets" / "photo.webp.prov.json"
+    assert kept.is_file()
+    record = provenance.read("site/assets/photo.webp", root=str(tree))
+    assert record["artefact"]["path"] == "site/assets/photo.webp"
+    assert provenance.verify(str(tree))["sound"] is True
+    assert provenance.outdated(str(tree))["outdated"] == []
+    said = provenance.credits(root=str(tree), all=True, under="site/assets")
+    [copy] = said["artefacts"]
+    assert copy["file"] == "site/assets/photo.webp"
+    assert (copy["service"], copy["model"], copy["seed"]) == ("ideogram", "4.0", 7)
+    assert copy["prompt"] == "a quiet coast"
+    assert copy["licence"] == "Ideogram paid plan: commercial use"
+    assert copy["via"] == "art/photo.png"
+    # Outside the shipped folder a record stays beside its file.
+    assert (tree / "art" / "photo.png.prov.json").is_file()

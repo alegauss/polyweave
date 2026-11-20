@@ -47,32 +47,6 @@ output. This complements PW700 for drawing cards.
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW694 A copy's record stays out of the shipped folder and its credits resolve through its source
-
-**Where it happened.** Viglet Shio, SH1431, 2026-11-10, three marketplace packages
-(`marketplace/ervalume`, `orvalha`, `taipal` in D:\Git\viglet\shio\2026.3). Each cut its
-shipped WebP files with `polyweave picture.copies` from a `*.copies.toml`, which writes
-a `<name>.webp.prov.json` beside every copy in `assets/images/`, the directory the
-package ships. Shio's packager zips that directory, so 24 provenance records would have
-gone into the published packages; Shio added `.*\.prov\.json` to its exclusion list as
-the workaround (`shio-site/scripts/marketplace.mjs`, `NOT_PACKAGED`).
-
-Second, `provenance.credits` lists the copies with an empty prompt, model, seed and
-licence: a copy does not inherit them from its source purchase. One agent wrote a
-one-off Python script to read the source records and build `assets/CREDITS.json` in the
-format the earlier showcase used. A third found no way to make copies without writing a
-copies table first.
-
-**What polyweave should do.** Let a copy's record live outside the shipped directory (a
-records directory declared once, like the sources'), or name it so a packager can ignore
-one pattern it documents. And make a copy's credits resolve through its source:
-`provenance.credits` answers prompt, model, seed, service and licence for a copy from
-the purchase it was cut from, so a credits file is one call.
-
-**Done when.** A project cuts copies into a shipped folder that then holds only the
-copies, and `provenance.credits` over that folder returns each copy's source prompt and
-licence.
-
 ### §PW695 A re-bought path marks the purchase it replaced, with the reason
 
 **Where it happened.** Viglet Shio, SH1431, 2026-11-10 (`marketplace/orvalha` and

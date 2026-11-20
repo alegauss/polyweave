@@ -75,6 +75,10 @@ max_bytes = 8_000_000_000
 # what a person made, in a directory that otherwise holds produced work: matched against
 # the path and against the bare name, so `*.png` excuses an extension everywhere
 handmade = ["docs/design/art/brand/*"]
+# folders that go out as they are, such as a package's images: a file there keeps its
+# record under `records` at its own path, so the folder holds only what ships (§PW694)
+shipped = ["site/assets"]
+records = "polyweave.records"
 
 [adoption.own]
 # the project's own files that do what a polyweave call does, kept on purpose, each with
