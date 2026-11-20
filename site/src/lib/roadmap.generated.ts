@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 15 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 14 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -64,13 +64,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "Frame contact sheets cannot pair exact shot midpoints with overlapping narration and editorial labels",
     why: "Video reviews need custom frame extraction and labelled HTML to catch mismatched shots before a full export.",
-    deps: [],
-  },
-  {
-    id: "PW696",
-    block: "D",
-    symptom: "picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it",
-    why: "The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it.",
     deps: [],
   },
   {
@@ -265,4 +258,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW449", "PW450", "PW206", "PW327", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW696", "PW449", "PW450", "PW206", "PW327", "PW311", "PW368"];

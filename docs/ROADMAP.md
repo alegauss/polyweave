@@ -11,7 +11,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW696** (deps: —) **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it. → §PW696
 - 📋 **PW700** (deps: —) **No operation renders a declared editorial HTML card to a still for a narrated video** — Japode WordPress must render its timeline graphics through video-maker before video.cut can move those stills. → §PW700
 - 📋 **PW701** (deps: —) **stock.fetch cannot fetch a licensed YouTube clip or preserve its licence metadata** — Japode histories need footage of their real protagonists, so stock searches alone leave the people out. → §PW701
 - 📋 **PW702** (deps: —) **reference.frames shows a black frame at zero where the narrated MP4 decodes a visible opening** — A false black opening can make an editor remove a working hook while reviewing a video. → §PW702

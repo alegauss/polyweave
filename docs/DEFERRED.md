@@ -8,6 +8,8 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+- ⏸ **PW696** (deps: —) **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — set aside (Waits on the owner choosing a paid vision service.): The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it. → §PW696
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
