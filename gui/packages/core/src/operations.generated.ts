@@ -90,6 +90,28 @@ export interface CaptureAgainArgs {
   strict?: boolean
 }
 
+/** Render a local HTML card to a still, after its fonts and pictures have loaded. */
+export interface CaptureCardArgs {
+  /** the card's HTML file, under the project */
+  html: string
+  /** where the still is written, as a .png */
+  out: string
+  /** its width and height in CSS px, as [2048, 1152]; default [1920, 1080] */
+  viewport?: unknown[]
+  /** device pixels per CSS px; from 0.5 to …; default 1.0 */
+  scale?: number
+  /** CSS selectors whose elements' boxes are answered */
+  bounds?: unknown[]
+  /** the box the named elements stay in, [l, t, r, b] in CSS px */
+  safe?: unknown[]
+  /** areas the elements must not reach, by name, [l, t, r, b] */
+  exclude?: Record<string, unknown>
+  /** URL parts or console words that may fail without refusing it */
+  allow?: unknown[]
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** The settings this project says a picture depends on. */
 export interface CaptureDeclaredArgs {
   /** the project whose [capture] declared is read; default "." */
@@ -2996,6 +3018,7 @@ export interface Operations {
   "calibrate.apply": CalibrateApplyArgs
   "calibrate.run": CalibrateRunArgs
   "capture.again": CaptureAgainArgs
+  "capture.card": CaptureCardArgs
   "capture.declared": CaptureDeclaredArgs
   "capture.movie": CaptureMovieArgs
   "capture.run": CaptureRunArgs
@@ -3235,6 +3258,7 @@ export const OPERATIONS = [
   "calibrate.apply",
   "calibrate.run",
   "capture.again",
+  "capture.card",
   "capture.declared",
   "capture.movie",
   "capture.run",

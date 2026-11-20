@@ -7,6 +7,7 @@ LAYER = Layer(
     uses=("geometry", "picture",),
     summary="What a game shows outside itself: store art, teasers, icons, sheets.",
     modules=(
+        "polyweave.layers.store.card",
         "polyweave.layers.store.compose",
         "polyweave.layers.store.footage",
         "polyweave.layers.store.icons",
@@ -30,7 +31,8 @@ LAYER = Layer(
     # 6,331 with video.safe_area, burned-in text against a platform's controls (§PW698).
     # 7,149 with store.thumbnail, a thumbnail against its title and a feed (§PW699).
     # 8,102 with store.thumbnails, the passing variants laid for a person (§PW699).
-    tools=8_600,
+    # 9,242 with capture.card, an HTML card rendered to a still (§PW700).
+    tools=9_800,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),

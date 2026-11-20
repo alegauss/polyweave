@@ -78,6 +78,13 @@ CODES: dict[str, Code] = {
         "video",
         doors=("cut it again with video.cut",),
     ),
+    "web.bad-card": Code(
+        means="an HTML card to render is not there, or the call cannot render it",
+        when="capture.card on a missing .html, an out that is not .png, or a bad "
+        "viewport (§PW700)",
+        doors=("name the .html under the project", "write out as a .png",
+               "give viewport as [width, height]"),
+    ),
     "store.no-thumbnail": Code(
         means="the thumbnail to check is not there",
         when="store.thumbnail on a path with no file (§PW699)",

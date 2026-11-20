@@ -70,7 +70,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW700",
     block: "D",
     symptom: "No operation renders a declared editorial HTML card to a still for a narrated video",
-    why: "Japode WordPress must render its timeline graphics through video-maker before video.cut can move those stills.",
+    why: "A card is rendered again when nothing changed, and nothing guards its text against broken accents, missing glyphs, overflow or split names.",
     deps: [],
   },
   {

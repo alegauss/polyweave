@@ -272,3 +272,21 @@ sittings`/thumbnails, else the work area's), where a person picks the ones to pu
 platform's A/B test. `rest` names each variant not laid and why: its failures, or that it
 passed past the `keep` laid out. Where none passes, nothing is laid. polyweave draws no
 thumbnail layout itself; the choices are the project's layout's, and the agent never picks.
+
+## An HTML card as a still
+
+A narrated video's editorial cards (dates, timelines, diagrams) are HTML a project
+writes with its own fonts, and `video.cut` takes stills (§PW700).
+`capture.card(html, out, viewport=[1920, 1080], scale=1, bounds=, safe=, exclude=,
+allow=)` loads one local `.html` file in Chromium (Playwright, as `capture.web`) at the
+viewport and device scale given, waits for `load` and for `document.fonts.ready`, and
+writes the viewport as a PNG to `out`. A console error, a page error, a failed request or
+a broken picture refuses it as `web.broken-page`, and nothing is written, unless
+`allow` names it. The record (kind `capture`, engine `capture.card` with the browser's
+version) has the page as its `card` input and each local file the page loaded (fonts,
+pictures, styles under the project) as a `loaded` input. Each CSS selector in `bounds`
+answers every element it matches with its `box` in CSS px and whether it is `visible`
+(a size, not `display: none`, not hidden, opacity above 0); one that matches nothing is
+in `missing`. Where `safe` or `exclude` is given, each element is held to them by the
+check `video.safe_area` uses, and those that cross are in `crossed`. A missing card, an
+`out` that is not `.png`, or a bad viewport is `web.bad-card`.

@@ -11,7 +11,7 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW700** (deps: —) **No operation renders a declared editorial HTML card to a still for a narrated video** — Japode WordPress must render its timeline graphics through video-maker before video.cut can move those stills. → §PW700
+- ⏳ **PW700** (deps: —) **No operation renders a declared editorial HTML card to a still for a narrated video** — A card is rendered again when nothing changed, and nothing guards its text against broken accents, missing glyphs, overflow or split names. → §PW700
 - 📋 **PW701** (deps: —) **stock.fetch cannot fetch a licensed YouTube clip or preserve its licence metadata** — Japode histories need footage of their real protagonists, so stock searches alone leave the people out. → §PW701
 - 📋 **PW702** (deps: —) **reference.frames shows a black frame at zero where the narrated MP4 decodes a visible opening** — A false black opening can make an editor remove a working hook while reviewing a video. → §PW702
 - 📋 **PW704** (deps: —) **capture.web films no pointer, jumps a scroll in one frame and fills typed text at once** — A product scene filmed from a declared visit never shows what was clicked, so a video cuts around every jump or films with a script. → §PW704
@@ -116,6 +116,14 @@
   Spinhold's runs write the event trace, the probe gives the declared pressure per
   second, level.trace lays the two together, and accept.check holds bounds a person set
   (alive never above N, a peak above the phase before), naming the rule broken.
+
+## Done when — PW700
+
+- **An unchanged card is not rendered again, and its text is guarded** A second
+  capture.card of the same HTML, assets and browser answers a cache hit with no browser
+  run; and each text element is checked for replacement characters, glyphs its font
+  lacks, text past its box and a protected name split across lines, named by element and
+  bounds.
 
 ## Non-goals
 
