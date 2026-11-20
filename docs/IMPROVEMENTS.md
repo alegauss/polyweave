@@ -70,18 +70,6 @@ prompt advice (frame hands out, avoid people touching).
 **Done when.** The check over the 24 Shio photos flags the two the owner rejected and
 the pseudo-text ones, naming each fault.
 
-### §PW702 First frame of a muxed narrated MP4
-
-In marketing/japode/wordpress, reference.frames on video/wordpress.pt-BR.mp4 with rate
-0.05 and ranges [[0,5,1]] writes a black t00000000.png, while t00001000.png is visible.
-The opening scene and intro-0.mp4 both show Matt from zero. Independently decoding the
-first video frame with videomaker.media.ffmpeg using -i video/wordpress.pt-BR.mp4
--frames:v 1 produces a visible title and Matt. ffprobe reports its first I frame at
-0.000000. Evidence is .polyweave/final-reviewed, .polyweave/opening-check and
-video/preview/first-decoded.png. The final MP4 has video, AAC and mov_text streams.
-Ensure reference.frames samples the actual first decoded video frame at zero and does
-not substitute a blank when a seek or timestamp boundary returns no frame.
-
 ### §PW704 A visit filmed the way a person moves
 
 Found filming WordPress admin scenes for the Japode WordPress video (marketing

@@ -561,6 +561,16 @@ def frames(
             for frame in sorted(place.glob("*.png")):
                 at = (start or 0.0) + (int(frame.stem) - 1) / every
                 taken.setdefault(int(round(at * 1000)), frame)
+            # The stretch's first frame decoded again at its exact time (§PW702): at a
+            # seek or timestamp boundary the fps filter answered a black frame where a
+            # narrated MP4 shows its opening from zero.
+            first = place / "first.png"
+            exact = subprocess.run(
+                [ffmpeg, "-v", "error", "-i", str(source), "-ss",
+                 f"{start or 0.0:.3f}", "-frames:v", "1", str(first)],
+                capture_output=True, check=False)
+            if not exact.returncode and first.is_file():
+                taken[int(round((start or 0.0) * 1000))] = first
         kept = _changed(taken, float(changed))
         for old in folder.glob("t*.png"):
             old.unlink()

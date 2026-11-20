@@ -753,7 +753,10 @@ itself is never copied in:
 
 - frames at `rate` a second across the whole video, and denser inside `ranges`, each
   `[start, end, rate]` in seconds; each frame is `t<milliseconds>.png`, named by its
-  time, the first sample of a time kept where two stretches overlap;
+  time, the first sample of a time kept where two stretches overlap; each stretch's
+  first frame, the one at zero included, is decoded again with an exact seek
+  (`-i <video> -ss <start> -frames:v 1`), because the fps filter answered black at a
+  timestamp boundary where a narrated MP4 shows its opening (§PW702);
 - `changed` (a share of 0 to 1) keeps a frame only where it differs from the last one
   kept by that mean, so a still stretch costs one frame;
 - contact sheets of sixteen frames, four by four with the time burnt into each tile,

@@ -87,6 +87,7 @@
 - ✅ **PW695** **Buying again to the same path leaves every purchase equal in the ledger, with no mark of which was superseded** — A purchase to a path marks the earlier one superseded with picture.buy's replaces_because; purchase.ledger by_path says what each file holds (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW700** **No operation renders a declared editorial HTML card to a still for a narrated video** — capture.card skips the browser for an unchanged card and names each guarded element whose text breaks a letter, overflows, lacks glyphs or splits a name (design recorded in `docs/specs/video.md`).
 - ✅ **PW701** **stock.fetch cannot fetch a licensed YouTube clip or preserve its licence metadata** — stock.clip fetches a bounded excerpt of a public video only under a reuse licence, recording its page, channel, licence, cut points and credit (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW702** **reference.frames shows a black frame at zero where the narrated MP4 decodes a visible opening** — reference.frames decodes each stretch's first frame again at its exact time, so a narrated MP4's opening at zero is the frame the video shows (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 

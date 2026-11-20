@@ -140,3 +140,24 @@ def test_a_store_page_is_never_cut_from_internal_footage(video):
     with pytest.raises(PolyweaveError) as refused:
         store.capsules(frame, frame, out="store", root=str(project))
     assert refused.value.code == "store.internal-input"
+
+
+def test_the_frame_at_zero_is_the_opening_a_narrated_mp4_decodes(tmp_path):
+    """§PW702: a muxed narrated MP4 sampled sparsely showed black at zero."""
+    where = tmp_path / "narrated.mp4"
+    subprocess.run(
+        [shutil.which("ffmpeg"), "-v", "error", "-f", "lavfi", "-i",
+         "color=c=red:s=160x90:d=1:r=25", "-f", "lavfi", "-i",
+         "color=c=blue:s=160x90:d=24:r=25", "-f", "lavfi", "-i",
+         "sine=frequency=440:duration=25", "-filter_complex",
+         "[0:v][1:v]concat=n=2:v=1[v]", "-map", "[v]", "-map", "2:a", "-c:a", "aac",
+         "-pix_fmt", "yuv420p", str(where)],
+        check=True, capture_output=True,
+    )
+    project = tmp_path / "game"
+    project.mkdir()
+    reference.frames(str(where), rate=0.05, ranges=[[0, 5, 1]], root=str(project))
+    folder = project / ".polyweave" / "references" / "narrated"
+    with Image.open(folder / "t00000000.png") as opening:
+        red, green, blue = opening.convert("RGB").getpixel((80, 45))
+    assert red > 200 and green < 60 and blue < 60

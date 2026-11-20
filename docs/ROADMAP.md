@@ -11,7 +11,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW702** (deps: —) **reference.frames shows a black frame at zero where the narrated MP4 decodes a visible opening** — A false black opening can make an editor remove a working hook while reviewing a video. → §PW702
 - 📋 **PW704** (deps: —) **capture.web films no pointer, jumps a scroll in one frame and fills typed text at once** — A product scene filmed from a declared visit never shows what was clicked, so a video cuts around every jump or films with a script. → §PW704
 - 📋 **PW705** (deps: —) **stock.find and stock.fetch cannot search or fetch music, so a licensed bed arrives by hand with no record** — A video's music is downloaded with curl and its licence and credit live only in the project's prose. → §PW705
 - 📋 **PW712** (deps: —) **A cut has no read-only complete preflight before expensive rendering** — Missing anchors and invalid sources force another full build before the caller learns every error. → §PW712
