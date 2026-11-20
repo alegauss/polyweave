@@ -218,6 +218,14 @@ words from the take's record where `text` is unset) answers:
   `[bracketed]` audio tags as directions (`eleven_v3`, by its record's model), the tags
   are left out of the line before it is compared or its rate counted, and named under
   `directions` (§PW668); on any other model they are words it should have said.
+- `words`: each word the transcription heard with its `start` and `end` in seconds and
+  its `probability`, faster-whisper's `word_timestamps`, which a video's spoken
+  callouts are placed by (§PW703). They are kept beside the take as
+  `<take>.words.json` with the take's SHA-256, the language and the names it was heard
+  with (`words_file`); a call on the same bytes, language and names reads them back and
+  transcribes nothing (`words_cached` true), and a take made again is heard again. No
+  service is paid for them. Which heard word is a declared alias and which an uncertain
+  match is not yet told apart.
 
 `failed` names each measure outside the project's `[voice]` bound: `lead_silence` and
 `tail_silence` as maxima, `rate` and `loudness` as `[low, high]` bands, and `said` where

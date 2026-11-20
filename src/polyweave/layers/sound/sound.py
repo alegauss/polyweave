@@ -679,7 +679,7 @@ DIRECTION = re.compile(r"\[[^\[\]]*\]")
 
 def speech(
     path: str | Path, text: str, vocabulary=(), language=None, interjections=(),
-    directions=False,
+    directions=False, heard=None,
 ) -> dict:
     """What a spoken take measures against its line (§PW323).
 
@@ -692,6 +692,10 @@ def speech(
     With `directions`, the line's `[bracketed]` audio tags are directions, not words,
     and are left out of what it should say; they are named under `directions` (§PW668).
     Dumont's `[excited]` and `[laughs]` had failed takes that performed both.
+
+    Where the transcription times its words, `words` lists each with its `start` and
+    `end` in seconds (§PW703), what a video's spoken callouts are placed by. `heard`
+    is a transcription already made of these bytes, which is then not made again.
     """
     tags = DIRECTION.findall(text) if directions else []
     if tags:
@@ -706,24 +710,30 @@ def speech(
         "duration": round(duration, 3),
         **({"directions": tags} if tags else {}),
     }
-    heard = _transcribed(Path(path), vocabulary, language)
+    if heard is None:
+        heard = _transcribed(Path(path), vocabulary, language)
     if heard is None:
         found["said"] = None
         found["unheard"] = "faster-whisper is not installed; the words go unchecked"
-    else:
-        found["said"] = _differs(text, heard, interjections)
-        if language:
-            found["said"]["language"] = language
+        return found
+    if isinstance(heard, dict):
+        found["words"] = heard.get("words") or []
+        heard = heard.get("text", "")
+    found["said"] = _differs(text, heard, interjections)
+    if language:
+        found["said"]["language"] = language
     return found
 
 
-def _transcribed(path: Path, vocabulary=(), language=None) -> str | None:
-    """What a local speech-to-text model hears, or None where there is none.
+def _transcribed(path: Path, vocabulary=(), language=None) -> dict | None:
+    """What a local speech-to-text model hears, with each word's time, or None where
+    there is none.
 
     Local on purpose: paying a service to check a take would be spending on the
     agent's own judgement. The world's names are passed as the words to expect, and
     the take's language where it is known: left to guess, the model transcribed a
-    Portuguese take as English and failed every word (§PW414).
+    Portuguese take as English and failed every word (§PW414). Each word comes with
+    its start and end in seconds and the model's confidence in it (§PW703).
     """
     try:
         from faster_whisper import WhisperModel
@@ -731,9 +741,15 @@ def _transcribed(path: Path, vocabulary=(), language=None) -> str | None:
         return None
     model = WhisperModel("base", device="cpu", compute_type="int8")
     parts, _ = model.transcribe(
-        str(path), initial_prompt=", ".join(vocabulary) or None, language=language
+        str(path), initial_prompt=", ".join(vocabulary) or None, language=language,
+        word_timestamps=True,
     )
-    return " ".join(part.text for part in parts).strip()
+    parts = list(parts)
+    words = [{"word": one.word.strip(), "start": round(float(one.start), 3),
+              "end": round(float(one.end), 3),
+              "probability": round(float(one.probability), 3)}
+             for part in parts for one in (part.words or ())]
+    return {"text": " ".join(part.text for part in parts).strip(), "words": words}
 
 
 def _folded(word: str) -> str:
@@ -828,6 +844,12 @@ def spoken(
 
     `failed` names each measure outside its bound. A take that fails is reported, never
     bought again: whether to spend on another is the person's ceiling.
+
+    Where its words are timed, they are kept beside the take as `<take>.words.json`
+    with the take's SHA-256 and the language and names it was heard with, and the
+    answer's `words_file` names it (§PW703). A second call on the same bytes reads
+    them back and transcribes nothing, with `words_cached` true; a take made again is
+    heard again.
     """
     from polyweave.kernel import provenance
 
@@ -845,8 +867,33 @@ def spoken(
             f"{take} names no line to hold it to",
             "pass text, the words the take should say",
         )
-    found = speech(where, text, **expected(where, config))
-    return {"take": take, "text": text, **found,
+    import json
+
+    asked = expected(where, config)
+    kept = where.with_name(where.name + ".words.json")
+    digest = provenance.sha256_of(where)[0]
+    heard = None
+    try:
+        before = json.loads(kept.read_text(encoding="utf-8"))
+        if (before.get("sha256") == digest
+                and before.get("language") == asked["language"]
+                and before.get("vocabulary") == list(asked["vocabulary"])):
+            heard = {"text": before["text"], "words": before["words"]}
+    except (OSError, ValueError, KeyError):
+        heard = None
+    found = speech(where, text, **asked, heard=heard)
+    timed = {}
+    if "words" in found:
+        if heard is None:
+            kept.write_text(json.dumps({
+                "take": provenance.relative(where, here), "sha256": digest,
+                "language": asked["language"],
+                "vocabulary": list(asked["vocabulary"]),
+                "text": found["said"]["heard"], "words": found["words"],
+            }, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+        timed = {"words_file": provenance.relative(kept, here),
+                 "words_cached": heard is not None}
+    return {"take": take, "text": text, **found, **timed,
             "failed": held(found, config.table("voice"))}
 
 

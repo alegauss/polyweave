@@ -191,3 +191,37 @@ def test_a_lines_audio_tags_are_directions_not_words(tmp_path, monkeypatch):
         extra={"prompt": line}, root=tmp_path), tmp_path)
     assert sound.spoken("t.wav", root=str(tmp_path))["said"]["missing"] == [
         "excited", "laughs"]
+
+
+def test_timed_words_are_answered_kept_with_the_take_and_read_back(
+    tmp_path, monkeypatch
+):
+    """§PW703: a video's callouts are placed by when each word is said."""
+    heard_times = []
+
+    def timed(path, vocabulary=(), language=None):
+        heard_times.append(path)
+        return {"text": "Hold fast", "words": [
+            {"word": "Hold", "start": 0.5, "end": 0.8, "probability": 0.9},
+            {"word": "fast", "start": 0.85, "end": 1.4, "probability": 0.8}]}
+
+    monkeypatch.setattr(sound, "_transcribed", timed)
+    take(tmp_path / "t.wav")
+    first = sound.spoken("t.wav", text="Hold fast", root=str(tmp_path))
+    assert [one["word"] for one in first["words"]] == ["Hold", "fast"]
+    assert first["words"][1]["start"] == 0.85
+    assert first["words_file"] == "t.wav.words.json" and first["words_cached"] is False
+    again = sound.spoken("t.wav", text="Hold fast", root=str(tmp_path))
+    assert again["words_cached"] is True and again["words"] == first["words"]
+    assert len(heard_times) == 1
+    take(tmp_path / "t.wav", lead=0.7)
+    moved = sound.spoken("t.wav", text="Hold fast", root=str(tmp_path))
+    assert moved["words_cached"] is False and len(heard_times) == 2
+
+
+def test_an_untimed_transcription_keeps_no_words_file(tmp_path, monkeypatch):
+    monkeypatch.setattr(sound, "_transcribed", lambda *a, **k: "Hold fast")
+    take(tmp_path / "t.wav")
+    said = sound.spoken("t.wav", text="Hold fast", root=str(tmp_path))
+    assert "words" not in said and "words_file" not in said
+    assert not (tmp_path / "t.wav.words.json").exists()

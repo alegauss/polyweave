@@ -154,7 +154,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW703",
     block: "P",
     symptom: "sound.speech returns the transcript without word times needed for spoken video callouts",
-    why: "Japode dates and names must appear when spoken, so each video transcribes its takes through a separate service loop.",
+    why: "A heard word is not told apart as a declared alias or an uncertain match, so a callout may be placed on a guess no one reviewed.",
     deps: [],
   },
   {
