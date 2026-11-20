@@ -251,6 +251,7 @@ def capture(
     outputs: int = 1,
     reported: float | None = None,
     inputs: list[dict] | None = None,
+    replaces_because: str | None = None,
     root: str | Path = ".",
 ) -> dict:
     """Put a bought artefact somewhere it will outlive the service, and write it down.
@@ -394,7 +395,7 @@ def capture(
     # a closed revision says what it cost (§PW308).
     if os.environ.get(REVISION_VAR):
         entry["revision"] = os.environ[REVISION_VAR]
-    append(entry, root=here)
+    append({**entry, "replaces_because": replaces_because}, root=here)
     return entry
 
 
@@ -626,11 +627,23 @@ def _adopted(entry: dict, length: int, root: Path) -> dict:
 
 
 def append(entry: dict, *, root: str | Path = ".") -> Path:
-    """Add one entry, rewriting the whole file so a reader never sees half a line."""
+    """Add one entry, rewriting the whole file so a reader never sees half a line.
+
+    An entry whose artefact an earlier one wrote replaces it, and the earlier one is
+    marked `superseded`: by which purchase, when, and why where the buy said (§PW695).
+    Both stay, because both were spent; the mark says which one the path now holds.
+    """
     path = where(root)
     _writable(root)
+    entry = dict(entry)
+    why = entry.pop("replaces_because", None) or ""
     with _writing:
         held = read(root)
+        for earlier in held:
+            if (earlier.get("artefact") == entry.get("artefact")
+                    and not earlier.get("superseded")):
+                earlier["superseded"] = {"by": entry.get("task_id"),
+                                         "at": entry.get("at"), "why": why}
         held.append(entry)
         write_atomic(path, json.dumps(held, indent=2, sort_keys=True) + "\n")
     return path
@@ -639,12 +652,39 @@ def append(entry: dict, *, root: str | Path = ".") -> Path:
 @operation("purchase.ledger")
 def read(
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
-) -> list[dict]:
+    by_path: Annotated[
+        bool, Param("answer per file: the purchase it holds and the ones it replaced")
+    ] = False,
+) -> list[dict] | dict:
     """Everything this project has bought, oldest first.
 
     A ledger is a list of entries, or an adopting project's own lock kept as a table by
     name (§PW457), read as one adopted entry per name, which no ceiling is charged for.
+    A purchase a later one to the same file replaced carries `superseded` (§PW695).
+
+    With `by_path`, the answer is `paths`: for each file, the purchase it `holds` and
+    the `replaced` ones, oldest first, each with why it was replaced where a buy said.
     """
+    entries = _entries(root)
+    if not by_path:
+        return entries
+    paths: dict[str, dict] = {}
+    for one in entries:
+        named = one.get("artefact") or one.get("name") or ""
+        slot = paths.setdefault(named, {"holds": None, "replaced": []})
+        if one.get("superseded"):
+            slot["replaced"].append(one)
+        else:
+            if slot["holds"] is not None:
+                # A ledger written before the mark: the later purchase holds the path.
+                slot["replaced"].append({**slot["holds"], "superseded": {
+                    "by": one.get("task_id"), "at": one.get("at"), "why": ""}})
+            slot["holds"] = one
+    return {"paths": paths}
+
+
+def _entries(root: str | Path = ".") -> list[dict]:
+    """The ledger's entries, as `purchase.ledger` reads them."""
     path = where(root)
     held = _held(path)
     if held is None:

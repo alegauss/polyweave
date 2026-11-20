@@ -47,27 +47,6 @@ output. This complements PW700 for drawing cards.
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW695 A re-bought path marks the purchase it replaced, with the reason
-
-**Where it happened.** Viglet Shio, SH1431, 2026-11-10 (`marketplace/orvalha` and
-`taipal` in D:\Git\viglet\shio\2026.3). After a rejected picture, the agent bought again
-with `picture.buy --out` the same path. The PNG and its `.prov.json` were overwritten,
-which is right, and `polyweave.purchases.json` kept every purchase, which is right for
-the spend. But nothing in the ledger says which purchase a path now holds and which were
-superseded and why: Taipal's `team-portrait` was bought three times, and a reader of the
-ledger sees three equal entries for one file. The credits file had to take "the last
-purchase for each path" by convention.
-
-**What polyweave should do.** When a buy writes a path an earlier purchase wrote, record
-the earlier one as superseded (by which purchase, when), and let the buy carry an
-optional reason (`--replaces-because "malformed hands"`) that lands on the superseded
-entry. The ledger then answers, per path, the purchase it holds and the rejected ones
-with reasons, which is the history a reviewer and the next agent need.
-
-**Done when.** Re-buying a path marks the earlier purchase superseded in the ledger with
-the reason given, and `purchase.ledger` shows per path the held purchase and the
-rejected ones.
-
 ### §PW696 A bought photo is checked for the faults generated photos have
 
 **Where it happened.** Viglet Shio, SH1431, 2026-11-10: 24 photographs for three

@@ -55,6 +55,14 @@ The ledger is `[paths] purchases`, inside the tree and committed with it: a paid
 record are one artefact. `held()` answers the question that matters — is every artefact the
 project paid for still present and still what it was — and names what each missing one cost.
 
+**A path bought again marks what it replaced** (§PW695). Every purchase stays in the
+ledger, because each was spent, but an entry whose artefact an earlier one wrote marks that
+earlier entry `superseded = { by = <task id>, at, why }`. `why` is the buy's
+`replaces_because` where it takes one (`picture.buy` does), and empty otherwise.
+`purchase.ledger by_path=true` answers `paths`: per file, the purchase it `holds` and the
+ones it `replaced`, oldest first; a ledger written before the mark is read the same way,
+the latest purchase holding the path.
+
 ## The ceiling is approved once, not each call
 
 An agent may not decide that a mesh is worth money, and that rule is right. But enforcing it

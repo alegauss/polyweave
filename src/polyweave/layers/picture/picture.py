@@ -81,6 +81,9 @@ def buy(
     entity: Annotated[str, ENTITY] = None,
     world: Annotated[str, WORLD] = None,
     service: Annotated[str, purchase.SERVICE] = None,
+    replaces_because: Annotated[
+        str, Param("why the picture at out is bought again, kept on the one replaced")
+    ] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
     """Buy one picture against the service's ceiling and keep it before anything else.
@@ -117,6 +120,9 @@ def buy(
     It is cut from its background where `transparent` asks, or, unset, where a style
     family is in force; otherwise it keeps the background it was drawn with, and the
     answer's `background` says which and why (§PW667).
+
+    Bought again to an `out` an earlier purchase wrote, the earlier entry is marked
+    superseded in the ledger, with `replaces_because` as why (§PW695).
     """
     if not out:
         raise PolyweaveError(
@@ -279,6 +285,7 @@ def buy(
             },
             **({"inputs": [provenance.source("world", drawn_from["world"], root=root)]}
                if drawn_from else {}),
+            **({"replaces_because": replaces_because} if replaces_because else {}),
         },
     )
     if _PLANNING.get():

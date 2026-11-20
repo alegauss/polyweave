@@ -1446,6 +1446,8 @@ export interface PictureBuyArgs {
   world?: string
   /** the [service.<name>] to use; needed only where there are several */
   service?: string
+  /** why the picture at out is bought again, kept on the one replaced */
+  replaces_because?: string
   /** the project whose ledger this is; default "." */
   root?: string
 }
@@ -1770,6 +1772,8 @@ export interface PurchaseHeldArgs {
 export interface PurchaseLedgerArgs {
   /** the project whose ledger this is; default "." */
   root?: string
+  /** answer per file: the purchase it holds and the ones it replaced; default false */
+  by_path?: boolean
 }
 
 /** What one paid call would cost, and what the ceiling leaves, spending nothing. */

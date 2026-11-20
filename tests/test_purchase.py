@@ -332,3 +332,41 @@ def test_an_entry_with_no_hash_is_refused_because_everything_keys_off_it(tmp_pat
     with pytest.raises(PolyweaveError) as caught:
         purchase.adopt([{**an_entry(tmp_path), "sha256": ""}], root=tmp_path)
     assert caught.value.code == "fetch.ledger-malformed"
+
+
+# -- buying again to the same path marks what it replaced (§PW695) --------------------
+
+
+def test_a_path_bought_again_marks_the_purchase_it_replaced_with_why(tmp_path):
+    where = project(tmp_path)
+    bought(where, task_id="t_1")
+    bought(where, task_id="t_2", replaces_because="malformed hands")
+    bought(where, task_id="t_3")
+    bought(where, out="assets/other.glb", task_id="t_4")
+    first, second, third, other = purchase.read(where)
+    assert first["superseded"]["by"] == "t_2"
+    assert first["superseded"]["why"] == "malformed hands"
+    assert second["superseded"] == {"by": "t_3", "at": third["at"], "why": ""}
+    assert "superseded" not in third and "superseded" not in other
+    assert "replaces_because" not in second
+    paths = purchase.read(where, by_path=True)["paths"]
+    held = paths["assets/cap.glb"]
+    assert held["holds"]["task_id"] == "t_3"
+    assert [one["task_id"] for one in held["replaced"]] == ["t_1", "t_2"]
+    assert paths["assets/other.glb"]["replaced"] == []
+
+
+def test_a_ledger_from_before_the_mark_still_answers_which_purchase_a_path_holds(
+    tmp_path,
+):
+    where = project(tmp_path)
+    bought(where, task_id="t_1")
+    bought(where, task_id="t_2")
+    ledger = purchase.where(where)
+    entries = json.loads(ledger.read_text(encoding="utf-8"))
+    for one in entries:
+        one.pop("superseded", None)
+    ledger.write_text(json.dumps(entries), encoding="utf-8")
+    held = purchase.read(where, by_path=True)["paths"]["assets/cap.glb"]
+    assert held["holds"]["task_id"] == "t_2"
+    assert held["replaced"][0]["superseded"]["by"] == "t_2"

@@ -84,6 +84,7 @@
 - ✅ **PW692** **A Scenario video model cannot be bought: picture.buy opens every delivery as an image** — video.buy buys a clip from a Scenario video model within the ceiling, sends only fields the model declares, and records and measures it as a video (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW693** **picture.vary remix of a cut-out parent comes back on white, with no --transparent and no warning** — A remix of a cut-out parent comes back cut out by a priced second call, picture.vary takes transparent, and an unpriced row quotes the published price (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW694** **picture.copies writes a .prov.json beside every copy in the shipped folder, and credits for a copy come back empty** — A [provenance] shipped folder keeps its records under polyweave.records, and credits answer a copy with its source purchase, by folder (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW695** **Buying again to the same path leaves every purchase equal in the ledger, with no mark of which was superseded** — A purchase to a path marks the earlier one superseded with picture.buy's replaces_because; purchase.ledger by_path says what each file holds (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 

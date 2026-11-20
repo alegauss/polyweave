@@ -53,7 +53,9 @@ TOOL_BUDGET = 4500
 #: 40,965 with accept.first (§PW637), a picture's first spec, the loop's own too.
 #: 41,537 with provenance.borrow's origin and original (§PW678, 2026-11-04).
 #: 41,859 with revision.ask's marks, boxes drawn in the item view (§PW687, 2026-11-04).
-CORE_TOOLS = 42_100
+#: 42,110 with provenance.credits' under and purchase.ledger's by_path (§PW694,
+#: §PW695, 2026-11-19).
+CORE_TOOLS = 42_600
 
 #: What the heaviest session a real consumer opens may cost, every layer on: Spinhold's,
 #: which declares no [layers]. 129,979 when this was set. It is not raised by a line
@@ -101,7 +103,9 @@ CORE_TOOLS = 42_100
 #: had scripted around Playwright on its own (§PW690, 2026-11-09).
 #: 156,195 with video.buy, a clip bought from a Scenario video model (§PW692,
 #: 2026-11-19).
-SESSION_BUDGET = 156_800
+#: 156,672 with picture.vary's transparent, credits' under and the ledger's by_path
+#: (§PW693, §PW694, §PW695, 2026-11-19).
+SESSION_BUDGET = 157_300
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

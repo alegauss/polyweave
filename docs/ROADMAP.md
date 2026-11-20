@@ -11,7 +11,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW695** (deps: —) **Buying again to the same path leaves every purchase equal in the ledger, with no mark of which was superseded** — A reviewer cannot tell from the ledger which photo a path holds and which were rejected, or why. → §PW695
 - 📋 **PW696** (deps: —) **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it. → §PW696
 - 📋 **PW700** (deps: —) **No operation renders a declared editorial HTML card to a still for a narrated video** — Japode WordPress must render its timeline graphics through video-maker before video.cut can move those stills. → §PW700
 - 📋 **PW701** (deps: —) **stock.fetch cannot fetch a licensed YouTube clip or preserve its licence metadata** — Japode histories need footage of their real protagonists, so stock searches alone leave the people out. → §PW701

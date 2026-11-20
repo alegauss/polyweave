@@ -211,7 +211,9 @@ from polyweave.surface.capabilities import capabilities
 #: 177,451 with capture.web, a web page filmed as a clip (§PW690, 2026-11-09).
 #: 178,953 with video.buy, a clip bought from a Scenario video model (§PW692,
 #: 2026-11-19).
-DESCRIBE = 179_500
+#: 179,536 with picture.vary's transparent, credits' under, the ledger's by_path and
+#: picture.buy's replaces_because (§PW693, §PW694, §PW695, 2026-11-19).
+DESCRIBE = 180_100
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -381,7 +383,8 @@ DESCRIBE = 179_500
 #: 2026-11-04).
 #: 194,882 with capture.web and its five web.* codes (§PW690, 2026-11-09).
 #: 196,452 with video.buy (§PW692, 2026-11-19).
-CAPABILITIES = 197_000
+#: 197,035 with the parameters of §PW693, §PW694 and §PW695 (2026-11-19).
+CAPABILITIES = 197_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
