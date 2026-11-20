@@ -363,6 +363,7 @@
 - ✅ **PW451** **a canon holds approved pictures only, so a new 3D enemy is never checked against the meshes already approved beside it** — A .glb joins a canon by verdict, and style.drift holds it to the family's meshes through renders at its rig, naming the nearest (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW637** **a picture has no operation that writes its first acceptance spec, so an agent picks each bound and writes the file** — accept.first measures a picture and writes its first spec, each bound a margin beside its value, through geometry.kit's writer (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW656** **a first spec's bound on a value near zero is a share of almost nothing, so the same picture redrawn fails it** — A first spec's room is at least a share of the measure's declared range, so the dark glass gets 0.1049; each bound says whence its room (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW697 (six video measures)** **A spec cannot bound an encoded video: its length, loudness, true peak, a frozen end or the longest stretch without a cut** — A spec bounds an encoded video's loudness, true peak, stream gap, longest frozen stretch, frozen end and longest shot, read off the file.
 
 ## Block K — Reached without reading the source
 

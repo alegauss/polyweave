@@ -43,6 +43,7 @@ stills.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import tomllib
@@ -61,7 +62,22 @@ VIDEOS: dict[str, str] = {
     "video_height": "its height in pixels",
     "video_fps": "its frames a second",
     "first_motion": "seconds before one frame first differs from the one before it",
+    # An encoded video held to a platform's bars (§PW697): a Short's were checked by
+    # typed ffmpeg commands, and its frozen end card passed unseen.
+    "video_loudness": "integrated loudness of its sound, in LUFS",
+    "video_true_peak": "the true peak of its sound, in dBTP",
+    "video_audio_gap": "seconds between the picture's length and the sound's",
+    "video_longest_frozen": "the longest stretch, in seconds, where no frame moves",
+    "video_frozen_end": "seconds the picture holds still at its end",
+    "video_longest_shot": "the longest stretch, in seconds, without a cut",
 }
+
+#: The measures read off the sound, which a video with none cannot answer.
+HEARD = ("video_loudness", "video_true_peak", "video_audio_gap")
+
+#: A frame is a cut where more than CUT of its pixels changed by more than _STEP: a
+#: camera move or a fade changes some of the frame at a time, a cut most of it at once.
+CUT = 0.35
 
 #: A frame differs from the one before it where more than MOTION of its pixels, read in
 #: grey at _SIDE across, changed by more than _STEP of full scale: the encoder's own
@@ -657,7 +673,7 @@ def measured(path: Path) -> dict:
             "-v",
             "error",
             "-show_entries",
-            "format=duration:stream=codec_type,width,height,avg_frame_rate",
+            "format=duration:stream=codec_type,width,height,avg_frame_rate,duration",
             "-of",
             "json",
             str(path),
@@ -705,6 +721,64 @@ def measured(path: Path) -> dict:
     seconds = float(
         read_back.get("format", {}).get("duration") or len(frames) / (fps or 1)
     )
+    heard = [s for s in streams if s["codec_type"] == "audio"]
+    return {
+        **_held_still(change, fps),
+        **_heard(path, picture, heard[0] if heard else None),
+        **_rest(seconds, width, height, fps, moved, streams),
+    }
+
+
+def _held_still(change: np.ndarray, fps: float) -> dict:
+    """The longest frozen stretch, the frozen end and the longest shot, in seconds.
+
+    A frame holds still where it changed from the one before by no more than MOTION;
+    a stretch is its frames over the rate. A cut is a frame where more than CUT of the
+    picture changed at once, and a shot runs from one cut, or the start, to the next.
+    """
+    if not fps or not change.size:
+        return {"video_longest_frozen": 0.0, "video_frozen_end": 0.0,
+                "video_longest_shot": 0.0}
+    still = change <= MOTION
+    longest = run = 0
+    for one in still:
+        run = run + 1 if one else 0
+        longest = max(longest, run)
+    cuts = [0, *(int(i) + 1 for i in np.flatnonzero(change > CUT)), len(change) + 1]
+    return {
+        "video_longest_frozen": round(longest / fps, 3),
+        "video_frozen_end": round(run / fps, 3),
+        "video_longest_shot": round(max(b - a for a, b in zip(cuts, cuts[1:],
+                                                               strict=False)) / fps, 3),
+    }
+
+
+def _heard(path: Path, picture: dict, sound: dict | None) -> dict:
+    """Its sound's integrated loudness and true peak, as ffmpeg's EBU R128 meter reads
+    them, and how far its length is from the picture's; None where it has no sound."""
+    if sound is None:
+        return dict.fromkeys(HEARD)
+    said = subprocess.run(
+        [_ffmpeg(), "-hide_banner", "-nostats", "-i", str(path), "-map", "0:a:0",
+         "-af", "ebur128=peak=true", "-f", "null", "-"],
+        capture_output=True, text=True, check=False,
+    ).stderr
+    summary = said.rsplit("Summary:", 1)[-1]
+    loud = re.search(r"I:\s+(-?[\d.]+|-inf)\s+LUFS", summary)
+    peak = re.search(r"Peak:\s+(-?[\d.]+|-inf)\s+dBFS", summary)
+
+    def number(found):
+        return None if found is None or found.group(1) == "-inf" else float(
+            found.group(1))
+
+    gap = None
+    if picture.get("duration") and sound.get("duration"):
+        gap = round(abs(float(picture["duration"]) - float(sound["duration"])), 3)
+    return {"video_loudness": number(loud), "video_true_peak": number(peak),
+            "video_audio_gap": gap}
+
+
+def _rest(seconds: float, width: int, height: int, fps: float, moved, streams) -> dict:
     return {
         "video_seconds": round(seconds, 3),
         "video_width": width,
@@ -871,4 +945,12 @@ def predicate(p: Any, subject: Any, root: str | Path, seen: dict) -> dict:
     key = f"video:{where}"
     if key not in seen:
         seen[key] = measured(where)
-    return {"value": float(seen[key][p.measure]), "of": str(where)}
+    value = seen[key][p.measure]
+    if value is None:
+        raise PolyweaveError(
+            "video.no-audio",
+            f"{where.name} carries no sound, so {p.measure} has nothing to read",
+            "bound it on a video with its sound mixed in, or drop the predicate",
+            given=p.measure,
+        )
+    return {"value": float(value), "of": str(where)}

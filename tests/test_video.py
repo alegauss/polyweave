@@ -295,3 +295,59 @@ def test_a_stock_clip_the_service_removed_is_refused_by_name(stocked):
     with pytest.raises(PolyweaveError) as refused:
         video.read(here / "t.cut.toml", here)
     assert refused.value.code == "stock.gone"
+
+
+# -- an encoded video held to a platform's bars (§PW697) -------------------------------
+
+
+def _short(where: Path, *, sound: bool = True) -> Path:
+    """Two seconds of moving picture, a cut to one second held still, and a tone."""
+    import subprocess
+
+    graph = ("testsrc=size=160x90:rate=10:duration=2[a];"
+             "color=c=red:size=160x90:rate=10:duration=1[b];"
+             "[a][b]concat=n=2:v=1:a=0,format=yuv420p[v]")
+    command = [shutil.which("ffmpeg"), "-v", "error", "-y", "-filter_complex", graph]
+    if sound:
+        command += ["-f", "lavfi", "-i", "sine=frequency=440:duration=3",
+                    "-map", "[v]", "-map", "0:a", "-c:a", "aac"]
+    else:
+        command += ["-map", "[v]"]
+    subprocess.run([*command, str(where)], check=True)
+    return where
+
+
+@needs_ffmpeg
+def test_an_encoded_video_answers_its_sound_its_still_end_and_its_longest_shot(
+    tmp_path,
+):
+    said = video.measured(_short(tmp_path / "short.mp4"))
+    assert said["video_frozen_end"] == pytest.approx(0.9, abs=0.15)
+    assert said["video_longest_frozen"] == pytest.approx(0.9, abs=0.15)
+    assert said["video_longest_shot"] == pytest.approx(2.0, abs=0.15)
+    assert -40 < said["video_loudness"] < 0
+    assert said["video_true_peak"] <= 0.5
+    assert said["video_audio_gap"] < 0.1
+
+
+@needs_ffmpeg
+def test_a_spec_bounds_a_short_and_a_silent_one_is_refused_its_loudness(tmp_path):
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    (here / "short.accept.toml").write_text(
+        'asset = "short"\n\n[[predicate]]\nid = "loops"\nmeasure = "video_frozen_end"\n'
+        'max = 0.5\n\n[[predicate]]\nid = "cut-often"\nmeasure = "video_longest_shot"\n'
+        "max = 3\n",
+        encoding="utf-8",
+    )
+    checked = accept.checked("short.accept.toml", "short.mp4", root=str(here))
+    assert checked["failed"] == ["loops"]
+    _short(here / "mute.mp4", sound=False)
+    (here / "mute.accept.toml").write_text(
+        'asset = "mute"\n\n[[predicate]]\nid = "loud"\nmeasure = "video_loudness"\n'
+        "min = -15\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(PolyweaveError) as refused:
+        accept.checked("mute.accept.toml", "mute.mp4", root=str(here))
+    assert refused.value.code == "video.no-audio"

@@ -183,6 +183,21 @@ Read off the file written, not the declaration, so a spec holds what a viewer ge
 | `video_width`, `video_height` | its size in pixels |
 | `video_fps` | its frames a second |
 | `first_motion` | seconds before one frame first differs from the one before it |
+| `video_loudness` | its sound's integrated loudness, LUFS |
+| `video_true_peak` | its sound's true peak, dBTP |
+| `video_audio_gap` | seconds between the picture stream's length and the sound's |
+| `video_longest_frozen` | the longest stretch, in seconds, where no frame moves |
+| `video_frozen_end` | seconds the picture holds still at its end |
+| `video_longest_shot` | the longest stretch, in seconds, without a cut |
+
+The last six hold an encoded video to a platform's bars (§PW697): a Short is 20 to 55 s,
+-14 LUFS within 1, under -1 dBTP, its streams the same length within a frame, and a
+frozen end card breaks its loop. Loudness and true peak are ffmpeg's EBU R128 meter
+(`ebur128=peak=true`) on the first sound stream; a silent video answers them as `null`,
+and a spec that bounds one is `video.no-audio`. A frame holds still where it moves no
+more than `first_motion`'s threshold; a cut is a frame where more than 35% of the
+picture changed by more than 6% at once, and a shot runs from one cut, or the start, to
+the next, or the end.
 
 `first_motion` reads every frame in grey at 160 across, and a frame moves where more than
 0.2% of its pixels changed by more than 6% of full scale from the frame before: the

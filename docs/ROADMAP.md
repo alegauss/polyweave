@@ -38,7 +38,7 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW697** (deps: —) **A spec cannot bound an encoded video: its length, loudness, true peak, a frozen end or the longest stretch without a cut** — A Short was held to every bar by typed ffmpeg commands and stills read by eye, and the frozen end card that breaks its loop passed unseen. → §PW697
+- ⏳ **PW697** (deps: —) **A spec cannot bound an encoded video: its length, loudness, true peak, a frozen end or the longest stretch without a cut** — Loudness and true peak read the first sound stream only, so each language track of a multi-track video is not held on its own. → §PW697
 - 📋 **PW698** (deps: —) **Nothing says whether a vertical video's burned-in text reaches the area a platform covers with its buttons and title** — The Scion Shorts' captions were placed by looking at four stills, and a caption under the Shorts buttons is text the viewer never reads. → §PW698
 - 📋 **PW699** (deps: —) **A thumbnail cannot be checked for legibility at feed size, for its word count, or for repeating the video's title** — The Scion thumbnail repeats its title word for word and was only ever looked at full size, and nothing would have caught either before publishing. → §PW699
 - 📋 **PW709** (deps: —) **Video checks do not report simultaneous editorial labels or names over unrelated footage** — Video-maker must compare timed captions and highlights itself before rendering a cut. → §PW709
@@ -119,6 +119,13 @@
   Spinhold's runs write the event trace, the probe gives the declared pressure per
   second, level.trace lays the two together, and accept.check holds bounds a person set
   (alive never above N, a peak above the phase before), naming the rule broken.
+
+## Done when — PW697
+
+- **Each sound stream of a video is held to its own loudness and peak** A video with one
+  audio stream per language answers loudness and true peak for every stream, named by
+  its language, and a spec bound on them fails on the stream that misses, naming it and
+  its measured value against the limit.
 
 ## Non-goals
 

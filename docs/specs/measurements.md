@@ -522,9 +522,12 @@ because the probe is a proxy a person holds to account (§PW201).
 
 A teaser `video.cut` wrote is measured off the MP4 itself (§PW429; [video.md](video.md)):
 `video_seconds`, `video_width`, `video_height`, `video_fps`, and `first_motion`, the
-seconds before one frame first differs from the one before it. A predicate on one reads
-the subject or the file `of` names; no video there is `video.unreadable`, and no ffmpeg
-on PATH is `video.no-ffmpeg`.
+seconds before one frame first differs from the one before it. Any encoded video also
+answers `video_loudness`, `video_true_peak`, `video_audio_gap`, `video_longest_frozen`,
+`video_frozen_end` and `video_longest_shot` (§PW697), the bars a platform holds a Short
+to. A predicate on one reads the subject or the file `of` names; no video there is
+`video.unreadable`, no ffmpeg on PATH is `video.no-ffmpeg`, and a sound measure of a
+silent video is `video.no-audio`.
 
 ## A visual effect
 

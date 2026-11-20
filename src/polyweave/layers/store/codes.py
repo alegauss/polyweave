@@ -78,6 +78,12 @@ CODES: dict[str, Code] = {
         "video",
         doors=("cut it again with video.cut",),
     ),
+    "video.no-audio": Code(
+        means="a sound measure was asked of a video with no sound",
+        when="video_loudness, video_true_peak or video_audio_gap bound on a silent "
+        "video (§PW697)",
+        doors=("mix its sound in and encode it again", "drop the predicate"),
+    ),
     # -- web: a page filmed as a clip (§PW690) -----------------------------------
     "web.no-source": Code(
         means="the visit named is not there, or is not TOML",

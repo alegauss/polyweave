@@ -168,7 +168,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW697",
     block: "J",
     symptom: "A spec cannot bound an encoded video: its length, loudness, true peak, a frozen end or the longest stretch without a cut",
-    why: "A Short was held to every bar by typed ffmpeg commands and stills read by eye, and the frozen end card that breaks its loop passed unseen.",
+    why: "Loudness and true peak read the first sound stream only, so each language track of a multi-track video is not held on its own.",
     deps: [],
   },
   {
