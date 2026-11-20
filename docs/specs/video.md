@@ -227,3 +227,23 @@ max = 3
 
 Whether it is a good teaser is a person's call, made at a sitting on its sheet with the
 file beside it.
+
+## Burned-in text and a platform's controls
+
+A vertical video's captions compete with the platform's buttons and title (§PW698).
+`video.safe_area(subtitles, size=, preset=, safe=, exclude=, fonts=)` reads the `.ass`
+file burned into the video: its `PlayResX`/`PlayResY`, its styles and every `Dialogue`
+line. Each line is placed at `size` (the play size where none is given) from its
+style's alignment and margins, or its `\pos` and `\an` overrides, sized by its style's
+or `\fs` font size, `ScaleX` and `ScaleY`, and widened by outline and shadow; its width
+is measured with the style's font as Pillow finds it, in `fonts` first, and the answer
+names the fonts used, so Pillow's default font reads as an estimate.
+
+The bounds are a preset's, as fractions of the frame scaled to `size`: `youtube-shorts`
+excludes `buttons` (x 940..1080, y 900..1700 of 1080x1920) and `title` (the bottom
+420 px), observed on 2026-11-12 and not a platform's specification; `none` excludes
+nothing. `safe` (a box in px) and `exclude` (boxes in px by name) replace the preset's.
+Each line that reaches past the safe box or into an excluded one is in `crossed` with
+its number, `start`, `end`, text, `box` and each area it `crosses` with `by_px`;
+`passed` is true where none does. A missing file, one with no `Dialogue`, or a bad
+`size` is `video.bad-subtitles`.

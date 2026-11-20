@@ -78,6 +78,12 @@ CODES: dict[str, Code] = {
         "video",
         doors=("cut it again with video.cut",),
     ),
+    "video.bad-subtitles": Code(
+        means="a subtitle file is not there or holds no line, or a size is wrong",
+        when="video.safe_area on a missing .ass, one with no Dialogue, or a bad size "
+        "(§PW698)",
+        doors=("name the .ass burned into the video", "give size as [width, height]"),
+    ),
     "video.no-audio": Code(
         means="a sound measure was asked of a video with no sound",
         when="video_loudness, video_true_peak or video_audio_gap bound on a silent "

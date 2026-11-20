@@ -2822,6 +2822,24 @@ export interface VideoCutArgs {
   root?: string
 }
 
+/** Which burned-in lines reach outside the safe box or under a platform's controls. */
+export interface VideoSafeAreaArgs {
+  /** the .ass file burned into the video */
+  subtitles: string
+  /** the video's width and height in px, as [1080, 1920] */
+  size?: unknown[]
+  /** a platform's observed bounds; default "youtube-shorts" */
+  preset?: "youtube-shorts" | "none"
+  /** the box text stays in, [left, top, right, bottom] in px */
+  safe?: unknown[]
+  /** areas the platform covers, by name, each [l, t, r, b] in px */
+  exclude?: Record<string, unknown>
+  /** a folder holding the styles' font files */
+  fonts?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Keep the preview a person accepted as its entity's voice, written in the world. */
 export interface VoiceChooseArgs {
   /** the accepted preview, or its sitting */
@@ -3156,6 +3174,7 @@ export interface Operations {
   "vfx.preview": VfxPreviewArgs
   "video.buy": VideoBuyArgs
   "video.cut": VideoCutArgs
+  "video.safe_area": VideoSafeAreaArgs
   "voice.choose": VoiceChooseArgs
   "voice.design": VoiceDesignArgs
   "voice.lines": VoiceLinesArgs
@@ -3392,6 +3411,7 @@ export const OPERATIONS = [
   "vfx.preview",
   "video.buy",
   "video.cut",
+  "video.safe_area",
   "voice.choose",
   "voice.design",
   "voice.lines",

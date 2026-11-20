@@ -96,6 +96,10 @@ field, element, bounds and preview before encoding. Keep valid punctuation, neve
 accents or silently shrink all titles. Marketing's adapter will be
 video-maker/textcheck.py alongside the existing renderer.
 
+Element bounds against a safe area reuse `video.safe_area`'s check (PW698,
+`layers/store/safe.py` `_crossings` and `PRESETS`), so subtitles and HTML cards answer
+the same `crossed` shape.
+
 ### §PW701 Creative Commons source clips from public video archives
 
 For japode/wordpress, stock.find and stock.fetch support Pixabay and Pexels only. The
@@ -358,33 +362,6 @@ keeps drifting shows up in the ledger across projects.
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
-
-### §PW698 Burned-in text held to a platform's safe area
-
-**Where.** marketing/japode/scion, the Scion Shorts (`japode/scion/bin/short.py`, VM31),
-2026-11-12.
-
-**What happened.** Burned-in hooks, callouts and captions compete with platform
-controls. In the observed 1080x1920 frame, Shorts buttons covered roughly x=940..1080,
-y=900..1700, and title/channel text the bottom 420 px. Four stills scaled to 360 px were
-checked by eye. Captions moved left to centre x=500 and shrank because 22 characters at
-70 px could reach x=960. These are observed bounds, not a permanent platform
-specification.
-
-**Expected.** Check text against a declared safe box and excluded boxes throughout the
-video. Offer platform presets that projects can override. Measure text extent from the
-burned-in ASS using libass at the frame size, or from rendered frames. Name each line,
-time and crossing distance so callers can change position or size. Keep the declared
-bounds and measurements in the report.
-
-**Workaround.** Manual ffmpeg still extraction and eyeballing; the bounds live in
-short.py comments.
-
-Marketing VM48 also reserves a configurable player-caption band for landscape and
-vertical videos. Its browser renderer checks actual title/brand/label bounds, and its
-ASS highlights check bottom clearance including the outline. It supports warning or
-refusal and reports collisions. Support both HTML element bounds (PW700) and subtitle
-extents through the same reusable safe-area check.
 
 ### §PW699 A thumbnail held to its title and the feed size
 

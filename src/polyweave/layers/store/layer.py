@@ -10,6 +10,7 @@ LAYER = Layer(
         "polyweave.layers.store.compose",
         "polyweave.layers.store.footage",
         "polyweave.layers.store.icons",
+        "polyweave.layers.store.safe",
         "polyweave.layers.store.store",
         "polyweave.layers.store.video",
         "polyweave.layers.store.web",
@@ -25,7 +26,8 @@ LAYER = Layer(
     codes="polyweave.layers.store.codes",
     # 4,353 once capture.web films a product video's browser scenes (§PW690).
     # 5,376 with video.buy, a clip bought from a Scenario video model (§PW692).
-    tools=5_800,
+    # 6,331 with video.safe_area, burned-in text against a platform's controls (§PW698).
+    tools=6_800,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),
@@ -44,6 +46,8 @@ LAYER = Layer(
             "internal", "what icons.build holds a model's icon to"),
         "polyweave.layers.store.web:read": (
             "internal", "a visit's steps, checked; capture.web"),
+        "polyweave.layers.store.safe:read": (
+            "internal", "an .ass file's styles and lines; video.safe_area"),
         "polyweave.layers.store.video:predicate": (
             "internal", "a video predicate, for accept.check"),
     },

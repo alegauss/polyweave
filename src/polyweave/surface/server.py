@@ -105,7 +105,8 @@ CORE_TOOLS = 42_600
 #: 2026-11-19).
 #: 156,672 with picture.vary's transparent, credits' under and the ledger's by_path
 #: (§PW693, §PW694, §PW695, 2026-11-19).
-SESSION_BUDGET = 157_300
+#: 157,632 with video.safe_area (§PW698, 2026-11-19).
+SESSION_BUDGET = 158_200
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

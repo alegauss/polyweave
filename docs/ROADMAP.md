@@ -38,7 +38,6 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW698** (deps: —) **Nothing says whether a vertical video's burned-in text reaches the area a platform covers with its buttons and title** — The Scion Shorts' captions were placed by looking at four stills, and a caption under the Shorts buttons is text the viewer never reads. → §PW698
 - 📋 **PW699** (deps: —) **A thumbnail cannot be checked for legibility at feed size, for its word count, or for repeating the video's title** — The Scion thumbnail repeats its title word for word and was only ever looked at full size, and nothing would have caught either before publishing. → §PW699
 - 📋 **PW709** (deps: —) **Video checks do not report simultaneous editorial labels or names over unrelated footage** — Video-maker must compare timed captions and highlights itself before rendering a cut. → §PW709
 

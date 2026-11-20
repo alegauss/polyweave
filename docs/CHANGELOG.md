@@ -364,6 +364,7 @@
 - ✅ **PW637** **a picture has no operation that writes its first acceptance spec, so an agent picks each bound and writes the file** — accept.first measures a picture and writes its first spec, each bound a margin beside its value, through geometry.kit's writer (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW656** **a first spec's bound on a value near zero is a share of almost nothing, so the same picture redrawn fails it** — A first spec's room is at least a share of the measure's declared range, so the dark glass gets 0.1049; each bound says whence its room (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW697** **A spec cannot bound an encoded video: its length, loudness, true peak, a frozen end or the longest stretch without a cut** — Each sound stream is measured with its language, and a spec on loudness or peak reads the stream furthest past its bound and names it (design recorded in `docs/specs/video.md`).
+- ✅ **PW698** **Nothing says whether a vertical video's burned-in text reaches the area a platform covers with its buttons and title** — video.safe_area places each burned-in .ass line at the video's size and names those that reach a platform's controls, with time and pixels (design recorded in `docs/specs/video.md`).
 
 ## Block K — Reached without reading the source
 
