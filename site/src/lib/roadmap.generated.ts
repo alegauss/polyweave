@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 7 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -92,13 +92,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "stock.find answers a hit a media library already rejected as if it were a new candidate",
     why: "A clip a person turned down is fetched and reviewed again before the library's refusal surfaces.",
-    deps: [],
-  },
-  {
-    id: "PW727",
-    block: "D",
-    symptom: "Twenty-three operations offer --job but take no report, so the worker hands it to their first parameter",
-    why: "search.sweep --job, the command line's own example, fails before it renders anything.",
     deps: [],
   },
   {

@@ -132,27 +132,6 @@ ranges, and a hit whose every range is rejected or whose rights are refused as
 person did not make. Done when a hit a library rejected is answered marked, with who
 rejected it and why, and an uncatalogued one is answered as before.
 
-### §PW727 Only a target that takes a report is handed one
-
-Found shipping PW715 (2026-11-23). The job worker calls its target as `fn(report,
-**args)`, and `check_args` skips the first parameter as the report's. But an operation
-registers a `kind`, which is what offers `--job`, apart from whether it
-`injects=("report",)`. 23 operations have a kind and no report: calibrate.run,
-capture.again, capture.card, capture.movie, capture.run, capture.web, engine.cost,
-engine.perf, engine.preset_search, level.probe, panel.capture, port.run, render.in_game,
-search.sweep, shape.check, shape.silhouette, shape.turntable, stock.clip, stock.fetch,
-stock.find, vfx.preview, video.sheet and voice.choose. Each, started with `--job`,
-receives the report as its first argument, so `search.sweep --job` (the command line's
-own docstring example) fails with a TypeError or runs on a Report as its spec; video.cut
-did until PW715 gave it a report.
-
-The worker should pass the report only to a target whose registration injects one, and a
-test should start every operation that has a kind as a job with a fake target or a
-signature check, so a new one cannot regress. Where an operation is long and has stages,
-injecting a report is the better fix, as video.cut's; the worker's check is the floor.
-Done when every operation with a kind either injects a report or is called without one,
-and a test holds that for the whole registry.
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

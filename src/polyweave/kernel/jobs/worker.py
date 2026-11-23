@@ -95,11 +95,28 @@ def _import_file(where: str, root: Path) -> Any:
     return module
 
 
-def check_args(fn: Any, args: dict) -> None:
+def takes_report(fn: Any) -> bool:
+    """Whether the target is handed the job's report as its first argument (§PW727).
+
+    A registered operation is, only where it `injects=("report",)`: 23 of them offered
+    `--job` with no report and were handed one in place of their first parameter. A
+    target named by path is no operation, and takes it by the convention jobs began
+    with.
+    """
+    from polyweave.kernel import describe as D
+
+    for registered in D._REGISTRY.values():
+        if registered.fn is fn:
+            return "report" in registered.injects
+    return True
+
+
+def check_args(fn: Any, args: dict, *, reported: bool = True) -> None:
     """Refuse an argument the target does not take, rather than dropping it.
 
     §3 of the tool surface: a silently dropped field makes a typo indistinguishable from
-    a working call, which is the whole of §PW19.
+    a working call, which is the whole of §PW19. The first parameter is the report's
+    where the target is handed one.
     """
     try:
         signature = inspect.signature(fn)
@@ -115,16 +132,17 @@ def check_args(fn: Any, args: dict) -> None:
         if p.kind
         in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
     ]
-    unknown = sorted(set(args) - set(accepted[1:]))
+    accepted = accepted[1:] if reported else accepted
+    unknown = sorted(set(args) - set(accepted))
     if unknown:
         raise PolyweaveError(
             "job.unknown-arg",
             f"{', '.join(unknown)} is not an argument of this target"
             if len(unknown) == 1
             else f"{', '.join(unknown)} are not arguments of this target",
-            f"it takes {', '.join(accepted[1:]) or 'no arguments'}",
+            f"it takes {', '.join(accepted) or 'no arguments'}",
             given=unknown[0],
-            allowed=accepted[1:],
+            allowed=accepted,
         )
 
 
@@ -160,8 +178,9 @@ def run(record_path: Path) -> int:
         ):
             root = Path(state["root"])
             fn = resolve_target(state["target"], root)
-            check_args(fn, state["args"])
-            result = fn(report, **state["args"])
+            reported = takes_report(fn)
+            check_args(fn, state["args"], reported=reported)
+            result = fn(report, **state["args"]) if reported else fn(**state["args"])
         report.finish("done", result=result, error=None)
         return 0
     except PolyweaveError as exc:

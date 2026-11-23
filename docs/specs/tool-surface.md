@@ -23,6 +23,10 @@ sweep  → { reaped, removed, orphans }            # collect what was abandoned
 - `stage` is a short vocabulary per operation kind (`queued`, `building`, `rendering`,
   `downloading`, `done`, `failed`, `cancelled`), so a caller branches on a word rather than
   parsing a message.
+- **Only a target that takes a report is handed one.** A registered operation's worker
+  passes the report first only where the operation `injects=("report",)`, and calls the
+  rest with their arguments alone; a target named by path takes it first, as jobs always
+  have (§PW727).
 - **A failure keeps where it got to.** A failed job's `poll` and `result` carry
   `last_stage`, the stage it had reached, since `stage` then reads `failed` (§PW715).
 - **A call in the foreground can be watched too.** An operation that injects a report

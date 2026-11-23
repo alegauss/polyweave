@@ -99,6 +99,7 @@
 - ✅ **PW715** **A long video cut exposes no stage progress while rendering or waiting** — video.cut reports building and rendering with the fraction ffmpeg has encoded; --progress prints each as a JSON line, --job now runs it, and a failure keeps last_stage.
 - ✅ **PW716** **Narrated claims cannot bind evidence, dates and human review to their spoken anchors** — video.claims places each declared claim on its spoken words, fingerprints it with its evidence, and holds it unapproved, stale or expired until a person's review matches; store.description cites them.
 - ✅ **PW717** **voice.lines accepts a speed for eleven_v3, spends, and records it in the take's provenance although the model ignores it** — sound.speak and voice.lines refuse a setting the model ignores (eleven_v3's speed) before pricing or buying, and a take recorded with one stays current without it.
+- ✅ **PW727** **Twenty-three operations offer --job but take no report, so the worker hands it to their first parameter** — The job worker hands a report only to an operation that injects one, so the 23 that do not run under --job, and a registry-wide test holds it.
 
 ## Block E — One world with the engine
 

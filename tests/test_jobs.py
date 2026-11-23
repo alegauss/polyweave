@@ -497,3 +497,36 @@ def test_sweep_collects_an_old_record(store, target_path):
     with pytest.raises(PolyweaveError) as caught:
         store.poll(job)
     assert caught.value.code == "job.unknown"
+
+
+# -- only a target that takes a report is handed one (§PW727) --------------------------
+
+
+def test_every_operation_with_a_kind_is_called_the_way_its_signature_takes():
+    """23 operations offered --job with no report and were handed one in place of their
+    first parameter; search.sweep --job, the command line's example, among them."""
+    import inspect
+
+    from polyweave.kernel import describe as D
+    from polyweave.kernel.jobs.worker import check_args, takes_report
+
+    D.describe()
+    for registered in D._REGISTRY.values():
+        if registered.kind is None:
+            continue
+        reported = takes_report(registered.fn)
+        assert reported == ("report" in registered.injects), registered.name
+        if reported:
+            first = next(iter(inspect.signature(registered.fn).parameters))
+            assert first == "report", registered.name
+        named = {p["name"]: None for p in registered.parameters}
+        check_args(registered.fn, named, reported=reported)
+
+
+def test_a_target_named_by_path_still_takes_the_report():
+    from polyweave.kernel.jobs.worker import takes_report
+
+    def target(report, *, seconds=1):
+        return seconds
+
+    assert takes_report(target) is True
