@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
-  { block: "B", title: "Seeing the result cheaply", open: 2 },
+  { block: "B", title: "Seeing the result cheaply", open: 1 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 10 },
   { block: "E", title: "One world with the engine", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW707",
-    block: "B",
-    symptom: "An exported video's measurements cannot be bound to its exact file in one report",
-    why: "No pause budget holds the longest motionless stretch inside selected screen recordings, with source and cut times and a cursor policy.",
-    deps: [],
-  },
   {
     id: "PW708",
     block: "B",

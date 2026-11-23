@@ -4,32 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-### §PW707 Measure an existing video with revision-bound evidence
-
-Marketing VM39 needs a report bound to the exact exported MP4, without re-encoding it.
-`polyweave describe video.cut` only accepts a cut source declaration; `sound.measure`
-measures a sound and does not cover video streams, opening cadence or a decoded first
-frame. PW702 separately covers reference.frames returning a false black opening.
-
-Provide an operation accepting an existing MP4 that returns its SHA-256, size, duration,
-streams, integrated audio loudness and true peak, first decoded video frame, and opening
-presentation timestamps/frozen intervals. Bind every derived measurement and image to
-that same output hash, and refuse if the input changes during measurement. Keep measured
-cadence and repeated frames separate from any editorial verdict about shakiness or
-quality. Marketing will use existing videomaker.media tools and direct ffprobe/ffmpeg in
-videomaker/qa.py until this exists; scene counts remain project editorial metadata.
-
-Done when a completed video can be checked in one declared operation without rebuilding
-it, and its report cannot accidentally describe another revision.
-
-VM62 additionally needs longest motionless intervals inside selected screen recordings,
-with source and cut timestamps. `reference.events` reports flashes rather than pause
-budgets; its source needed inspection to establish that distinction. Expose sampled
-frame-change thresholds, sampling resolution, cursor-only motion policy and reviewed
-holds. Accept a continuous active drag; flag a frozen page inside an otherwise moving
-clip. Never trim automatically. Marketing's temporary measurement lives in
-video-maker/videomaker/pauses.py; retain hard duration limits for cards and photos.
-
 ### §PW708 Exact shot samples with editorial context
 
 VM41 in D:/Git/viglet/marketing needs one still per declared beat before a full render,

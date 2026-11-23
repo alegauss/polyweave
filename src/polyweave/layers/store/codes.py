@@ -49,7 +49,8 @@ CODES: dict[str, Code] = {
         means="a cut declares something it cannot hold",
         when="a key the cut does not take, a size not two even numbers, no clip, a "
         "clip with no run or length, a first clip fading in, a fade as long as a clip "
-        "it joins, a fade_out the whole teaser, music not there, or an out not an .mp4",
+        "it joins, a fade_out the whole teaser, music not there, or an out not an "
+        ".mp4; or a video.pauses clip with no start before its end (§PW707)",
         doors=("fix the key the refusal names",),
     ),
     "video.no-sequence": Code(

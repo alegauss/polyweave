@@ -111,7 +111,8 @@ CORE_TOOLS = 42_600
 #: 160,549 with capture.card (§PW700, 2026-11-19).
 #: 161,455 with stock.clip (§PW701, 2026-11-19).
 #: 162,155 with video.measure (§PW707, 2026-11-23).
-SESSION_BUDGET = 162_800
+#: 163,339 with video.pauses (§PW707, 2026-11-23).
+SESSION_BUDGET = 164_000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

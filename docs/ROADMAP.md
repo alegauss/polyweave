@@ -4,7 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-- ⏳ **PW707** (deps: —) **An exported video's measurements cannot be bound to its exact file in one report** — No pause budget holds the longest motionless stretch inside selected screen recordings, with source and cut times and a cursor policy. → §PW707
 - 📋 **PW708** (deps: —) **Frame contact sheets cannot pair exact shot midpoints with overlapping narration and editorial labels** — Video reviews need custom frame extraction and labelled HTML to catch mismatched shots before a full export. → §PW708
 
 ## Block C — The asset compiler
@@ -109,13 +108,6 @@
   Spinhold's runs write the event trace, the probe gives the declared pressure per
   second, level.trace lays the two together, and accept.check holds bounds a person set
   (alive never above N, a peak above the phase before), naming the rule broken.
-
-## Done when — PW707
-
-- **A screen recording's longest pause is held to a budget with its times** For declared
-  recordings inside a cut, the longest motionless stretch is reported with source and
-  cut times, the change threshold and sampling size stated, cursor-only motion counted
-  by a declared policy, a reviewed hold exempt; nothing is trimmed.
 
 ## Non-goals
 

@@ -1077,3 +1077,145 @@ def measure(
         "first_frame": provenance.relative(first, here) if first.is_file() else None,
         "opening": {"seconds": opening, "frame_times": shown},
     }
+
+
+#: How cursor-only motion is counted in a pause (§PW707): `moves` counts it as motion,
+#: `still` counts a frame whose change fits in a cursor-sized box as still.
+CURSORS = ("moves", "still")
+
+
+def _grey(path: Path, side: int) -> tuple[np.ndarray, float]:
+    """Every frame of a video in grey at `side` px across, and its frame rate."""
+    probe = subprocess.run(
+        [_ffmpeg("ffprobe"), "-v", "error", "-select_streams", "v:0", "-show_entries",
+         "stream=width,height,avg_frame_rate", "-of", "json", str(path)],
+        capture_output=True, text=True, check=False)
+    try:
+        picture = json.loads(probe.stdout)["streams"][0]
+    except (ValueError, KeyError, IndexError) as exc:
+        raise PolyweaveError("video.unreadable", f"{path.name} is not a video ffprobe "
+                             "reads", "name an exported video",
+                             detail=probe.stderr.strip()[:400]) from exc
+    top, _, bottom = picture["avg_frame_rate"].partition("/")
+    fps = float(top) / float(bottom or 1) if float(bottom or 1) else 0.0
+    small = (side, max(2, round(side * int(picture["height"]) / int(picture["width"])
+                                / 2) * 2))
+    raw = subprocess.run(
+        [_ffmpeg(), "-v", "error", "-i", str(path), "-vf",
+         f"scale={small[0]}:{small[1]},format=gray", "-f", "rawvideo", "-"],
+        capture_output=True, check=False).stdout
+    frames = np.frombuffer(raw, dtype=np.uint8)
+    frames = frames[: frames.size - frames.size % (small[0] * small[1])]
+    return frames.reshape(-1, small[1], small[0]).astype(np.float32) / 255.0, fps
+
+
+@operation("video.pauses")
+def pauses(
+    video: Annotated[str, Param("an exported video, under the project")],
+    clips: Annotated[
+        list, Param("the recordings in it: {name, start, end, source_start, holds}")
+    ],
+    *,
+    max_seconds: Annotated[
+        float, Param("the longest a recording may hold still", lo=0.0)
+    ] = 2.0,
+    threshold: Annotated[
+        float, Param("the share of pixels a frame must change to move", lo=0.0, hi=1.0)
+    ] = MOTION,
+    side: Annotated[int, Param("px across the frames are sampled at", lo=32)] = _SIDE,
+    cursor: Annotated[
+        str, Param("how cursor-only motion counts", choices=CURSORS)
+    ] = "moves",
+    cursor_px: Annotated[
+        int, Param("the cursor's size in the video's px, for cursor = still", lo=1)
+    ] = 48,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """The longest motionless stretch inside each screen recording of a cut (§PW707).
+
+    Each clip is a stretch of the video, `start` to `end` seconds, from a recording
+    that began `source_start` seconds into its source. A frame is still where no more
+    than `threshold` of its pixels, sampled `side` px across, changed past the step
+    `first_motion` uses; with `cursor = "still"`, one whose change fits a `cursor_px`
+    box counts still too, so a pointer alone does not hide a frozen page, and a drag
+    across the page still moves. A stretch wholly inside one of the clip's reviewed
+    `holds` (cut seconds) is exempt. Each clip answers its longest stretch in cut and
+    source seconds and whether it is within `max_seconds`. Nothing is trimmed.
+    """
+    from polyweave.kernel import provenance
+    from polyweave.kernel.config import load
+
+    here = load(root).root
+    path = here / video
+    if not path.is_file():
+        raise PolyweaveError("video.unreadable", f"there is no video at {video}",
+                             "name the exported video under the project", given=video)
+    digest, _ = provenance.sha256_of(path)
+    frames, fps = _grey(path, side)
+    height, width = frames.shape[1:] if frames.size else (0, 0)
+    moved = np.abs(np.diff(frames, axis=0)) > _STEP if len(frames) > 1 else (
+        np.zeros((0, height, width), dtype=bool))
+    scale = side / max(1, _probe_width(path))
+    reach = max(1, round(cursor_px * scale))
+    still = []
+    for one in moved:
+        share = float(one.mean())
+        if share <= threshold:
+            still.append(True)
+            continue
+        if cursor == "still":
+            rows, columns = one.nonzero()
+            still.append(bool(rows.size) and rows.max() - rows.min() < reach
+                         and columns.max() - columns.min() < reach)
+            continue
+        still.append(False)
+    answered = []
+    for n, clip in enumerate(clips):
+        if not isinstance(clip, dict) or not all(
+                isinstance(clip.get(k), int | float) for k in ("start", "end")) or (
+                clip["end"] <= clip["start"]):
+            raise PolyweaveError(
+                "video.bad-cut", f"clip {n} is {clip!r}",
+                "give each clip start and end seconds into the video, end after start",
+                at=f"clips[{n}]")
+        first = int(clip["start"] * fps)
+        last = min(int(clip["end"] * fps), len(still))
+        holds = [tuple(h) for h in clip.get("holds") or ()]
+        best = (0, None)
+        # Runs of still steps: steps a..b-1 still means frames a..b do not move, held
+        # from a's time to b's.
+        runs, at = [], None
+        for i in range(first, last + 1):
+            if i < last and still[i]:
+                at = i if at is None else at
+            elif at is not None:
+                runs.append((at, i))
+                at = None
+        for a, b in runs:
+            begin_s, end_s = a / fps, b / fps
+            exempt = any(h[0] <= begin_s and end_s <= h[1] for h in holds)
+            if not exempt and b - a > best[0]:
+                best = (b - a, (begin_s, end_s))
+        offset = float(clip.get("source_start", 0.0)) - float(clip["start"])
+        longest = round(best[0] / fps, 3) if fps else 0.0
+        answered.append({
+            "name": clip.get("name", f"clip {n}"), "longest": longest,
+            **({"cut": [round(best[1][0], 3), round(best[1][1], 3)],
+                "source": [round(best[1][0] + offset, 3),
+                           round(best[1][1] + offset, 3)]} if best[1] else {}),
+            "within": longest <= max_seconds,
+        })
+    return {"video": video, "sha256": digest, "threshold": threshold, "side": side,
+            "cursor": cursor, "max_seconds": max_seconds, "clips": answered,
+            "passed": all(one["within"] for one in answered)}
+
+
+def _probe_width(path: Path) -> int:
+    probe = subprocess.run(
+        [_ffmpeg("ffprobe"), "-v", "error", "-select_streams", "v:0", "-show_entries",
+         "stream=width", "-of", "csv=p=0", str(path)],
+        capture_output=True, text=True, check=False)
+    try:
+        return int(probe.stdout.strip().split(",")[0])
+    except ValueError:
+        return _SIDE

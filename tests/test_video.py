@@ -418,3 +418,31 @@ def test_a_video_that_changes_while_it_is_measured_is_refused(tmp_path, monkeypa
     with pytest.raises(PolyweaveError) as refused:
         video.measure("short.mp4", root=str(here))
     assert refused.value.code == "video.changed"
+
+
+@needs_ffmpeg
+def test_a_frozen_page_inside_a_recording_is_its_longest_pause(tmp_path):
+    """§PW707: a moving clip, then a page held still, then moving again."""
+    import subprocess
+
+    here = _project(tmp_path)
+    graph = ("testsrc=size=160x90:rate=10:duration=1[a];"
+             "color=c=white:size=160x90:rate=10:duration=2[b];"
+             "testsrc=size=160x90:rate=10:duration=1[c];"
+             "[a][b][c]concat=n=3:v=1:a=0,format=yuv420p[v]")
+    subprocess.run([shutil.which("ffmpeg"), "-v", "error", "-y", "-filter_complex",
+                    graph, "-map", "[v]", str(here / "rec.mp4")], check=True)
+    said = video.pauses("rec.mp4", [{"name": "admin", "start": 0, "end": 4,
+                                     "source_start": 10}],
+                        max_seconds=1.5, root=str(here))
+    [clip] = said["clips"]
+    assert clip["longest"] == pytest.approx(2.0, abs=0.25)
+    assert clip["cut"][0] == pytest.approx(1.0, abs=0.15)
+    assert clip["source"][0] == pytest.approx(11.0, abs=0.15)
+    assert clip["within"] is False and said["passed"] is False
+    held = video.pauses("rec.mp4", [{"start": 0, "end": 4, "holds": [[0.8, 3.2]]}],
+                        max_seconds=1.5, root=str(here))
+    assert held["clips"][0]["within"] is True
+    with pytest.raises(PolyweaveError) as refused:
+        video.pauses("rec.mp4", [{"start": 3, "end": 1}], root=str(here))
+    assert refused.value.code == "video.bad-cut"

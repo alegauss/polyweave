@@ -2908,6 +2908,26 @@ export interface VideoMeasureArgs {
   root?: string
 }
 
+/** The longest motionless stretch inside each screen recording of a cut (§PW707). */
+export interface VideoPausesArgs {
+  /** an exported video, under the project */
+  video: string
+  /** the recordings in it: {name, start, end, source_start, holds} */
+  clips: unknown[]
+  /** the longest a recording may hold still; from 0 to …; default 2.0 */
+  max_seconds?: number
+  /** the share of pixels a frame must change to move; from 0 to 1; default 0.002 */
+  threshold?: number
+  /** px across the frames are sampled at; from 32 to …; default 160 */
+  side?: number
+  /** how cursor-only motion counts; default "moves" */
+  cursor?: "moves" | "still"
+  /** the cursor's size in the video's px, for cursor = still; from 1 to …; default 48 */
+  cursor_px?: number
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Which burned-in lines reach outside the safe box or under a platform's controls. */
 export interface VideoSafeAreaArgs {
   /** the .ass file burned into the video */
@@ -3265,6 +3285,7 @@ export interface Operations {
   "video.buy": VideoBuyArgs
   "video.cut": VideoCutArgs
   "video.measure": VideoMeasureArgs
+  "video.pauses": VideoPausesArgs
   "video.safe_area": VideoSafeAreaArgs
   "voice.choose": VoiceChooseArgs
   "voice.design": VoiceDesignArgs
@@ -3507,6 +3528,7 @@ export const OPERATIONS = [
   "video.buy",
   "video.cut",
   "video.measure",
+  "video.pauses",
   "video.safe_area",
   "voice.choose",
   "voice.design",

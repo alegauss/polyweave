@@ -223,7 +223,8 @@ from polyweave.surface.capabilities import capabilities
 #: 2026-11-19).
 #: 186,089 with video.measure, one report bound to a video's bytes (§PW707,
 #: 2026-11-23).
-DESCRIBE = 186_700
+#: 187,439 with video.pauses (§PW707, 2026-11-23).
+DESCRIBE = 188_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -400,7 +401,8 @@ DESCRIBE = 186_700
 #: 201,750 with capture.card and web.bad-card (§PW700, 2026-11-19).
 #: 202,909 with stock.clip and its two codes (§PW701, 2026-11-19).
 #: 203,790 with video.measure and video.changed (§PW707, 2026-11-23).
-CAPABILITIES = 204_400
+#: 205,140 with video.pauses (§PW707, 2026-11-23).
+CAPABILITIES = 205_800
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -485,7 +487,8 @@ HELP_VERB = 5_100
 #: 36,295 with video.buy (§PW692, 2026-11-19).
 #: 36,776 with video.safe_area, store.thumbnail and store.thumbnails (§PW698, §PW699,
 #: 2026-11-19).
-HELP_TOP = 37_300
+#: 37,393 with video.measure and video.pauses (§PW707, 2026-11-23).
+HELP_TOP = 37_900
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

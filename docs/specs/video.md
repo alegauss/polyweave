@@ -328,3 +328,16 @@ presentation time of every video frame in the first `opening` seconds, as ffprob
 them. Nothing is re-encoded. The file is hashed again at the end, and one whose hash
 moved while it was read is `video.changed`, so a report never describes two revisions.
 Cadence and stillness are measured; whether they are wrong is the editor's call.
+
+**A recording's pauses are held to a budget** (§PW707). `video.pauses(video, clips,
+max_seconds=2, threshold=, side=160, cursor="moves", cursor_px=48)` decodes the video
+once in grey `side` px across. Each clip is `{name, start, end, source_start, holds}`:
+a stretch of the video from a screen recording that began `source_start` seconds into
+its source, with reviewed `holds` in cut seconds. A frame is still where no more than
+`threshold` of its pixels (`first_motion`'s 0.2% unless set) changed past the 6% step;
+with `cursor = "still"`, one whose change fits a `cursor_px` box (scaled to `side`) is
+still too, so a pointer alone does not hide a frozen page, while a drag across the page
+moves. Each clip answers its `longest` still stretch with its `cut` and `source`
+seconds and `within`, against `max_seconds`; a stretch wholly inside a hold is exempt.
+The answer names the video's `sha256`, the threshold, the side and the cursor policy.
+Nothing is trimmed. A clip without a `start` before its `end` is `video.bad-cut`.

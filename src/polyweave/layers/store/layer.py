@@ -33,7 +33,8 @@ LAYER = Layer(
     # 8,102 with store.thumbnails, the passing variants laid for a person (§PW699).
     # 9,242 with capture.card, an HTML card rendered to a still (§PW700).
     # 10,081 with video.measure, one report bound to a video's bytes (§PW707).
-    tools=10_600,
+    # 11,263 with video.pauses, a recording's longest pause against a budget (§PW707).
+    tools=11_800,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),

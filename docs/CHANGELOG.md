@@ -35,7 +35,7 @@
 - ✅ **PW161** **a look digest's palette is one mean colour, so restyling the small slot of a two-material asset may not move it** — A bake paints each slot flat in a one-sample pass at its rig, so the look palette is a colour per slot and a recoloured rim moves it (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW292** **no measure says how tall a silhouette is for its width, so a spec cannot hold an enemy tall enough to hit** — silhouette_aspect says how tall a subject stands; Starship's enemy spec holds it at 0.6, refusing four flat Lancers and passing the Mote (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW654** **no operation enlarges a corner of a capture, so a HUD icon a few pixels wide cannot be judged** — compose.sheet takes a tile's box, in pixels, shares or a capture's named region, enlarged pixel for pixel at the scale asked (design recorded in `docs/specs/engine.md`).
-- ✅ **PW707 (the bound report)** **An exported video's measurements cannot be bound to its exact file in one report** — video.measure answers an exported video's hash, streams, sound, stillness, first frame and opening frame times, refusing a file that changed meanwhile.
+- ✅ **PW707** **An exported video's measurements cannot be bound to its exact file in one report** — video.pauses holds each declared recording's longest still stretch to a budget, with cut and source times, a cursor policy and reviewed holds (design recorded in `docs/specs/video.md`).
 
 ## Block C — The asset compiler
 
