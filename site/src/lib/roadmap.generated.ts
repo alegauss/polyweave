@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 2 },
+  { block: "R", title: "Levels measured before a person plays them", open: 1 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -57,13 +57,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "level.trace reads traces already; Spinhold RK313 writes them from real play, then the declared curve and a spec over both follow.",
-    deps: [],
-  },
-  {
-    id: "PW728",
-    block: "R",
-    symptom: "A level search re-probes its best level at the end, though that level was already measured",
-    why: "Leaving the answer at out costs another 50 seeded games in Godot for a figure already in the trace.",
     deps: [],
   },
 ];

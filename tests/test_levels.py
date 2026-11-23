@@ -413,3 +413,26 @@ def test_a_level_past_the_files_is_probed_by_its_number_off_the_curve(
     with pytest.raises(PolyweaveError) as refused:
         levels.probe(numbers=[0], root=str(root))
     assert refused.value.code == "level.bad-set"
+
+def test_a_search_s_best_made_again_is_not_played_again(tmp_path, monkeypatch):
+    """§PW728: a level search ends by making its best once more, so out holds it, and
+    each time that played 50 seeded games in Godot for a figure already measured."""
+    root = _project(tmp_path, DECLARED)
+    (root / "fixed.json").write_text('{"moves": 24}', encoding="utf-8")
+    played = []
+
+    def probed(candidate, root="."):
+        level = json.loads((tmp_path / candidate).read_text(encoding="utf-8"))
+        played.append(level["moves"])
+        written = tmp_path / candidate.replace(".json", ".probe.json")
+        written.write_text(json.dumps({"moves": level["moves"]}), encoding="utf-8")
+        provenance.sidecar(written, tmp_path).write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr(levels, "probe", probed)
+    monkeypatch.setattr(levels, "_PROBED", {})
+    for moves in (21, 23, 21):
+        said = levels.sample(None, out="work/c.json", level="fixed.json",
+                             root=str(root), moves=moves)
+    assert played == [21, 23] and said["cached"] is True
+    kept = json.loads((root / "work" / "c.probe.json").read_text(encoding="utf-8"))
+    assert kept == {"moves": 21}

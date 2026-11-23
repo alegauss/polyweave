@@ -87,20 +87,6 @@ What starship still needs from polyweave:
 Until it lands, starship keeps the per-second pass in `dev/pressure.gd`, named against
 this line.
 
-### §PW728 A level search's best kept, not played again
-
-Split from PW723 (2026-11-23). A search ends by making its best sample again, so the
-file at `out` is the answer and not whichever sample came last. A render serves that
-from its cache at no cost. A level has no cache: `levels.sample` writes the candidate
-and probes it, so a level search whose best was not its last sample plays its best level
-again, 50 seeded games in Godot for a figure already in the trace.
-
-The level producer should keep each candidate it probed, by the digest of the level it
-wrote, with its `.probe.json`, so making a sample again whose level is byte for byte one
-already probed copies the kept candidate and its probe record to `out` and plays
-nothing. Done when a level search whose best is an earlier sample ends with `out`
-holding that level and its probe, and the probe ran once per distinct candidate.
-
 ## Block S — Playing the game, not only rendering it
 
 ## Block T — Adopting polyweave in a project

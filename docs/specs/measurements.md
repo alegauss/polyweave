@@ -522,7 +522,9 @@ fixed={"level": "data/levels/level_020.json"}, out="work/level_020.candidate.jso
 turns each `[search.<param>]` the spec names, a dotted path of a key the level holds
 (`moves`, `goals.0.count`). A key the fixed level holds as a whole number is searched
 with `step = 1` where its `[search.<param>]` declares no step, so every sample is whole
-and none is a value already probed (§PW723). Each candidate is the JSON level
+and none is a value already probed (§PW723). A candidate the search already probed
+is not played again in the same process: a search ends by making its best once more, so
+`out` holds it, and the kept probe and its record are put back in place (§PW728). Each candidate is the JSON level
 with its values put in, written at `out`, compiled with `level.compile` where `[levels]
 schema` is declared, and probed with `level.probe`; the spec is checked against its
 record, all locally at no cost.

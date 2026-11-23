@@ -30,6 +30,7 @@ rather than found by a player.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -406,10 +407,32 @@ def sample(report: Any, *, out: str, rung: Any = None, root: str = ".",
     candidate = provenance.relative(target, here)
     # Held to the schema and compiled where the project declares one; with none, the
     # candidate is the file the game reads.
-    if load(here).table("levels").get("schema"):
+    table = load(here).table("levels")
+    if table.get("schema"):
         candidate = compile_level(candidate, root=str(here))["compiled"]
+    # A candidate already probed in this search is not played again (§PW728): a search
+    # ends by making its best once more, so `out` holds the answer, and a level has no
+    # render cache to serve it from. Kept for this process only, so a change to the game
+    # between two searches is always played.
+    played = here / candidate
+    measured = played.with_name(played.stem + ".probe.json")
+    key = hashlib.sha256(json.dumps(
+        [candidate, played.read_bytes().hex(), table], sort_keys=True,
+        default=str).encode()).hexdigest()
+    kept = _PROBED.get(key)
+    if kept is not None:
+        measured.write_bytes(kept[0])
+        provenance.sidecar(measured, here).write_bytes(kept[1])
+        return {"artefact": candidate, "values": values, "cached": True}
     probe(candidate, root=str(here))
-    return {"artefact": candidate, "values": values}
+    _PROBED[key] = (measured.read_bytes(),
+                    provenance.sidecar(measured, here).read_bytes())
+    return {"artefact": candidate, "values": values, "cached": False}
+
+
+#: Each candidate a search probed in this process, by its path, bytes and the
+#: [levels] table, to the probe it wrote and that probe's record (§PW728).
+_PROBED: dict[str, tuple[bytes, bytes]] = {}
 
 
 @operation("level.probe", kind="capture")

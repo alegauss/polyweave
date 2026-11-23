@@ -596,6 +596,7 @@
 - ✅ **PW722** **level.curve refuses a pair whose difference equals its step, by floating-point rounding** — level.curve compares step, dip, region and rise within 1e-9, so a pair exactly on its bound holds it, as Cottony's 0.94 and 1.0 at a step of 0.06 now do.
 - ✅ **PW723** **A level search samples a fraction for an integer key and probes a value it already measured** — A level search steps each key the fixed level holds whole by 1, so no sample is 22.5 moves and none is a value already probed; the producer answers the steps.
 - ✅ **PW724** **level.probe refuses a level that has no file, so a game's fallback curve past its shipped levels cannot be probed** — level.probe numbers= plays levels no file holds by passing number=<n>, recording each against [levels] curve; Cottony's level 25 probed off its curve with no file.
+- ✅ **PW728** **A level search re-probes its best level at the end, though that level was already measured** — A level candidate already probed in a search is not played again: its kept probe and record are put back, so the best made once more costs no Godot games.
 
 ## Block S — Playing the game, not only rendering it
 
