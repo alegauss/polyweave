@@ -593,3 +593,100 @@ def test_a_review_is_named_by_the_clip_it_shows(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         video.cut("two.cut.toml", around="voice[1]", root=str(here))
     assert refused.value.code == "video.bad-cut"
+
+
+# -- fetched media held to the ranges a person accepted (§PW714) ----------------------
+
+
+def _library(here: Path, body: str) -> Path:
+    """A library for short.mp4 with `body` appended as its ranges."""
+    from polyweave.layers.store import library
+
+    library.library("media.library.toml", add="short.mp4", root=str(here))
+    where = here / "media.library.toml"
+    text = where.read_text(encoding="utf-8").replace(
+        'rights = "unreviewed"', 'rights = "cleared"\nrights_by = "Ana"')
+    where.write_text(text + body, encoding="utf-8")
+    return where
+
+
+_ACCEPTED = ('\n[[source.range]]\nstart = 0.0\nend = 2.0\nverdict = "accepted"\n'
+             'reason = "the test card, sharp"\nby = "Ana"\non = 2026-11-23\n')
+_REJECTED = ('\n[[source.range]]\nstart = 2.0\nend = 3.0\nverdict = "rejected"\n'
+             'reason = "a red frame, nothing in it"\nby = "Ana"\non = 2026-11-23\n')
+
+
+@needs_ffmpeg
+def test_a_file_is_added_unreviewed_and_added_again_answers_its_decisions(tmp_path):
+    from polyweave.layers.store import library
+
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    said = library.library("media.library.toml", add="short.mp4", root=str(here))
+    assert said["added"]["rights"] == "unreviewed"
+    assert said["sources"][0]["usable"] is False
+    _library(here, _ACCEPTED + _REJECTED)
+    again = library.library("media.library.toml", add="short.mp4", root=str(here))
+    assert "added" not in again
+    assert again["held"]["rejected"][0]["reason"] == "a red frame, nothing in it"
+    assert again["held"]["usable"] is True
+    assert (here / "media.library.toml").read_text(encoding="utf-8").count(
+        "[[source]]") == 1
+
+
+@needs_ffmpeg
+def test_a_range_nobody_decided_is_refused(tmp_path):
+    from polyweave.layers.store import library
+
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    _library(here, '\n[[source.range]]\nstart = 0.0\nend = 1.0\nverdict = "accepted"\n')
+    with pytest.raises(PolyweaveError) as raised:
+        library.library("media.library.toml", root=str(here))
+    assert raised.value.code == "video.bad-library"
+
+
+@needs_ffmpeg
+def test_a_cut_shows_only_accepted_ranges_and_names_who_accepted_them(tmp_path):
+    from polyweave.kernel import provenance
+
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    _library(here, _ACCEPTED + _REJECTED)
+    head = '[video]\nsize = [320, 180]\nlibrary = "media.library.toml"\n\n'
+    (here / "ok.cut.toml").write_text(
+        head + '[[clip]]\nvideo = "short.mp4"\nstart = 0.5\nlength = 1.0\n',
+        encoding="utf-8")
+    said = video.cut("ok.cut.toml", root=str(here))
+    record = provenance.read(said["file"], root=str(here))
+    assert record["params"]["approved"][0]["by"] == "Ana"
+    assert record["params"]["approved"][0]["range"] == [0.0, 2.0]
+    (here / "bad.cut.toml").write_text(
+        head + '[[clip]]\nvideo = "short.mp4"\nstart = 1.5\nlength = 1.0\n\n'
+        '[[clip]]\nvideo = "short.mp4"\nstart = 0.0\nlength = 1.0\n',
+        encoding="utf-8")
+    with pytest.raises(PolyweaveError) as raised:
+        video.cut("bad.cut.toml", root=str(here))
+    assert raised.value.code == "video.unapproved"
+    assert "rejected" in raised.value.message
+    found = video.check("bad.cut.toml", root=str(here))
+    assert [one["at"] for one in found["findings"]] == ["clip[1]"]
+
+
+@needs_ffmpeg
+def test_a_changed_or_uncatalogued_file_is_refused_by_a_cut(tmp_path):
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    _library(here, _ACCEPTED)
+    (here / "other.mp4").write_bytes((here / "short.mp4").read_bytes())
+    (here / "x.cut.toml").write_text(
+        '[video]\nsize = [320, 180]\nlibrary = "media.library.toml"\n\n'
+        '[[clip]]\nvideo = "other.mp4"\nstart = 0.0\nlength = 1.0\n\n'
+        '[[clip]]\nvideo = "short.mp4"\nstart = 0.0\nlength = 1.0\n',
+        encoding="utf-8")
+    with (here / "short.mp4").open("ab") as grown:
+        grown.write(b"\0")
+    found = video.check("x.cut.toml", root=str(here))
+    codes = {one["at"]: one["code"] for one in found["findings"]}
+    assert codes == {"clip[1]": "video.unapproved",
+                     "clip[2]": "video.library-changed"}

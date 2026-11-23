@@ -53,13 +53,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW714",
-    block: "D",
-    symptom: "Fetched media has no reusable catalogue of approved and rejected source ranges",
-    why: "Rejected or misidentified footage is rediscovered, and selected shots require manual provenance copying.",
-    deps: [],
-  },
-  {
     id: "PW715",
     block: "D",
     symptom: "A long video cut exposes no stage progress while rendering or waiting",
@@ -113,6 +106,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "A review window of a cut decodes and filters every clip before it, so a late window costs nearly a whole render",
     why: "Reviewing the end of a long cut is as slow as exporting it, which is the cost PW713 set out to remove.",
+    deps: [],
+  },
+  {
+    id: "PW726",
+    block: "D",
+    symptom: "stock.find answers a hit a media library already rejected as if it were a new candidate",
+    why: "A clip a person turned down is fetched and reviewed again before the library's refusal surfaces.",
     deps: [],
   },
   {

@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW714** (deps: —) **Fetched media has no reusable catalogue of approved and rejected source ranges** — Rejected or misidentified footage is rediscovered, and selected shots require manual provenance copying. → §PW714
 - 📋 **PW715** (deps: —) **A long video cut exposes no stage progress while rendering or waiting** — Callers poll processes and output timestamps to distinguish slow work from a failed stage. → §PW715
 - 📋 **PW716** (deps: —) **Narrated claims cannot bind evidence, dates and human review to their spoken anchors** — Revisions repeat research and can mistake illustrative footage or stale statistics for evidence. → §PW716
 - 📋 **PW717** (deps: —) **voice.lines accepts a speed for eleven_v3, spends, and records it in the take's provenance although the model ignores it** — A narration paid for at a pace it never got looks current, and the recorded setting marks every other take stale for nothing. → §PW717
@@ -17,6 +16,7 @@
 - 📋 **PW720** (deps: —) **voice.lines cannot buy a current take again when its words, voice and model are unchanged** — A take whose accent or delivery drifted can only be re-rolled by rewording a line that was already right or moving files by hand. → §PW720
 - 📋 **PW721** (deps: —) (from: urdido) **capture.web cannot scroll to a sentence the page prints or draw a highlight over it** — A video that quotes a published page films it with a Playwright script of its own, outside the visit's record. → §PW721
 - 📋 **PW725** (deps: —) **A review window of a cut decodes and filters every clip before it, so a late window costs nearly a whole render** — Reviewing the end of a long cut is as slow as exporting it, which is the cost PW713 set out to remove. → §PW725
+- 📋 **PW726** (deps: —) **stock.find answers a hit a media library already rejected as if it were a new candidate** — A clip a person turned down is fetched and reviewed again before the library's refusal surfaces. → §PW726
 
 ## Block E — One world with the engine
 

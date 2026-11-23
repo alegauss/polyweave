@@ -8,26 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW714 Reviewed media ranges carried into an authored cut
-
-In viglet/marketing VM58, stock.fetch records downloads and reference.register protects
-a source hash, while reference.frames produces previews. None holds an editorial
-catalogue of accepted/rejected source ranges, reasons and explicitly confirmed
-people/events that can feed a storyboard. WordPress footage was rediscovered despite
-prior rejection for blur, unrelated text or a mistaken identity. A filename and public
-availability cannot establish identity or reuse rights.
-
-Keep candidates with source metadata, original provenance, media measurements, hash,
-preview references and explicit rights status. Record human-authored range decisions,
-reviewer/date/reason and identity/event tags. Selection must inherit the recorded
-provenance and remain inside an accepted range with reviewed rights; changed media must
-invalidate approval. Preserve rejected ranges so another search does not silently
-rehabilitate them. Reuse stock.fetch, reference.register, reference.frames and
-provenance.credits instead of duplicating acquisition or sampling. Marketing's adapter
-will live in video-maker/library.py. PW701 separately owns YouTube ingestion. This
-records declared human decisions and never accepts an image or invents a licence on an
-agent's judgment.
-
 ### §PW715 Report video build stages as they run
 
 Marketing VM63 repeatedly polls a running `videomaker build` and file timestamps because
@@ -191,6 +171,23 @@ start, music `music_from` plus it, a voice starting before the window entered wi
 input seek, and subtitles shifted. Done when a window's sampled frames and audio match
 the same seconds of a whole cut within the encoder's noise, and it renders in time
 proportional to the window, not to where it sits.
+
+### §PW726 A search that knows what a library rejected
+
+Split from PW714 (2026-11-23). `video.library` keeps the ranges a person rejected, and
+adding a file it holds answers that entry rather than a fresh one, and a cut refuses a
+clip over a rejected range. But `stock.find` answers hits by service and id with no look
+at any library, so the agent reading the search still meets a clip a person turned down
+for blur or a mistaken identity as a new candidate, and spends a fetch and a review to
+learn it again.
+
+A library source fetched by `stock.fetch` has a record whose `task_id` is
+`<service>:<id>`. `stock.find` given `library=<path>` (or the libraries a project
+declares) marks each hit the library holds with its rights and its rejected and accepted
+ranges, and a hit whose every range is rejected or whose rights are refused as
+`rejected` with the first reason. It never drops the hit: hiding it is a decision the
+person did not make. Done when a hit a library rejected is answered marked, with who
+rejected it and why, and an uncatalogued one is answered as before.
 
 ## Block E — One world with the engine
 

@@ -2952,6 +2952,16 @@ export interface VideoLabelsArgs {
   footage?: unknown[]
 }
 
+/** Read a library of fetched media and the ranges people accepted or rejected, or add a file to it as an unreviewed candidate (§PW714). */
+export interface VideoLibraryArgs {
+  /** the *.library.toml, as a path under the project */
+  path: string
+  /** a fetched file to add as an unreviewed candidate */
+  add?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** One report on an exported video, bound to its exact bytes (§PW707). */
 export interface VideoMeasureArgs {
   /** an exported video, under the project */
@@ -3357,6 +3367,7 @@ export interface Operations {
   "video.check": VideoCheckArgs
   "video.cut": VideoCutArgs
   "video.labels": VideoLabelsArgs
+  "video.library": VideoLibraryArgs
   "video.measure": VideoMeasureArgs
   "video.pauses": VideoPausesArgs
   "video.safe_area": VideoSafeAreaArgs
@@ -3606,6 +3617,7 @@ export const OPERATIONS = [
   "video.check",
   "video.cut",
   "video.labels",
+  "video.library",
   "video.measure",
   "video.pauses",
   "video.safe_area",

@@ -95,6 +95,7 @@
 - ✅ **PW712** **A cut has no read-only complete preflight before expensive rendering** — video.check holds a cut's reuse of one source's bytes to declared overlap, screen, adjacency and gap limits, naming the clips, with reasoned exceptions (design recorded in `docs/specs/video.md`).
 - ✅ **PW696** **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — picture.faults reads Shio's 24 photos with a local qwen2.5vl, sending them small and recovering a dropped answer, and flags a pseudo-text control (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW713** **A cut cannot render one selected interval with its production narration and callouts** — video.cut renders a review of one window, by seconds or named around="clip[n]|voice[n]", seeking the cut's own graph so the mix and cues stay exact.
+- ✅ **PW714** **Fetched media has no reusable catalogue of approved and rejected source ranges** — video.library keeps fetched files with the ranges people accepted or rejected, and a cut naming [video] library shows a clip only inside an accepted, cleared range.
 
 ## Block E — One world with the engine
 

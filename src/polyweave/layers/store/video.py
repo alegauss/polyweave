@@ -15,6 +15,7 @@ music_from = 0.0             # seconds into it the teaser starts
 music_gain = 0.0             # dB
 clip_audio = false           # each clip's own audio.wav mixed in under the music
 fade_out = 1.0               # seconds the end fades to black and silence
+library = "footage/media.library.toml"  # file clips only from accepted ranges (§PW714)
 
 [[clip]]
 from = ".polyweave/teaser/fight"   # a folder capture.movie wrote
@@ -97,6 +98,7 @@ _VIDEO_KEYS = {
     "clip_audio",
     "fade_out",
     "music_loop",
+    "library",
 }
 _TRACK_KEYS = {"language", "title"}
 _VOICE_KEYS = {"file", "at", "track", "gain"}
@@ -212,7 +214,15 @@ def read(source: Path, here: Path) -> dict:
             given="fade_out",
         )
     tracks, voices, subtitles = _spoken(declared, here, total)
+    shown = []
+    if video.get("library"):
+        # Each file clip held to a range a person accepted (§PW714).
+        from polyweave.layers.store.library import approved
+
+        shown = approved(here / str(video["library"]), here, clips)
     return {
+        "library": video.get("library"),
+        "approved": shown,
         "out": video.get("out"),
         "size": size,
         "fps": fps,
@@ -987,6 +997,8 @@ def cut(
                 "fps": declared["fps"],
                 "clips": len(declared["clips"]),
                 **({"interval": list(window)} if window is not None else {}),
+                **({"library": declared["library"], "approved": declared["approved"]}
+                   if declared["library"] else {}),
             },
             measurements={k: v for k, v in found.items() if k in VIDEOS},
             root=here,
@@ -1363,7 +1375,8 @@ def check(
     clips: list[dict] = []
     for index, clip in enumerate(declared.get("clip", [])):
         try:
-            clips.append(_clip(clip, index, here, fps, clips, fetch=False))
+            clips.append({**_clip(clip, index, here, fps, clips, fetch=False),
+                          "at": index + 1})
         except PolyweaveError as error:
             failed(error, f"clip[{index + 1}]")
     if not declared.get("clip"):
@@ -1379,9 +1392,28 @@ def check(
         failed(error, "voice")
     for error in _repeated(declared.get("repetition") or {}, clips, here):
         failed(error, "repetition")
+    if video.get("library"):
+        _held(here / str(video["library"]), clips, here, failed)
     return {"source": source, "clips": len(declared.get("clip", [])),
             "seconds": round(total, 3), "findings": findings,
             "passed": not findings}
+
+
+def _held(library: Path, clips: list[dict], here: Path, failed: Any) -> None:
+    """Each file clip held to the library's accepted ranges, one finding a clip
+    (§PW714). `clips` holds only those that read, each with its place as `at`."""
+    from polyweave.layers.store.library import approved_clip, held
+
+    try:
+        sources = held(library, here)
+    except PolyweaveError as error:
+        failed(error, "video")
+        return
+    for clip in clips:
+        try:
+            approved_clip(sources, clip["at"], clip, here)
+        except PolyweaveError as error:
+            failed(error, f"clip[{clip['at']}]")
 
 
 def _repeated(limits: dict, clips: list[dict], here: Path) -> list[PolyweaveError]:

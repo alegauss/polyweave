@@ -13,6 +13,7 @@ LAYER = Layer(
         "polyweave.layers.store.footage",
         "polyweave.layers.store.instance",
         "polyweave.layers.store.labels",
+        "polyweave.layers.store.library",
         "polyweave.layers.store.icons",
         "polyweave.layers.store.safe",
         "polyweave.layers.store.sheet",
@@ -42,7 +43,8 @@ LAYER = Layer(
     # 12,908 with capture.instance, the product instance a visit films (§PW710).
     # 13,717 with store.description, a bounded description from credits (§PW711).
     # 14,493 with video.cut's interval and around (§PW713).
-    tools=15_000,
+    # 15,081 with video.library, fetched media and the ranges people decided (§PW714).
+    tools=15_900,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),
@@ -69,6 +71,14 @@ LAYER = Layer(
             "internal", "an instance's containers and images, for capture.web"),
         "polyweave.layers.store.safe:read": (
             "internal", "an .ass file's styles and lines; video.safe_area"),
+        "polyweave.layers.store.library:read": (
+            "internal", "a library's sources and ranges, checked; video.library"),
+        "polyweave.layers.store.library:approved": (
+            "internal", "the accepted range of each clip, for video.cut"),
+        "polyweave.layers.store.library:approved_clip": (
+            "internal", "one clip's accepted range, for video.check"),
+        "polyweave.layers.store.library:held": (
+            "internal", "a library's sources by file, for video.check"),
         "polyweave.layers.store.video:predicate": (
             "internal", "a video predicate, for accept.check"),
     },

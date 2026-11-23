@@ -155,6 +155,25 @@ CODES: dict[str, Code] = {
         "(§PW712)",
         doors=("fetch it with stock.fetch, or let the build fetch it",),
     ),
+    "video.bad-library": Code(
+        means="a library of fetched media holds something it cannot keep",
+        when="a key it does not take, a source with no file or sha256, rights not "
+        "unreviewed, cleared or refused, or set with no rights_by, or a range with no "
+        "verdict, reason, by or on, or ending before it starts (§PW714)",
+        doors=("fix the source or range the refusal names",),
+    ),
+    "video.unapproved": Code(
+        means="a cut shows a file no person accepted for it",
+        when="[video] library set and a clip's file not in it, its rights not cleared, "
+        "its stretch outside every accepted range or touching a rejected one (§PW714)",
+        doors=("fit the clip inside an accepted range", "choose another source",
+               "ask a person to review the file"),
+    ),
+    "video.library-changed": Code(
+        means="a catalogued file is not the one its decisions were made on",
+        when="a cut shows a library file that is gone or whose SHA-256 moved (§PW714)",
+        doors=("have a person review the new file and add it afresh",),
+    ),
     "video.changed": Code(
         means="a video changed while video.measure read it",
         when="its SHA-256 at the end differs from the one at the start (§PW707)",

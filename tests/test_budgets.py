@@ -228,7 +228,8 @@ from polyweave.surface.capabilities import capabilities
 #: 189,289 with video.labels and capture.instance (§PW709, §PW710, 2026-11-23).
 #: 190,252 with store.description (§PW711, 2026-11-23).
 #: 191,172 with video.check and picture.faults (§PW712, §PW696, 2026-11-23).
-DESCRIBE = 191_800
+#: 192,249 with video.cut's around and video.library (§PW713, §PW714, 2026-11-23).
+DESCRIBE = 193_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -412,7 +413,8 @@ DESCRIBE = 191_800
 #: 208,126 with store.description and its two codes (§PW711, 2026-11-23).
 #: 209,132 with video.check, picture.faults and their codes (§PW712, §PW696,
 #: 2026-11-23).
-CAPABILITIES = 209_800
+#: 210,275 with video.library and its three codes (§PW714, 2026-11-23).
+CAPABILITIES = 211_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

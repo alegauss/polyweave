@@ -450,3 +450,23 @@ window is still decoded on the way to it. `around` names the window by what is i
 place of seconds: `clip[n]` is the n-th clip's seconds in the cut (from where its fade
 begins), `voice[n]` the n-th voice line's, from its `at` for as long as its file runs; a
 place the cut does not have is `video.bad-cut`.
+
+## Fetched media and the ranges a person accepted (§PW714)
+
+A `*.library.toml` holds one `[[source]]` per fetched file: `file`, its `sha256`,
+`seconds`, and the `licence`, `page` and `author` its provenance record names, all
+written by `video.library add=<file>`, which adds a file as `rights = "unreviewed"` and
+decides nothing. A person sets `rights` to `cleared` or `refused` with `rights_by`, may
+add `tags` (people and events they confirmed), and records each decision as a
+`[[source.range]]`: `start` and `end` in seconds (both left out: the whole file),
+`verdict` `accepted` or `rejected`, `reason`, `by` and `on`. A range missing any of
+verdict, reason, by or on is `video.bad-library`. Adding a file already held answers its
+entry as `held`, rejected ranges included, and appends nothing.
+
+A cut naming `[video] library` shows a `video` or `still` clip (a stock clip by its
+copy) only where the source's rights are `cleared`, its stretch lies inside one accepted
+range (a still's needs a whole-file range) and touches no rejected one; otherwise
+`video.unapproved`. A file gone or whose SHA-256 moved since is
+`video.library-changed`. Captured runs are not catalogued. The cut's record carries
+`library` and `approved`, one entry per file clip with the range, `by`, `on`, `reason`
+and the source's tags. `video.check` reports each clip's refusal as its own finding.
