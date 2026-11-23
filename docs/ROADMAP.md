@@ -8,7 +8,7 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW713** (deps: —) **A cut cannot render one selected interval with its production narration and callouts** — Reviewing one action requires another full export, and still sheets cannot show motion or its ending. → §PW713
+- ⏳ **PW713** (deps: —) **A cut cannot render one selected interval with its production narration and callouts** — A review still decodes every clip before its interval, and one cannot be named by take, beat or spoken cue rather than seconds. → §PW713
 - 📋 **PW714** (deps: —) **Fetched media has no reusable catalogue of approved and rejected source ranges** — Rejected or misidentified footage is rediscovered, and selected shots require manual provenance copying. → §PW714
 - 📋 **PW715** (deps: —) **A long video cut exposes no stage progress while rendering or waiting** — Callers poll processes and output timestamps to distinguish slow work from a failed stage. → §PW715
 - 📋 **PW716** (deps: —) **Narrated claims cannot bind evidence, dates and human review to their spoken anchors** — Revisions repeat research and can mistake illustrative footage or stale statistics for evidence. → §PW716
@@ -91,6 +91,13 @@
   Spinhold's runs write the event trace, the probe gives the declared pressure per
   second, level.trace lays the two together, and accept.check holds bounds a person set
   (alive never above N, a peak above the phase before), naming the rule broken.
+
+## Done when — PW713
+
+- **A review renders only the pieces its interval overlaps, named by its cue** A review
+  named by a voice line or a clip renders only the clips, music and voices overlapping
+  its window, each trimmed to it, and its sampled frames and cue times match that window
+  of a full cut.
 
 ## Non-goals
 

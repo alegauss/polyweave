@@ -56,7 +56,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW713",
     block: "D",
     symptom: "A cut cannot render one selected interval with its production narration and callouts",
-    why: "Reviewing one action requires another full export, and still sheets cannot show motion or its ending.",
+    why: "A review still decodes every clip before its interval, and one cannot be named by take, beat or spoken cue rather than seconds.",
     deps: [],
   },
   {

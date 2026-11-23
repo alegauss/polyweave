@@ -897,6 +897,12 @@ def cut(
     out: Annotated[
         str, Param("where the MP4 is written; the cut's own out otherwise")
     ] = "",
+    interval: Annotated[
+        list, Param("only [start, end] seconds of the cut, for a review")
+    ] = None,
+    context: Annotated[
+        float, Param("seconds kept before and after the interval", lo=0.0)
+    ] = 0.0,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
     """Cut captured runs together, score and encode them as one MP4, and measure it.
@@ -905,6 +911,12 @@ def cut(
     black at the cut's rate, joined by a cut or a crossfade; the music lies beneath and
     the end fades. The answer gives the file, what it measures and a sheet of stills,
     and the record names every sequence and the music as inputs.
+
+    With `interval`, only those seconds of the cut, `context` wider each side, are
+    written, from the same clips, fit, fades, voices, music and mix as the whole cut,
+    to `<name>.preview-<start>-<end>.mp4` unless `out` says otherwise (§PW713). The
+    answer's `interval` gives the seconds asked, those rendered, and the `offset` a
+    time in the preview adds to be the cut's.
     """
     from polyweave.kernel import provenance
     from polyweave.kernel.config import load
@@ -912,10 +924,13 @@ def cut(
     here = load(root).root
     path = Path(source) if Path(source).is_absolute() else here / source
     declared = read(path, here)
+    window = _window(interval, float(context), declared["seconds"])
     where = (
         out
-        or declared["out"]
-        or path.with_name(path.name.removesuffix(".cut.toml") + ".mp4").as_posix()
+        or (declared["out"] if window is None else "")
+        or path.with_name(path.name.removesuffix(".cut.toml") + (
+            ".mp4" if window is None
+            else f".preview-{window[0]:g}-{window[1]:g}.mp4")).as_posix()
     )
     target = Path(where) if Path(where).is_absolute() else here / where
     if target.suffix.lower() != ".mp4":
@@ -925,9 +940,12 @@ def cut(
             given="out",
         )
     target.parent.mkdir(parents=True, exist_ok=True)
-    made = subprocess.run(
-        _command(declared, target, here), capture_output=True, text=True, check=False
-    )
+    argv = _command(declared, target, here)
+    if window is not None:
+        # The same graph as the whole cut, its output held to the window: the mix, the
+        # fades and every timed voice are the cut's own, never an excerpt's (§PW713).
+        argv[-1:-1] = ["-ss", f"{window[0]:.3f}", "-to", f"{window[1]:.3f}"]
+    made = subprocess.run(argv, capture_output=True, text=True, check=False)
     if made.returncode != 0 or not target.is_file():
         raise PolyweaveError(
             "video.encode-failed",
@@ -961,6 +979,7 @@ def cut(
                 "size": declared["size"],
                 "fps": declared["fps"],
                 "clips": len(declared["clips"]),
+                **({"interval": list(window)} if window is not None else {}),
             },
             measurements={k: v for k, v in found.items() if k in VIDEOS},
             root=here,
@@ -974,11 +993,29 @@ def cut(
         "clips": len(declared["clips"]),
         **({"tracks": [one["language"] for one in declared["tracks"]]}
            if declared["tracks"] else {}),
+        **({"interval": {"asked": [float(v) for v in interval],
+                         "rendered": list(window), "offset": window[0]}}
+           if window is not None else {}),
         **found,
         "says": f"{found['video_seconds']:g}s at {found['video_width']}x"
         f"{found['video_height']}, moving from {found['first_motion']:g}s; watch "
         f"{provenance.relative(target, here)}, or lay the sheet in a sitting",
     }
+
+
+def _window(interval: Any, context: float, seconds: float) -> tuple | None:
+    """The seconds of the cut a review renders: the interval widened by `context`,
+    held inside the cut; None where no interval is asked (§PW713)."""
+    if interval is None:
+        return None
+    if not (isinstance(interval, list | tuple) and len(interval) == 2 and all(
+            isinstance(v, int | float) and not isinstance(v, bool) for v in interval)
+            and 0 <= interval[0] < interval[1] <= seconds + 1e-6):
+        raise _bad(f"interval is {interval!r}",
+                   f"give [start, end] seconds inside the cut's {seconds:g}s",
+                   given="interval")
+    return (round(max(0.0, interval[0] - context), 3),
+            round(min(seconds, interval[1] + context), 3))
 
 
 def _past(value: float | None, p: Any) -> float:

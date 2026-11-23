@@ -94,6 +94,7 @@
 - ✅ **PW705** **stock.find and stock.fetch cannot search or fetch music, so a licensed bed arrives by hand with no record** — stock.find and stock.fetch take kind music from Jamendo, recording each track's own CC licence and the credit it asks (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW712** **A cut has no read-only complete preflight before expensive rendering** — video.check holds a cut's reuse of one source's bytes to declared overlap, screen, adjacency and gap limits, naming the clips, with reasoned exceptions (design recorded in `docs/specs/video.md`).
 - ✅ **PW696** **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — picture.faults reads Shio's 24 photos with a local qwen2.5vl, sending them small and recovering a dropped answer, and flags a pseudo-text control (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW713 (an interval by seconds)** **A cut cannot render one selected interval with its production narration and callouts** — video.cut renders one interval with context from the whole cut's own graph and mix, and says the offset that maps it back.
 
 ## Block E — One world with the engine
 

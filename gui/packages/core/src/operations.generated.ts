@@ -2934,6 +2934,10 @@ export interface VideoCutArgs {
   source: string
   /** where the MP4 is written; the cut's own out otherwise */
   out?: string
+  /** only [start, end] seconds of the cut, for a review */
+  interval?: unknown[]
+  /** seconds kept before and after the interval; from 0 to …; default 0.0 */
+  context?: number
   /** the project the paths resolve against; default "." */
   root?: string
 }

@@ -433,3 +433,17 @@ name is the same footage; a clip's place in the cut follows the ones before it, 
 their fades. `video.check` reports each limit passed as `video.repeated`, naming the
 clips and the file, and never replaces footage or reads an activity from a filename.
 Every limit is off where unset.
+
+## One interval of a cut, for a review
+
+Checking one action of a finished cut meant exporting it whole (§PW713).
+`video.cut(source, interval=[start, end], context=)` renders only those seconds of the
+cut, `context` wider each side and held inside it, through the very graph a whole cut
+uses: the same clips, fit, fades, voices, music and mix, so a short excerpt is never
+mixed or normalised on its own, and a voice or subtitle keeps its time relative to the
+picture. The output seeks to the window after the graph (`-ss <start> -to <end>`),
+written to `<name>.preview-<start>-<end>.mp4` unless `out` says otherwise. The answer's
+`interval` gives the seconds `asked`, those `rendered`, and the `offset` a time in the
+preview adds to be the cut's; the record keeps the window. An interval that is not two
+seconds inside the cut, start before end, is `video.bad-cut`. Every clip before the
+window is still decoded on the way to it.

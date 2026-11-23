@@ -539,3 +539,40 @@ def test_a_source_reused_past_its_declared_limits_is_named_with_its_clips(tmp_pa
                     '[{ source = "short.mp4", why = "a continuous tutorial" }]\n'),
         encoding="utf-8")
     assert video.check("rep.cut.toml", root=str(here))["passed"] is True
+
+
+# -- one interval of a cut, for a review (§PW713) -------------------------------------
+
+
+@needs_ffmpeg
+def test_a_review_renders_only_the_interval_from_the_cut_s_own_graph(tmp_path):
+    import subprocess
+
+    here = _project(tmp_path)
+    Image.new("RGB", (64, 36), (220, 30, 30)).save(here / "red.png")
+    Image.new("RGB", (64, 36), (30, 30, 220)).save(here / "blue.png")
+    (here / "two.cut.toml").write_text(
+        '[video]\nsize = [64, 36]\nfps = 10\n\n[[clip]]\nstill = "red.png"\n'
+        'length = 2.0\n\n[[clip]]\nstill = "blue.png"\nlength = 2.0\n',
+        encoding="utf-8")
+    said = video.cut("two.cut.toml", interval=[1.5, 2.5], root=str(here))
+    assert said["file"] == "two.preview-1.5-2.5.mp4"
+    assert said["interval"] == {"asked": [1.5, 2.5], "rendered": [1.5, 2.5],
+                                "offset": 1.5}
+    assert said["video_seconds"] == pytest.approx(1.0, abs=0.15)
+
+    def colour(at):
+        raw = subprocess.run(
+            [shutil.which("ffmpeg"), "-v", "error", "-ss", f"{at}", "-i",
+             str(here / said["file"]), "-frames:v", "1", "-f", "rawvideo",
+             "-pix_fmt", "rgb24", "-"], capture_output=True, check=True).stdout
+        return raw[0], raw[2]
+
+    first, last = colour(0.1), colour(0.9)
+    assert first[0] > first[1] and last[1] > last[0]
+    widened = video.cut("two.cut.toml", interval=[1.5, 2.5], context=1.0,
+                        root=str(here))
+    assert widened["interval"]["rendered"] == [0.5, 3.5]
+    with pytest.raises(PolyweaveError) as refused:
+        video.cut("two.cut.toml", interval=[3.0, 9.0], root=str(here))
+    assert refused.value.code == "video.bad-cut"
