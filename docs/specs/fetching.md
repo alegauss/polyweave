@@ -1088,3 +1088,10 @@ aside as `<name>.retake-<YYYYmmddTHHMMSS>.<ext>` just before the purchase, and a
 purchase that fails or is stopped by the ceiling moves them back. The new take's record
 keeps `details.retake = {reason, replaced}`, so a voice or a model that keeps drifting
 shows in the records across projects. It holds for a lines file and for a game's table.
+`stock.find library=<path>` marks each hit a media library already holds (§PW726),
+matched by the `task_id` (`<service>:<id>`) of the source's fetch record: `library`
+carries the source's file, its `rights`, its `accepted` and `rejected` ranges with who
+decided, when and why, and `refused`, the first reason, where its rights were refused or
+every range rejected. A hit is never dropped. A library that is not there or not TOML is
+`stock.no-library`; the library is read as TOML in the picture layer, which needs nothing
+of the store's.

@@ -287,12 +287,19 @@ def find(
         None
     ),
     count: Annotated[int, Param("how many hits, 3 to 80", lo=3, hi=80)] = 20,
+    library: Annotated[
+        str, Param("a *.library.toml whose decisions mark each hit")
+    ] = "",
     root: Annotated[str, Param("the project the search is kept in")] = ".",
 ) -> dict:
     """Search a stock service's pictures or videos, downloading nothing.
 
     Each hit's id, size, tags, author and page, for `stock.fetch`; a video's gives its
     duration and each rendition's size and bytes (§PW674). A search is kept a day.
+    With `library`, a hit the library already holds carries what people decided about
+    it: its rights, its accepted and rejected ranges, and `refused`, the first reason,
+    where its rights were refused or every range rejected (§PW726). A hit is
+    never dropped; leaving it out would be a decision nobody made.
     """
     config = load(root)
     _kind_of(service, kind)
@@ -314,11 +321,64 @@ def find(
         else {"query": words, "per_page": count})
     found = _asked(service, _route(service, kind, base), {**asked, **(filters or {})},
                    key, config)
+    hits = [_shown(hit, kind) for hit in _hits(service, found)]
+    marked = 0
+    if library:
+        decided = _decided(config.root / library, config.root)
+        for hit in hits:
+            seen = decided.get(f"{service}:{hit['id']}")
+            if seen:
+                hit["library"] = seen
+                marked += 1
     return {"words": words, "service": service,
             "total": found.get("totalHits", found.get("total_results", (
                 found.get("headers") or {}).get("results_count", 0))),
-            "hits": [_shown(hit, kind) for hit in _hits(service, found)],
-            "says": "take one with stock.fetch id=<id> out=<path>"}
+            "hits": hits,
+            "says": "take one with stock.fetch id=<id> out=<path>"
+            + (f"; {marked} hit(s) the library already holds carry its decisions"
+               if marked else "")}
+
+
+def _decided(library: Path, here: Path) -> dict[str, dict]:
+    """What a media library's people decided about each source a stock fetch brought
+    in, by the fetch's `<service>:<id>` (§PW726). The library is read as TOML here, so
+    this layer needs nothing of the store's; a source with no fetch record is
+    skipped."""
+    import tomllib
+
+    if not library.is_file():
+        raise PolyweaveError(
+            "stock.no-library", f"there is no library at {library}",
+            "name the *.library.toml video.library keeps", given=str(library))
+    try:
+        sources = tomllib.loads(library.read_text(encoding="utf-8")).get("source", [])
+    except tomllib.TOMLDecodeError as broken:
+        raise PolyweaveError("stock.no-library", f"{library.name} is not TOML",
+                             "fix the line the detail names",
+                             detail=str(broken)) from None
+    found: dict[str, dict] = {}
+    for one in sources:
+        try:
+            record = provenance.read(str(one.get("file", "")), root=str(here))
+        except PolyweaveError:
+            continue
+        task = str(record.get("task_id") or "")
+        ranges = one.get("range") or []
+        said = [{"range": [r.get("start", 0.0), r["end"]] if r.get("end") is not None
+                 else "whole", "by": r.get("by"), "on": str(r.get("on")),
+                 "reason": r.get("reason")} for r in ranges]
+        rejected = [s for s, r in zip(said, ranges, strict=True)
+                    if r.get("verdict") == "rejected"]
+        rights = one.get("rights", "unreviewed")
+        refused = rights == "refused" or (ranges and len(rejected) == len(ranges))
+        found[task] = {
+            "file": one.get("file"), "rights": rights,
+            "accepted": [s for s, r in zip(said, ranges, strict=True)
+                         if r.get("verdict") == "accepted"],
+            "rejected": rejected,
+            **({"refused": rejected[0]["reason"] if rejected
+                else f"rights refused by {one.get('rights_by')}"} if refused else {})}
+    return found
 
 
 def _allowed(config, service: str, licence: str | None = None) -> str:

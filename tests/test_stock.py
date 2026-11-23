@@ -298,3 +298,25 @@ def test_a_commons_file_non_free_unlicensed_or_missing_is_refused_unfetched(
     with pytest.raises(PolyweaveError) as refused:
         stock.commons("File:Nothing.jpg", "x.jpg", root=str(tmp_path))
     assert refused.value.code == "stock.no-hit" and fetched == []
+
+# -- a search that knows what a media library rejected (§PW726) ------------------------
+
+
+def test_a_hit_a_library_rejected_is_marked_with_who_and_why(tmp_path, service):
+    stock.fetch(195893, "stock/harbour.jpg", root=str(tmp_path))
+    (tmp_path / "media.library.toml").write_text(
+        '[[source]]\nfile = "stock/harbour.jpg"\nsha256 = "x"\nrights = "cleared"\n'
+        'rights_by = "Ana"\n\n[[source.range]]\nverdict = "rejected"\n'
+        'reason = "a mistaken identity"\nby = "Ana"\non = 2026-11-23\n',
+        encoding="utf-8")
+    plain = stock.find("harbour at dawn", root=str(tmp_path))
+    assert "library" not in plain["hits"][0]
+    said = stock.find("harbour at dawn", library="media.library.toml",
+                      root=str(tmp_path))
+    mark = said["hits"][0]["library"]
+    assert mark["refused"] == "a mistaken identity"
+    assert mark["rejected"][0]["by"] == "Ana" and mark["rights"] == "cleared"
+    assert len(said["hits"]) == 1
+    with pytest.raises(PolyweaveError) as refused:
+        stock.find("harbour", library="none.library.toml", root=str(tmp_path))
+    assert refused.value.code == "stock.no-library"

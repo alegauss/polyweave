@@ -2598,6 +2598,8 @@ export interface StockFindArgs {
   filters?: Record<string, unknown>
   /** how many hits, 3 to 80; from 3 to 80; default 20 */
   count?: number
+  /** a *.library.toml whose decisions mark each hit */
+  library?: string
   /** the project the search is kept in; default "." */
   root?: string
 }

@@ -8,23 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW726 A search that knows what a library rejected
-
-Split from PW714 (2026-11-23). `video.library` keeps the ranges a person rejected, and
-adding a file it holds answers that entry rather than a fresh one, and a cut refuses a
-clip over a rejected range. But `stock.find` answers hits by service and id with no look
-at any library, so the agent reading the search still meets a clip a person turned down
-for blur or a mistaken identity as a new candidate, and spends a fetch and a review to
-learn it again.
-
-A library source fetched by `stock.fetch` has a record whose `task_id` is
-`<service>:<id>`. `stock.find` given `library=<path>` (or the libraries a project
-declares) marks each hit the library holds with its rights and its rejected and accepted
-ranges, and a hit whose every range is rejected or whose rights are refused as
-`rejected` with the first reason. It never drops the hit: hiding it is a decision the
-person did not make. Done when a hit a library rejected is answered marked, with who
-rejected it and why, and an uncatalogued one is answered as before.
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

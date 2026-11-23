@@ -105,6 +105,12 @@ CODES: dict[str, Code] = {
         when="an id mistyped, or one from another service's search",
         doors=("pass an id stock.find answered",),
     ),
+    "stock.no-library": Code(
+        means="the media library stock.find was given is not there or not TOML",
+        when="stock.find library= naming no file, or one that does not parse "
+        "(§PW726)",
+        doors=("name the *.library.toml video.library keeps",),
+    ),
     "style.references-need-3": Code(
         means="a family with style references was asked for on a model that takes none",
         when="[style.<family>] names references and the call asked 4.0",

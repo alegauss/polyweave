@@ -8,8 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW726** (deps: —) **stock.find answers a hit a media library already rejected as if it were a new candidate** — A clip a person turned down is fetched and reviewed again before the library's refusal surfaces. → §PW726
-
 ## Block E — One world with the engine
 
 ## Block F — Motion
