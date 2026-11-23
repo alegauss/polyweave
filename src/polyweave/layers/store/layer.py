@@ -10,6 +10,7 @@ LAYER = Layer(
         "polyweave.layers.store.card",
         "polyweave.layers.store.compose",
         "polyweave.layers.store.footage",
+        "polyweave.layers.store.labels",
         "polyweave.layers.store.icons",
         "polyweave.layers.store.safe",
         "polyweave.layers.store.sheet",

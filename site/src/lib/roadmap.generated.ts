@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 0 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 1 },
+  { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
@@ -120,13 +120,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "capture.web cannot scroll to a sentence the page prints or draw a highlight over it",
     why: "A video that quotes a published page films it with a Playwright script of its own, outside the visit's record.",
-    deps: [],
-  },
-  {
-    id: "PW709",
-    block: "J",
-    symptom: "Video checks do not report simultaneous editorial labels or names over unrelated footage",
-    why: "Video-maker must compare timed captions and highlights itself before rendering a cut.",
     deps: [],
   },
   {

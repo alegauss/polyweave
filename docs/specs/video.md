@@ -358,3 +358,19 @@ same, recorded with every source as an input. A time a video has no frame at is 
 as missing and named in `missing`, never filled with another frame. A sample with no
 source, an unknown key, an `at` below 0, or a `kind` not `source` or `output` is
 `video.bad-sheet`.
+
+## Editorial labels against each other and the footage
+
+A caption and a spoken highlight can be on screen together with two versions of one
+fact, and a highlight naming a person can sit over stock footage of someone else
+(§PW709). `video.labels(labels, footage=)` is read-only over what the cut declares:
+`labels`, each `{id, kind, text, start, end, entities, source, take, beat}`, and
+`footage`, each stretch `{id, start, end, source, entities}`. Every two labels whose
+times overlap are in `overlaps` with both labels, the overlap's `from` and `to`, and
+`same`: `duplicate` where their words agree with case, accents and punctuation folded,
+`versions` where they differ. A label naming `entities` is held to each stretch of
+footage it overlaps, and one the stretch does not declare is in `unverified` with the
+label and the stretch (`footage` null where no stretch is under it). Nothing is
+inferred from a picture: the report compares declarations and accepts no semantic
+correspondence. A record that is not a table, an unknown key, a `start` not before its
+`end`, or `entities` not a list is `video.bad-labels`.

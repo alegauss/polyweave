@@ -97,6 +97,12 @@ CODES: dict[str, Code] = {
         "(§PW698)",
         doors=("name the .ass burned into the video", "give size as [width, height]"),
     ),
+    "video.bad-labels": Code(
+        means="the labels or footage video.labels was given are not records it reads",
+        when="not a list, a key it does not take, a start not before its end, or "
+        "entities not a list (§PW709)",
+        doors=("fix the record the refusal names",),
+    ),
     "video.bad-sheet": Code(
         means="a review sheet's samples are not ones video.sheet can lay out",
         when="no sample, a key it does not take, a source not under the project, an "

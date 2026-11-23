@@ -373,6 +373,7 @@
 - ✅ **PW697** **A spec cannot bound an encoded video: its length, loudness, true peak, a frozen end or the longest stretch without a cut** — Each sound stream is measured with its language, and a spec on loudness or peak reads the stream furthest past its bound and names it (design recorded in `docs/specs/video.md`).
 - ✅ **PW698** **Nothing says whether a vertical video's burned-in text reaches the area a platform covers with its buttons and title** — video.safe_area places each burned-in .ass line at the video's size and names those that reach a platform's controls, with time and pixels (design recorded in `docs/specs/video.md`).
 - ✅ **PW699** **A thumbnail cannot be checked for legibility at feed size, for its word count, or for repeating the video's title** — store.thumbnails holds each variant the project's layout drew to store.thumbnail and lays the passing ones in a sitting for a person (design recorded in `docs/specs/video.md`).
+- ✅ **PW709** **Video checks do not report simultaneous editorial labels or names over unrelated footage** — video.labels reports every pair of labels on screen at once and every named entity the footage under it does not declare, inferring nothing from pictures (design recorded in `docs/specs/video.md`).
 
 ## Block K — Reached without reading the source
 

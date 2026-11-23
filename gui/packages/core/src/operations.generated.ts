@@ -2896,6 +2896,14 @@ export interface VideoCutArgs {
   root?: string
 }
 
+/** Every pair of labels on screen at once, and every named entity left unshown. */
+export interface VideoLabelsArgs {
+  /** each {id, kind, text, start, end, entities, source, take, beat} */
+  labels: unknown[]
+  /** each stretch {id, start, end, source, entities} it is shown over */
+  footage?: unknown[]
+}
+
 /** One report on an exported video, bound to its exact bytes (§PW707). */
 export interface VideoMeasureArgs {
   /** an exported video, under the project */
@@ -3296,6 +3304,7 @@ export interface Operations {
   "vfx.preview": VfxPreviewArgs
   "video.buy": VideoBuyArgs
   "video.cut": VideoCutArgs
+  "video.labels": VideoLabelsArgs
   "video.measure": VideoMeasureArgs
   "video.pauses": VideoPausesArgs
   "video.safe_area": VideoSafeAreaArgs
@@ -3540,6 +3549,7 @@ export const OPERATIONS = [
   "vfx.preview",
   "video.buy",
   "video.cut",
+  "video.labels",
   "video.measure",
   "video.pauses",
   "video.safe_area",

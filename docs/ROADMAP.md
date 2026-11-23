@@ -31,8 +31,6 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW709** (deps: —) **Video checks do not report simultaneous editorial labels or names over unrelated footage** — Video-maker must compare timed captions and highlights itself before rendering a cut. → §PW709
-
 ## Block K — Reached without reading the source
 
 ## Block L — What a run leaves as evidence
