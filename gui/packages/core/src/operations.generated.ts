@@ -2946,6 +2946,18 @@ export interface VideoSafeAreaArgs {
   root?: string
 }
 
+/** One still per declared beat, beside its narration and labels (§PW708). */
+export interface VideoSheetArgs {
+  /** each {source, at, label, words, captions, interval, tags, kind} */
+  samples: unknown[]
+  /** the folder the stills and index.html are written to */
+  out: string
+  /** the sheet's heading; default "Review sheet" */
+  title?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Keep the preview a person accepted as its entity's voice, written in the world. */
 export interface VoiceChooseArgs {
   /** the accepted preview, or its sitting */
@@ -3287,6 +3299,7 @@ export interface Operations {
   "video.measure": VideoMeasureArgs
   "video.pauses": VideoPausesArgs
   "video.safe_area": VideoSafeAreaArgs
+  "video.sheet": VideoSheetArgs
   "voice.choose": VoiceChooseArgs
   "voice.design": VoiceDesignArgs
   "voice.lines": VoiceLinesArgs
@@ -3530,6 +3543,7 @@ export const OPERATIONS = [
   "video.measure",
   "video.pauses",
   "video.safe_area",
+  "video.sheet",
   "voice.choose",
   "voice.design",
   "voice.lines",

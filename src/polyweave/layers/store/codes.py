@@ -97,6 +97,12 @@ CODES: dict[str, Code] = {
         "(§PW698)",
         doors=("name the .ass burned into the video", "give size as [width, height]"),
     ),
+    "video.bad-sheet": Code(
+        means="a review sheet's samples are not ones video.sheet can lay out",
+        when="no sample, a key it does not take, a source not under the project, an "
+        "at not seconds from 0, or a kind not source or output (§PW708)",
+        doors=("fix the sample the refusal names",),
+    ),
     "video.changed": Code(
         means="a video changed while video.measure read it",
         when="its SHA-256 at the end differs from the one at the start (§PW707)",

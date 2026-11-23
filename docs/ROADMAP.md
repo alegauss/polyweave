@@ -4,8 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-- 📋 **PW708** (deps: —) **Frame contact sheets cannot pair exact shot midpoints with overlapping narration and editorial labels** — Video reviews need custom frame extraction and labelled HTML to catch mismatched shots before a full export. → §PW708
-
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise

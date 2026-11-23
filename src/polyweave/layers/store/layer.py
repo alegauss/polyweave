@@ -12,6 +12,7 @@ LAYER = Layer(
         "polyweave.layers.store.footage",
         "polyweave.layers.store.icons",
         "polyweave.layers.store.safe",
+        "polyweave.layers.store.sheet",
         "polyweave.layers.store.store",
         "polyweave.layers.store.thumbnail",
         "polyweave.layers.store.video",
@@ -34,7 +35,8 @@ LAYER = Layer(
     # 9,242 with capture.card, an HTML card rendered to a still (§PW700).
     # 10,081 with video.measure, one report bound to a video's bytes (§PW707).
     # 11,263 with video.pauses, a recording's longest pause against a budget (§PW707).
-    tools=11_800,
+    # 11,897 with video.sheet, one labelled still per beat (§PW708).
+    tools=12_600,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),

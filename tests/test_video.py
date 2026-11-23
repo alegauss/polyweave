@@ -446,3 +446,40 @@ def test_a_frozen_page_inside_a_recording_is_its_longest_pause(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         video.pauses("rec.mp4", [{"start": 3, "end": 1}], root=str(here))
     assert refused.value.code == "video.bad-cut"
+
+
+# -- one still per beat, labelled (§PW708) --------------------------------------------
+
+
+@needs_ffmpeg
+def test_a_review_sheet_holds_each_beat_at_its_exact_time_with_its_labels(tmp_path):
+    from polyweave.layers.store.sheet import sheet
+
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    Image.new("RGB", (32, 18), (10, 200, 10)).save(here / "card.png")
+    said = sheet([
+        {"source": "short.mp4", "at": 2.5, "label": "Red <hold>",
+         "words": "o Git não aguentou", "tags": {"person": "Linus"}},
+        {"source": "card.png", "label": "card", "kind": "output"},
+        {"source": "short.mp4", "at": 99.0, "label": "past the end"},
+    ], "review/sheet", title="Scion", root=str(here))
+    assert said["samples"] == 3 and said["missing"] == [3]
+    with Image.open(here / "review" / "sheet" / "001.png") as red:
+        r, g, b = red.convert("RGB").getpixel((80, 45))
+    assert r > 200 and g < 60
+    assert said["stills"][1] == "002.png"
+    page = (here / "review" / "sheet" / "index.html").read_text(encoding="utf-8")
+    assert "Red &lt;hold&gt;" in page and "o Git não aguentou" in page
+    assert 'class="output"' in page and "no frame at this time" in page
+    rows = json.loads((here / "review" / "sheet" / "sheet.json").read_text("utf-8"))
+    assert rows[0]["tags"] == {"person": "Linus"} and rows[1]["kind"] == "output"
+
+
+def test_a_sample_with_no_source_is_refused(tmp_path):
+    from polyweave.layers.store.sheet import sheet
+
+    here = _project(tmp_path)
+    with pytest.raises(PolyweaveError) as refused:
+        sheet([{"source": "none.mp4", "at": 1}], "review/x", root=str(here))
+    assert refused.value.code == "video.bad-sheet"

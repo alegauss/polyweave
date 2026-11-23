@@ -341,3 +341,20 @@ moves. Each clip answers its `longest` still stretch with its `cut` and `source`
 seconds and `within`, against `max_seconds`; a stretch wholly inside a hold is exempt.
 The answer names the video's `sha256`, the threshold, the side and the cursor policy.
 Nothing is trimmed. A clip without a `start` before its `end` is `video.bad-cut`.
+
+## A review sheet, one still per beat
+
+Before a full render a video is reviewed beat by beat, each shot beside what is said
+over it (§PW708). `video.sheet(samples, out, title=)` takes records `{source, at,
+label, words, captions, interval, tags, kind}`: `source` a video under the project,
+sampled at exactly `at` seconds (`-i <video> -ss <at> -frames:v 1`), or a picture
+(`.png`, `.jpg`, `.webp`), taken as it is; `words` the narration over the beat,
+`captions` its production captions and highlights, `interval` the source stretch it came
+from, `tags` its people, events and topics; `kind` `source` for a source's still or
+`output` for the composited output's. It writes the stills numbered in order
+(`001.png`, …) to `out`, an `index.html` that shows each with its labels, escaped, and
+opens with no server (an output's card is outlined apart), and `sheet.json` listing the
+same, recorded with every source as an input. A time a video has no frame at is shown
+as missing and named in `missing`, never filled with another frame. A sample with no
+source, an unknown key, an `at` below 0, or a `kind` not `source` or `output` is
+`video.bad-sheet`.
