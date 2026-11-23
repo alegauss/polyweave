@@ -119,7 +119,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW696",
     block: "D",
     symptom: "picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it",
-    why: "The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it.",
+    why: "No model has checked Shio's 24 photos yet, so whether it flags the two the owner rejected and the pseudo-text is unknown.",
     deps: [],
   },
   {

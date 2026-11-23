@@ -1516,6 +1516,14 @@ export interface PictureDescribeArgs {
   root?: string
 }
 
+/** The faults generated photos have, read off each picture by a local model. */
+export interface PictureFaultsArgs {
+  /** the pictures to check, under the project */
+  pictures: unknown[]
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Put a picture on its family's grid: defringed, trimmed, fitted and anchored. */
 export interface PictureFitArgs {
   /** the picture as it arrived, under the project */
@@ -3230,6 +3238,7 @@ export interface Operations {
   "picture.collect": PictureCollectArgs
   "picture.copies": PictureCopiesArgs
   "picture.describe": PictureDescribeArgs
+  "picture.faults": PictureFaultsArgs
   "picture.fit": PictureFitArgs
   "picture.gate": PictureGateArgs
   "picture.letters": PictureLettersArgs
@@ -3478,6 +3487,7 @@ export const OPERATIONS = [
   "picture.collect",
   "picture.copies",
   "picture.describe",
+  "picture.faults",
   "picture.fit",
   "picture.gate",
   "picture.letters",

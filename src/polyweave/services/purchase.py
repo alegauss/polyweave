@@ -649,6 +649,22 @@ def append(entry: dict, *, root: str | Path = ".") -> Path:
     return path
 
 
+def unusable(artefact: str, faults: list[dict], *, root: str | Path = ".") -> bool:
+    """Mark the ledger's latest purchase of `artefact` not usable, with why (§PW696);
+    False where nothing bought it. The entry stays: it was spent all the same."""
+    path = where(root)
+    _writable(root)
+    with _writing:
+        held = read(root)
+        for entry in reversed(held):
+            if entry.get("artefact") == artefact:
+                entry["usable"] = False
+                entry["faults"] = [one["kind"] for one in faults]
+                write_atomic(path, json.dumps(held, indent=2, sort_keys=True) + "\n")
+                return True
+    return False
+
+
 @operation("purchase.ledger")
 def read(
     root: Annotated[str, Param("the project whose ledger this is")] = ".",

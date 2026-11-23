@@ -59,6 +59,13 @@ TABLES: dict[str, Any] = {
         # downloads nothing it already holds (§PW675).
         "dir": "stock",
     },
+    "vision": {
+        # The local vision model picture.faults asks (§PW696): an Ollama-compatible
+        # server on this machine, never a paid service, and the model it serves, as
+        # `ollama pull` names it. Empty names none, and the check says how to add one.
+        "url": "http://localhost:11434",
+        "model": "",
+    },
 }
 
 #: Tables that hold one thing, or several named ones.

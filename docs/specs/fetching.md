@@ -1011,3 +1011,21 @@ suffix is `capture.bad-mapping`.
 
 The service client itself, and the lock that stops two sessions spending at once.
 `provenance.md` already pins the fields a `fetch` record carries.
+
+## A bought photo checked for generation faults
+
+Every one of Shio's 24 bought photos answered ok, and the owner found an arm fused into
+hands and a chef with no thumb by eye (§PW696). `picture.faults(pictures)` sends each
+picture to `[vision] model` at `[vision] url`, an Ollama-compatible server that must be
+this machine (`localhost`, `127.0.0.1`, `::1`): a paid service checking a picture is
+spending on the agent's judgement, so any other host is `picture.vision-not-local`,
+refused before anything is sent. The model is asked, as JSON, for the faults it can see
+of `fused-limbs`, `malformed-hand`, `missing-digit`, `extra-limb`, `extra-head`,
+`pseudo-text` and `merged-objects`, each with where in the frame; a kind outside these
+is dropped. Each picture answers its `faults`, `usable` (false where it has any) and the
+prompt `advice` that avoids them. The finding is kept on the picture's record as
+`faults` (the model, when, what it found), and a bought picture with a fault has its
+latest ledger entry marked `usable = false` with the kinds; it stays in the ledger,
+since it was spent. Nothing is rejected, deleted or bought again: a model's reading is
+for a person to confirm. No model named, no server answering, or a missing picture is
+`picture.no-vision`, saying to `ollama serve` and `ollama pull` the model.

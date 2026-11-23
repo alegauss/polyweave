@@ -17,7 +17,7 @@
 - 📋 **PW719** (deps: —) **No operation searches the ElevenLabs voice library, nor speaks one line in several voices to compare** — Choosing a narrator for a new audience meant raw API calls and one lines file per candidate voice. → §PW719
 - 📋 **PW720** (deps: —) **voice.lines cannot buy a current take again when its words, voice and model are unchanged** — A take whose accent or delivery drifted can only be re-rolled by rewording a line that was already right or moving files by hand. → §PW720
 - 📋 **PW721** (deps: —) (from: urdido) **capture.web cannot scroll to a sentence the page prints or draw a highlight over it** — A video that quotes a published page films it with a Playwright script of its own, outside the visit's record. → §PW721
-- 📋 **PW696** (deps: —) **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it. → §PW696
+- ⏳ **PW696** (deps: —) **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — No model has checked Shio's 24 photos yet, so whether it flags the two the owner rejected and the pseudo-text is unknown. → §PW696
 
 ## Block E — One world with the engine
 
@@ -99,6 +99,13 @@
   Spinhold's runs write the event trace, the probe gives the declared pressure per
   second, level.trace lays the two together, and accept.check holds bounds a person set
   (alive never above N, a peak above the phase before), naming the rule broken.
+
+## Done when — PW696
+
+- **Shio's two rejected photos and its pseudo-text are flagged by name** picture.faults
+  over the 24 Shio marketplace photos, with a local model, names the fused arm, the
+  missing thumb and the pseudo-lettering, each with its fault kind and where in the
+  frame.
 
 ## Non-goals
 

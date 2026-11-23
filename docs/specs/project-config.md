@@ -85,6 +85,10 @@ records = "polyweave.records"
 # why: project.adoption reports them, and project.check fails on any file not named here
 "tools/art/make_assets.py" = "drawn 2D generation, which polyweave does not do"
 
+[vision]
+url   = "http://localhost:11434"   # a vision model served on this machine (PW696)
+model = "qwen2.5vl:7b"             # as `ollama pull` names it; empty names none
+
 [layers]
 on = []                        # the layers this project uses; empty is every one
 

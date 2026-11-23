@@ -73,6 +73,17 @@ CODES: dict[str, Code] = {
         doors=("choose another shot with stock.find",
                "put the file back where [stock] dir keeps it"),
     ),
+    "picture.vision-not-local": Code(
+        means="[vision] url is not this machine, and a picture is checked only locally",
+        when="picture.faults with a vision server elsewhere (§PW696)",
+        doors=("point [vision] url at a model served here",),
+    ),
+    "picture.no-vision": Code(
+        means="no local vision model answered, or none is named",
+        when="picture.faults with no [vision] model, no server running, or a picture "
+        "that is not there (§PW696)",
+        doors=("ollama serve, then ollama pull the model", "set [vision] model"),
+    ),
     "stock.bad-kind": Code(
         means="a stock service was asked for a kind it does not sell",
         when="music from Pixabay or Pexels, or a picture or video from Jamendo "
