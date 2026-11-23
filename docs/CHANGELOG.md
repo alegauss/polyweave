@@ -104,6 +104,7 @@
 - ✅ **PW719** **No operation searches the ElevenLabs voice library, nor speaks one line in several voices to compare** — voice.find searches the shared voice library for nothing, kept a day; voice.compare prices one line in several voices, then buys and lays them as one pick.
 - ✅ **PW720** **voice.lines cannot buy a current take again when its words, voice and model are unchanged** — voice.lines retake= buys named current takes again with a required reason, keeps the old take beside the new, records why, and restores it if the purchase fails.
 - ✅ **PW721** (from: urdido) **capture.web cannot scroll to a sentence the page prints or draw a highlight over it** — capture.web's find scrolls a quoted sentence mid-screen by its words and highlight draws an overlay per line; a sentence the page no longer prints stops the film.
+- ✅ **PW725** **A review window of a cut decodes and filters every clip before it, so a late window costs nearly a whole render** — A review window renders the cut's graph over only the clips it needs, from a clip's start, with music, voices, subtitles and fade moved; its frames and sound match the whole.
 
 ## Block E — One world with the engine
 

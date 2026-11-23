@@ -462,8 +462,14 @@ picture. The output seeks to the window after the graph (`-ss <start> -to <end>`
 written to `<name>.preview-<start>-<end>.mp4` unless `out` says otherwise. The answer's
 `interval` gives the seconds `asked`, those `rendered`, and the `offset` a time in the
 preview adds to be the cut's; the record keeps the window. An interval that is not two
-seconds inside the cut, start before end, is `video.bad-cut`. Every clip before the
-window is still decoded on the way to it. `around` names the window by what is in it in
+seconds inside the cut, start before end, is `video.bad-cut`. Only the clips the window
+needs are decoded (§PW725): the graph is the cut's own over a slice that starts at the
+first clip still on screen at the window's start (or at the end's fade, where the window
+reaches it), whole, and ends at the last clip the window reaches, so a still's zoom, a
+crossfade and a run's sound are never cut into. The music is entered at `music_from`
+plus the slice's start, a voice already speaking enters sought to where it had got to,
+subtitles are shifted, the end's fade is placed in the slice's seconds, and the output
+is then held to the window. `around` names the window by what is in it in
 place of seconds: `clip[n]` is the n-th clip's seconds in the cut (from where its fade
 begins), `voice[n]` the n-th voice line's, from its `at` for as long as its file runs; a
 place the cut does not have is `video.bad-cut`.

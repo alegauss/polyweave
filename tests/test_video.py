@@ -841,3 +841,72 @@ def test_a_description_keeps_cited_sources_whole(tmp_path):
     cited = "https://wordpress.org/news/2018/12/bebo/ (2018-12-06)"
     said = description.description(["a.png"], cited=[cited], root=str(here))
     assert f"Sources:\n{cited}" in said["text"]
+
+# -- a review window rendered from the clips it needs (§PW725) -------------------------
+
+
+def _frame(path: Path, at: float) -> np.ndarray:
+    import subprocess
+
+    raw = subprocess.run(
+        [shutil.which("ffmpeg"), "-v", "error", "-ss", f"{at:.3f}", "-i", str(path),
+         "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+        capture_output=True, check=True).stdout
+    return np.frombuffer(raw, dtype=np.uint8).astype(float)
+
+
+def _loudness(path: Path, at: float, seconds: float) -> float:
+    import subprocess
+
+    raw = subprocess.run(
+        [shutil.which("ffmpeg"), "-v", "error", "-ss", f"{at:.3f}", "-t",
+         f"{seconds:.3f}", "-i", str(path), "-vn", "-ac", "1", "-ar", "8000", "-f",
+         "s16le", "-"], capture_output=True, check=True).stdout
+    samples = np.frombuffer(raw, dtype=np.int16).astype(float)
+    return float(np.sqrt(np.mean(samples ** 2))) if samples.size else 0.0
+
+
+@needs_ffmpeg
+def test_a_late_window_is_cut_from_its_own_clips_and_matches_the_whole(tmp_path):
+    here = _project(tmp_path)
+    Image.new("RGB", (64, 36), (220, 30, 30)).save(here / "red.png")
+    Image.new("RGB", (64, 36), (30, 30, 220)).save(here / "blue.png")
+    Image.new("RGB", (64, 36), (30, 200, 60)).save(here / "green.png")
+    _short(here / "short.mp4")
+    _tone(here / "bed.wav", 20.0, 220.0)
+    _tone(here / "line.wav", 2.0, 660.0)
+    (here / "long.cut.toml").write_text(
+        '[video]\nsize = [64, 36]\nfps = 10\nmusic = "bed.wav"\nmusic_gain = -12\n'
+        'fade_out = 1.0\n\n'
+        '[[clip]]\nstill = "red.png"\nlength = 2.0\n\n'
+        '[[clip]]\nstill = "blue.png"\nlength = 3.0\nfade_in = 0.5\n'
+        'motion = { zoom = [1.0, 1.5], pan = "left" }\n\n'
+        '[[clip]]\nvideo = "short.mp4"\nstart = 0.0\nlength = 2.5\nfade_in = 0.5\n\n'
+        '[[clip]]\nstill = "green.png"\nlength = 2.0\n\n'
+        '[[track]]\nlanguage = "en"\ntitle = "English"\n\n'
+        '[[voice]]\nfile = "line.wav"\nat = 5.5\ntrack = "en"\n', encoding="utf-8")
+    whole = here / video.cut(QUIET, "long.cut.toml", root=str(here))["file"]
+    declared = video.read(here / "long.cut.toml", here)
+    # The clips start at 0, 1.5, 4.0 and 6.5 in the cut, which ends at 8.5 and fades
+    # from 7.5.
+    sliced, shift = video._slice(declared, (6.4, 7.0))
+    assert len(sliced["clips"]) == 2 and shift == pytest.approx(4.0)
+    assert sliced["voices"][0]["at"] == pytest.approx(1.5)
+    sliced, shift = video._slice(declared, (6.6, 7.2))
+    assert len(sliced["clips"]) == 1 and shift == pytest.approx(6.5)
+    assert sliced["voices"][0]["seek"] == pytest.approx(1.0)
+    assert sliced["fade_at"] == pytest.approx(1.0)
+    for window in ((6.2, 7.0), (6.6, 7.2), (7.6, 8.0), (3.0, 3.8)):
+        said = video.cut(QUIET, "long.cut.toml", interval=list(window),
+                         out=f"w-{window[0]:g}.mp4", root=str(here))
+        part = here / said["file"]
+        for t in (0.15, 0.35):
+            if window[0] + t > window[1] - 0.1:
+                continue  # past the window's last frame at 10 a second
+            shown = _frame(part, t)
+            assert shown.size, (window, t, said["video_seconds"], said["interval"])
+            gap = np.abs(shown - _frame(whole, window[0] + t)).mean()
+            assert gap < 8, (window, t, gap)
+        span = window[1] - window[0] - 0.1
+        heard, kept = _loudness(part, 0.0, span), _loudness(whole, window[0], span)
+        assert heard == pytest.approx(kept, rel=0.2, abs=50), window

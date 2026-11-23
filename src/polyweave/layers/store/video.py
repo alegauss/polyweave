@@ -553,6 +553,41 @@ def _shown(i: int, clip: dict, width: int, height: int, fps: float) -> tuple:
         f"setpts=PTS-STARTPTS,format=yuv420p,fps={fps:g},settb=AVTB[v{i}]")
 
 
+def _slice(cut: dict, window: tuple[float, float]) -> tuple[dict, float]:
+    """The part of a cut a review window needs, and the second of the cut it starts
+    at (§PW725): from the first clip still on screen at the window's start, whole, to
+    the last one it reaches. A clip is never cut into, so a still's zoom, a crossfade's
+    offsets and a run's sound are the cut's own; the music, the voices, the subtitles
+    and the end's fade are moved by the slice's start. A window reaching the end's fade
+    starts no later than it, so the fade is never entered part way."""
+    a, b = window
+    total = cut["seconds"]
+    fade_from = total - cut["fade_out"] if cut["fade_out"] else total
+    first = min(a, fade_from) if cut["fade_out"] and b > fade_from else a
+    starts, at = [], 0.0
+    for clip in cut["clips"]:
+        at -= clip["fade_in"]
+        starts.append(at)
+        at += clip["length"]
+    ends = [s + c["length"] for s, c in zip(starts, cut["clips"], strict=True)]
+    k = next(i for i, end in enumerate(ends) if end > first + 1e-9)
+    last = max(i for i, s in enumerate(starts) if s < b - 1e-9)
+    shift = max(0.0, starts[k])
+    clips = [dict(c) for c in cut["clips"][k:last + 1]]
+    clips[0]["fade_in"] = 0.0
+    seconds = min(b, total) - shift
+    voices = []
+    for voice in cut["voices"]:
+        at = voice["at"] - shift
+        if at >= seconds or (at < 0 and at + _seconds(Path(voice["file"])) <= 0):
+            continue
+        voices.append({**voice, "at": at, **({"seek": -at} if at < 0 else {})})
+    return {**cut, "clips": clips, "seconds": seconds,
+            "music_from": cut["music_from"] + shift, "fade_at": fade_from - shift,
+            "voices": voices,
+            "subtitles": [{**one, "shift": shift} for one in cut["subtitles"]]}, shift
+
+
 def _mixed(sounds: list[str]) -> str:
     """The sounds named, mixed without normalising, or the one passed through."""
     if len(sounds) == 1:
@@ -581,10 +616,12 @@ def _command(cut: dict, target: Path, here: Path) -> list[str]:
             graph.append(f"[{joined}][v{i}]concat=n=2:v=1:a=0[j{i}]")
         joined, at = f"j{i}", at + clip["length"] - clip["fade_in"]
     total = cut["seconds"]
+    # Where the end fades, in this graph's own seconds: a slice for a review starts
+    # later than the cut, so its fade begins earlier in it (§PW725).
+    fade_at = cut.get("fade_at", total - cut["fade_out"])
+    fades = bool(cut["fade_out"]) and fade_at < total
     ending = (
-        f",fade=t=out:st={total - cut['fade_out']:.6f}:d={cut['fade_out']:.6f}"
-        if cut["fade_out"]
-        else ""
+        f",fade=t=out:st={fade_at:.6f}:d={cut['fade_out']:.6f}" if fades else ""
     )
     graph.append(f"[{joined}]trim=duration={total:.6f}{ending}[vout]")
     sounds: list[str] = []
@@ -617,9 +654,7 @@ def _command(cut: dict, target: Path, here: Path) -> list[str]:
             offset += clip["length"]
     mapped = ["-map", "[vout]"]
     fading = (
-        f",afade=t=out:st={total - cut['fade_out']:.6f}:d={cut['fade_out']:.6f}"
-        if cut["fade_out"]
-        else ""
+        f",afade=t=out:st={fade_at:.6f}:d={cut['fade_out']:.6f}" if fades else ""
     )
     finish = (f"atrim=duration={total:.6f}{fading},"
               "aformat=sample_rates=48000:channel_layouts=stereo")
@@ -637,8 +672,11 @@ def _command(cut: dict, target: Path, here: Path) -> list[str]:
             laid = [beds[t]] if beds else []
             for n, voice in enumerate(v for v in cut["voices"]
                                       if v["track"] == track["language"]):
-                inputs += ["-i", str(voice["file"])]
-                delay = int(round(voice["at"] * 1000))
+                # A voice already speaking where a review's slice starts enters part
+                # way through, sought to where it had got to (§PW725).
+                seek = ["-ss", f"{voice['seek']:.6f}"] if voice.get("seek") else []
+                inputs += [*seek, "-i", str(voice["file"])]
+                delay = int(round(max(0.0, voice["at"]) * 1000))
                 graph.append(f"[{count}:a]asetpts=PTS-STARTPTS,volume={voice['gain']:g}dB,"
                              f"adelay={delay}|{delay}[t{t}v{n}]")
                 laid.append(f"[t{t}v{n}]")
@@ -652,7 +690,9 @@ def _command(cut: dict, target: Path, here: Path) -> list[str]:
                        f"title={track['title']}"]
         mapped += ["-c:a", "aac", "-b:a", "192k"]
     for s, subtitle in enumerate(cut.get("subtitles") or []):
-        inputs += ["-i", str(subtitle["file"])]
+        shifted = (["-itsoffset", f"{-subtitle['shift']:.6f}"]
+                   if subtitle.get("shift") else [])
+        inputs += [*shifted, "-i", str(subtitle["file"])]
         mapped += ["-map", f"{count}:s", f"-metadata:s:s:{s}",
                    f"language={subtitle['language']}"]
         count += 1
@@ -963,11 +1003,17 @@ def cut(
             given="out",
         )
     target.parent.mkdir(parents=True, exist_ok=True)
-    argv = _command(declared, target, here)
-    if window is not None:
-        # The same graph as the whole cut, its output held to the window: the mix, the
-        # fades and every timed voice are the cut's own, never an excerpt's (§PW713).
-        argv[-1:-1] = ["-ss", f"{window[0]:.3f}", "-to", f"{window[1]:.3f}"]
+    if window is None:
+        argv = _command(declared, target, here)
+    else:
+        # The cut's own graph over the clips the window needs, from a clip's start, and
+        # its output held to the window: the mix, the fades and every timed voice are
+        # the cut's (§PW713), and a late window no longer decodes every clip before it
+        # (§PW725).
+        sliced, shift = _slice(declared, window)
+        argv = _command(sliced, target, here)
+        argv[-1:-1] = ["-ss", f"{window[0] - shift:.3f}",
+                       "-to", f"{window[1] - shift:.3f}"]
     seconds = (window[1] - window[0]) if window is not None else declared["seconds"]
     report.stage("rendering", progress=0.0, note=f"encoding {seconds:g}s from "
                  f"{len(declared['clips'])} clip(s)")
