@@ -97,6 +97,7 @@
 - ✅ **PW713** **A cut cannot render one selected interval with its production narration and callouts** — video.cut renders a review of one window, by seconds or named around="clip[n]|voice[n]", seeking the cut's own graph so the mix and cues stay exact.
 - ✅ **PW714** **Fetched media has no reusable catalogue of approved and rejected source ranges** — video.library keeps fetched files with the ranges people accepted or rejected, and a cut naming [video] library shows a clip only inside an accepted, cleared range.
 - ✅ **PW715** **A long video cut exposes no stage progress while rendering or waiting** — video.cut reports building and rendering with the fraction ffmpeg has encoded; --progress prints each as a JSON line, --job now runs it, and a failure keeps last_stage.
+- ✅ **PW716** **Narrated claims cannot bind evidence, dates and human review to their spoken anchors** — video.claims places each declared claim on its spoken words, fingerprints it with its evidence, and holds it unapproved, stale or expired until a person's review matches; store.description cites them.
 
 ## Block E — One world with the engine
 

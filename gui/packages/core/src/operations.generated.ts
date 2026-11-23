@@ -2616,6 +2616,8 @@ export interface StoreDescriptionArgs {
   summary?: string
   /** each {at, title}, the first at 0 seconds */
   chapters?: unknown[]
+  /** sources kept whole, as video.claims' citations */
+  cited?: unknown[]
   /** the platform's character limit; from 1 to …; default 5000 */
   limit?: number
   /** where the text is written, if anywhere */
@@ -2924,6 +2926,18 @@ export interface VideoBuyArgs {
 export interface VideoCheckArgs {
   /** the *.cut.toml, as a path under the project */
   source: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
+/** Read a narration's claims against their evidence, anchors and reviews (§PW716). */
+export interface VideoClaimsArgs {
+  /** the *.claims.toml, as a path under the project */
+  path: string
+  /** the *.cut.toml that speaks them, to anchor each */
+  cut?: string
+  /** where a Markdown review page is written, if anywhere */
+  out?: string
   /** the project the paths resolve against; default "." */
   root?: string
 }
@@ -3365,6 +3379,7 @@ export interface Operations {
   "vfx.preview": VfxPreviewArgs
   "video.buy": VideoBuyArgs
   "video.check": VideoCheckArgs
+  "video.claims": VideoClaimsArgs
   "video.cut": VideoCutArgs
   "video.labels": VideoLabelsArgs
   "video.library": VideoLibraryArgs
@@ -3615,6 +3630,7 @@ export const OPERATIONS = [
   "vfx.preview",
   "video.buy",
   "video.check",
+  "video.claims",
   "video.cut",
   "video.labels",
   "video.library",

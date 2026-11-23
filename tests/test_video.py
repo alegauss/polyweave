@@ -752,3 +752,92 @@ def test_a_failed_job_keeps_the_stage_it_reached(tmp_path):
     report.stage("rendering", progress=0.4)
     report.finish("failed", error={"code": "video.encode-failed"})
     assert state["stage"] == "failed" and state["last_stage"] == "rendering"
+
+# -- a narration's claims, their evidence and who reviewed them (§PW716) ---------------
+
+
+def _narrated(here: Path) -> None:
+    """A cut speaking one voice line at 4s, whose words are timed."""
+    from polyweave.kernel import provenance
+
+    _tone(here / "line.wav", 2.0, 220.0)
+    (here / "line.wav.words.json").write_text(json.dumps({
+        "sha256": provenance.sha256_of(here / "line.wav")[0],
+        "words": [{"word": "Gutenberg", "start": 0.2, "end": 0.7},
+                  {"word": "shipped", "start": 0.7, "end": 1.0},
+                  {"word": "in", "start": 1.0, "end": 1.1},
+                  {"word": "WordPress", "start": 1.1, "end": 1.5},
+                  {"word": "5.0", "start": 1.5, "end": 1.9}]}), encoding="utf-8")
+    (here / "story.cut.toml").write_text(
+        '[[clip]]\nstill = "card.png"\nlength = 8.0\n\n'
+        '[[voice]]\nfile = "line.wav"\nat = 4.0\n', encoding="utf-8")
+
+
+_CLAIM = ('[[claim]]\nid = "launch"\nsays = "Gutenberg shipped in WordPress 5.0"\n'
+          'kind = "fact"\nvoice = 1\nwords = "WordPress 5.0"\n'
+          'source = "https://wordpress.org/news/2018/12/bebo/"\n'
+          'excerpt = "WordPress 5.0, the block editor"\nhappened_on = 2018-12-06\n'
+          'retrieved_on = 2026-11-20\n')
+
+
+def test_a_claim_is_placed_on_its_words_and_approved_only_by_its_fingerprint(tmp_path):
+    from polyweave.layers.store import claims
+
+    here = _project(tmp_path)
+    _narrated(here)
+    (here / "story.claims.toml").write_text(_CLAIM, encoding="utf-8")
+    said = claims.claims("story.claims.toml", cut="story.cut.toml", out="review.md",
+                         root=str(here))
+    row = said["claims"][0]
+    assert row["status"] == "unreviewed" and row["at"] == pytest.approx(5.1)
+    assert said["passed"] is False and said["citations"] == []
+    assert row["fingerprint"] in (here / "review.md").read_text(encoding="utf-8")
+    (here / "story.claims.toml").write_text(
+        _CLAIM + f'\n[claim.review]\nby = "Ana"\non = 2026-11-21\nverdict = "approved"'
+        f'\nfingerprint = "{row["fingerprint"]}"\n', encoding="utf-8")
+    approved = claims.claims("story.claims.toml", cut="story.cut.toml", root=str(here))
+    assert approved["passed"] is True
+    assert approved["citations"] == [
+        "https://wordpress.org/news/2018/12/bebo/ (2026-11-20)"]
+    _tone(here / "line.wav", 2.0, 330.0)  # the narration is spoken again
+    stale = claims.claims("story.claims.toml", cut="story.cut.toml", root=str(here))
+    assert stale["claims"][0]["status"] == "stale"
+
+
+def test_a_statistic_past_its_deadline_expires_and_footage_needs_its_own_date(tmp_path):
+    from polyweave.layers.store import claims
+
+    here = _project(tmp_path)
+    _narrated(here)
+    (here / "story.claims.toml").write_text(
+        '[[claim]]\nid = "share"\nsays = "43% of the web"\nkind = "statistic"\n'
+        'voice = 1\nnote = "W3Techs, read by hand"\npublished_on = 2024-01-01\n'
+        'review_by = 2025-01-01\n\n'
+        '[[claim]]\nid = "missing"\nsays = "the editor"\nkind = "fact"\nvoice = 1\n'
+        'words = "block editor"\nnote = "seen"\nhappened_on = 2018-12-06\n',
+        encoding="utf-8")
+    said = claims.claims("story.claims.toml", cut="story.cut.toml", root=str(here))
+    assert {r["id"]: r["status"] for r in said["claims"]} == {
+        "share": "expired", "missing": "unanchored"}
+    (here / "f.claims.toml").write_text(
+        '[[claim]]\nid = "demo"\nsays = "the 2018 launch"\nkind = "footage"\n'
+        'clip = 1\nnote = "a 2021 demonstration"\nhappened_on = 2018-12-06\n',
+        encoding="utf-8")
+    with pytest.raises(PolyweaveError) as raised:
+        claims.claims("f.claims.toml", root=str(here))
+    assert raised.value.code == "video.bad-claims"
+    assert "published_on" in raised.value.message
+
+
+def test_a_description_keeps_cited_sources_whole(tmp_path):
+    from polyweave.kernel import provenance
+    from polyweave.layers.store import description
+
+    here = _project(tmp_path)
+    (here / "a.png").write_bytes(b"x")
+    provenance.write(provenance.build(
+        "fetch", here / "a.png", engine={"name": "pixabay"},
+        extra={"licence": "Pixabay"}, root=here), root=here)
+    cited = "https://wordpress.org/news/2018/12/bebo/ (2018-12-06)"
+    said = description.description(["a.png"], cited=[cited], root=str(here))
+    assert f"Sources:\n{cited}" in said["text"]

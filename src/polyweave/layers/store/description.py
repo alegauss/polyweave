@@ -57,6 +57,8 @@ def description(
     *,
     summary: Annotated[str, Param("what the video is, as its first paragraph")] = "",
     chapters: Annotated[list, Param("each {at, title}, the first at 0 seconds")] = None,
+    cited: Annotated[list, Param("sources kept whole, as video.claims' citations")
+                     ] = None,
     limit: Annotated[int, Param("the platform's character limit", lo=1)] = 5000,
     out: Annotated[str, Param("where the text is written, if anywhere")] = None,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
@@ -65,7 +67,9 @@ def description(
 
     A file whose record carries a `credit` (an attribution its licence requires) has it
     kept whole. The others are grouped under their service and licence, naming their
-    authors once each. YouTube watch URLs are shortened. A file whose licence no record
+    authors once each. `cited` are the sources a narration's approved claims rest on,
+    each kept whole under Sources (§PW716). YouTube watch URLs are shortened. A file
+    whose licence no record
     states is in `unstated` and left out, never given a licence. A text longer than
     `limit` is refused with its length and the required credits' share; nothing is cut.
     """
@@ -104,15 +108,18 @@ def description(
     credits = [*required, *(
         f"{service} ({licence})" + (f": {', '.join(authors)}" if authors else "")
         for (service, licence), authors in sorted(grouped.items()))]
+    sources = [_short(str(one)) for one in cited or () if str(one).strip()]
+    if sources:
+        lines += ["", "Sources:", *sources]
     if credits:
         lines += ["", "Credits:", *credits]
     text = "\n".join(lines).strip() + "\n"
     if len(text) > limit:
-        owed = sum(len(one) + 1 for one in required)
+        owed = sum(len(one) + 1 for one in [*required, *sources])
         raise PolyweaveError(
             "store.description-long",
             f"the description is {len(text)} characters, past the {limit} allowed; "
-            f"{owed} of them are credits a licence requires",
+            f"{owed} of them are credits a licence requires and cited sources",
             "shorten the summary or the chapters, or use fewer files; no required "
             "credit is cut", given=len(text))
     if out:

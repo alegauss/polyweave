@@ -155,6 +155,14 @@ CODES: dict[str, Code] = {
         "(§PW712)",
         doors=("fetch it with stock.fetch, or let the build fetch it",),
     ),
+    "video.bad-claims": Code(
+        means="a narration's claims file holds a claim it cannot check",
+        when="a key it does not take, no id, says or kind, an id twice, a kind not "
+        "fact, statistic, conclusion or footage, no voice or clip, a date its kind "
+        "needs, a source with no excerpt or retrieved_on, or a review with no by, on, "
+        "verdict or fingerprint (§PW716)",
+        doors=("fix the claim the refusal names",),
+    ),
     "video.bad-library": Code(
         means="a library of fetched media holds something it cannot keep",
         when="a key it does not take, a source with no file or sha256, rights not "

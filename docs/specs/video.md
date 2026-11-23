@@ -470,3 +470,22 @@ range (a still's needs a whole-file range) and touches no rejected one; otherwis
 `video.library-changed`. Captured runs are not catalogued. The cut's record carries
 `library` and `approved`, one entry per file clip with the range, `by`, `on`, `reason`
 and the source's tags. `video.check` reports each clip's refusal as its own finding.
+## A narration's claims and their evidence (§PW716)
+
+A `*.claims.toml` beside a cut holds one `[[claim]]` per thing the narration asserts:
+`id`, `says`, `kind` (`fact`, `statistic`, `conclusion` or `footage`), its anchor
+(`voice = n`, the cut's n-th voice line, with `words` it rests on; footage `clip = n`),
+`source` with `excerpt` and `retrieved_on`, or a `note`, and dates: a fact's
+`happened_on`; a statistic's `published_on` and `review_by`; footage's `happened_on`
+(what it depicts) and `published_on` (the footage's own date), kept apart so a later
+demonstration never dates an earlier event. Anything missing is `video.bad-claims`.
+
+A `[claim.review]` is a person's: `by`, `on`, `verdict` (`approved` or `rejected`) and
+the `fingerprint` they reviewed. `video.claims path cut` answers each claim in the cut's
+order with `at` (the voice line's `at` plus the words' start in its `<file>.words.json`,
+when that file's SHA-256 matches; the clip's start for footage), its fingerprint (its
+own fields and the SHA-256 of the line or clip it is anchored in) and `status`:
+`approved`, `unreviewed`, `rejected`, `stale` (fingerprint moved since the review),
+`expired` (`review_by` past) or `unanchored` (its place or words not found). `out`
+writes a Markdown page for the review. `citations` lists the approved claims' URL
+sources, which `store.description cited` keeps whole under Sources, inside its limit.

@@ -26,7 +26,7 @@
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
 | Music | `music.validate`, `music.to_midi`, `music.from_midi` (a MIDI as a score), `music.from_audio` (a recording as a score), `music.render`, `music.track`, `sound.synth`, `sound.loop`, `sound.stems` (a recorded track), `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build`, `vfx.preview`, `panel.build`, `panel.capture`, `picture.sew`, `icons.build` |
-| A teaser | `video.cut`, `capture.web`, `capture.instance`, `capture.card`, `video.buy` (paid), `video.check`, `video.measure`, `video.pauses`, `video.safe_area`, `store.thumbnail`, `store.thumbnails`, `video.sheet`, `video.labels`, `video.library`, `store.description` |
+| A teaser | `video.cut`, `capture.web`, `capture.instance`, `capture.card`, `video.buy` (paid), `video.check`, `video.measure`, `video.pauses`, `video.safe_area`, `store.thumbnail`, `store.thumbnails`, `video.sheet`, `video.labels`, `video.library`, `video.claims`, `store.description` |
 | A project's look | `style.read`, `style.drift` (before a person looks), `style.train` |
 | Buy a drawing | `picture.buy`, `picture.batch`, `picture.gate`, `picture.faults`, `picture.letters`, `picture.describe`, `picture.vary`, `picture.upscale`, `picture.against_parent`, `picture.fit`, `picture.collect` |
 | A stock picture, with its licence | `stock.find`, `stock.fetch`, `stock.clip` |

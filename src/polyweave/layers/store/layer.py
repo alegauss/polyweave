@@ -8,6 +8,7 @@ LAYER = Layer(
     summary="What a game shows outside itself: store art, teasers, icons, sheets.",
     modules=(
         "polyweave.layers.store.card",
+        "polyweave.layers.store.claims",
         "polyweave.layers.store.compose",
         "polyweave.layers.store.description",
         "polyweave.layers.store.footage",
