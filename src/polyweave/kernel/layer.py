@@ -124,6 +124,10 @@ class Producer:
     plan: str = ""
     #: `module:function` saying one parameter back with its unit, for a refusal.
     described: str = ""
+    #: `module:function` answering the step a searched parameter must keep where the
+    #: spec declares none, called (fixed, names, root) -> {name: step}: a level's whole
+    #: number is sampled whole, never 22.5 (§PW723).
+    steps: str = ""
 
 
 @dataclass(frozen=True)

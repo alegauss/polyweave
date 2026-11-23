@@ -513,7 +513,9 @@ levels, no measure, or a position outside the set is `level.bad-set`.
 A level's own spec is also what a search aims at. `search.sweep(spec, producer="level",
 fixed={"level": "data/levels/level_020.json"}, out="work/level_020.candidate.json")`
 turns each `[search.<param>]` the spec names, a dotted path of a key the level holds
-(`moves`, `goals.0.count`, an integer kept an integer). Each candidate is the JSON level
+(`moves`, `goals.0.count`). A key the fixed level holds as a whole number is searched
+with `step = 1` where its `[search.<param>]` declares no step, so every sample is whole
+and none is a value already probed (§PW723). Each candidate is the JSON level
 with its values put in, written at `out`, compiled with `level.compile` where `[levels]
 schema` is declared, and probed with `level.probe`; the spec is checked against its
 record, all locally at no cost.

@@ -40,6 +40,7 @@ LAYER = Layer(
             name="level",
             about="a level with its searched values put in, compiled and probed",
             target="polyweave.layers.engine.levels:sample",
+            steps="polyweave.layers.engine.levels:whole",
         ),
     ),
     subjects=(
@@ -135,6 +136,8 @@ LAYER = Layer(
             "internal", "a flash predicate, for accept.check"),
         "polyweave.layers.engine.levels:sample": (
             "internal", "one level candidate, the producer search.sweep turns"),
+        "polyweave.layers.engine.levels:whole": (
+            "internal", "the level's whole-number keys, stepped by 1 in a search"),
         "polyweave.layers.engine.levels:predicate": (
             "internal", "a level predicate off its probe record, for accept.check"),
         "polyweave.layers.engine.traces:read": (

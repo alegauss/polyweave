@@ -857,6 +857,7 @@ def sweep(
     """
     if not isinstance(spec, Spec):
         spec = accept.read(spec, root)
+    spec = _stepped(spec, producer, fixed, root)
     rung = rung or None
     trace = trace or None
     found = search(
@@ -871,6 +872,25 @@ def sweep(
 
         found["trace_written"] = written.write(found, out=trace, spec=spec, root=root)
     return found
+
+
+def _stepped(spec: Spec, producer: str, fixed: dict | None,
+             root: str | Path) -> Spec:
+    """The spec with each step its producer says a parameter must keep, where the spec
+    declares none (§PW723): a level's whole number is searched in whole steps, so no
+    sample is 22.5 moves and none is a value already measured."""
+    made = producers().get(producer)
+    if made is None or not made.steps:
+        return spec
+    kept = function(made.steps)(fixed or {}, list(spec.search), root=str(root))
+    if not kept:
+        return spec
+    import dataclasses
+
+    stepped = {name: ({**axis, "step": kept[name]}
+                      if name in kept and not axis.get("step") else axis)
+               for name, axis in spec.search.items()}
+    return dataclasses.replace(spec, search=stepped)
 
 
 def best_of(results: Sequence[dict]) -> dict | None:  # pragma: no cover - a convenience

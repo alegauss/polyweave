@@ -121,21 +121,6 @@ What starship still needs from polyweave:
 Until it lands, starship keeps the per-second pass in `dev/pressure.gd`, named against
 this line.
 
-### §PW723 A level search keeps an integer whole
-
-Found tuning Cottony's level 18 toward curve A (PW206, 2026-11-23):
-`search.sweep(producer="level")` over `[search.moves] min = 20, max = 25`, where `moves`
-is a whole number in the level, sampled 20, 21, 22, 22.5, 23 and 24. The candidate with
-22.5 was written into the level and probed; Cottony's probe read it as 22, so one of six
-probes, each 50 seeded games in Godot, measured a candidate it had already measured, and
-the trace lists 22.5 as if it were a level that can exist.
-
-The measurements spec says a level search keeps an integer an integer. Where the key's
-value in the fixed level is an integer, every sample is rounded before it is written, a
-value already measured is not measured again, and the trace never names a fraction for
-it. A test sweeps an integer key with a budget past its range and finds each candidate
-whole and unique.
-
 ### §PW724 A level probed by its number, from the game's curve
 
 Found closing PW206 in Cottony (2026-11-23). Its design asks for "probing levels 21 to
@@ -152,6 +137,20 @@ project's probe can build it from its own curve: `[levels] curve_probe = true`, 
 recording the probe against the curve's source file rather than a level file. A sampled
 tail (`numbers = [25, 40, 100, 200]`) is then one call, and its record says the curve
 moved when the source does.
+
+### §PW728 A level search's best kept, not played again
+
+Split from PW723 (2026-11-23). A search ends by making its best sample again, so the
+file at `out` is the answer and not whichever sample came last. A render serves that
+from its cache at no cost. A level has no cache: `levels.sample` writes the candidate
+and probes it, so a level search whose best was not its last sample plays its best level
+again, 50 seeded games in Godot for a figure already in the trace.
+
+The level producer should keep each candidate it probed, by the digest of the level it
+wrote, with its `.probe.json`, so making a sample again whose level is byte for byte one
+already probed copies the kept candidate and its probe record to `out` and plays
+nothing. Done when a level search whose best is an earlier sample ends with `out`
+holding that level and its probe, and the probe ran once per distinct candidate.
 
 ## Block S — Playing the game, not only rendering it
 

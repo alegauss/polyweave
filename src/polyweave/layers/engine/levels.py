@@ -330,6 +330,29 @@ def curve(
     }
 
 
+def whole(fixed: dict, names: list[str], root: str = ".") -> dict[str, float]:
+    """A step of 1 for each searched key the fixed level holds as a whole number, so a
+    search samples it whole and never probes 22.5 moves, which the level writes as 22
+    and which was measured already (§PW723)."""
+    level = str((fixed or {}).get("level") or "")
+    source = load(root).root / level if level else None
+    if source is None or not source.is_file():
+        return {}
+    document = json.loads(source.read_text(encoding="utf-8-sig"))
+    found = {}
+    for path in names:
+        node: Any = document
+        for key in path.split("."):
+            if isinstance(node, list):
+                held = key.isdigit() and int(key) < len(node)
+                node = node[int(key)] if held else None
+            else:
+                node = node.get(key) if isinstance(node, dict) else None
+        if isinstance(node, int) and not isinstance(node, bool):
+            found[path] = 1.0
+    return found
+
+
 def _set_at(document: Any, path: str, value: Any) -> None:
     """Put `value` at a dotted path (`moves`, `goals.0.count`), keeping an integer one
     an integer, and refusing a path the level does not have."""

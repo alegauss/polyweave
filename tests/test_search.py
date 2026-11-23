@@ -461,3 +461,32 @@ def test_the_three_cottony_collisions_each_read_as_a_different_thing():
     assert UNITS["key"].startswith("W "), "Cottony's key is a share of the reach"
     assert "multiplier" in UNITS["ambient"], "Cottony's ambient scales the rig's"
     assert described("fill") == "fill (W at the sphere rung's size)"
+
+
+# -- a level's whole number searched whole (§PW723) ------------------------------------
+
+
+def test_a_level_key_held_whole_is_sampled_whole_and_never_twice(tmp_path):
+    """Cottony's level 18: moves 20 to 25 sampled 22.5, written as 22, probed again."""
+    import json
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    (tmp_path / "level.json").write_text(json.dumps(
+        {"moves": 24, "speed": 1.5, "goals": [{"count": 3}]}), encoding="utf-8")
+    spec = a_spec(search={"moves": {"min": 20, "max": 25},
+                          "goals.0.count": {"min": 1.0, "max": 6.0},
+                          "speed": {"min": 1.0, "max": 2.0}},
+                  predicate=[{"id": "x", "measure": "alpha_coverage", "min": 0.5}])
+    stepped = search._stepped(spec, "level", {"level": "level.json"}, tmp_path)
+    assert stepped.search["moves"]["step"] == 1.0
+    assert stepped.search["goals.0.count"]["step"] == 1.0
+    assert "step" not in stepped.search["speed"]
+    evaluate = peaking_at(22.5, name="moves")
+    search.search(a_spec(search={"moves": stepped.search["moves"]}), evaluate,
+                  budget=20, points=4)
+    seen = [call["moves"] for call in evaluate.calls]
+    assert all(float(v).is_integer() for v in seen)
+    # The last call may be the best made again, so the file at out is the answer
+    # (§PW452); every sample the search chose is measured once.
+    sampled = seen[:-1] if seen[-1] in seen[:-1] else seen
+    assert len(sampled) == len(set(sampled))

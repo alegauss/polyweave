@@ -74,17 +74,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW723",
-    block: "R",
-    symptom: "A level search samples a fraction for an integer key and probes a value it already measured",
-    why: "Each wasted candidate is 50 games in Godot, and a trace naming 22.5 moves reads as a level that cannot exist.",
-    deps: [],
-  },
-  {
     id: "PW724",
     block: "R",
     symptom: "level.probe refuses a level that has no file, so a game's fallback curve past its shipped levels cannot be probed",
     why: "Cottony's endless tail is the formula alone, and checking it meant writing an empty level file per sampled number.",
+    deps: [],
+  },
+  {
+    id: "PW728",
+    block: "R",
+    symptom: "A level search re-probes its best level at the end, though that level was already measured",
+    why: "Leaving the answer at out costs another 50 seeded games in Godot for a figure already in the trace.",
     deps: [],
   },
 ];
