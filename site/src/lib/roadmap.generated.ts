@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 4 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 3 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW720",
-    block: "D",
-    symptom: "voice.lines cannot buy a current take again when its words, voice and model are unchanged",
-    why: "A take whose accent or delivery drifted can only be re-rolled by rewording a line that was already right or moving files by hand.",
-    deps: [],
-  },
   {
     id: "PW721",
     block: "D",

@@ -35,7 +35,7 @@ import shutil
 import subprocess
 import urllib.parse
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 from polyweave.kernel import provenance
 from polyweave.kernel.config import load
@@ -627,6 +627,10 @@ def lines(
     adopt: Annotated[
         bool, Param("take over the adoptable takes sound.speak bought, buying none")
     ] = False,
+    retake: Annotated[list, Param("keys bought again though current")] = None,
+    reason: Annotated[str, Param("why the retakes are bought, kept in each record")] = (
+        None
+    ),
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
     """Voice the string table's lines as a set, each in its speaker's voice (§PW322).
@@ -647,15 +651,22 @@ def lines(
     (§PW691): listed apart, still priced in the plan, since it may differ where the
     model holds the language. `adopt` writes the line into its record and counts it
     current instead.
+
+    `retake` names keys bought again though their take is current, a drift the words
+    do not show (§PW720): each is planned and priced, its old take kept beside it as
+    `<name>.retake-<time>.<ext>` with its record and timed words, and `reason`, which a
+    retake must give, is kept in the new take's record. A failed purchase puts it back.
     """
     from polyweave.layers.words import words
     from polyweave.layers.words.world import declared, voice_digest, voice_in
 
     config = load(root)
     here = config.root
+    retake = _retaking(retake, reason)
     if script:
         return _scripted(report, script, locale=locale, keys=keys, spend=spend, out=out,
-                         model=model, service=service, adopt=adopt, config=config)
+                         model=model, service=service, adopt=adopt, config=config,
+                         retake=retake, reason=reason)
     if not config.get("words.voiced"):
         raise PolyweaveError(
             "words.no-voiced",
@@ -704,7 +715,8 @@ def lines(
             )
             line = {"key": row["key"], "locale": one, "sha256": words.said_digest(text)}
             digest = voice_digest(entities[who], one)
-            if _still(here / land, line, digest, model, here):
+            again = row["key"] in retake and (here / land).is_file()
+            if not again and _still(here / land, line, digest, model, here):
                 current.append({**at, "out": land})
                 continue
             taken = _adoptable(here / land, text, digest, model, here)
@@ -718,6 +730,7 @@ def lines(
                 adoptable.append({**at, "out": land, **_offered(model)})
             plan.append({**at, "out": land, "text": text, "characters": len(text),
                          "price": price, "line": line,
+                         **({"retake": True} if again else {}),
                          **({"draft": True} if _draft(here / land, here) else {})})
     total = round(sum(one["price"] for one in plan), 6)
     left = purchase.remaining(str(here), service=name)
@@ -757,17 +770,20 @@ def lines(
         if model in LANGUAGE_HELD:
             request["language_code"] = language_of(one["locale"])
         route = SPEAK.format(voice=urllib.parse.quote(own["id"], safe=""))
+        moved = _aside(here / one["out"], here) if one.get("retake") else []
         try:
             took = _bought(
                 report, f"{route}?output_format={FORMAT}", request, words=one["text"],
                 cue=None, out=one["out"], model=model, service=name, root=here,
                 details={"voice": own["id"], "delivery": delivery, "spoken": True,
                          "entity": drawn_from, "line": {**one["line"],
-                                                        "table": table_at}},
+                                                        "table": table_at},
+                         **_retook(moved, reason, here)},
                 inputs=[provenance.source("world", world_file, root=here),
                         provenance.source("words", source, root=here)],
             )
         except PolyweaveError as refused:
+            _back(moved)
             if refused.code not in ("fetch.over-budget", "fetch.budget-closed",
                                     "fetch.no-credit"):
                 raise
@@ -920,7 +936,7 @@ def _opening(said: dict, locale: str | None) -> dict | None:
 
 
 def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
-              adopt, config) -> dict:
+              adopt, config, retake=(), reason=None) -> dict:
     """`voice.lines` over a plain lines file (§PW665): Dumont's narration was spoken by
     a loop of its own over sound.speak, skipping the takes already current."""
     from polyweave.layers.words.words import said_digest
@@ -947,11 +963,13 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
             locale=one["locale"], key=re.sub(r"[^\w.-]+", "_", str(one["key"])))
         at = {"key": str(one["key"]), "locale": str(one["locale"]), "out": land}
         line = {"key": at["key"], "locale": at["locale"], "sha256": said_digest(text)}
-        if _still(here / land, line, None, model, here, said_by=(voice, delivery)):
+        again = at["key"] in retake and (here / land).is_file()
+        if not again and _still(here / land, line, None, model, here,
+                                said_by=(voice, delivery)):
             current.append(at)
             continue
-        taken = _adoptable(here / land, text, None, model, here,
-                           said_by=(voice, delivery))
+        taken = None if again else _adoptable(here / land, text, None, model, here,
+                                              said_by=(voice, delivery))
         if taken and adopt:
             _adopted(taken, {**line, "script": script_at},
                      [provenance.source("words", where, root=here)], here)
@@ -962,7 +980,7 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
         price = client.priced(name, prices, model, None, len(text),
                                   bought="spoken line")["price"]
         plan.append({**at, "text": text, "characters": len(text), "price": price,
-                     "line": line})
+                     "line": line, **({"retake": True} if again else {})})
     left = purchase.remaining(str(here), service=name)
     answer = {
         "voice": [{k: v for k, v in one.items() if k != "line"} for one in plan],
@@ -983,15 +1001,18 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
         request = {"text": one["text"], **request_base}
         if model in LANGUAGE_HELD:
             request["language_code"] = language_of(one["locale"])
+        moved = _aside(here / one["out"], here) if one.get("retake") else []
         try:
             took = _bought(
                 report, f"{route}?output_format={FORMAT}", request, words=one["text"],
                 cue=None, out=one["out"], model=model, service=name, root=here,
                 details={"voice": voice, "delivery": delivery, "spoken": True,
-                         "line": {**one["line"], "script": script_at}},
+                         "line": {**one["line"], "script": script_at},
+                         **_retook(moved, reason, here)},
                 inputs=[provenance.source("words", where, root=here)],
             )
         except PolyweaveError as refused:
+            _back(moved)
             if refused.code not in ("fetch.over-budget", "fetch.budget-closed",
                                     "fetch.no-credit"):
                 raise
@@ -1033,6 +1054,51 @@ def _draft(where: Path, here: Path) -> bool:
     except PolyweaveError:
         return False
     return (record.get("params") or {}).get("rung") == "draft"
+
+
+def _retaking(retake: Any, reason: str | None) -> tuple[str, ...]:
+    """The keys to buy again though current, refused without a reason (§PW720)."""
+    keys = tuple(str(one) for one in retake or () if str(one).strip())
+    if keys and not str(reason or "").strip():
+        raise PolyweaveError(
+            "fetch.missing-field", f"{', '.join(keys)} would be bought again with no "
+            "reason", "pass reason, what is wrong with the current take, as the "
+            "person heard it; it is kept in the new take's record", given="reason")
+    return keys
+
+
+def _aside(take: Path, here: Path) -> list[tuple[Path, Path]]:
+    """Move a take, its record and its timed words aside as `<name>.retake-<time>`, so
+    the new take lands where the old one was and the old is kept beside it (§PW720)."""
+    import time as _time
+
+    stamp = _time.strftime("%Y%m%dT%H%M%S")
+    kept = take.with_name(f"{take.stem}.retake-{stamp}{take.suffix}")
+    moved = []
+    for one, to in ((take, kept),
+                    (provenance.sidecar(take, here), provenance.sidecar(kept, here)),
+                    (take.with_name(take.name + ".words.json"),
+                     kept.with_name(kept.name + ".words.json"))):
+        if one.is_file():
+            to.parent.mkdir(parents=True, exist_ok=True)
+            one.replace(to)
+            moved.append((one, to))
+    return moved
+
+
+def _back(moved: list[tuple[Path, Path]]) -> None:
+    """Put a take moved aside back, where its purchase failed."""
+    for one, to in reversed(moved):
+        if to.is_file():
+            to.replace(one)
+
+
+def _retook(moved: list[tuple[Path, Path]], reason: str | None, here: Path) -> dict:
+    """What a retake's record keeps: why, and where the take it replaced now is."""
+    if not moved:
+        return {}
+    return {"retake": {"reason": str(reason).strip(),
+                       "replaced": provenance.relative(moved[0][1], here)}}
 
 
 def _take(where: Path, voice: str | None, model: str, here: Path,

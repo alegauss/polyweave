@@ -8,29 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW720 A current take cannot be bought again
-
-Where it happened: urdido (the video framework extracted from marketing's video-maker),
-task UR7. In marketing's `japode/wordpress2` the chapter-1 take bought with eleven_v3 on
-2026-11-16 drifted into European Portuguese between 0:28 and 0:35. The words were right,
-so the owner wanted the same line spoken again.
-
-The call: `python -m polyweave voice.lines --script lines.json --locale pt-BR --spend
-true` (urdido's `prepare` builds the lines file). The take's words, voice, model and
-delivery are unchanged, so the plan lists it under `current` and buys nothing. No
-parameter says "buy this key again even though it is current".
-
-The workaround (urdido UR7): before the quote, `urdido prepare --retake <take>
---retake-reason "..."` moves the take, its `.prov.json` and its `.words.json` aside as
-`<take>.retake-<time>.*` and records the reason in the narration's `retakes.json`. With
-the file gone, voice.lines plans and prices the line again. A dry plan or a failed
-purchase puts the old take back.
-
-What polyweave should do: a `retake` (or `again`) list of keys on voice.lines (and
-sound.speak) that plans those keys as not current, keeps the replaced take beside the
-new one, and records the reason in the take's provenance. Then a voice or model that
-keeps drifting shows up in the ledger across projects.
-
 ### §PW721 A quoted sentence found and highlighted
 
 Found moving the Scion explainer's page film into urdido (urdido UR53; marketing's

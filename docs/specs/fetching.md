@@ -1078,3 +1078,13 @@ nothing. With `spend` each voice is bought as `sound.speak` buys a line, at
 comparison), and one sitting lays them as a pick-one choice. Which voice narrates is the
 person's; a library voice the account must add before it speaks is the service's
 refusal, said as it says it.
+## A current take bought again (§PW720)
+
+`voice.lines retake=[keys] reason=...` plans each named key as not current, though its
+words, voice, model and delivery are unchanged, so a take a person heard drift is bought
+again without rewording a right line. A retake with no `reason` is
+`fetch.missing-field`. On spend, the old take, its record and its `.words.json` move
+aside as `<name>.retake-<YYYYmmddTHHMMSS>.<ext>` just before the purchase, and a
+purchase that fails or is stopped by the ceiling moves them back. The new take's record
+keeps `details.retake = {reason, replaced}`, so a voice or a model that keeps drifting
+shows in the records across projects. It holds for a lines file and for a game's table.

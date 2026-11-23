@@ -472,3 +472,60 @@ def test_one_line_in_several_voices_is_priced_then_laid_as_one_choice(
     with pytest.raises(PolyweaveError) as refused:
         voices.compare(text="O primeiro bug", voices=["v-a"], root=str(tmp_path))
     assert refused.value.code == "fetch.missing-field"
+
+# -- a current take bought again, on a person's word (§PW720) --------------------------
+
+
+def test_a_current_take_is_retaken_with_its_reason_and_the_old_kept_beside(
+    tmp_path, project
+):
+    """urdido moved takes aside by hand so voice.lines would buy a drifted one again."""
+    script = tmp_path / "demo" / "script.json"
+    script.parent.mkdir()
+    script.write_text(SCRIPT, encoding="utf-8")
+    sound_buy.lines(script="demo/script.json", locale="en", spend=True,
+                    root=str(tmp_path))
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.lines(script="demo/script.json", locale="en", retake=["chapter-1"],
+                        root=str(tmp_path))
+    assert refused.value.code == "fetch.missing-field"
+    plan = sound_buy.lines(script="demo/script.json", locale="en",
+                           retake=["chapter-1"], reason="drifted into European "
+                           "Portuguese at 0:28", root=str(tmp_path))
+    assert plan["current"] == [] and plan["voice"][0]["retake"] is True
+    sent = len(project.sent)
+    sound_buy.lines(script="demo/script.json", locale="en", retake=["chapter-1"],
+                    reason="drifted at 0:28", spend=True, root=str(tmp_path))
+    assert len(project.sent) == sent + 1
+    folder = tmp_path / "demo" / "narration" / "en"
+    kept = sorted(p.name for p in folder.glob("chapter-1.retake-*.mp3"))
+    assert len(kept) == 1
+    assert (folder / (kept[0] + ".prov.json")).is_file()
+    record = provenance.read(str(folder / "chapter-1.mp3"), root=str(tmp_path))
+    assert record["details"]["retake"] == {
+        "reason": "drifted at 0:28",
+        "replaced": f"demo/narration/en/{kept[0]}"}
+    again = sound_buy.lines(script="demo/script.json", locale="en", root=str(tmp_path))
+    assert [one["locale"] for one in again["current"]] == ["en"]
+
+
+def test_a_retake_that_cannot_be_bought_puts_the_old_take_back(
+    tmp_path, project, monkeypatch
+):
+    script = tmp_path / "demo" / "script.json"
+    script.parent.mkdir()
+    script.write_text(SCRIPT, encoding="utf-8")
+    sound_buy.lines(script="demo/script.json", locale="en", spend=True,
+                    root=str(tmp_path))
+    take = tmp_path / "demo" / "narration" / "en" / "chapter-1.mp3"
+    before = take.read_bytes()
+
+    def refused(*_, **__):
+        raise PolyweaveError("fetch.service-error", "down", "later")
+
+    monkeypatch.setattr(sound_buy, "_bought", refused)
+    with pytest.raises(PolyweaveError):
+        sound_buy.lines(script="demo/script.json", locale="en", retake=["chapter-1"],
+                        reason="drifted", spend=True, root=str(tmp_path))
+    assert take.read_bytes() == before
+    assert not list(take.parent.glob("chapter-1.retake-*"))

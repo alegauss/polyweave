@@ -3142,6 +3142,10 @@ export interface VoiceLinesArgs {
   script?: string
   /** take over the adoptable takes sound.speak bought, buying none; default false */
   adopt?: boolean
+  /** keys bought again though current */
+  retake?: unknown[]
+  /** why the retakes are bought, kept in each record */
+  reason?: string
   /** the project whose ledger this is; default "." */
   root?: string
 }
