@@ -8,30 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW696 A bought photo is checked for the faults generated photos have
-
-**Where it happened.** Viglet Shio, SH1431, 2026-11-10: 24 photographs for three
-marketplace packages (`marketplace/ervalume`, `orvalha`, `taipal` in
-D:\Git\viglet\shio\2026.3), bought with `picture.buy --model 4.0` on Ideogram. Every buy
-answered ok. The owner found by eye a physiotherapy photo whose patient's arm fuses into
-the therapist's hands, and a chef portrait with no thumb. The agents then re-bought 10
-more (0.60 USD): uncountable hands, a cat merging into an arm, pseudo-lettering, a table
-merging into the floor. `picture.gate` only compares a silhouette to an outline.
-
-**What it costs.** The only check on a bought photo is a person's eyes, and an agent
-told to look missed it twice.
-
-**What polyweave should do.** A check on a bought picture, at the buy or run over a set,
-reporting the known faults of generated photos: malformed or fused hands and limbs,
-extra heads, pseudo-text, objects merging. The owner chose a local vision model, run on
-the machine at no cost (2026-11-23), never a paid service; it records its findings in
-the provenance, and answers per picture with the fault and where in the frame. A failing
-purchase stays in the ledger marked not usable, with prompt advice (frame hands out,
-avoid people touching).
-
-**Done when.** The check over the 24 Shio photos flags the two the owner rejected and
-the pseudo-text ones, naming each fault.
-
 ### §PW713 Review a production interval with motion and audio
 
 In viglet/marketing VM57, `python -m polyweave describe video.cut --json` offers a whole
