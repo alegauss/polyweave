@@ -56,7 +56,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW712",
     block: "D",
     symptom: "A cut has no read-only complete preflight before expensive rendering",
-    why: "Missing anchors and invalid sources force another full build before the caller learns every error.",
+    why: "No declared repetition budget bounds a cut's reuse of one source: overlap, screen time, adjacency and gap, with reasoned exceptions.",
     deps: [],
   },
   {

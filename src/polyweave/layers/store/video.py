@@ -192,85 +192,7 @@ def read(source: Path, here: Path) -> dict:
         )
     clips = []
     for index, clip in enumerate(declared.get("clip", [])):
-        at = f"clip[{index + 1}]"
-        extra = sorted(set(clip) - _CLIP_KEYS)
-        if extra:
-            raise _bad(
-                f"{at} has no {', '.join(extra)}",
-                f"a clip takes {', '.join(sorted(_CLIP_KEYS))}",
-                given=extra[0],
-                at=at,
-            )
-        named = [k for k in ("from", "still", "video", "stock") if k in clip]
-        if len(named) != 1 or "length" not in clip:
-            raise _bad(
-                f"{at} names {' and '.join(named) or 'nothing'} to show, or no length",
-                "give one of from (a folder capture.movie wrote), still (a picture), "
-                "video (a file) or stock (a service's id), and length in seconds",
-                at=at,
-            )
-        if named[0] == "stock":
-            kind, file = _stocked(clip["stock"], at, here)
-            filed = _filed({**clip, kind: file}, kind, at, here, fps, clips)
-            clips.append({**filed, "stock": True})
-            continue
-        if named[0] != "from":
-            clips.append(_filed(clip, named[0], at, here, fps, clips))
-            continue
-        folder = here / clip["from"]
-        folder = folder.parent if folder.name == "sequence.json" else folder
-        manifest = folder / "sequence.json"
-        if not manifest.is_file():
-            raise PolyweaveError(
-                "video.no-sequence",
-                f"{at} names {clip['from']}, which holds no sequence.json",
-                "capture the run with capture.movie and name the folder it wrote",
-                given=str(clip["from"]),
-                at=at,
-            )
-        sequence = json.loads(manifest.read_text(encoding="utf-8"))
-        rate = float(sequence.get("fps") or 0)
-        frames = [one["file"] for one in sequence.get("frames", [])]
-        start = _number(clip, "start", 0.0, at)
-        length = _number(clip, "length", 0.0, at, least=1 / fps)
-        fade_in = _number(clip, "fade_in", 0.0, at)
-        held = len(frames) / rate if rate else 0.0
-        if rate <= 0 or start + length > held + 1e-6:
-            raise PolyweaveError(
-                "video.short-sequence",
-                f"{at} asks {start:g}s to {start + length:g}s of {folder.name}, which "
-                f"holds {held:.2f}s",
-                "shorten the clip, start it earlier, or capture a longer run",
-                at=at,
-                given=str(clip["from"]),
-            )
-        if index == 0 and fade_in:
-            raise _bad(
-                f"{at} fades in from nothing",
-                "give the first clip no fade_in",
-                at=at,
-                given="fade_in",
-            )
-        if fade_in >= length or (clips and fade_in >= clips[-1]["length"]):
-            raise _bad(
-                f"{at}'s fade_in of {fade_in:g}s is as long as a clip it joins",
-                "fade over less than either clip's length",
-                at=at,
-                given="fade_in",
-            )
-        clips.append(
-            {
-                "kind": "run",
-                "folder": folder,
-                "manifest": manifest,
-                "rate": rate,
-                "frames": frames,
-                "start": start,
-                "length": length,
-                "fade_in": fade_in,
-                "audio": bool(sequence.get("audio")),
-            }
-        )
+        clips.append(_clip(clip, index, here, fps, clips))
     if not clips:
         raise _bad(
             f"{source.name} declares no [[clip]]",
@@ -299,6 +221,87 @@ def read(source: Path, here: Path) -> dict:
         "tracks": tracks,
         "voices": voices,
         "subtitles": subtitles,
+    }
+
+
+def _clip(clip: dict, index: int, here: Path, fps: float, clips: list,
+          fetch: bool = True) -> dict:
+    """One `[[clip]]`, checked against what it shows; `fetch` false never brings a
+    stock clip in, and refuses one with no copy yet (§PW712)."""
+    at = f"clip[{index + 1}]"
+    extra = sorted(set(clip) - _CLIP_KEYS)
+    if extra:
+        raise _bad(
+            f"{at} has no {', '.join(extra)}",
+            f"a clip takes {', '.join(sorted(_CLIP_KEYS))}",
+            given=extra[0],
+            at=at,
+        )
+    named = [k for k in ("from", "still", "video", "stock") if k in clip]
+    if len(named) != 1 or "length" not in clip:
+        raise _bad(
+            f"{at} names {' and '.join(named) or 'nothing'} to show, or no length",
+            "give one of from (a folder capture.movie wrote), still (a picture), "
+            "video (a file) or stock (a service's id), and length in seconds",
+            at=at,
+        )
+    if named[0] == "stock":
+        kind, file = _stocked(clip["stock"], at, here, fetch)
+        filed = _filed({**clip, kind: file}, kind, at, here, fps, clips)
+        return {**filed, "stock": True}
+    if named[0] != "from":
+        return _filed(clip, named[0], at, here, fps, clips)
+    folder = here / clip["from"]
+    folder = folder.parent if folder.name == "sequence.json" else folder
+    manifest = folder / "sequence.json"
+    if not manifest.is_file():
+        raise PolyweaveError(
+            "video.no-sequence",
+            f"{at} names {clip['from']}, which holds no sequence.json",
+            "capture the run with capture.movie and name the folder it wrote",
+            given=str(clip["from"]),
+            at=at,
+        )
+    sequence = json.loads(manifest.read_text(encoding="utf-8"))
+    rate = float(sequence.get("fps") or 0)
+    frames = [one["file"] for one in sequence.get("frames", [])]
+    start = _number(clip, "start", 0.0, at)
+    length = _number(clip, "length", 0.0, at, least=1 / fps)
+    fade_in = _number(clip, "fade_in", 0.0, at)
+    held = len(frames) / rate if rate else 0.0
+    if rate <= 0 or start + length > held + 1e-6:
+        raise PolyweaveError(
+            "video.short-sequence",
+            f"{at} asks {start:g}s to {start + length:g}s of {folder.name}, which "
+            f"holds {held:.2f}s",
+            "shorten the clip, start it earlier, or capture a longer run",
+            at=at,
+            given=str(clip["from"]),
+        )
+    if index == 0 and fade_in:
+        raise _bad(
+            f"{at} fades in from nothing",
+            "give the first clip no fade_in",
+            at=at,
+            given="fade_in",
+        )
+    if fade_in >= length or (clips and fade_in >= clips[-1]["length"]):
+        raise _bad(
+            f"{at}'s fade_in of {fade_in:g}s is as long as a clip it joins",
+            "fade over less than either clip's length",
+            at=at,
+            given="fade_in",
+        )
+    return {
+        "kind": "run",
+        "folder": folder,
+        "manifest": manifest,
+        "rate": rate,
+        "frames": frames,
+        "start": start,
+        "length": length,
+        "fade_in": fade_in,
+        "audio": bool(sequence.get("audio")),
     }
 
 
@@ -368,7 +371,7 @@ def _spoken(declared: dict, here: Path, total: float) -> tuple[list, list, list]
             voices, subtitles)
 
 
-def _stocked(asked: Any, at: str, here: Path) -> tuple[str, str]:
+def _stocked(asked: Any, at: str, here: Path, fetch: bool = True) -> tuple[str, str]:
     """A clip named by its stock service and id, as the path of its copy under
     `[stock] dir`, fetched where the project holds none (§PW675).
 
@@ -396,6 +399,13 @@ def _stocked(asked: Any, at: str, here: Path) -> tuple[str, str]:
             else f"{service}-{asked['id']}.jpg")
     folder = str(load(here).get("stock.dir") or "stock")
     copy = f"{folder.rstrip('/')}/{name}"
+    if not (here / copy).is_file() and not fetch:
+        # A preflight reads and never fetches (§PW712).
+        raise PolyweaveError(
+            "video.unfetched",
+            f"{at} names {service} {kind} {asked['id']}, with no copy at {copy} yet",
+            "a build fetches it first; fetch it now with stock.fetch to check it",
+            at=at, given=str(asked["id"]))
     if not (here / copy).is_file():
         try:
             stock.fetch(asked["id"], copy, kind=kind, service=service,
@@ -1219,3 +1229,82 @@ def _probe_width(path: Path) -> int:
         return int(probe.stdout.strip().split(",")[0])
     except ValueError:
         return _SIDE
+
+
+@operation("video.check")
+def check(
+    source: Annotated[str, Param("the *.cut.toml, as a path under the project")],
+    *,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Every finding a cut would refuse with, at once, before anything renders (§PW712).
+
+    The declaration is read as `video.cut` reads it, each part on its own: the
+    `[video]` table, every `[[clip]]` (its source, its stretch against what the file
+    or run holds, as ffprobe reads it), the length the fade covers, and the voices and
+    subtitles. A part that fails is a finding with its code, message, remedy and where
+    (`at`), and the next part is still read, so one call names them all. Nothing is
+    rendered, fetched or bought: a stock clip with no copy yet is `video.unfetched`.
+    """
+    from polyweave.kernel.config import load
+
+    here = load(root).root
+    path = Path(source) if Path(source).is_absolute() else here / source
+    findings: list[dict] = []
+
+    def failed(error: PolyweaveError, at: str = "") -> None:
+        said = error.as_dict()
+        findings.append({"code": said.get("code"), "message": said.get("message"),
+                         "remedy": said.get("remedy"),
+                         "at": said.get("at") or at})
+
+    try:
+        declared = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        failed(PolyweaveError("video.no-source", f"{source} is not a cut it can read",
+                              "name a *.cut.toml under the project",
+                              detail=str(exc)[:400]))
+        return {"source": source, "findings": findings, "passed": False}
+    video = declared.get("video", {})
+    unknown = sorted(set(declared) - _TABLES) + sorted(set(video) - _VIDEO_KEYS)
+    if unknown:
+        failed(_bad(f"{path.name} has no {', '.join(unknown)}",
+                    f"[video] takes {', '.join(sorted(_VIDEO_KEYS))}",
+                    given=unknown[0]), "video")
+    size = video.get("size", [1920, 1080])
+    if not (isinstance(size, list) and len(size) == 2 and all(
+            isinstance(v, int) and v > 0 and v % 2 == 0 for v in size)):
+        failed(_bad(f"video.size is {size!r}", "give [width, height], two even "
+                    "numbers", given="size"), "video")
+    fps, fade_out = 30.0, 0.0
+    for key, least in (("fps", 1), ("fade_out", 0)):
+        try:
+            value = _number(video, key, 30 if key == "fps" else 0.0, "video",
+                            least=least)
+            fps, fade_out = (value, fade_out) if key == "fps" else (fps, value)
+        except PolyweaveError as error:
+            failed(error, "video")
+    music = video.get("music")
+    if music is not None and not (here / music).is_file():
+        failed(_bad(f"there is no music at {music}", "name a sound file under the "
+                    "project", given="music"), "video")
+    clips: list[dict] = []
+    for index, clip in enumerate(declared.get("clip", [])):
+        try:
+            clips.append(_clip(clip, index, here, fps, clips, fetch=False))
+        except PolyweaveError as error:
+            failed(error, f"clip[{index + 1}]")
+    if not declared.get("clip"):
+        failed(_bad(f"{path.name} declares no [[clip]]",
+                    "add one [[clip]] per stretch of a captured run"), "clip")
+    total = sum(c["length"] for c in clips) - sum(c["fade_in"] for c in clips)
+    if clips and fade_out >= total:
+        failed(_bad(f"video.fade_out of {fade_out:g}s is the whole teaser",
+                    "fade over less than its length", given="fade_out"), "video")
+    try:
+        _spoken(declared, here, total or 1e9)
+    except PolyweaveError as error:
+        failed(error, "voice")
+    return {"source": source, "clips": len(declared.get("clip", [])),
+            "seconds": round(total, 3), "findings": findings,
+            "passed": not findings}

@@ -2912,6 +2912,14 @@ export interface VideoBuyArgs {
   root?: string
 }
 
+/** Every finding a cut would refuse with, at once, before anything renders (§PW712). */
+export interface VideoCheckArgs {
+  /** the *.cut.toml, as a path under the project */
+  source: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Cut captured runs together, score and encode them as one MP4, and measure it. */
 export interface VideoCutArgs {
   /** the *.cut.toml, as a path under the project */
@@ -3331,6 +3339,7 @@ export interface Operations {
   "vfx.build": VfxBuildArgs
   "vfx.preview": VfxPreviewArgs
   "video.buy": VideoBuyArgs
+  "video.check": VideoCheckArgs
   "video.cut": VideoCutArgs
   "video.labels": VideoLabelsArgs
   "video.measure": VideoMeasureArgs
@@ -3578,6 +3587,7 @@ export const OPERATIONS = [
   "vfx.build",
   "vfx.preview",
   "video.buy",
+  "video.check",
   "video.cut",
   "video.labels",
   "video.measure",

@@ -483,3 +483,37 @@ def test_a_sample_with_no_source_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         sheet([{"source": "none.mp4", "at": 1}], "review/x", root=str(here))
     assert refused.value.code == "video.bad-sheet"
+
+
+# -- every finding of a cut at once, before anything renders (§PW712) ------------------
+
+
+@needs_ffmpeg
+def test_a_preflight_names_every_independent_finding_and_renders_nothing(tmp_path):
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    (here / "story.cut.toml").write_text(
+        '[video]\nsize = [320, 180]\nmusic = "missing.ogg"\n\n'
+        '[[clip]]\nvideo = "short.mp4"\nstart = 2.0\nlength = 5.0\n\n'
+        '[[clip]]\nstill = "nowhere.png"\nlength = 1.0\n\n'
+        '[[clip]]\nstock = { service = "pixabay", id = 42 }\nlength = 1.0\n\n'
+        '[[clip]]\nvideo = "short.mp4"\nstart = 0.0\nlength = 1.0\n',
+        encoding="utf-8")
+    said = video.check("story.cut.toml", root=str(here))
+    assert said["passed"] is False
+    where = [one["at"] for one in said["findings"]]
+    assert where == ["video", "clip[1]", "clip[2]", "clip[3]"]
+    assert said["findings"][3]["code"] == "video.unfetched"
+    assert not list(here.glob("stock/*"))
+    assert not (here / "story.mp4").exists()
+
+
+@needs_ffmpeg
+def test_a_sound_cut_passes_its_preflight(tmp_path):
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    (here / "ok.cut.toml").write_text(
+        '[video]\nsize = [320, 180]\n\n[[clip]]\nvideo = "short.mp4"\nstart = 0.0\n'
+        "length = 2.0\n", encoding="utf-8")
+    said = video.check("ok.cut.toml", root=str(here))
+    assert said["passed"] is True and said["seconds"] == 2.0

@@ -143,6 +143,12 @@ CODES: dict[str, Code] = {
         "at not seconds from 0, or a kind not source or output (§PW708)",
         doors=("fix the sample the refusal names",),
     ),
+    "video.unfetched": Code(
+        means="a stock clip has no copy yet, and a preflight never fetches",
+        when="video.check on a cut naming stock with no copy under [stock] dir "
+        "(§PW712)",
+        doors=("fetch it with stock.fetch, or let the build fetch it",),
+    ),
     "video.changed": Code(
         means="a video changed while video.measure read it",
         when="its SHA-256 at the end differs from the one at the start (§PW707)",

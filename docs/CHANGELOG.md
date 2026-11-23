@@ -92,6 +92,7 @@
 - ✅ **PW702** **reference.frames shows a black frame at zero where the narrated MP4 decodes a visible opening** — reference.frames decodes each stretch's first frame again at its exact time, so a narrated MP4's opening at zero is the frame the video shows (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW704** **capture.web films no pointer, jumps a scroll in one frame and fills typed text at once** — capture.web draws a pointer that travels to each target when asked, eases every scroll over its seconds and types at a hand's pace (design recorded in `docs/specs/video.md`).
 - ✅ **PW705** **stock.find and stock.fetch cannot search or fetch music, so a licensed bed arrives by hand with no record** — stock.find and stock.fetch take kind music from Jamendo, recording each track's own CC licence and the credit it asks (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW712 (the preflight)** **A cut has no read-only complete preflight before expensive rendering** — video.check reads a cut part by part and names every finding at once, rendering, fetching and buying nothing.
 
 ## Block E — One world with the engine
 

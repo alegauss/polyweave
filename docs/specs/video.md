@@ -410,3 +410,15 @@ from. YouTube watch URLs become `youtu.be` links. A file whose licence nothing s
 named in `unstated` and left out, never given one, and a file with no record is in
 `unrecorded`. A text past `limit` is `store.description-long`, saying how much of it is
 required credit; nothing is cut. With `out` the text is written there.
+
+## Every finding of a cut, before it renders
+
+A missing anchor or a bad source found mid-build wasted a whole render (§PW712).
+`video.check(source)` reads a `*.cut.toml` as `video.cut` does, each part on its own,
+and answers every finding at once: the `[video]` table (unknown keys, size, `fps`,
+`fade_out`, music), each `[[clip]]` (its source, and its stretch against what the run
+or file holds, as ffprobe reads it), whether `fade_out` covers the whole cut, and the
+voices and subtitles. Each finding has its `code`, `message`, `remedy` and `at`
+(`video`, `clip[n]`, `voice`); a failing part never stops the next from being read.
+Nothing renders, is fetched or is bought: a stock clip with no copy under `[stock] dir`
+is `video.unfetched`, where a build would fetch it. `passed` is true with no finding.
