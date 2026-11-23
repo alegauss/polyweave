@@ -8,7 +8,7 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- ⏳ **PW712** (deps: —) **A cut has no read-only complete preflight before expensive rendering** — No declared repetition budget bounds a cut's reuse of one source: overlap, screen time, adjacency and gap, with reasoned exceptions. → §PW712
+- 🛠 **PW712** (deps: —) **A cut has no read-only complete preflight before expensive rendering** — No declared repetition budget bounds a cut's reuse of one source: overlap, screen time, adjacency and gap, with reasoned exceptions. → §PW712
 - 📋 **PW713** (deps: —) **A cut cannot render one selected interval with its production narration and callouts** — Reviewing one action requires another full export, and still sheets cannot show motion or its ending. → §PW713
 - 📋 **PW714** (deps: —) **Fetched media has no reusable catalogue of approved and rejected source ranges** — Rejected or misidentified footage is rediscovered, and selected shots require manual provenance copying. → §PW714
 - 📋 **PW715** (deps: —) **A long video cut exposes no stage progress while rendering or waiting** — Callers poll processes and output timestamps to distinguish slow work from a failed stage. → §PW715
@@ -18,6 +18,7 @@
 - 📋 **PW719** (deps: —) **No operation searches the ElevenLabs voice library, nor speaks one line in several voices to compare** — Choosing a narrator for a new audience meant raw API calls and one lines file per candidate voice. → §PW719
 - 📋 **PW720** (deps: —) **voice.lines cannot buy a current take again when its words, voice and model are unchanged** — A take whose accent or delivery drifted can only be re-rolled by rewording a line that was already right or moving files by hand. → §PW720
 - 📋 **PW721** (deps: —) (from: urdido) **capture.web cannot scroll to a sentence the page prints or draw a highlight over it** — A video that quotes a published page films it with a Playwright script of its own, outside the visit's record. → §PW721
+- 📋 **PW696** (deps: —) **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it. → §PW696
 
 ## Block E — One world with the engine
 
@@ -46,6 +47,9 @@
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them
+
+- 📋 **PW206** (deps: PW204 ✅, PW205 ✅) **Cottony's levels are still tuned by a curve nobody measured** — No curve the owner agreed holds the 20 yet, so no accept specs, and make_levels.py and the fallback curve stay until then. → §PW206
+- 📋 **PW327** (deps: PW205 ✅, Spinhold RK313) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — level.trace reads traces already; Spinhold RK313 writes them from real play, then the declared curve and a spec over both follow. → §PW327
 
 ## Block S — Playing the game, not only rendering it
 
@@ -80,13 +84,6 @@
 - **A declared skeleton read off two games' state code** Once Cottony as well as
   Starship carries a hand-written state machine, the declaration and its generated
   skeleton take the shape both share, checked by engine.states as it stands.
-
-## Done when — PW450
-
-- **One family's canon trains a real Scenario model within the ceiling** With the
-  owner's Scenario key and a [budget.scenario] ceiling, style.train trains on a canon of
-  five or more, and a picture bought from the model passes or fails the family's gate
-  with its record naming the model and its members.
 
 ## Done when — PW206
 

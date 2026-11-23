@@ -8,8 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- ⏸ **PW696** (deps: —) **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — set aside (Waits on the owner choosing a paid vision service.): The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it. → §PW696
-
 ## Block E — One world with the engine
 
 ## Block F — Motion
@@ -32,8 +30,6 @@
 
 ## Block N — Pictures held to a canon
 
-- ⏸ **PW450** (deps: —) **no picture can be bought from a model trained on the project's own art, so its style reaches a service only as words** — set aside (Waits on a Scenario key and the owner's ceiling.): A real training run on one family's canon, which needs a Scenario key and the owner's ceiling. → §PW450
-
 ## Block O — A person sees and answers
 
 ## Block P — Music and sound a game can ship
@@ -41,9 +37,6 @@
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them
-
-- ⏸ **PW206** (deps: PW204 ✅, PW205 ✅) **Cottony's levels are still tuned by a curve nobody measured** — set aside (Waits on the owner's curve and Cottony RK189's star bar.): No curve the owner agreed holds the 20 yet, so no accept specs, and make_levels.py and the fallback curve stay until then. → §PW206
-- ⏸ **PW327** (deps: PW205 ✅) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — set aside (Waits on Spinhold writing traces of real play.): Spinhold writes no event trace yet, and the declared curve per second and a spec over both are still to come. → §PW327
 
 ## Block S — Playing the game, not only rendering it
 

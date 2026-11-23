@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 10 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 11 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 0 },
+  { block: "R", title: "Levels measured before a person plays them", open: 2 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -122,6 +122,27 @@ export const generatedTasks: GeneratedTask[] = [
     why: "A video that quotes a published page films it with a Playwright script of its own, outside the visit's record.",
     deps: [],
   },
+  {
+    id: "PW696",
+    block: "D",
+    symptom: "picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it",
+    why: "The only check on a bought photo is a person's eyes, and a project ships the defect when they miss it.",
+    deps: [],
+  },
+  {
+    id: "PW206",
+    block: "R",
+    symptom: "Cottony's levels are still tuned by a curve nobody measured",
+    why: "No curve the owner agreed holds the 20 yet, so no accept specs, and make_levels.py and the fallback curve stay until then.",
+    deps: [],
+  },
+  {
+    id: "PW327",
+    block: "R",
+    symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
+    why: "level.trace reads traces already; Spinhold RK313 writes them from real play, then the declared curve and a spec over both follow.",
+    deps: [],
+  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [
@@ -160,4 +181,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW696", "PW449", "PW450", "PW206", "PW327", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW449", "PW311", "PW368"];

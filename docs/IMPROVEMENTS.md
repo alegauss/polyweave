@@ -23,10 +23,11 @@ told to look missed it twice.
 
 **What polyweave should do.** A check on a bought picture, at the buy or run over a set,
 reporting the known faults of generated photos: malformed or fused hands and limbs,
-extra heads, pseudo-text, objects merging. It can call a vision model through a declared
-service, records its findings in the provenance, and answers per picture with the fault
-and where in the frame. A failing purchase stays in the ledger marked not usable, with
-prompt advice (frame hands out, avoid people touching).
+extra heads, pseudo-text, objects merging. The owner chose a local vision model, run on
+the machine at no cost (2026-11-23), never a paid service; it records its findings in
+the provenance, and answers per picture with the fault and where in the frame. A failing
+purchase stays in the ledger marked not usable, with prompt advice (frame hands out,
+avoid people touching).
 
 **Done when.** The check over the 24 Shio photos flags the two the owner rejected and
 the pseudo-text ones, naming each fault.
@@ -280,28 +281,6 @@ verdict, and each gap it met is a filed line.
 ## Block M — What a game needs beyond the look
 
 ## Block N — Pictures held to a canon
-
-### §PW450 Buying a picture from Scenario
-
-Block N holds pictures to a canon: a family's approved members, its palette and its
-style block. The services behind it today are FLUX and Ideogram, which take the style as
-words, and PW180 sends one canon picture as a style reference on Ideogram 3.0. Scenario
-takes a different route: a model trained on a team's own art, which reviews in 2026 name
-as the strongest answer to style consistency for game art.
-
-A canon is exactly the training set such a model wants, already chosen by a person's
-verdicts. This line is an adapter behind the existing `picture.buy` surface: the same
-ceiling, quote, ledger and provenance, and a record naming the trained model and which
-canon members trained it, so a model trained before a member joined reads as outdated.
-
-Training spends money, so it is a purchase like any other, quoted and bounded by the
-ceiling, and never started on the agent's own judgement. The pictures it returns are
-held to the canon and the gate like any service's; being trained on the style earns no
-pass.
-
-Evidence that it landed: one family's canon trains a Scenario model within the ceiling,
-a picture bought from it passes or fails the family's gate, and its record names the
-model and the members.
 
 ## Block O — A person sees and answers
 
