@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 0 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
-  { block: "T", title: "Adopting polyweave in a project", open: 2 },
+  { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
@@ -120,13 +120,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "capture.web cannot scroll to a sentence the page prints or draw a highlight over it",
     why: "A video that quotes a published page films it with a Playwright script of its own, outside the visit's record.",
-    deps: [],
-  },
-  {
-    id: "PW710",
-    block: "T",
-    symptom: "A web capture cannot declare and reset the clean product instance it films",
-    why: "Product retakes repeat Docker and seed commands by hand, so the visit cannot prove which instance it recorded.",
     deps: [],
   },
   {

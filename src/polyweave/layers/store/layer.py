@@ -10,6 +10,7 @@ LAYER = Layer(
         "polyweave.layers.store.card",
         "polyweave.layers.store.compose",
         "polyweave.layers.store.footage",
+        "polyweave.layers.store.instance",
         "polyweave.layers.store.labels",
         "polyweave.layers.store.icons",
         "polyweave.layers.store.safe",
@@ -37,7 +38,8 @@ LAYER = Layer(
     # 10,081 with video.measure, one report bound to a video's bytes (§PW707).
     # 11,263 with video.pauses, a recording's longest pause against a budget (§PW707).
     # 11,897 with video.sheet, one labelled still per beat (§PW708).
-    tools=12_600,
+    # 12,908 with capture.instance, the product instance a visit films (§PW710).
+    tools=13_600,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),
@@ -56,6 +58,12 @@ LAYER = Layer(
             "internal", "what icons.build holds a model's icon to"),
         "polyweave.layers.store.web:read": (
             "internal", "a visit's steps, checked; capture.web"),
+        "polyweave.layers.store.instance:read": (
+            "internal", "an instance fixture, checked; capture.instance"),
+        "polyweave.layers.store.instance:waited": (
+            "internal", "an instance's readiness, for capture.web"),
+        "polyweave.layers.store.instance:identity": (
+            "internal", "an instance's containers and images, for capture.web"),
         "polyweave.layers.store.safe:read": (
             "internal", "an .ass file's styles and lines; video.safe_area"),
         "polyweave.layers.store.video:predicate": (

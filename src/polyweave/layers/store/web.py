@@ -62,7 +62,7 @@ from urllib.parse import urljoin
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 
-_WEB_KEYS = {"url", "viewport", "out", "timeout", "allow", "pointer"}
+_WEB_KEYS = {"url", "viewport", "out", "timeout", "allow", "pointer", "instance"}
 #: What each step does, by the key that names it; exactly one per step.
 DOES = ("go", "click", "type", "wait", "scroll", "hold")
 _STEP_KEYS = {*DOES, "text", "secret", "state", "name", "seconds", "pace"}
@@ -279,8 +279,13 @@ def read(source: Path) -> dict:
     pointer = web.get("pointer", False)
     if not isinstance(pointer, bool):
         raise _bad(f"[web] pointer is {pointer!r}", "give pointer as true or false")
+    instance = web.get("instance", "")
+    if not isinstance(instance, str):
+        raise _bad(f"[web] instance is {instance!r}",
+                   "give instance as the *.instance.toml the visit films (§PW710)")
     return {"url": url, "viewport": viewport, "timeout": float(timeout),
-            "allow": allow, "out": out, "steps": steps, "pointer": pointer}
+            "allow": allow, "out": out, "steps": steps, "pointer": pointer,
+            "instance": instance}
 
 
 def _playwright() -> tuple[Any, type[Exception]]:
@@ -459,6 +464,16 @@ def web(
     if target.suffix.lower() != ".webm":
         raise _bad(f"the clip is written as {target.name}", "write it as a .webm",
                    given="out")
+    filmed, fixture = None, None
+    if visit.get("instance"):
+        # The instance it films, ready and named by its containers and images; it is
+        # never reset here, only by capture.instance (§PW710).
+        from . import instance as fixtures
+
+        fixture = fixtures.read(here / visit["instance"], here)
+        fixtures.waited(fixture)
+        filmed = {"fixture": visit["instance"], "project": fixture["project"],
+                  "containers": fixtures.identity(fixture)}
     with tempfile.TemporaryDirectory(prefix="polyweave-web-") as folder:
         recorded, marks, broken, version = _film(visit, Path(folder))
         if broken:
@@ -477,13 +492,17 @@ def web(
             "capture",
             target,
             engine={"name": "capture.web", "browser": f"chromium {version}"},
-            inputs=[provenance.source("visit", path, root=here)],
+            inputs=[provenance.source("visit", path, root=here)]
+            + ([provenance.source("instance", fixture["source"], root=here),
+                provenance.source("compose", fixture["compose"], root=here)]
+               if fixture else []),
             params={
                 "visit": provenance.relative(path, here),
                 "url": visit["url"],
                 "viewport": visit["viewport"],
                 "allow": visit["allow"],
                 "steps": marks,
+                **({"instance": filmed} if filmed else {}),
             },
             root=here,
         ),

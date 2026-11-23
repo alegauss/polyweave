@@ -97,6 +97,28 @@ CODES: dict[str, Code] = {
         "(§PW698)",
         doors=("name the .ass burned into the video", "give size as [width, height]"),
     ),
+    "web.bad-instance": Code(
+        means="an instance a visit films is not declared in a way it can be run",
+        when="no *.instance.toml, no Compose file, a project name with other "
+        "characters, a ready that is not a URL, or a seed with no service or run "
+        "(§PW710)",
+        doors=("fix the key the refusal names",),
+    ),
+    "web.no-docker": Code(
+        means="docker is not on PATH, and an instance is run with Docker Compose",
+        when="capture.instance, or capture.web with an instance, without docker",
+        doors=("install Docker and put it on PATH",),
+    ),
+    "web.instance-failed": Code(
+        means="a docker call on the declared instance failed",
+        when="compose up, down, exec or ps answered an error; the detail is docker's",
+        doors=("read the detail",),
+    ),
+    "web.instance-not-ready": Code(
+        means="the instance's ready URL did not answer in time",
+        when="up, reset or a visit waiting past ready_seconds (§PW710)",
+        doors=("bring it up with capture.instance action=up", "reset it"),
+    ),
     "video.bad-labels": Code(
         means="the labels or footage video.labels was given are not records it reads",
         when="not a list, a key it does not take, a start not before its end, or "

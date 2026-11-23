@@ -374,3 +374,24 @@ label and the stretch (`footage` null where no stretch is under it). Nothing is
 inferred from a picture: the report compares declarations and accepts no semantic
 correspondence. A record that is not a table, an unknown key, a `start` not before its
 `end`, or `entities` not a list is `video.bad-labels`.
+
+## The product instance a visit films
+
+A product scene is filmed on a clean instance, and every retake repeated Docker and
+seed commands by hand (§PW710). A `*.instance.toml` declares it: `[instance]` with
+`compose` (the Compose file, under the project), `project` (the Compose project, in
+letters, digits, `-` and `_`, the only one ever touched), `ready` (a URL that answers
+below 500 once the product is up) and `ready_seconds` (120 unless set), and `[[seed]]`
+steps, each a `service` of that project and a `run` argv executed in it in order.
+`capture.instance(fixture, action=)` is the only thing that changes an instance, and
+only when called: `plan` answers the docker calls of `up`, `reset` and `down` and runs
+none; `up` is `compose -p <project> -f <file> up --detach --wait` then the seeds as
+`exec -T`; `reset` is `down --volumes --remove-orphans` of that project first; both wait
+for `ready`; `down` stops it; `status` reads its containers. Every call names the
+project and its file, so a container, volume or network it does not own is never
+touched. A visit with `[web] instance = "<fixture>"` waits for the instance to be
+ready, refuses one that is not (`web.instance-not-ready`), never resets it, and records
+`params.instance`: the fixture, the project and each running container's service, id,
+image and state, with the fixture and the Compose file as inputs. A bad fixture is
+`web.bad-instance`, no docker is `web.no-docker`, and a failed docker call is
+`web.instance-failed` with what docker said.

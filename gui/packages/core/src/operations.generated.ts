@@ -122,6 +122,16 @@ export interface CaptureDeclaredArgs {
   root?: string
 }
 
+/** Plan, bring up, reset, take down or read a declared product instance (§PW710). */
+export interface CaptureInstanceArgs {
+  /** the *.instance.toml, under the project */
+  fixture: string
+  /** what to do with it; default "plan" */
+  action?: "plan" | "up" | "reset" | "down" | "status"
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Every frame between two marks the script prints, at the engine's fixed rate. */
 export interface CaptureMovieArgs {
   /** the scene script that flies the shot */
@@ -3090,6 +3100,7 @@ export interface Operations {
   "capture.again": CaptureAgainArgs
   "capture.card": CaptureCardArgs
   "capture.declared": CaptureDeclaredArgs
+  "capture.instance": CaptureInstanceArgs
   "capture.movie": CaptureMovieArgs
   "capture.run": CaptureRunArgs
   "capture.web": CaptureWebArgs
@@ -3335,6 +3346,7 @@ export const OPERATIONS = [
   "capture.again",
   "capture.card",
   "capture.declared",
+  "capture.instance",
   "capture.movie",
   "capture.run",
   "capture.web",
