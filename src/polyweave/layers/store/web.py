@@ -30,10 +30,16 @@ state = "visible"
 
 [[step]]
 scroll = 600                            # pixels down; negative is up
+seconds = 3                             # eased over; 200 px a second if unset
 
 [[step]]
 hold = 2.0                              # seconds the camera stays on the page
 ```
+
+A visit is filmed the way a person moves (§PW704): `[web] pointer = true` draws a
+pointer and carries it to each click and type target along a minimum-jerk path, with a
+ring where it clicks; a scroll eases over its `seconds`; typing goes at `pace`
+characters a second (12 if unset) rather than appearing whole.
 
 `capture.web` plays the steps in Chromium while Playwright records, and writes the WebM
 with its record: the URL, the viewport and the steps, each with the second it started
@@ -56,10 +62,53 @@ from urllib.parse import urljoin
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 
-_WEB_KEYS = {"url", "viewport", "out", "timeout", "allow"}
+_WEB_KEYS = {"url", "viewport", "out", "timeout", "allow", "pointer"}
 #: What each step does, by the key that names it; exactly one per step.
 DOES = ("go", "click", "type", "wait", "scroll", "hold")
-_STEP_KEYS = {*DOES, "text", "secret", "state", "name"}
+_STEP_KEYS = {*DOES, "text", "secret", "state", "name", "seconds", "pace"}
+
+#: How a person moves, which a product scene is filmed at (§PW704): a scroll eases over
+#: this many pixels a second, typing goes at this many characters a second, and the
+#: drawn pointer travels to its target in this many seconds, at this many frames each.
+SCROLL_SPEED = 200.0
+TYPE_PACE = 12.0
+POINTER_SECONDS = 0.6
+FRAMES = 30
+
+#: A pointer drawn over the page, since a headless browser draws none: it follows the
+#: mouse, and a ring opens where a button goes down.
+_POINTER = """(() => {
+  const draw = () => {
+    if (document.getElementById('polyweave-pointer')) return;
+    const p = document.createElement('div');
+    p.id = 'polyweave-pointer';
+    p.style.cssText = 'position:fixed;left:0;top:0;width:18px;height:18px;'
+      + 'z-index:2147483647;pointer-events:none;border-radius:50%;'
+      + 'background:rgba(20,20,20,.85);border:2px solid #fff;'
+      + 'transform:translate(-50%,-50%)';
+    document.documentElement.appendChild(p);
+    addEventListener('mousemove', e => { p.style.left = e.clientX + 'px';
+                                         p.style.top = e.clientY + 'px'; }, true);
+    addEventListener('mousedown', e => {
+      const r = document.createElement('div');
+      r.style.cssText = 'position:fixed;width:18px;height:18px;border-radius:50%;'
+        + 'border:3px solid #ff5a1f;pointer-events:none;z-index:2147483646;'
+        + 'transform:translate(-50%,-50%);transition:all .45s ease-out;opacity:1;'
+        + `left:${e.clientX}px;top:${e.clientY}px`;
+      document.documentElement.appendChild(r);
+      requestAnimationFrame(() => { r.style.width = r.style.height = '56px';
+                                    r.style.opacity = '0'; });
+      setTimeout(() => r.remove(), 600);
+    }, true);
+  };
+  if (document.documentElement) draw();
+  addEventListener('DOMContentLoaded', draw);
+})();"""
+
+
+def _eased(t: float) -> float:
+    """Minimum jerk: how far along a move is at `t` of its time, from rest to rest."""
+    return t * t * t * (10 - 15 * t + 6 * t * t)
 #: The states a wait may hold out for, as Playwright names them.
 STATES = ("visible", "hidden", "attached", "detached")
 
@@ -146,6 +195,19 @@ def _step(row: Any, at: str) -> dict:
         if not isinstance(row["name"], str) or not row["name"]:
             raise _bad(f"{at}.name is {row['name']!r}", "name a step with a word")
         step["name"] = row["name"]
+    # How a person moves (§PW704): a scroll eased over seconds, typing at a pace.
+    for key, owner, default in (("seconds", "scroll", None),
+                                ("pace", "type", TYPE_PACE)):
+        if key in row:
+            value = row[key]
+            if do != owner or isinstance(value, bool) or not isinstance(
+                    value, int | float) or value <= 0:
+                raise _bad(f"{at}.{key} is {value!r}",
+                           f"give {key} on a {owner} step, as a number above 0", at=at)
+            step[key] = float(value)
+        elif do == owner:
+            step[key] = (default if default is not None
+                         else round(max(abs(step["scroll"]) / SCROLL_SPEED, 0.2), 3))
     return step
 
 
@@ -214,8 +276,11 @@ def read(source: Path) -> dict:
                 f"set {step['secret']} before the capture; its value is never recorded",
                 given=step["secret"],
             )
+    pointer = web.get("pointer", False)
+    if not isinstance(pointer, bool):
+        raise _bad(f"[web] pointer is {pointer!r}", "give pointer as true or false")
     return {"url": url, "viewport": viewport, "timeout": float(timeout),
-            "allow": allow, "out": out, "steps": steps}
+            "allow": allow, "out": out, "steps": steps, "pointer": pointer}
 
 
 def _playwright() -> tuple[Any, type[Exception]]:
@@ -235,19 +300,50 @@ def _allowed(what: str, allow: list[str]) -> bool:
     return any(part in what for part in allow)
 
 
-def _play(page: Any, step: dict, base: str, timeout_ms: float) -> None:
+def _point(page: Any, selector: str, at: dict, timeout_ms: float) -> None:
+    """The drawn pointer carried to the middle of `selector` along a minimum-jerk path,
+    from wherever it last was (§PW704)."""
+    box = page.locator(selector).first.bounding_box(timeout=timeout_ms)
+    if not box:
+        return
+    x, y = box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
+    frames = max(1, round(POINTER_SECONDS * FRAMES))
+    for n in range(1, frames + 1):
+        part = _eased(n / frames)
+        page.mouse.move(at["x"] + (x - at["x"]) * part, at["y"] + (y - at["y"]) * part)
+        page.wait_for_timeout(1000 / FRAMES)
+    at.update(x=x, y=y)
+
+
+def _play(page: Any, step: dict, base: str, timeout_ms: float,
+          at: dict | None = None) -> None:
+    """One step, as a person would make it: with `at`, the pointer is drawn and goes to
+    each click and type first; a scroll eases over its seconds and typing keeps its
+    pace (§PW704)."""
     do = step["do"]
     if do == "go":
         page.goto(urljoin(base, step["go"]), timeout=timeout_ms)
     elif do == "click":
+        if at is not None:
+            _point(page, step["click"], at, timeout_ms)
         page.click(step["click"], timeout=timeout_ms)
     elif do == "type":
         value = os.environ[step["secret"]] if "secret" in step else step["text"]
-        page.fill(step["type"], value, timeout=timeout_ms)
+        if at is not None:
+            _point(page, step["type"], at, timeout_ms)
+        page.fill(step["type"], "", timeout=timeout_ms)
+        page.type(step["type"], value, delay=1000 / step.get("pace", TYPE_PACE),
+                  timeout=timeout_ms)
     elif do == "wait":
         page.wait_for_selector(step["wait"], state=step["state"], timeout=timeout_ms)
     elif do == "scroll":
-        page.mouse.wheel(0, step["scroll"])
+        frames = max(1, round(step.get("seconds", 0.2) * FRAMES))
+        done = 0.0
+        for n in range(1, frames + 1):
+            to = step["scroll"] * _eased(n / frames)
+            page.mouse.wheel(0, to - done)
+            done = to
+            page.wait_for_timeout(1000 / FRAMES)
     else:  # hold: the camera stays on what the page shows, for the viewer
         page.wait_for_timeout(step["hold"] * 1000)
 
@@ -292,6 +388,11 @@ def _film(visit: dict, folder: Path) -> tuple[Path, list[dict], list[str], str]:
         context = browser.new_context(
             viewport=size, record_video_dir=str(folder), record_video_size=size
         )
+        at = None
+        if visit.get("pointer"):
+            # Before the page's own scripts, so every page of the visit draws it.
+            context.add_init_script(_POINTER)
+            at = {"x": width / 2, "y": height / 2}
         page = context.new_page()
         page.on("console", console)
         page.on("pageerror", thrown)
@@ -302,7 +403,7 @@ def _film(visit: dict, folder: Path) -> tuple[Path, list[dict], list[str], str]:
             for n, step in enumerate(visit["steps"], 1):
                 start = time.monotonic() - began
                 try:
-                    _play(page, step, visit["url"], visit["timeout"] * 1000)
+                    _play(page, step, visit["url"], visit["timeout"] * 1000, at)
                 except failure as stopped:
                     raise PolyweaveError(
                         "web.step-failed",

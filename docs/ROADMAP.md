@@ -11,7 +11,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 🛠 **PW704** (deps: —) **capture.web films no pointer, jumps a scroll in one frame and fills typed text at once** — A product scene filmed from a declared visit never shows what was clicked, so a video cuts around every jump or films with a script. → §PW704
 - 📋 **PW705** (deps: —) **stock.find and stock.fetch cannot search or fetch music, so a licensed bed arrives by hand with no record** — A video's music is downloaded with curl and its licence and credit live only in the project's prose. → §PW705
 - 📋 **PW712** (deps: —) **A cut has no read-only complete preflight before expensive rendering** — Missing anchors and invalid sources force another full build before the caller learns every error. → §PW712
 - 📋 **PW713** (deps: —) **A cut cannot render one selected interval with its production narration and callouts** — Reviewing one action requires another full export, and still sheets cannot show motion or its ending. → §PW713

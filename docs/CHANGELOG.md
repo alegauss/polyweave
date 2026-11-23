@@ -88,6 +88,7 @@
 - ✅ **PW700** **No operation renders a declared editorial HTML card to a still for a narrated video** — capture.card skips the browser for an unchanged card and names each guarded element whose text breaks a letter, overflows, lacks glyphs or splits a name (design recorded in `docs/specs/video.md`).
 - ✅ **PW701** **stock.fetch cannot fetch a licensed YouTube clip or preserve its licence metadata** — stock.clip fetches a bounded excerpt of a public video only under a reuse licence, recording its page, channel, licence, cut points and credit (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW702** **reference.frames shows a black frame at zero where the narrated MP4 decodes a visible opening** — reference.frames decodes each stretch's first frame again at its exact time, so a narrated MP4's opening at zero is the frame the video shows (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW704** **capture.web films no pointer, jumps a scroll in one frame and fills typed text at once** — capture.web draws a pointer that travels to each target when asked, eases every scroll over its seconds and types at a hand's pace (design recorded in `docs/specs/video.md`).
 
 ## Block E — One world with the engine
 

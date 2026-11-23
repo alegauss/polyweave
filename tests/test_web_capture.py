@@ -34,6 +34,10 @@ class _Site:
         self.waited: list[tuple[str, str]] = []
         self.held: list[float] = []
         self.contexts: list[dict] = []
+        self.wheeled: list[float] = []
+        self.moved: list[tuple] = []
+        self.delays: list[float] = []
+        self.scripts: list[str] = []
 
 
 class _Said:
@@ -45,7 +49,8 @@ class _Page:
     def __init__(self, site: _Site, folder: Path):
         self.site = site
         self.handlers: dict[str, list] = {}
-        self.mouse = _Said(wheel=lambda x, y: None)
+        self.mouse = _Said(wheel=lambda x, y: site.wheeled.append(y),
+                           move=lambda x, y: site.moved.append((x, y)))
         self.video = _Said(path=lambda: str(folder / "page.webm"))
 
     def on(self, event, handler):
@@ -76,6 +81,15 @@ class _Page:
         self._there(selector)
         self.site.typed[selector] = value
 
+    def type(self, selector, value, delay, timeout):
+        self._there(selector)
+        self.site.typed[selector] = value
+        self.site.delays.append(delay)
+
+    def locator(self, selector):
+        box = {"x": 100.0, "y": 200.0, "width": 40.0, "height": 20.0}
+        return _Said(first=_Said(bounding_box=lambda timeout: box))
+
     def wait_for_selector(self, selector, state, timeout):
         self._there(selector)
         self.site.waited.append((selector, state))
@@ -90,7 +104,11 @@ class _Page:
 class _Context:
     def __init__(self, site, folder):
         self.folder = folder
+        self.site = site
         self.page = _Page(site, folder)
+
+    def add_init_script(self, script):
+        self.site.scripts.append(script)
 
     def new_page(self):
         return self.page
@@ -186,7 +204,7 @@ def test_a_visit_is_filmed_with_its_steps_marked_and_its_secret_kept_by_name(
     assert site.visited == ["http://localhost:2710/console"]
     assert site.typed == {"#password": "hunter2-not-for-the-record"}
     assert site.waited == [("#review-queue", "visible")]
-    assert site.held == [1500.0]
+    assert site.held[-1] == 1500.0
     assert site.contexts == [{"viewport": {"width": 1280, "height": 720},
                               "size": {"width": 1280, "height": 720}}]
     assert said["steps"] == 6 and "install" in said["marks"]
@@ -302,3 +320,42 @@ def test_without_playwright_or_its_browser_the_refusal_names_the_install(
         web.web("scene.web.toml", root=str(here))
     assert refused.value.code == "web.no-playwright"
     assert "playwright install chromium" in refused.value.remedy
+
+
+# -- a visit filmed the way a person moves (§PW704) -----------------------------------
+
+
+def test_a_scroll_eases_and_typing_keeps_a_hand_s_pace(tmp_path, monkeypatch):
+    here = _project(tmp_path,
+                    _VISIT.replace("scroll = 600", "scroll = 600\nseconds = 1"))
+    monkeypatch.setenv("PW690_PASSWORD", "x")
+    site = _Site(shows=_SHOWS)
+    _install(monkeypatch, site)
+    web.web("scene.web.toml", root=str(here))
+    # Thirty wheel turns over the second, small at both ends and summing to the scroll.
+    assert len(site.wheeled) == 30
+    assert sum(site.wheeled) == pytest.approx(600)
+    assert site.wheeled[0] < site.wheeled[15] > site.wheeled[-1]
+    assert site.delays == [pytest.approx(1000 / web.TYPE_PACE)]
+    assert site.moved == [] and site.scripts == []
+
+
+def test_a_pointer_is_drawn_and_goes_to_each_target_first(tmp_path, monkeypatch):
+    here = _project(tmp_path, _VISIT.replace("allow =", "pointer = true\nallow ="))
+    monkeypatch.setenv("PW690_PASSWORD", "x")
+    site = _Site(shows=_SHOWS)
+    _install(monkeypatch, site)
+    web.web("scene.web.toml", root=str(here))
+    assert len(site.scripts) == 1 and "polyweave-pointer" in site.scripts[0]
+    # From the middle of the frame to the box's centre, arriving exactly.
+    assert site.moved[0] != (120.0, 210.0)
+    assert site.moved[-1] == (120.0, 210.0)
+
+
+@pytest.mark.parametrize("row", ['click = "a"\nseconds = 1', 'scroll = 10\npace = 3',
+                                 'scroll = 10\nseconds = 0'])
+def test_a_pace_or_seconds_on_the_wrong_step_is_refused(tmp_path, row):
+    here = _project(tmp_path, f'[web]\nurl = "https://x.test/"\n[[step]]\n{row}\n')
+    with pytest.raises(PolyweaveError) as refused:
+        web.read(here / "scene.web.toml")
+    assert refused.value.code == "web.bad-visit"

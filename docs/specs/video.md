@@ -113,6 +113,18 @@ the second it started (`at`) and ended (`done`) since the recording began. A bro
 records in real time, so there is no `sequence.json`. A secret is kept by its variable's
 name; its value is read only to type it, and reaches neither the record nor the answer.
 
+**It is filmed the way a person moves** (§PW704). A headless browser draws no pointer,
+jumps a scroll in one frame and fills a field at once, so a product scene never showed
+what was clicked. `[web] pointer = true` adds a script before the page's own that draws
+a pointer following the mouse, with a ring where a button goes down, and carries it to
+the middle of each click and type target over 0.6 s along a minimum-jerk path
+(`10t³ − 15t⁴ + 6t⁵`) at 30 frames a second, from wherever it last was. A `scroll` eases
+over the step's `seconds` (its pixels at 200 a second, at least 0.2 s, where unset) in
+thirty wheel turns a second along the same curve. A `type` clears the field and types at
+the step's `pace` characters a second (12 where unset). `seconds` on any step but a
+scroll, `pace` on any but a type, or either not above 0, is `web.bad-visit`; both are
+kept on the step in the record.
+
 A console error, an uncaught page error, a failed request, a response of 400 or above,
 or an image that loaded no pixels (checked after every step) is `web.broken-page`, unless
 an `allow` entry is part of its URL or message; nothing is kept. A step that does not
