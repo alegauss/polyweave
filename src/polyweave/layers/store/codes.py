@@ -96,6 +96,11 @@ CODES: dict[str, Code] = {
         "(§PW698)",
         doors=("name the .ass burned into the video", "give size as [width, height]"),
     ),
+    "video.changed": Code(
+        means="a video changed while video.measure read it",
+        when="its SHA-256 at the end differs from the one at the start (§PW707)",
+        doors=("measure it again once whatever writes it has finished",),
+    ),
     "video.no-audio": Code(
         means="a sound measure was asked of a video with no sound",
         when="video_loudness, video_true_peak or video_audio_gap bound on a silent "

@@ -381,3 +381,40 @@ def test_each_language_track_is_held_on_its_own_and_the_one_that_misses_is_named
     assert checked["failed"] == ["loud"]
     [result] = [one for one in checked["predicates"] if one["id"] == "loud"]
     assert "(por)" in result["of"]
+
+
+# -- one report bound to an exported video's bytes (§PW707) ----------------------------
+
+
+@needs_ffmpeg
+def test_an_exported_video_is_measured_in_one_report_bound_to_its_hash(tmp_path):
+    from polyweave.kernel import provenance
+
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    said = video.measure("short.mp4", opening=1.0, root=str(here))
+    assert said["sha256"] == provenance.sha256_of(here / "short.mp4")[0]
+    assert {one["kind"] for one in said["streams"]} == {"video", "audio"}
+    assert said["video_frozen_end"] == pytest.approx(0.9, abs=0.15)
+    assert said["frozen"][-1][1] == pytest.approx(3.0, abs=0.15)
+    assert said["sha256"][:12] in said["first_frame"]
+    assert (here / said["first_frame"]).is_file()
+    times = said["opening"]["frame_times"]
+    assert times[0] == pytest.approx(0.0, abs=0.05) and len(times) >= 9
+
+
+@needs_ffmpeg
+def test_a_video_that_changes_while_it_is_measured_is_refused(tmp_path, monkeypatch):
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    real = video.measured
+
+    def rewritten(path):
+        found = real(path)
+        _short(here / "short.mp4", sound=False)
+        return found
+
+    monkeypatch.setattr(video, "measured", rewritten)
+    with pytest.raises(PolyweaveError) as refused:
+        video.measure("short.mp4", root=str(here))
+    assert refused.value.code == "video.changed"

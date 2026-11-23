@@ -726,12 +726,36 @@ def measured(path: Path) -> dict:
              enumerate(s for s in streams if s["codec_type"] == "audio")]
     return {
         **_held_still(change, fps),
+        # Every stretch held still for half a second or more, in seconds (§PW707).
+        "frozen": _frozen(change, fps, FROZEN),
         **{key: heard[0][key] if heard else None for key in HEARD},
         # Every sound stream on its own, one per language where a cut declares them,
         # which a spec's sound measure is held to stream by stream (§PW697).
         "audio_streams": heard,
         **_rest(seconds, width, height, fps, moved, streams),
     }
+
+
+#: The shortest stillness `frozen` lists, in seconds: a held title or a paused page,
+#: not two identical frames of a slow pan (§PW707).
+FROZEN = 0.5
+
+
+def _frozen(change: np.ndarray, fps: float, least: float) -> list[list[float]]:
+    """Each run of frames that do not move, as [start, end] seconds, at least `least`
+    long. Frame i+1 is still where `change[i]` is under MOTION; the run starts at the
+    frame it holds."""
+    if not fps or not change.size:
+        return []
+    found, start = [], None
+    for i, one in enumerate([*(change <= MOTION), False]):
+        if one and start is None:
+            start = i
+        elif not one and start is not None:
+            if (i - start) / fps >= least:
+                found.append([round(start / fps, 3), round((i + 1) / fps, 3)])
+            start = None
+    return found
 
 
 def _held_still(change: np.ndarray, fps: float) -> dict:
@@ -982,3 +1006,74 @@ def predicate(p: Any, subject: Any, root: str | Path, seen: dict) -> dict:
             given=p.measure,
         )
     return {"value": float(value), "of": str(where)}
+
+
+@operation("video.measure")
+def measure(
+    video: Annotated[str, Param("an exported video, under the project")],
+    *,
+    opening: Annotated[
+        float, Param("seconds from the start whose frame times are listed", lo=0.0)
+    ] = 3.0,
+    out: Annotated[
+        str, Param("where its first frame is written; the work area's if unset")
+    ] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """One report on an exported video, bound to its exact bytes (§PW707).
+
+    Its SHA-256 and size, every stream (kind, codec, length, language), what
+    `video.measured` reads off it (length, size, rate, loudness and true peak per sound
+    stream, the gap between picture and sound, frozen stretches, the longest shot), its
+    first decoded frame as a PNG named by the hash, and the presentation time of each
+    frame in the first `opening` seconds. Nothing is re-encoded. The file is hashed
+    again at the end, and a file that changed while it was measured is refused: the
+    report cannot describe two revisions. Cadence and stillness are measured, never
+    judged.
+    """
+    from polyweave.kernel import provenance
+    from polyweave.kernel.config import load
+
+    config = load(root)
+    here = config.root
+    path = here / video
+    if not path.is_file():
+        raise PolyweaveError("video.unreadable", f"there is no video at {video}",
+                             "name the exported video under the project", given=video)
+    before, size = provenance.sha256_of(path)
+    probe = subprocess.run(
+        [_ffmpeg("ffprobe"), "-v", "error", "-show_entries",
+         "stream=index,codec_type,codec_name,duration:stream_tags=language",
+         "-of", "json", str(path)],
+        capture_output=True, text=True, check=False)
+    streams = [{"index": one.get("index"), "kind": one.get("codec_type"),
+                "codec": one.get("codec_name"),
+                "seconds": round(float(one["duration"]), 3)
+                if one.get("duration") not in (None, "N/A") else None,
+                "language": (one.get("tags") or {}).get("language", "")}
+               for one in (json.loads(probe.stdout or "{}").get("streams") or ())]
+    found = measured(path)
+    times = subprocess.run(
+        [_ffmpeg("ffprobe"), "-v", "error", "-select_streams", "v:0",
+         "-read_intervals", f"%+{opening:g}", "-show_entries", "frame=pts_time",
+         "-of", "csv=p=0", str(path)],
+        capture_output=True, text=True, check=False).stdout
+    # One frame a line, its time first: ffprobe may trail a comma for side data.
+    cells = [line.split(",")[0].strip() for line in times.splitlines()]
+    shown = [round(float(one), 3) for one in cells if one and one != "N/A"]
+    folder = (here / out) if out else config.path("paths.work") / "measured"
+    folder.mkdir(parents=True, exist_ok=True)
+    first = folder / f"{path.stem}.{before[:12]}.first.png"
+    subprocess.run([_ffmpeg(), "-v", "error", "-y", "-i", str(path), "-frames:v", "1",
+                    str(first)], capture_output=True, check=False)
+    after, _ = provenance.sha256_of(path)
+    if after != before:
+        raise PolyweaveError(
+            "video.changed", f"{video} changed while it was measured",
+            "measure it again once whatever writes it has finished", given=video)
+    return {
+        "video": video, "sha256": before, "bytes": size, "streams": streams,
+        **found,
+        "first_frame": provenance.relative(first, here) if first.is_file() else None,
+        "opening": {"seconds": opening, "frame_times": shown},
+    }

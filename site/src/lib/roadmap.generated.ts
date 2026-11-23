@@ -56,7 +56,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW707",
     block: "B",
     symptom: "An exported video's measurements cannot be bound to its exact file in one report",
-    why: "A caller must coordinate hashes, stream probes, audio levels and opening frames by hand, allowing evidence from different revisions to mix.",
+    why: "No pause budget holds the longest motionless stretch inside selected screen recordings, with source and cut times and a cursor policy.",
     deps: [],
   },
   {

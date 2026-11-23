@@ -314,3 +314,17 @@ render's key is the page's digest, every argument and the Playwright release (wh
 pins its Chromium); the record keeps the key and the answer. A call whose key matches
 the record of the PNG already at `out`, where that PNG and every recorded input still
 hash as recorded, starts no browser and answers the recorded answer with `cached` true.
+
+## One report on an exported video
+
+A finished video is checked without rebuilding it, in one report bound to its bytes
+(§PW707). `video.measure(video, opening=3, out=)` answers the file's `sha256` and
+`bytes`; every stream's `index`, `kind`, `codec`, `seconds` and `language`; everything
+`video.measured` reads (the measures above, `audio_streams`, and `frozen`, each stretch
+held still for 0.5 s or more as `[start, end]` seconds); the first decoded frame,
+written as `<stem>.<first 12 of the hash>.first.png` in `out` (the work area's
+`measured/` if unset) and named as `first_frame`; and `opening.frame_times`, the
+presentation time of every video frame in the first `opening` seconds, as ffprobe reads
+them. Nothing is re-encoded. The file is hashed again at the end, and one whose hash
+moved while it was read is `video.changed`, so a report never describes two revisions.
+Cadence and stillness are measured; whether they are wrong is the editor's call.

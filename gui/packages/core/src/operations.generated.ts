@@ -2896,6 +2896,18 @@ export interface VideoCutArgs {
   root?: string
 }
 
+/** One report on an exported video, bound to its exact bytes (§PW707). */
+export interface VideoMeasureArgs {
+  /** an exported video, under the project */
+  video: string
+  /** seconds from the start whose frame times are listed; from 0 to …; default 3.0 */
+  opening?: number
+  /** where its first frame is written; the work area's if unset */
+  out?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Which burned-in lines reach outside the safe box or under a platform's controls. */
 export interface VideoSafeAreaArgs {
   /** the .ass file burned into the video */
@@ -3252,6 +3264,7 @@ export interface Operations {
   "vfx.preview": VfxPreviewArgs
   "video.buy": VideoBuyArgs
   "video.cut": VideoCutArgs
+  "video.measure": VideoMeasureArgs
   "video.safe_area": VideoSafeAreaArgs
   "voice.choose": VoiceChooseArgs
   "voice.design": VoiceDesignArgs
@@ -3493,6 +3506,7 @@ export const OPERATIONS = [
   "vfx.preview",
   "video.buy",
   "video.cut",
+  "video.measure",
   "video.safe_area",
   "voice.choose",
   "voice.design",
