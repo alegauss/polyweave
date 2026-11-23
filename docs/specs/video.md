@@ -446,4 +446,7 @@ written to `<name>.preview-<start>-<end>.mp4` unless `out` says otherwise. The a
 `interval` gives the seconds `asked`, those `rendered`, and the `offset` a time in the
 preview adds to be the cut's; the record keeps the window. An interval that is not two
 seconds inside the cut, start before end, is `video.bad-cut`. Every clip before the
-window is still decoded on the way to it.
+window is still decoded on the way to it. `around` names the window by what is in it in
+place of seconds: `clip[n]` is the n-th clip's seconds in the cut (from where its fade
+begins), `voice[n]` the n-th voice line's, from its `at` for as long as its file runs; a
+place the cut does not have is `video.bad-cut`.

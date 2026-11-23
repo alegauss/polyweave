@@ -903,6 +903,9 @@ def cut(
     context: Annotated[
         float, Param("seconds kept before and after the interval", lo=0.0)
     ] = 0.0,
+    around: Annotated[
+        str, Param("the interval as a clip or a voice line, as clip[3] or voice[2]")
+    ] = "",
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
     """Cut captured runs together, score and encode them as one MP4, and measure it.
@@ -916,7 +919,9 @@ def cut(
     written, from the same clips, fit, fades, voices, music and mix as the whole cut,
     to `<name>.preview-<start>-<end>.mp4` unless `out` says otherwise (§PW713). The
     answer's `interval` gives the seconds asked, those rendered, and the `offset` a
-    time in the preview adds to be the cut's.
+    time in the preview adds to be the cut's. `around` names the interval by what is
+    in it: `clip[n]` is the n-th clip's seconds in the cut, `voice[n]` the n-th voice
+    line's, from its `at` for as long as its file runs.
     """
     from polyweave.kernel import provenance
     from polyweave.kernel.config import load
@@ -924,6 +929,8 @@ def cut(
     here = load(root).root
     path = Path(source) if Path(source).is_absolute() else here / source
     declared = read(path, here)
+    if around:
+        interval = _around(around, declared)
     window = _window(interval, float(context), declared["seconds"])
     where = (
         out
@@ -1001,6 +1008,28 @@ def cut(
         f"{found['video_height']}, moving from {found['first_motion']:g}s; watch "
         f"{provenance.relative(target, here)}, or lay the sheet in a sitting",
     }
+
+
+def _around(named: str, declared: dict) -> list[float]:
+    """The seconds of the cut a clip or a voice line covers, by its place (§PW713)."""
+    found = re.fullmatch(r"(clip|voice)\[(\d+)\]", named.strip())
+    rows = declared["clips"] if found and found[1] == "clip" else declared["voices"]
+    if not found or not 1 <= int(found[2]) <= len(rows):
+        raise _bad(f"around is {named!r}",
+                   f"name clip[1] to clip[{len(declared['clips'])}] or voice[1] to "
+                   f"voice[{len(declared['voices'])}]", given="around")
+    n = int(found[2])
+    if found[1] == "voice":
+        voice = rows[n - 1]
+        return [voice["at"], min(declared["seconds"],
+                                 voice["at"] + _seconds(Path(voice["file"])))]
+    at = 0.0
+    for index, clip in enumerate(declared["clips"], 1):
+        at -= clip["fade_in"]
+        if index == n:
+            return [max(0.0, at), at + clip["length"]]
+        at += clip["length"]
+    return [0.0, declared["seconds"]]
 
 
 def _window(interval: Any, context: float, seconds: float) -> tuple | None:

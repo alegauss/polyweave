@@ -576,3 +576,20 @@ def test_a_review_renders_only_the_interval_from_the_cut_s_own_graph(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         video.cut("two.cut.toml", interval=[3.0, 9.0], root=str(here))
     assert refused.value.code == "video.bad-cut"
+
+
+@needs_ffmpeg
+def test_a_review_is_named_by_the_clip_it_shows(tmp_path):
+    here = _project(tmp_path)
+    Image.new("RGB", (64, 36), (220, 30, 30)).save(here / "red.png")
+    Image.new("RGB", (64, 36), (30, 30, 220)).save(here / "blue.png")
+    (here / "two.cut.toml").write_text(
+        '[video]\nsize = [64, 36]\nfps = 10\n\n[[clip]]\nstill = "red.png"\n'
+        'length = 2.0\n\n[[clip]]\nstill = "blue.png"\nlength = 2.0\n',
+        encoding="utf-8")
+    said = video.cut("two.cut.toml", around="clip[2]", context=0.5, root=str(here))
+    assert said["interval"]["asked"] == [2.0, 4.0]
+    assert said["interval"]["rendered"] == [1.5, 4.0]
+    with pytest.raises(PolyweaveError) as refused:
+        video.cut("two.cut.toml", around="voice[1]", root=str(here))
+    assert refused.value.code == "video.bad-cut"

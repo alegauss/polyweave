@@ -41,7 +41,8 @@ LAYER = Layer(
     # 11,897 with video.sheet, one labelled still per beat (§PW708).
     # 12,908 with capture.instance, the product instance a visit films (§PW710).
     # 13,717 with store.description, a bounded description from credits (§PW711).
-    tools=14_400,
+    # 14,493 with video.cut's interval and around (§PW713).
+    tools=15_000,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),

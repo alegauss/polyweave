@@ -2938,6 +2938,8 @@ export interface VideoCutArgs {
   interval?: unknown[]
   /** seconds kept before and after the interval; from 0 to …; default 0.0 */
   context?: number
+  /** the interval as a clip or a voice line, as clip[3] or voice[2] */
+  around?: string
   /** the project the paths resolve against; default "." */
   root?: string
 }

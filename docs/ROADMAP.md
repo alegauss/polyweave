@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- ⏳ **PW713** (deps: —) **A cut cannot render one selected interval with its production narration and callouts** — A review still decodes every clip before its interval, and one cannot be named by take, beat or spoken cue rather than seconds. → §PW713
 - 📋 **PW714** (deps: —) **Fetched media has no reusable catalogue of approved and rejected source ranges** — Rejected or misidentified footage is rediscovered, and selected shots require manual provenance copying. → §PW714
 - 📋 **PW715** (deps: —) **A long video cut exposes no stage progress while rendering or waiting** — Callers poll processes and output timestamps to distinguish slow work from a failed stage. → §PW715
 - 📋 **PW716** (deps: —) **Narrated claims cannot bind evidence, dates and human review to their spoken anchors** — Revisions repeat research and can mistake illustrative footage or stale statistics for evidence. → §PW716
@@ -17,6 +16,7 @@
 - 📋 **PW719** (deps: —) **No operation searches the ElevenLabs voice library, nor speaks one line in several voices to compare** — Choosing a narrator for a new audience meant raw API calls and one lines file per candidate voice. → §PW719
 - 📋 **PW720** (deps: —) **voice.lines cannot buy a current take again when its words, voice and model are unchanged** — A take whose accent or delivery drifted can only be re-rolled by rewording a line that was already right or moving files by hand. → §PW720
 - 📋 **PW721** (deps: —) (from: urdido) **capture.web cannot scroll to a sentence the page prints or draw a highlight over it** — A video that quotes a published page films it with a Playwright script of its own, outside the visit's record. → §PW721
+- 📋 **PW725** (deps: —) **A review window of a cut decodes and filters every clip before it, so a late window costs nearly a whole render** — Reviewing the end of a long cut is as slow as exporting it, which is the cost PW713 set out to remove. → §PW725
 
 ## Block E — One world with the engine
 
@@ -91,13 +91,6 @@
   Spinhold's runs write the event trace, the probe gives the declared pressure per
   second, level.trace lays the two together, and accept.check holds bounds a person set
   (alive never above N, a peak above the phase before), naming the rule broken.
-
-## Done when — PW713
-
-- **A review renders only the pieces its interval overlaps, named by its cue** A review
-  named by a voice line or a clip renders only the clips, music and voices overlapping
-  its window, each trimmed to it, and its sampled frames and cue times match that window
-  of a full cut.
 
 ## Non-goals
 

@@ -53,13 +53,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW713",
-    block: "D",
-    symptom: "A cut cannot render one selected interval with its production narration and callouts",
-    why: "A review still decodes every clip before its interval, and one cannot be named by take, beat or spoken cue rather than seconds.",
-    deps: [],
-  },
-  {
     id: "PW714",
     block: "D",
     symptom: "Fetched media has no reusable catalogue of approved and rejected source ranges",
@@ -113,6 +106,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "capture.web cannot scroll to a sentence the page prints or draw a highlight over it",
     why: "A video that quotes a published page films it with a Playwright script of its own, outside the visit's record.",
+    deps: [],
+  },
+  {
+    id: "PW725",
+    block: "D",
+    symptom: "A review window of a cut decodes and filters every clip before it, so a late window costs nearly a whole render",
+    why: "Reviewing the end of a long cut is as slow as exporting it, which is the cost PW713 set out to remove.",
     deps: [],
   },
   {

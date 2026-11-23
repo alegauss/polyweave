@@ -8,23 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW713 Review a production interval with motion and audio
-
-In viglet/marketing VM57, `python -m polyweave describe video.cut --json` offers a whole
-cut but no selected production interval for motion review. Checking one WordPress
-Gutenberg drag, portrait or opening otherwise requires a full export and separate
-frame-extraction commands. PW708 provides labelled still sheets, which cannot show a
-complete action or judder.
-
-Allow a review interval, take, beat or spoken cue with before/after context, resolved
-against the authored production timeline. Reuse production clips, source trims, frame
-rate, fit, brand, timed callouts and the same audio mix; do not normalize a short
-excerpt independently. Return the exact original interval and shifted cue mapping.
-Render only the overlapping visual pieces and preserve subtitle placement. Verify
-sampled preview frames and cue times against that interval of a full cut. The marketing
-workaround belongs in video-maker/preview.py and uses the existing illustrated
-compositor and stage cache, rather than recreating shots for a demonstration.
-
 ### §PW714 Reviewed media ranges carried into an authored cut
 
 In viglet/marketing VM58, stock.fetch records downloads and reference.register protects
@@ -191,6 +174,23 @@ What capture.web should offer, as two steps:
 
 The record marks when each step started, so a video can time its narration against the
 moment the highlight lands.
+
+### §PW725 A review window rendered from its own clips
+
+Split from PW713 (2026-11-23). `video.cut interval=` renders a review window through the
+whole cut's own graph and seeks the output to it, which keeps the mix, the fades and
+every voice's timing exact but decodes and filters every clip before the window: a
+review of the last ten seconds of a six-minute cut costs nearly the whole render.
+
+Rendering only the clips that overlap the window means rebuilding the graph for a slice,
+and three things move when it is sliced: a still with `motion` zooms over its own frame
+count, so a trimmed one restarts its zoom; a crossfade's offset is counted from the
+cut's start; and subtitles keep the cut's times. Each needs its offset carried: the
+zoom's `on` started at the frames the window skips, every xfade offset less the window's
+start, music `music_from` plus it, a voice starting before the window entered with an
+input seek, and subtitles shifted. Done when a window's sampled frames and audio match
+the same seconds of a whole cut within the encoder's noise, and it renders in time
+proportional to the window, not to where it sits.
 
 ## Block E — One world with the engine
 
