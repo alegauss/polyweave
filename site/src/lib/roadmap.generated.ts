@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 5 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 4 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW719",
-    block: "D",
-    symptom: "No operation searches the ElevenLabs voice library, nor speaks one line in several voices to compare",
-    why: "Choosing a narrator for a new audience meant raw API calls and one lines file per candidate voice.",
-    deps: [],
-  },
   {
     id: "PW720",
     block: "D",

@@ -14,7 +14,7 @@
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector`, `picture.copies` |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
-| Carry a person's verdict (an accept needs the page's `code`) | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `verdict.target` (a bar the look must reach, always needs `code`), `sound.sitting`, `verdict.answer`, `verdict.move`, `verdict.place`; `review` shows one, `verdict.answers` resumes |
+| Carry a person's verdict (an accept needs the page's `code`) | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `verdict.target` (always needs `code`), `sound.sitting`, `verdict.answer`, `verdict.move`, `verdict.place`; `review` shows one, `verdict.answers` resumes |
 | The decision screen | `review.state`, `review.words`, `review.canon`, `review.compare`, `review.answer` |
 | Asked changes | `revision.ask`, `revision.open`, `revision.turn`, `revision.check`, `revision.settings`, `revision.outside`, `revision.close` |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
@@ -23,7 +23,7 @@
 | The game side | `engine.check`, `engine.states`, `game.test`, `game.boot`, `game.pack`, `tables.check`, `capture.run`, `capture.again`, `capture.movie`, `capture.declared`, `engine.run`, `engine.run_declared`, `engine.sweep`, `engine.cost`, `engine.perf`, `engine.preset_search`, `level.validate`, `level.fields`, `level.reader`, `level.compile`, `level.probe`, `level.curve`, `level.trace`, `godot.install` |
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.text_fit`, `game.close`, `game.batch`, `game.keep`, `game.record_flow`, `game.crash_read`, `game.rekey`, `game.replay`, `game.compare_runs`, `game.replay_rates`, `game.release_check`, `game.export_smoke` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
-| World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
+| World | `world.read`, `world.validate`, `voice.find`, `voice.compare`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
 | Music | `music.validate`, `music.to_midi`, `music.from_midi` (a MIDI as a score), `music.from_audio` (a recording as a score), `music.render`, `music.track`, `sound.synth`, `sound.loop`, `sound.stems` (a recorded track), `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build`, `vfx.preview`, `panel.build`, `panel.capture`, `picture.sew`, `icons.build` |
 | A teaser | `video.cut`, `capture.web`, `capture.instance`, `capture.card`, `video.buy` (paid), `video.check`, `video.measure`, `video.pauses`, `video.safe_area`, `store.thumbnail`, `store.thumbnails`, `video.sheet`, `video.labels`, `video.library`, `video.claims`, `store.description` |

@@ -3060,6 +3060,24 @@ export interface VoiceChooseArgs {
   root?: string
 }
 
+/** Speak one line in several voices and lay the takes for a person to pick one (§PW719). */
+export interface VoiceCompareArgs {
+  /** the line each voice speaks, word for word */
+  text?: string
+  /** the service's voice ids, two or more */
+  voices?: unknown[]
+  /** the folder the takes and the sitting go in */
+  out?: string
+  /** buy the takes; a priced plan otherwise; default false */
+  spend?: boolean
+  /** the service's model, priced in [service]; default "eleven_multilingual_v2" */
+  model?: string
+  /** the [service] table it is bought through */
+  service?: string
+  /** the project whose ledger this is; default "." */
+  root?: string
+}
+
 /** Previews of an entity's described voice, laid out for a person to hear. */
 export interface VoiceDesignArgs {
   /** the world entity whose voice is described */
@@ -3077,6 +3095,28 @@ export interface VoiceDesignArgs {
   /** the [service.<name>] to use; needed only where there are several */
   service?: string
   /** the project whose ledger this is; default "." */
+  root?: string
+}
+
+/** Search the service's shared voice library, spending nothing (§PW719). */
+export interface VoiceFindArgs {
+  /** the language, as pt or en */
+  language?: string
+  /** the accent's locale, as pt-BR */
+  locale?: string
+  /** young, middle_aged or old */
+  age?: string
+  /** male, female or neutral */
+  gender?: string
+  /** what it is for, as narrative_story */
+  use?: string
+  /** words its name or description holds */
+  words?: string
+  /** how many, at most; from 1 to 100; default 20 */
+  count?: number
+  /** the [service] table it is asked through */
+  service?: string
+  /** the project the search is kept in; default "." */
   root?: string
 }
 
@@ -3399,7 +3439,9 @@ export interface Operations {
   "video.safe_area": VideoSafeAreaArgs
   "video.sheet": VideoSheetArgs
   "voice.choose": VoiceChooseArgs
+  "voice.compare": VoiceCompareArgs
   "voice.design": VoiceDesignArgs
+  "voice.find": VoiceFindArgs
   "voice.lines": VoiceLinesArgs
   "words.check": WordsCheckArgs
   "words.glyphs": WordsGlyphsArgs
@@ -3410,7 +3452,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.batch" | "picture.buy" | "picture.upscale" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "video.buy" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.batch" | "picture.buy" | "picture.upscale" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "video.buy" | "voice.compare" | "voice.design" | "voice.find" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -3651,7 +3693,9 @@ export const OPERATIONS = [
   "video.safe_area",
   "video.sheet",
   "voice.choose",
+  "voice.compare",
   "voice.design",
+  "voice.find",
   "voice.lines",
   "words.check",
   "words.glyphs",

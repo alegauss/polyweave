@@ -14,6 +14,7 @@ LAYER = Layer(
         "polyweave.layers.sound.sfx",
         "polyweave.layers.sound.sound",
         "polyweave.layers.sound.sound_buy",
+        "polyweave.layers.sound.voices",
         "polyweave.layers.sound.sound_loop",
         "polyweave.layers.sound.sound_stems",
         "polyweave.layers.sound.track_data",
@@ -43,7 +44,8 @@ LAYER = Layer(
     # with music.from_audio (§PW559); 13,904 with music.track, a track's peaks and beat
     # grid for a game's own tools (§PW611). 14,121 with voice.lines' adopt, the takes
     # sound.speak bought taken over rather than bought again (§PW691).
-    tools=14_400,
+    # 15,970 with voice.find and voice.compare, a narrator found and heard (§PW719).
+    tools=16_600,
     census={
         "polyweave.layers.sound.sound": (
             "internal", "what sound.measure and a sound bound read"),

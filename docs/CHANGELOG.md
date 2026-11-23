@@ -101,6 +101,7 @@
 - ✅ **PW717** **voice.lines accepts a speed for eleven_v3, spends, and records it in the take's provenance although the model ignores it** — sound.speak and voice.lines refuse a setting the model ignores (eleven_v3's speed) before pricing or buying, and a take recorded with one stays current without it.
 - ✅ **PW727** **Twenty-three operations offer --job but take no report, so the worker hands it to their first parameter** — The job worker hands a report only to an operation that injects one, so the 23 that do not run under --job, and a registry-wide test holds it.
 - ✅ **PW718** **No operation brings a picture from Wikimedia Commons: stock.fetch takes only a Pixabay id** — stock.commons brings a Commons picture by title or page, refusing a non-free or unlicensed one first, and records page, author, licence, date and the credit owed.
+- ✅ **PW719** **No operation searches the ElevenLabs voice library, nor speaks one line in several voices to compare** — voice.find searches the shared voice library for nothing, kept a day; voice.compare prices one line in several voices, then buys and lays them as one pick.
 
 ## Block E — One world with the engine
 

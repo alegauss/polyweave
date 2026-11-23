@@ -1061,3 +1061,20 @@ carries the page, the author (the `Artist` field as text), the licence and its U
 file's date and `task_id = "commons:<title>"`, and where `AttributionRequired` is true a
 `credit` that provenance.credits and store.description keep whole. `[service.commons]
 base` points it elsewhere, as for tests.
+## A narrator found and heard against others (§PW719)
+
+`voice.find` searches the service's shared voice library (`GET /v1/shared-voices`) by
+`language`, `locale`, `age`, `gender`, `use` (sent as `use_cases`), `words` (`search`) and
+`count` (`page_size`), with the `[service]` table's key, and spends nothing. Each match
+answers `voice_id`, `public_owner_id`, `name`, `accent`, `age`, `gender`, `use_case`,
+`descriptive`, `description`, `language`, `locale`, `usage_character_count_1y`,
+`cloned_by_count` and `preview_url` where the library states them; the answer is kept a
+day in the work area's `voices/`, as a stock search is.
+
+`voice.compare text voices` speaks one line in two voices or more. Without `spend` it
+answers the price of each take, the total and what the ceiling leaves, and sends
+nothing. With `spend` each voice is bought as `sound.speak` buys a line, at
+`<out>/<voice id>.mp3` with its record (`details.compared` names every voice of the
+comparison), and one sitting lays them as a pick-one choice. Which voice narrates is the
+person's; a library voice the account must add before it speaks is the service's
+refusal, said as it says it.

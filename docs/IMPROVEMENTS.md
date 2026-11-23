@@ -8,25 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW719 Voices cannot be searched or compared
-
-Where it happened: viglet/marketing, the standalone Japode Short about the first
-computer bug, on 2026-11-16. The owner asked for a voice in the audience's own age (21
-to 31) in place of the channel's narrator.
-
-What was missing: `describe` lists `voice.design`, `voice.choose` and `voice.lines`, but
-nothing that searches ElevenLabs' shared voice library by language, locale, age, gender
-and use. The session called `GET
-/v1/shared-voices?language=pt&locale=pt-BR&age=young&gender=...` with curl to shortlist
-candidates. It then wrote one lines file per voice in
-`japode/primeiro-bug/narration/samples/` to hear the same sentence in each, because a
-lines file holds a single voice.
-
-Expected:
-- a `voice.find` that answers the library's matches (id, name, accent, age, use, description,
-  usage), kept in the project like `stock.find`;
-- a way to speak one line in several voices as one sitting to compare, priced before spending.
-
 ### §PW720 A current take cannot be bought again
 
 Where it happened: urdido (the video framework extracted from marketing's video-maker),

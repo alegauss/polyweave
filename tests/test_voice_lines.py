@@ -418,3 +418,57 @@ def test_a_take_recorded_with_an_ignored_speed_is_still_current_without_it(
     provenance.write(record, root=str(tmp_path))
     again = sound_buy.lines(script="demo/script.json", root=str(tmp_path))
     assert [one["locale"] for one in again["current"]] == ["en"]
+
+# -- a narrator found in the library and heard against others (§PW719) -----------------
+
+
+def test_the_library_is_searched_once_a_day_and_spends_nothing(
+    tmp_path, project, monkeypatch
+):
+    import urllib.parse
+
+    from polyweave.layers.sound import voices
+    from polyweave.services import client
+
+    asked = []
+
+    def send(url, **kw):
+        asked.append((url, kw.get("headers") or {}))
+        return client.Answer(200, json.dumps({"voices": [
+            {"voice_id": "v-young", "name": "Lia", "age": "young", "gender": "female",
+             "accent": "brazilian", "use_case": "narrative_story", "locale": "pt-BR",
+             "extra": "dropped"}]}).encode(), {})
+
+    monkeypatch.setattr(client, "send", send)
+    said = voices.find(language="pt", locale="pt-BR", age="young", root=str(tmp_path))
+    assert said["voices"] == [{"voice_id": "v-young", "name": "Lia", "accent":
+                               "brazilian", "age": "young", "gender": "female",
+                               "use_case": "narrative_story", "locale": "pt-BR"}]
+    query = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(asked[0][0]).query))
+    assert query == {"language": "pt", "locale": "pt-BR", "age": "young",
+                     "page_size": "20"}
+    assert asked[0][1]["xi-api-key"] == "sk-sound"
+    voices.find(language="pt", locale="pt-BR", age="young", root=str(tmp_path))
+    assert len(asked) == 1
+    assert project.sent == []
+
+
+def test_one_line_in_several_voices_is_priced_then_laid_as_one_choice(
+    tmp_path, project
+):
+    from polyweave.layers.sound import voices
+
+    plan = voices.compare(text="O primeiro bug", voices=["v-a", "v-b", "v-a"],
+                          out="samples", root=str(tmp_path))
+    assert plan["voices"] == ["v-a", "v-b"] and plan["spent"] is False
+    assert plan["price"] == pytest.approx(2 * len("O primeiro bug") * 0.001)
+    assert project.sent == []
+    done = voices.compare(text="O primeiro bug", voices=["v-a", "v-b"], out="samples",
+                          spend=True, root=str(tmp_path))
+    assert [url.split("/text-to-speech/")[1].split("?")[0]
+            for url, _, _ in project.sent] == ["v-a", "v-b"]
+    assert done["takes"] == ["samples/v-a.mp3", "samples/v-b.mp3"]
+    assert done["sitting"].startswith("samples")
+    with pytest.raises(PolyweaveError) as refused:
+        voices.compare(text="O primeiro bug", voices=["v-a"], root=str(tmp_path))
+    assert refused.value.code == "fetch.missing-field"
