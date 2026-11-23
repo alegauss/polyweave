@@ -77,3 +77,50 @@ def test_no_model_named_says_how_to_add_one(project):
         faults(["art/physio.png"], root=str(root))
     assert refused.value.code == "picture.no-vision"
     assert "ollama pull" in refused.value.remedy
+
+
+def test_a_large_photo_goes_small_and_a_dropped_answer_is_asked_again(
+    project, monkeypatch
+):
+    """§PW696: a 1536 px photo overflowed a local model's context, and its runner
+    dropped one answer mid-set."""
+    import base64
+    import io
+
+    root, _ = project
+    Image.new("RGB", (1536, 1024), (90, 90, 90)).save(root / "art" / "big.png")
+    calls = []
+
+    def send(url, **how):
+        sent = json.loads(how["data"])
+        calls.append(sent)
+        if len(calls) == 1:
+            return client.Answer(500, b"runner dropped", {})
+        return client.Answer(200, json.dumps({"response": '{"faults": []}'}).encode(),
+                             {})
+
+    monkeypatch.setattr(client, "send", send)
+    said = faults(["art/big.png"], root=str(root))
+    assert len(calls) == 2 and said["pictures"][0]["usable"] is True
+    with Image.open(io.BytesIO(base64.b64decode(calls[1]["images"][0]))) as sent:
+        assert max(sent.size) == 1024
+    assert calls[1]["options"]["num_ctx"] == 8192
+
+
+def test_a_picture_the_server_cannot_read_is_named_unchecked_not_passed(
+    project, monkeypatch
+):
+    root, _ = project
+    calls = []
+
+    def send(url, **how):
+        calls.append(1)
+        if len(calls) == 1:
+            return client.Answer(200, json.dumps(
+                {"response": '{"faults": []}'}).encode(), {})
+        return client.Answer(500, b"runner dropped", {})
+
+    monkeypatch.setattr(client, "send", send)
+    said = faults(["art/office.png", "art/physio.png"], root=str(root))
+    assert [one["picture"] for one in said["pictures"]] == ["art/office.png"]
+    assert said["unchecked"][0]["picture"] == "art/physio.png"

@@ -66,11 +66,31 @@ def _server(config) -> tuple[str, str]:
     return url, model
 
 
+#: The longest side a picture is sent at, and the context the model is given: a full
+#: 1536 px photo is past 4,096 tokens, the context a local server opens by default.
+SIDE = 1024
+CONTEXT = 8192
+
+
+def _sized(picture: bytes) -> bytes:
+    """The picture as a PNG no longer than SIDE on its longer side."""
+    import io
+
+    from PIL import Image
+
+    with Image.open(io.BytesIO(picture)) as opened:
+        image = opened.convert("RGB")
+    image.thumbnail((SIDE, SIDE))
+    held = io.BytesIO()
+    image.save(held, format="PNG")
+    return held.getvalue()
+
+
 def _asked(url: str, model: str, picture: bytes) -> list[dict]:
     """The faults the model reads off one picture, each kind one it was asked about."""
     body = json.dumps({"model": model, "prompt": ASKED, "stream": False,
-                       "format": "json",
-                       "images": [base64.b64encode(picture).decode()]}).encode()
+                       "format": "json", "options": {"num_ctx": CONTEXT},
+                       "images": [base64.b64encode(_sized(picture)).decode()]}).encode()
     try:
         answer = client.send(f"{url}/api/generate", method="POST", data=body,
                              headers={"Content-Type": "application/json"},
@@ -114,14 +134,29 @@ def faults(
     config = load(root)
     here = config.root
     url, model = _server(config)
-    checked = []
+    checked, unchecked = [], []
     for one in pictures:
         path = here / str(one)
         if not path.is_file():
             raise PolyweaveError("picture.no-vision", f"there is no picture at {one}",
                                  "name pictures under the project", given=str(one))
-        found = _asked(url, model, path.read_bytes())
         named = provenance.relative(path, here)
+        try:
+            # Once again where the server failed mid-answer: a local runner can drop
+            # one request and serve the next (§PW696).
+            try:
+                found = _asked(url, model, path.read_bytes())
+            except PolyweaveError as first:
+                if "answered 5" not in first.message:
+                    raise
+                found = _asked(url, model, path.read_bytes())
+        except PolyweaveError as missed:
+            if checked or unchecked:
+                # One picture the server could not read is named, never passed, and
+                # the rest of the set is still checked.
+                unchecked.append({"picture": named, "why": missed.message})
+                continue
+            raise
         when = datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
         try:
             record = provenance.read(named, root=here)
@@ -134,4 +169,5 @@ def faults(
                         "ledger": marked,
                         "advice": sorted({FAULTS[f["kind"]] for f in found})})
     return {"model": model, "pictures": checked,
-            "faulty": [one["picture"] for one in checked if one["faults"]]}
+            "faulty": [one["picture"] for one in checked if one["faults"]],
+            "unchecked": unchecked}

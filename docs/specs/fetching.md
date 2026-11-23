@@ -1029,3 +1029,11 @@ latest ledger entry marked `usable = false` with the kinds; it stays in the ledg
 since it was spent. Nothing is rejected, deleted or bought again: a model's reading is
 for a person to confirm. No model named, no server answering, or a missing picture is
 `picture.no-vision`, saying to `ollama serve` and `ollama pull` the model.
+
+Each picture goes no longer than 1024 px on its longer side and with an 8,192-token
+context: a 1536 px photo overflowed the 4,096 a local server opens by default. A server
+that fails mid-answer (a 5xx) is asked once more; a picture it still cannot read, past
+the first, is in `unchecked` with why, never passed, and the rest of the set is checked.
+On Shio's 24 marketplace photos (2026-11-23, `qwen2.5vl:7b`) the current set read clean,
+and a control with garbled lettering read `pseudo-text` where it was; the photos the
+owner rejected had been overwritten by their re-buys, so they could not be read again.
