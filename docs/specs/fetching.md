@@ -1048,3 +1048,16 @@ error. Which ones a model ignores is kept in `sound_buy.IGNORED` (today eleven_v
 spend; a world entity's own setting for another model is dropped rather than refused.
 A take recorded with an ignored setting is compared without it, so dropping the setting
 from a script leaves the takes already bought current.
+## A picture from Wikimedia Commons (§PW718)
+
+`stock.commons title out` takes one file by its Commons title (`File:Name.jpg`, with or
+without `File:`) or its page URL. The API's `imageinfo` with `extmetadata` is read
+first, through the client's own User-Agent and with no key: a file Commons does not hold
+is `stock.no-hit`; one marked `NonFree`, naming no `LicenseShortName`, or under a licence
+`[service.commons] licences` does not list (where it lists none, a public-domain, CC0,
+CC BY or CC BY-SA one) is `stock.licence-refused`, and nothing is downloaded. The
+original is fetched and its SHA-1 held to the one Commons states. The `fetch` record
+carries the page, the author (the `Artist` field as text), the licence and its URL, the
+file's date and `task_id = "commons:<title>"`, and where `AttributionRequired` is true a
+`credit` that provenance.credits and store.description keep whole. `[service.commons]
+base` points it elsewhere, as for tests.

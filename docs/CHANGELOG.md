@@ -100,6 +100,7 @@
 - ✅ **PW716** **Narrated claims cannot bind evidence, dates and human review to their spoken anchors** — video.claims places each declared claim on its spoken words, fingerprints it with its evidence, and holds it unapproved, stale or expired until a person's review matches; store.description cites them.
 - ✅ **PW717** **voice.lines accepts a speed for eleven_v3, spends, and records it in the take's provenance although the model ignores it** — sound.speak and voice.lines refuse a setting the model ignores (eleven_v3's speed) before pricing or buying, and a take recorded with one stays current without it.
 - ✅ **PW727** **Twenty-three operations offer --job but take no report, so the worker hands it to their first parameter** — The job worker hands a report only to an operation that injects one, so the 23 that do not run under --job, and a registry-wide test holds it.
+- ✅ **PW718** **No operation brings a picture from Wikimedia Commons: stock.fetch takes only a Pixabay id** — stock.commons brings a Commons picture by title or page, refusing a non-free or unlicensed one first, and records page, author, licence, date and the credit owed.
 
 ## Block E — One world with the engine
 

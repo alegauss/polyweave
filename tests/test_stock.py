@@ -223,3 +223,78 @@ def test_a_licence_the_project_does_not_allow_is_refused_before_a_download(
         stock.fetch(2014422, "art/trail.jpg", service="pexels", root=str(tmp_path))
     assert refused.value.code == "stock.licence-refused"
     assert fetched == []
+
+
+# -- a picture from Wikimedia Commons, with its licence (§PW718) -----------------------
+
+BUG = b"logbook page"
+INFO = {
+    "url": "https://upload.wikimedia.org/a/First_Computer_Bug,_1945.jpg",
+    "descriptionurl": "https://commons.wikimedia.org/wiki/File:First_Computer_Bug,_1945.jpg",
+    "sha1": __import__("hashlib").sha1(BUG).hexdigest(), "width": 1024, "height": 768,
+    "extmetadata": {
+        "LicenseShortName": {"value": "Public domain"},
+        "Artist": {"value": '<a href="//x">Naval Surface Warfare Center</a>'},
+        "AttributionRequired": {"value": "false"},
+        "DateTimeOriginal": {"value": "1947-09-09"},
+    },
+}
+
+
+def _commons(monkeypatch, tmp_path, info=INFO, missing=False):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    asked = []
+
+    def send(url, **_):
+        asked.append(dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(url).query)))
+        page = {"title": "File:X", **({"missing": True} if missing
+                                      else {"imageinfo": [info]})}
+        return client.Answer(200, json.dumps({"query": {"pages": [page]}}).encode(), {})
+
+    fetched = []
+    monkeypatch.setattr(client, "send", send)
+    monkeypatch.setattr(client, "download", lambda link: fetched.append(link) or BUG)
+    return asked, fetched
+
+
+def test_a_commons_picture_is_fetched_with_its_author_licence_and_page(
+    tmp_path, monkeypatch
+):
+    asked, fetched = _commons(monkeypatch, tmp_path)
+    said = stock.commons(
+        "https://commons.wikimedia.org/wiki/File:First_Computer_Bug,_1945.jpg",
+        "footage/bug.jpg", root=str(tmp_path))
+    assert asked[0]["titles"] == "File:First Computer Bug, 1945.jpg"
+    assert fetched == [INFO["url"]]
+    assert said["author"] == "Naval Surface Warfare Center"
+    assert said["licence"] == "Public domain" and said["credit"] == ""
+    record = provenance.read("footage/bug.jpg", root=str(tmp_path))
+    assert record["source_page"] == INFO["descriptionurl"]
+    assert record["date"] == "1947-09-09"
+
+
+def test_a_commons_file_owing_attribution_carries_its_credit(tmp_path, monkeypatch):
+    meta = {**INFO["extmetadata"], "LicenseShortName": {"value": "CC BY-SA 4.0"},
+            "LicenseUrl": {"value": "https://creativecommons.org/licenses/by-sa/4.0"},
+            "AttributionRequired": {"value": "true"}}
+    _commons(monkeypatch, tmp_path, info={**INFO, "extmetadata": meta})
+    said = stock.commons("File:Hopper.jpg", "hopper.jpg", root=str(tmp_path))
+    assert said["credit"].startswith("“Hopper.jpg”, Naval Surface Warfare Center, "
+                                     "CC BY-SA 4.0 (https://creativecommons.org")
+
+
+def test_a_commons_file_non_free_unlicensed_or_missing_is_refused_unfetched(
+    tmp_path, monkeypatch
+):
+    for meta, code in (
+            ({"NonFree": {"value": "true"},
+              "LicenseShortName": {"value": "Fair use"}}, "stock.licence-refused"),
+            ({}, "stock.licence-refused")):
+        _, fetched = _commons(monkeypatch, tmp_path, info={**INFO, "extmetadata": meta})
+        with pytest.raises(PolyweaveError) as refused:
+            stock.commons("File:X.jpg", "x.jpg", root=str(tmp_path))
+        assert refused.value.code == code and fetched == []
+    _, fetched = _commons(monkeypatch, tmp_path, missing=True)
+    with pytest.raises(PolyweaveError) as refused:
+        stock.commons("File:Nothing.jpg", "x.jpg", root=str(tmp_path))
+    assert refused.value.code == "stock.no-hit" and fetched == []

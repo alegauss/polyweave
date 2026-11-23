@@ -8,28 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW718 Wikimedia Commons pictures are fetched by hand
-
-Where it happened: viglet/marketing, the standalone Japode Short about the first
-computer bug, on 2026-11-16. It needs three public-domain pictures from Wikimedia
-Commons: the 1947 Harvard Mark II logbook page (File:First_Computer_Bug,_1945.jpg, Naval
-Surface Warfare Center), Grace Hopper (James S. Davis, US Navy, 1984) and Thomas Edison
-(Bachrach, about 1922).
-
-What came back: `stock.fetch` takes only a Pixabay id. `describe` lists no operation
-that brings a picture from Commons. The WordPress episode's historical portraits
-(Mingus, Strayhorn, Armstrong, Gutenberg) had already been fetched and their
-`.prov.json` written by hand.
-
-Expected: one call that, given a Commons file title, downloads the original and records
-in its provenance the page, the author, the licence short name and URL, the date and the
-hash. These come from the API's `imageinfo` + `extmetadata`, which answers when given a
-descriptive User-Agent. It should refuse a file whose licence is missing or non-free, as
-`stock.fetch` would refuse an unknown id.
-
-Workaround: the marketing session queried the Commons API with curl and wrote each
-`.prov.json` by hand in `japode/primeiro-bug/footage/`.
-
 ### §PW719 Voices cannot be searched or compared
 
 Where it happened: viglet/marketing, the standalone Japode Short about the first

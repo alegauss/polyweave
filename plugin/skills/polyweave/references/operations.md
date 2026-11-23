@@ -7,7 +7,7 @@
 | Adopt | `project.new`, `project.init` (`init`), `project.check`, `project.adoption`, `project.inventory`, `kit.list`, `kit.install`, `kit.update`, `kit.prove` |
 | Know the machine | `capabilities`, `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
-| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.kit` (a folder built, rendered, specced, checked and sat in one call), `geometry.describe`, `geometry.variants`, `geometry.fit`, `geometry.compare` |
+| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.kit` (a folder, end to end, in one call), `geometry.describe`, `geometry.variants`, `geometry.fit`, `geometry.compare` |
 | Render | `render.plan`, `render.bake`, `render.in_game` |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest`, `measure.contrast`, `measure.pressure`, `measure.level`, `measure.flashes` |
 | Judge against the bar | `accept.first`, `accept.check`, `accept.verify`, `accept.check_screen`, `reference.concept`, `cost.read`, `sound.measure`, `sound.speech`, `sound.declared` (what is missing) |
@@ -29,7 +29,7 @@
 | A teaser | `video.cut`, `capture.web`, `capture.instance`, `capture.card`, `video.buy` (paid), `video.check`, `video.measure`, `video.pauses`, `video.safe_area`, `store.thumbnail`, `store.thumbnails`, `video.sheet`, `video.labels`, `video.library`, `video.claims`, `store.description` |
 | A project's look | `style.read`, `style.drift` (before a person looks), `style.train` |
 | Buy a drawing | `picture.buy`, `picture.batch`, `picture.gate`, `picture.faults`, `picture.letters`, `picture.describe`, `picture.vary`, `picture.upscale`, `picture.against_parent`, `picture.fit`, `picture.collect` |
-| A stock picture, with its licence | `stock.find`, `stock.fetch`, `stock.clip` |
+| A stock picture, with its licence | `stock.find`, `stock.fetch`, `stock.clip`, `stock.commons` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `reference.register`, `reference.frames`, `reference.objects`, `reference.sample`, `reference.regions`, `reference.minimap`, `reference.events`, `reference.compare`, `reference.transcription`, `reference.transcribed`, `reference.draft`, `shape.check`, `shape.silhouette`, `shape.turntable` |
 | Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |

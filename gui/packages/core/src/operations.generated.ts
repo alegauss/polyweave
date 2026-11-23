@@ -2556,6 +2556,16 @@ export interface StockClipArgs {
   root?: string
 }
 
+/** Bring one picture in from Wikimedia Commons, with its author, licence and page. */
+export interface StockCommonsArgs {
+  /** the file's title or page, as File:Name.jpg */
+  title: string
+  /** where it is written, under the project */
+  out: string
+  /** the project it is brought into; default "." */
+  root?: string
+}
+
 /** Bring one stock picture, video or piece of music in, recorded with its page and licence. */
 export interface StockFetchArgs {
   /** the hit's id, as stock.find answered it */
@@ -3351,6 +3361,7 @@ export interface Operations {
   "sound.synth": SoundSynthArgs
   "sprites.matched": SpritesMatchedArgs
   "stock.clip": StockClipArgs
+  "stock.commons": StockCommonsArgs
   "stock.fetch": StockFetchArgs
   "stock.find": StockFindArgs
   "store.capsules": StoreCapsulesArgs
@@ -3602,6 +3613,7 @@ export const OPERATIONS = [
   "sound.synth",
   "sprites.matched",
   "stock.clip",
+  "stock.commons",
   "stock.fetch",
   "stock.find",
   "store.capsules",

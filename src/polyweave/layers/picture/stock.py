@@ -541,3 +541,108 @@ def fetch(
             **({"title": hit["title"], "credit": credit, **probed}
                if kind == "music" else {}),
             **({"fell": fell} if fell else {})}
+
+
+#: Where Wikimedia Commons answers what it holds about a file (§PW718).
+COMMONS = "https://commons.wikimedia.org/w/api.php"
+
+#: The licence words a Commons file is taken under where the project names none: the
+#: free licences Commons hosts, which owe a credit or nothing.
+FREE = ("Public domain", "PD", "CC0", "CC BY", "CC-BY", "CC BY-SA", "CC-BY-SA")
+
+
+def _plain(html: str) -> str:
+    """A Commons metadata value as text: its markup gone, its spaces folded."""
+    import html as _html
+    import re
+
+    return " ".join(_html.unescape(re.sub(r"<[^>]+>", " ", str(html or ""))).split())
+
+
+def _titled(title: str) -> str:
+    """A Commons file title as the API spells it, from a title or the file's page."""
+    named = urllib.parse.unquote(str(title).strip())
+    if "/wiki/" in named:
+        named = named.split("/wiki/", 1)[1]
+    named = named.replace("_", " ")
+    return named if named.lower().startswith("file:") else f"File:{named}"
+
+
+@operation("stock.commons", kind="fetch")
+def commons(
+    title: Annotated[str, Param("the file's title or page, as File:Name.jpg")],
+    out: Annotated[str, Param("where it is written, under the project")],
+    *,
+    root: Annotated[str, Param("the project it is brought into")] = ".",
+) -> dict:
+    """Bring one picture in from Wikimedia Commons, with its author, licence and page.
+
+    The file's `imageinfo` and `extmetadata` are read first: a file Commons does not
+    hold is `stock.no-hit`, and one marked non-free, naming no licence, or under one
+    `[service.commons] licences` does not list (a free licence where none is listed) is
+    refused before anything is downloaded. The original is fetched and its SHA-1 held
+    to the one Commons states. The record names the page, author, licence and its URL
+    and the file's date; where the licence asks attribution, it is the `credit`
+    provenance.credits owes (§PW718).
+    """
+    config = load(root)
+    here = config.root
+    named = _titled(title)
+    base = (config.services().get("commons") or {}).get("base") or COMMONS
+    asked = {"action": "query", "titles": named, "prop": "imageinfo", "format": "json",
+             "iiprop": "url|sha1|mime|size|extmetadata", "formatversion": "2"}
+    answer = client.send(f"{base}?{urllib.parse.urlencode(asked)}",
+                         timeout=client.TIMEOUT)
+    if answer.status >= 400:
+        raise client.unpaid(answer.status, "") or PolyweaveError(
+            "fetch.service-error", f"commons answered {answer.status}",
+            "ask again later; nothing was written",
+            detail=answer.body[:400].decode("utf-8", "replace"))
+    pages = (json.loads(answer.body or b"{}").get("query") or {}).get("pages") or [{}]
+    info = (pages[0].get("imageinfo") or [None])[0]
+    if pages[0].get("missing") or not info:
+        raise PolyweaveError("stock.no-hit", f"Commons holds no {named}",
+                             "give the file's title as its page spells it, with File:",
+                             given=named)
+    meta = {k: _plain((v or {}).get("value")) for k, v in
+            (info.get("extmetadata") or {}).items()}
+    licence = meta.get("LicenseShortName", "")
+    allowed = (config.services().get("commons") or {}).get("licences") or []
+    free = licence in allowed if allowed else any(
+        licence.startswith(word) for word in FREE)
+    if not licence or meta.get("NonFree", "").lower() == "true" or not free:
+        raise PolyweaveError(
+            "stock.licence-refused",
+            f"{named} " + (f"is under {licence!r}, which the project does not allow"
+                           if licence else "names no licence"),
+            "take a file under a free licence, or add its licence to [service.commons] "
+            "licences once a person has read it",
+            given=licence or None, allowed=allowed or list(FREE))
+    target = Path(out) if Path(out).is_absolute() else here / out
+    target.parent.mkdir(parents=True, exist_ok=True)
+    body = client.download(info["url"])
+    if info.get("sha1") and hashlib.sha1(body).hexdigest() != info["sha1"]:  # noqa: S324
+        raise PolyweaveError(
+            "fetch.nothing-arrived", f"{named} arrived as other bytes than Commons "
+            "states", "fetch it again; nothing was written", given=named)
+    target.write_bytes(body)
+    page = info.get("descriptionurl") or ""
+    author = meta.get("Artist") or meta.get("Credit") or ""
+    licence_url = meta.get("LicenseUrl", "")
+    owed = meta.get("AttributionRequired", "").lower() == "true"
+    credit = ""
+    if owed:
+        credit = (f"“{named.removeprefix('File:')}”, {author}, {licence}"
+                  + (f" ({licence_url})" if licence_url else "") + f": {page}")
+    record = provenance.write(provenance.build(
+        "fetch", target, engine={"name": "commons"},
+        params={"title": named, "kind": "picture"},
+        measurements={k: info[k] for k in ("width", "height") if info.get(k)},
+        extra={"task_id": f"commons:{named}", "credits": 0.0, "licence": licence,
+               "licence_url": licence_url, "credit": credit, "source_page": page,
+               "author": author, "title": named,
+               "date": meta.get("DateTimeOriginal") or meta.get("DateTime") or ""},
+        root=here), root=here)
+    return {"file": provenance.relative(target, here), "title": named, "page": page,
+            "author": author, "licence": licence, "credit": credit,
+            "record": provenance.relative(Path(record), here)}

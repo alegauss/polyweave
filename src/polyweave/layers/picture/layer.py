@@ -55,7 +55,8 @@ LAYER = Layer(
     #: 15,882 with picture.vary's transparent, picture.buy's replaces_because and
     #: stock.clip, a public video's excerpt under a reuse licence (§PW693, §PW695,
     #: §PW701).
-    tools=16_400,
+    #: 16,856 with stock.commons, a Commons picture with its licence (§PW718).
+    tools=17_400,
     census={
         "polyweave.layers.picture.picture:kept": (
             "internal", "a bought picture's accept on its bytes, inside picture.buy"),
