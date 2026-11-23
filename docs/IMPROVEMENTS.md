@@ -8,32 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW721 A quoted sentence found and highlighted
-
-Found moving the Scion explainer's page film into urdido (urdido UR53; marketing's
-`japode/scion/bin/film-page.py`). The video quotes a published post, and each quote is
-shown by filming the real page: it scrolls, eased, until the quoted sentence sits
-mid-screen, then fades a highlighter in over each of its lines. The highlighter is an
-overlay, never a change to the text, and a sentence the page no longer prints stops the
-film.
-
-A declared visit cannot do this. `scroll` moves by pixels, which is wrong as soon as the
-page's layout or a banner changes, and no step finds a text or draws anything over it.
-So the script stays a Playwright program copied into each video, outside polyweave's
-record and its marks.
-
-What capture.web should offer, as two steps:
-- `{ find = "<sentence>", within = "p, li, blockquote" }`: locate the sentence across the
-  block's text nodes, scroll it to the middle of the viewport with the eased scroll PW704
-  brings, and refuse the visit, naming the sentence, when the page does not print it
-  (whitespace folded).
-- `{ highlight = "<sentence>", color = "rgba(255,200,40,.45)" }`: draw one overlay box per
-  client rect of the found range, growing left to right over half a second each, with
-  `pointer-events: none` and no change to the DOM text.
-
-The record marks when each step started, so a video can time its narration against the
-moment the highlight lands.
-
 ### §PW725 A review window rendered from its own clips
 
 Split from PW713 (2026-11-23). `video.cut interval=` renders a review window through the

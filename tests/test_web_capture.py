@@ -38,6 +38,9 @@ class _Site:
         self.moved: list[tuple] = []
         self.delays: list[float] = []
         self.scripts: list[str] = []
+        self.evaluated: list[list] = []
+        self.away: float | None = None
+        self.lines: int | None = None
 
 
 class _Said:
@@ -97,8 +100,14 @@ class _Page:
     def wait_for_timeout(self, ms):
         self.site.held.append(ms)
 
-    def evaluate(self, script):
-        return self.site.images
+    def evaluate(self, script, arg=None):
+        if arg is None:
+            return self.site.images
+        self.site.evaluated.append(arg)
+        # The find answers how far to scroll, the highlight how many lines it drew;
+        # None is a sentence the page does not print (§PW721).
+        return (self.site.lines if "polyweave-highlight" in script
+                else self.site.away)
 
 
 class _Context:
@@ -359,3 +368,93 @@ def test_a_pace_or_seconds_on_the_wrong_step_is_refused(tmp_path, row):
     with pytest.raises(PolyweaveError) as refused:
         web.read(here / "scene.web.toml")
     assert refused.value.code == "web.bad-visit"
+
+
+# -- a quoted sentence found by its words and highlighted (§PW721) ---------------------
+
+_QUOTE = """
+[web]
+url = "http://localhost:2710/"
+viewport = [1280, 720]
+
+[[step]]
+go = "/post"
+
+[[step]]
+find = "The block editor   is here."
+
+[[step]]
+highlight = "The block editor is here."
+name = "quote"
+"""
+
+
+def test_a_quoted_sentence_is_scrolled_to_and_highlighted_by_its_words(
+    tmp_path, monkeypatch
+):
+    here = _project(tmp_path, _QUOTE)
+    site = _Site()
+    site.away, site.lines = 900.0, 2
+    _install(monkeypatch, site)
+    said = web.web("scene.web.toml", root=str(here))
+    assert site.evaluated[0] == ["The block editor   is here.", web.WITHIN]
+    assert sum(site.wheeled) == pytest.approx(900.0)
+    assert site.evaluated[1] == ["The block editor is here.", web.WITHIN, web.COLOR,
+                                 web.HIGHLIGHT_SECONDS]
+    assert site.held[-1] == pytest.approx(2 * web.HIGHLIGHT_SECONDS * 1000)
+    assert "quote" in said["marks"]
+
+
+def test_a_sentence_the_page_no_longer_prints_stops_the_film(tmp_path, monkeypatch):
+    here = _project(tmp_path, _QUOTE)
+    _install(monkeypatch, _Site())
+    with pytest.raises(PolyweaveError) as refused:
+        web.web("scene.web.toml", root=str(here))
+    assert refused.value.code == "web.text-missing"
+    assert not (here / "scene.webm").exists()
+
+
+def test_color_belongs_to_a_highlight_and_within_to_a_find(tmp_path):
+    for step in ('find = "x"\ncolor = "red"', 'scroll = 10\nwithin = "p"'):
+        (tmp_path / "v.web.toml").write_text(
+            f'[web]\nurl = "http://x/"\n\n[[step]]\n{step}\n', encoding="utf-8")
+        with pytest.raises(PolyweaveError) as refused:
+            web.read(tmp_path / "v.web.toml")
+        assert refused.value.code == "web.bad-visit"
+
+
+def _chromium():
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return None
+    return sync_playwright
+
+
+@pytest.mark.skipif(_chromium() is None, reason="needs Playwright")
+def test_the_finder_reads_a_sentence_across_tags_and_draws_one_box_a_line():
+    """The page's own scripts, run in Chromium: the sentence spans a link and a line
+    break, and the overlay leaves the text as it was."""
+    page_html = ("<html><body style='margin:0'><div style='height:3000px'></div>"
+                 "<p style='width:200px;font:20px monospace'>It   began with "
+                 "<a href='#'>a moth</a>\nin the relay, logged as the first bug.</p>"
+                 "<div style='height:3000px'></div></body></html>")
+    with _chromium()() as driver:
+        try:
+            browser = driver.chromium.launch()
+        except Exception:  # noqa: BLE001 - no Chromium here, which is not this test's
+            pytest.skip("needs Playwright's Chromium")
+        page = browser.new_page(viewport={"width": 800, "height": 600})
+        page.set_content(page_html)
+        away = page.evaluate(web._FIND, ["a moth in the relay", web.WITHIN])
+        assert away is not None and away > 2000
+        assert page.evaluate(web._FIND, ["a wasp in the relay", web.WITHIN]) is None
+        lines = page.evaluate(web._HIGHLIGHT, [
+            "began with a moth in the relay, logged as the first bug", web.WITHIN,
+            web.COLOR, 0.1])
+        assert lines >= 2
+        assert page.evaluate("document.querySelectorAll('.polyweave-highlight')"
+                             ".length") == lines
+        assert "polyweave" not in page.evaluate("document.querySelector('p')"
+                                                ".innerHTML")
+        browser.close()

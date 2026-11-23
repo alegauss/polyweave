@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW721** (deps: —) (from: urdido) **capture.web cannot scroll to a sentence the page prints or draw a highlight over it** — A video that quotes a published page films it with a Playwright script of its own, outside the visit's record. → §PW721
 - 📋 **PW725** (deps: —) **A review window of a cut decodes and filters every clip before it, so a late window costs nearly a whole render** — Reviewing the end of a long cut is as slow as exporting it, which is the cost PW713 set out to remove. → §PW725
 - 📋 **PW726** (deps: —) **stock.find answers a hit a media library already rejected as if it were a new candidate** — A clip a person turned down is fetched and reviewed again before the library's refusal surfaces. → §PW726
 

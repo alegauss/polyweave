@@ -103,7 +103,24 @@ state = "visible"                       # visible, hidden, attached or detached
 scroll = 600                            # pixels; negative is up
 [[step]]
 hold = 2.0                              # seconds the camera stays, for the viewer
+[[step]]
+find = "The block editor is here."      # a sentence the page prints, brought mid-screen
+within = "p, li, blockquote"            # where it is looked for (§PW721)
+[[step]]
+highlight = "The block editor is here." # one overlay box drawn over each of its lines
+color = "rgba(255,200,40,.45)"          # seconds = 0.5, each line in turn
 ```
+
+**A quoted sentence is found by its words** (§PW721). `find` looks for the sentence in
+the first block of `within` (`p, li, blockquote, h1` to `h4`, `td, figcaption, dd` if
+unset) whose text holds it, across its text nodes and links with whitespace folded, and
+scrolls it to the middle of the viewport with the eased scroll below (`seconds`, or 200
+px a second). `highlight` finds it the same way and draws one box per client rect of
+its range, absolutely placed over the page with `pointer-events: none`, each growing
+left to right over `seconds` in turn; the page's text is never changed. The camera waits
+while the lines are drawn, so the step's `done` mark is when the highlight has landed.
+A sentence the page does not print is `web.text-missing`, naming it, and the film stops
+with nothing recorded.
 
 `capture.web(source, out=, root=)` plays the steps in Playwright's Chromium while it
 records, and writes the WebM, which a `[[clip]]` takes as `video = "<file>"`. Its record

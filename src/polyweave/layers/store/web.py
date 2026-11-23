@@ -34,7 +34,19 @@ seconds = 3                             # eased over; 200 px a second if unset
 
 [[step]]
 hold = 2.0                              # seconds the camera stays on the page
+
+[[step]]
+find = "The block editor is here."      # a sentence the page prints, brought mid-screen
+within = "p, li, blockquote"            # where it is looked for; common blocks if unset
+
+[[step]]
+highlight = "The block editor is here." # an overlay drawn over each of its lines
+color = "rgba(255,200,40,.45)"          # seconds = 0.5 a line
+name = "quote"
 ```
+
+A quoted sentence is found by its words, never by pixels, and a page that no longer
+prints it stops the film with `web.text-missing` (§PW721).
 
 A visit is filmed the way a person moves (§PW704): `[web] pointer = true` draws a
 pointer and carries it to each click and type target along a minimum-jerk path, with a
@@ -64,8 +76,14 @@ from polyweave.kernel.errors import PolyweaveError
 
 _WEB_KEYS = {"url", "viewport", "out", "timeout", "allow", "pointer", "instance"}
 #: What each step does, by the key that names it; exactly one per step.
-DOES = ("go", "click", "type", "wait", "scroll", "hold")
-_STEP_KEYS = {*DOES, "text", "secret", "state", "name", "seconds", "pace"}
+DOES = ("go", "click", "type", "wait", "scroll", "hold", "find", "highlight")
+_STEP_KEYS = {*DOES, "text", "secret", "state", "name", "seconds", "pace", "within",
+              "color"}
+
+#: Where a quoted sentence is looked for, and how it is highlighted (§PW721).
+WITHIN = "p, li, blockquote, h1, h2, h3, h4, td, figcaption, dd"
+COLOR = "rgba(255,200,40,.45)"
+HIGHLIGHT_SECONDS = 0.5
 
 #: How a person moves, which a product scene is filmed at (§PW704): a scroll eases over
 #: this many pixels a second, typing goes at this many characters a second, and the
@@ -104,6 +122,62 @@ _POINTER = """(() => {
   if (document.documentElement) draw();
   addEventListener('DOMContentLoaded', draw);
 })();"""
+
+
+#: The range of a sentence the page prints, across a block's text nodes with whitespace
+#: folded, or null (§PW721): the first block of `within` that holds it.
+_FINDER = r"""(sentence, within) => {
+  const fold = s => s.replace(/\s+/g, ' ').trim();
+  const want = fold(sentence);
+  if (!want) return null;
+  for (const block of document.querySelectorAll(within)) {
+    if (!fold(block.textContent || '').includes(want)) continue;
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    const chars = [];
+    let space = true, node;
+    while ((node = walker.nextNode())) {
+      for (let i = 0; i < node.data.length; i++) {
+        if (/\s/.test(node.data[i])) {
+          if (!space) chars.push([node, i, ' ']);
+          space = true;
+        } else {
+          chars.push([node, i, node.data[i]]);
+          space = false;
+        }
+      }
+    }
+    const at = chars.map(c => c[2]).join('').indexOf(want);
+    if (at < 0) continue;
+    const first = chars[at], last = chars[at + want.length - 1];
+    const range = document.createRange();
+    range.setStart(first[0], first[1]);
+    range.setEnd(last[0], last[1] + 1);
+    return range;
+  }
+  return null;
+}"""
+
+#: How far the page must scroll for the sentence to sit mid-screen, or null.
+_FIND = ("([sentence, within]) => { const range = (" + _FINDER + ")(sentence, within);"
+         " if (!range) return null; const r = range.getBoundingClientRect();"
+         " return r.top + r.height / 2 - innerHeight / 2; }")
+
+#: One overlay box per line of the sentence, each growing left to right in turn over
+#: the page, never touching its text; the number of lines, or null.
+_HIGHLIGHT = (
+    "([sentence, within, color, seconds]) => { const range = (" + _FINDER
+    + ")(sentence, within); if (!range) return null;"
+    " const rects = Array.from(range.getClientRects()).filter(r => r.width > 0);"
+    " rects.forEach((r, i) => { const box = document.createElement('div');"
+    " box.className = 'polyweave-highlight';"
+    " box.style.cssText = 'position:absolute;pointer-events:none;z-index:2147483645;'"
+    " + `left:${r.left + scrollX}px;top:${r.top + scrollY}px;height:${r.height}px;`"
+    " + `width:0;background:${color};mix-blend-mode:multiply;`"
+    " + `transition:width ${seconds}s ease-out ${i * seconds}s`;"
+    " document.body.appendChild(box);"
+    " requestAnimationFrame(() => requestAnimationFrame(() =>"
+    " { box.style.width = r.width + 'px'; })); });"
+    " return rects.length; }")
 
 
 def _eased(t: float) -> float:
@@ -157,7 +231,8 @@ def _step(row: Any, at: str) -> dict:
     elif not isinstance(what, str) or not what.strip():
         raise _bad(
             f"{at}.{do} is {what!r}, and it is "
-            + ("a path or URL" if do == "go" else "a selector"),
+            + ("a path or URL" if do == "go" else "a sentence the page prints"
+               if do in ("find", "highlight") else "a selector"),
             # A wait given seconds is the sleep this format leaves out (§PW690).
             "wait on a selector reaching a state; hold is how long the camera stays"
             if do == "wait" else f"give {do} as a string",
@@ -195,19 +270,33 @@ def _step(row: Any, at: str) -> dict:
         if not isinstance(row["name"], str) or not row["name"]:
             raise _bad(f"{at}.name is {row['name']!r}", "name a step with a word")
         step["name"] = row["name"]
-    # How a person moves (§PW704): a scroll eased over seconds, typing at a pace.
-    for key, owner, default in (("seconds", "scroll", None),
-                                ("pace", "type", TYPE_PACE)):
+    # How a person moves (§PW704): a scroll eased over seconds, typing at a pace. A
+    # find eases its scroll too, and a highlight draws each line over its seconds.
+    owners = {"seconds": ("scroll", "find", "highlight"), "pace": ("type",)}
+    for key, owned in owners.items():
         if key in row:
             value = row[key]
-            if do != owner or isinstance(value, bool) or not isinstance(
+            if do not in owned or isinstance(value, bool) or not isinstance(
                     value, int | float) or value <= 0:
                 raise _bad(f"{at}.{key} is {value!r}",
-                           f"give {key} on a {owner} step, as a number above 0", at=at)
+                           f"give {key} on a {' or '.join(owned)} step, as a number "
+                           "above 0", at=at)
             step[key] = float(value)
-        elif do == owner:
-            step[key] = (default if default is not None
-                         else round(max(abs(step["scroll"]) / SCROLL_SPEED, 0.2), 3))
+        elif do == "type" and key == "pace":
+            step[key] = TYPE_PACE
+        elif do == "scroll" and key == "seconds":
+            step[key] = round(max(abs(step["scroll"]) / SCROLL_SPEED, 0.2), 3)
+        elif do == "highlight" and key == "seconds":
+            step[key] = HIGHLIGHT_SECONDS
+    # Where a sentence is found, and the colour it is marked in (§PW721).
+    for key, owned, default in (("within", ("find", "highlight"), WITHIN),
+                                ("color", ("highlight",), COLOR)):
+        if key in row and (do not in owned or not isinstance(row[key], str)
+                           or not row[key].strip()):
+            raise _bad(f"{at}.{key} is {row[key]!r}",
+                       f"give {key} on a {' or '.join(owned)} step, as text", at=at)
+        if do in owned:
+            step[key] = row.get(key, default)
     return step
 
 
@@ -320,6 +409,26 @@ def _point(page: Any, selector: str, at: dict, timeout_ms: float) -> None:
     at.update(x=x, y=y)
 
 
+def _scrolled(page: Any, pixels: float, seconds: float) -> None:
+    """Scroll by `pixels`, eased from rest to rest over `seconds` (§PW704)."""
+    frames = max(1, round(seconds * FRAMES))
+    done = 0.0
+    for n in range(1, frames + 1):
+        to = pixels * _eased(n / frames)
+        page.mouse.wheel(0, to - done)
+        done = to
+        page.wait_for_timeout(1000 / FRAMES)
+
+
+def _missing(sentence: str, within: str) -> PolyweaveError:
+    """A quoted sentence the page no longer prints, which stops the film (§PW721)."""
+    return PolyweaveError(
+        "web.text-missing",
+        f"the page prints no {sentence!r} in {within}",
+        "quote the sentence as the page prints it now, whitespace aside, or widen "
+        "within; nothing was recorded", given=sentence)
+
+
 def _play(page: Any, step: dict, base: str, timeout_ms: float,
           at: dict | None = None) -> None:
     """One step, as a person would make it: with `at`, the pointer is drawn and goes to
@@ -342,13 +451,20 @@ def _play(page: Any, step: dict, base: str, timeout_ms: float,
     elif do == "wait":
         page.wait_for_selector(step["wait"], state=step["state"], timeout=timeout_ms)
     elif do == "scroll":
-        frames = max(1, round(step.get("seconds", 0.2) * FRAMES))
-        done = 0.0
-        for n in range(1, frames + 1):
-            to = step["scroll"] * _eased(n / frames)
-            page.mouse.wheel(0, to - done)
-            done = to
-            page.wait_for_timeout(1000 / FRAMES)
+        _scrolled(page, step["scroll"], step.get("seconds", 0.2))
+    elif do == "find":
+        away = page.evaluate(_FIND, [step["find"], step["within"]])
+        if away is None:
+            raise _missing(step["find"], step["within"])
+        seconds = step.get("seconds") or round(max(abs(away) / SCROLL_SPEED, 0.2), 3)
+        _scrolled(page, float(away), seconds)
+    elif do == "highlight":
+        lines = page.evaluate(_HIGHLIGHT, [step["highlight"], step["within"],
+                                           step["color"], step["seconds"]])
+        if lines is None:
+            raise _missing(step["highlight"], step["within"])
+        # The camera waits while each line is drawn in turn.
+        page.wait_for_timeout(int(lines) * step["seconds"] * 1000)
     else:  # hold: the camera stays on what the page shows, for the viewer
         page.wait_for_timeout(step["hold"] * 1000)
 

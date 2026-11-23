@@ -217,6 +217,12 @@ CODES: dict[str, Code] = {
         "page that would not load; the detail is what the browser said",
         doors=("fix the selector the refusal names", "raise [web] timeout"),
     ),
+    "web.text-missing": Code(
+        means="a sentence a visit quotes is not on the page",
+        when="a find or highlight step's sentence, whitespace folded, in no block "
+        "its within names (§PW721)",
+        doors=("quote the sentence as the page prints it now", "widen within"),
+    ),
     "web.broken-page": Code(
         means="the page broke while it was filmed, so no clip was kept",
         when="a console error, an uncaught exception, a failed request, an error "
