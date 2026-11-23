@@ -28,6 +28,18 @@ CODES: dict[str, Code] = {
         "file that is not JSON or TOML",
         doors=("fix the field the message names",),
     ),
+    "sound.opening-late": Code(
+        means="a script's first proof comes later than its [opening] allows (§PW706)",
+        when="the words before the declared proof, at the locale's pace, run past "
+        "max_seconds, or the proof, its word or its pace is missing in a locale",
+        doors=("cut or reorder what comes before the proof",
+               "declare the proof's key, word and pace for every locale"),
+    ),
+    "sound.opening-preamble": Code(
+        means="a script opens on a phrase its [opening] preamble refuses (§PW706)",
+        when="a declared preamble phrase is said before the first proof",
+        doors=("cut the phrase and open on the proof",),
+    ),
     "sound.family-unnamed": Code(
         means="the project declares several sound families and the call named none",
         when="a read of the declared audio with [sound.<family>] tables and no family",

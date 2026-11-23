@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 1 },
+  { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 0 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
@@ -141,13 +141,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "J",
     symptom: "Video checks do not report simultaneous editorial labels or names over unrelated footage",
     why: "Video-maker must compare timed captions and highlights itself before rendering a cut.",
-    deps: [],
-  },
-  {
-    id: "PW706",
-    block: "P",
-    symptom: "Voice purchases cannot reject an opening whose first proof arrives too late",
-    why: "The caller estimates the first proof from spoken words and narrator pace before buying takes, so each video pipeline writes its own guard.",
     deps: [],
   },
   {

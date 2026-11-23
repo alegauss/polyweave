@@ -531,6 +531,7 @@
 - ✅ **PW573** **The Surge render test fails in the parallel gate on a Pedalboard UnicodeDecodeError and passes alone** — Surge XT is opened again when a label fails to decode, and is refused as music.engine-unreadable naming the byte if it always fails (design recorded in `src/polyweave/layers/sound/music_render.py`).
 - ✅ **PW611** **a rendered track leaves no waveform peaks or beat grid, so a game's tool cannot draw its music or snap to its beat** — music.render writes a track.json of waveform peaks and the score's beat grid beside each track; music.track hears one for any other track (design recorded in `docs/specs/music.md`).
 - ✅ **PW703** **sound.speech returns the transcript without word times needed for spoken video callouts** — sound.speech ties each line word to its time as exact, a declared alias or uncertain, and lays uncertain ones aside as suggestions with no placed time (design recorded in `docs/specs/effects.md`).
+- ✅ **PW706** **Voice purchases cannot reject an opening whose first proof arrives too late** — A voice.lines script's [opening] refuses a late first proof or a preamble phrase before anything is priced, in a plan and a spend alike (design recorded in `docs/specs/world.md`).
 
 ## Block Q — Words held to the world
 

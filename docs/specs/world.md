@@ -164,6 +164,20 @@ voice id, delivery and model; the record's `details.line` names the `script`, wh
 its `words` input. A file with no voice, no `{key}` in `out`, or a line short of a field
 is `sound.bad-script`.
 
+**An opening's first proof is held before anything is bought** (§PW706). A script may
+declare `[opening]`: `proof`, the key of the take that carries the first proof; `word`,
+the words spoken in that take before it; `max_seconds`; `wpm`, the narrator's words a
+minute by locale (`pt_BR` falls back to `pt`); and `preamble`, phrases a script may not
+say before the proof. For each locale, the words spoken before the proof (the lines
+before its take, in the file's order, `[delivery tags]` not counted, then `word` into
+it) over its `wpm` is the estimate. One past `max_seconds`, a locale without the proof's
+key or its pace, or a `word` past the take's words is `sound.opening-late`; a preamble
+phrase said first (case and accents folded) is `sound.opening-preamble`. Both are raised
+before anything is priced, in a plan and a spend alike, and a plan in time carries
+`opening`: each locale's `words`, `seconds` and `max`. A script without `[opening]` is
+voiced as before. The check is mechanical, against the editor's declared proof, and
+says nothing of whether the proof is true.
+
 **A take `sound.speak` bought can be taken over** (§PW691). Its record keeps the words as
 `prompt` and no `details.line`, so it is never `current`, and a project moving its
 narration to `voice.lines` was offered every take to buy again. Where such a take is at

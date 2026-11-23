@@ -298,3 +298,74 @@ def test_a_take_spoken_for_an_entity_is_adoptable_for_its_table_row(tmp_path, pr
     line = provenance.read(str(take), root=str(tmp_path))["details"]["line"]
     assert line["table"] == "text/strings.csv" and line["key"] == "HOLD"
     assert provenance.outdated(root=str(tmp_path))["outdated"] == []
+
+
+# -- an opening's first proof, held before anything is bought (§PW706) ----------------
+
+OPENING = """voice = "narrator-voice"
+out = "vo/{locale}/{key}.mp3"
+
+[opening]
+proof = "proof"
+word = 3
+max_seconds = 6
+wpm = { en = 150, pt = 140 }
+preamble = ["neste video"]
+
+[[lines]]
+key = "hook"
+locale = "en"
+text = "[excited] Thirty thousand merges a day."
+
+[[lines]]
+key = "proof"
+locale = "en"
+text = "Git did not hold, and here is the graph."
+
+[[lines]]
+key = "hook"
+locale = "pt_BR"
+text = "Trinta mil merges por dia."
+
+[[lines]]
+key = "proof"
+locale = "pt_BR"
+text = "O Git não aguentou, e aqui está o gráfico."
+"""
+
+
+def test_an_opening_in_time_is_planned_with_its_estimate(tmp_path, project):
+    (tmp_path / "script.toml").write_text(OPENING, encoding="utf-8")
+    plan = sound_buy.lines(script="script.toml", root=str(tmp_path))
+    # Five words of the hook, the [excited] tag unspoken, then three into the proof.
+    assert plan["opening"]["en"] == {"words": 8, "seconds": 3.2, "max": 6.0}
+    assert plan["opening"]["pt_BR"]["words"] == 8
+    assert project.sent == []
+
+
+def test_a_late_proof_is_refused_before_a_plan_or_a_purchase(tmp_path, project):
+    (tmp_path / "script.toml").write_text(
+        OPENING.replace("max_seconds = 6", "max_seconds = 3"), encoding="utf-8")
+    for spend in (False, True):
+        with pytest.raises(PolyweaveError) as refused:
+            sound_buy.lines(script="script.toml", spend=spend, root=str(tmp_path))
+        assert refused.value.code == "sound.opening-late"
+        assert "3.2s" in refused.value.message
+    assert project.sent == [] and purchase.read(tmp_path) == []
+
+
+def test_a_declared_preamble_is_refused_and_a_missing_translation_named(
+    tmp_path, project
+):
+    (tmp_path / "script.toml").write_text(
+        OPENING.replace("Trinta mil", "Neste vídeo, trinta mil"), encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.lines(script="script.toml", root=str(tmp_path))
+    assert refused.value.code == "sound.opening-preamble"
+    (tmp_path / "script.toml").write_text(
+        OPENING.replace('key = "proof"\nlocale = "pt_BR"', 'key = "prova"\n'
+                        'locale = "pt_BR"'), encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.lines(script="script.toml", root=str(tmp_path))
+    assert refused.value.code == "sound.opening-late"
+    assert "pt_BR" in refused.value.message

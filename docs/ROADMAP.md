@@ -48,8 +48,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW706** (deps: —) **Voice purchases cannot reject an opening whose first proof arrives too late** — The caller estimates the first proof from spoken words and narrator pace before buying takes, so each video pipeline writes its own guard. → §PW706
-
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them

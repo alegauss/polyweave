@@ -609,6 +609,8 @@ def lines(
     an `out` pattern with `{key}` and `{locale}` for the whole file, an optional `model`
     and delivery (`stability`, `similarity`, `style`, `speed`), and `lines`, each a
     `key`, `locale` and `text`. A narration outside a game needs no table and no world.
+    Its `[opening]` (`proof`, `word`, `max_seconds`, `wpm` by locale, `preamble`)
+    refuses a script whose first proof is heard too late, plan or spend (§PW706).
 
     A take sound.speak bought with a line's words, voice and model is `adoptable`
     (§PW691): listed apart, still priced in the plan, since it may differ where the
@@ -788,7 +790,102 @@ def _script(path: Path) -> dict:
         if not (isinstance(one, dict) and all(
                 str(one.get(k) or "").strip() for k in ("key", "locale", "text"))):
             raise bad(f"has a line with no key, locale or text: {one!r}")
+    opening = said.get("opening")
+    if opening is not None:
+        if not isinstance(opening, dict) or not str(opening.get("proof") or "").strip():
+            raise bad("has an [opening] naming no proof, the key of the take that "
+                      "carries the first proof")
+        for key in ("word", "max_seconds"):
+            value = opening.get(key, 0)
+            if isinstance(value, bool) or not isinstance(value, int | float) or (
+                    value < 0):
+                raise bad(f"has [opening] {key} = {value!r}, not a number from 0")
+        wpm = opening.get("wpm")
+        if not isinstance(wpm, dict) or not wpm or not all(
+                isinstance(v, int | float) and not isinstance(v, bool) and v > 0
+                for v in wpm.values()):
+            raise bad("has an [opening] with no wpm, the narrator's words a minute by "
+                      "locale, as { pt-BR = 150 }")
+        if not isinstance(opening.get("preamble", []), list):
+            raise bad("has an [opening] preamble that is not a list of phrases")
     return {**said, "lines": listed}
+
+
+def _spoken_words(text: str) -> list[str]:
+    """The words a line says aloud: its `[delivery tags]` are not spoken (§PW668)."""
+    return re.findall(r"[\w']+", re.sub(r"\[[^\[\]]*\]", " ", text))
+
+
+def _opening(said: dict, locale: str | None) -> dict | None:
+    """When each locale's first proof is heard, refused past the declared limit or on a
+    declared preamble phrase, before anything is bought (§PW706).
+
+    The words spoken before the proof (the lines before its take, in the file's order,
+    and `word` words into it) over the locale's narrator `wpm`. A mechanical check of
+    the editor's declared proof, never a verdict on the script.
+    """
+    import unicodedata
+
+    declared = said.get("opening")
+    if not declared:
+        return None
+
+    def folded(text: str) -> str:
+        apart = unicodedata.normalize("NFKD", text.casefold())
+        return " ".join("".join(c for c in apart if not unicodedata.combining(c))
+                        .split())
+
+    proof, word = str(declared["proof"]), int(declared.get("word", 0))
+    limit = float(declared.get("max_seconds", 0))
+    locales = sorted({str(one["locale"]) for one in said["lines"]})
+    found = {}
+    for one_locale in [locale] if locale else locales:
+        ordered = [one for one in said["lines"] if str(one["locale"]) == one_locale]
+        keys = [str(one["key"]) for one in ordered]
+        if proof not in keys:
+            raise PolyweaveError(
+                "sound.opening-late",
+                f"the {one_locale} lines have no {proof!r}, the take [opening] names "
+                "as the first proof", "add its translation, or name a key every locale "
+                "has", given=proof, allowed=keys)
+        at = keys.index(proof)
+        before = [_spoken_words(str(one["text"])) for one in ordered[:at]]
+        carrying = _spoken_words(str(ordered[at]["text"]))
+        if word > len(carrying):
+            raise PolyweaveError(
+                "sound.opening-late",
+                f"[opening] word is {word}, and {proof!r} says {len(carrying)} "
+                f"words in {one_locale}",
+                "give word as the words spoken before the proof in that take",
+                given=word)
+        rate = (declared["wpm"].get(one_locale)
+                or declared["wpm"].get(one_locale.split("-")[0].split("_")[0]))
+        if not rate:
+            raise PolyweaveError(
+                "sound.opening-late", f"[opening] wpm names no pace for {one_locale}",
+                f"add {one_locale} = <words a minute> to [opening] wpm",
+                given=one_locale, allowed=sorted(declared["wpm"]))
+        spoken = sum(len(one) for one in before) + word
+        seconds = round(spoken / float(rate) * 60, 2)
+        heard = " ".join(" ".join(one) for one in [*before, carrying[:word]])
+        said_first = [phrase for phrase in declared.get("preamble") or ()
+                      if folded(str(phrase)) and folded(str(phrase)) in folded(heard)]
+        if said_first:
+            raise PolyweaveError(
+                "sound.opening-preamble",
+                f"the {one_locale} opening says {said_first[0]!r} before its first "
+                "proof, a phrase [opening] preamble refuses", "cut the phrase and open "
+                "on the proof; nothing was bought", given=said_first[0])
+        if limit and seconds > limit:
+            raise PolyweaveError(
+                "sound.opening-late",
+                f"the {one_locale} first proof comes after {spoken} spoken words, "
+                f"about {seconds:g}s at {rate:g} words a minute, past [opening] "
+                f"max_seconds of {limit:g}",
+                "cut or reorder what comes before it; nothing was bought",
+                given=seconds)
+        found[one_locale] = {"words": spoken, "seconds": seconds, "max": limit or None}
+    return found
 
 
 def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
@@ -800,6 +897,8 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
     here = config.root
     where = Path(script) if Path(script).is_absolute() else here / script
     said = _script(where)
+    # Before any line is priced or bought, plan or spend alike (§PW706).
+    opening = _opening(said, locale)
     model = str(said.get("model") or model)
     voice = str(said["voice"]).strip()
     delivery = {DELIVERY[k]: float(said[k]) for k in DELIVERY
@@ -840,6 +939,7 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
         "characters": sum(one["characters"] for one in plan),
         "price": round(sum(one["price"] for one in plan), 6),
         "left": left["left"], "unit": left["unit"], "spent": False,
+        **({"opening": opening} if opening else {}),
     }
     if not spend or not plan:
         return answer

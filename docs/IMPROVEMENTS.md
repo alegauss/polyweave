@@ -359,25 +359,6 @@ model and the members.
 
 ## Block P — Music and sound a game can ship
 
-### §PW706 Declared narration preflight before purchase
-
-While implementing marketing VM29 in D:/Git/viglet/marketing, `python -m polyweave
-describe voice.lines --json` exposes purchase selection and spending but no preflight
-for an opening's first proof. The caller now checks before voice.lines in
-video-maker/narration/opening.mjs and buy.mjs.
-
-Allow a caller to declare a first-proof take and word offset, per-language narrator
-words per minute, and a maximum estimated time. Count spoken words without delivery
-tags, validate anchors and translations, and refuse before any purchase if the estimate
-exceeds the declared limit. A configurable list of preamble phrases can also reject a
-script before spending. These are mechanical checks against the editor's declared proof,
-not an assessment of visual truth or an editorial verdict. Keep project-specific
-thresholds and phrases in configuration.
-
-Done when the same declared constraints can gate both dry plans and voice purchases
-without a custom video pipeline checker. Existing scripts without this declaration
-retain their purchase behavior.
-
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them
