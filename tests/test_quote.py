@@ -30,7 +30,8 @@ def test_the_registry_marks_every_operation_that_spends():
     assert paid == [
         "mesh.buy", "picture.batch", "picture.buy", "picture.describe",
         "picture.upscale", "picture.vary", "sound.buy",
-        "sound.speak", "style.train", "video.buy", "voice.design", "voice.lines",
+        "sound.speak", "style.train", "video.buy", "voice.compare", "voice.design",
+        "voice.lines",
     ]
 
 
