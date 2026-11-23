@@ -121,23 +121,6 @@ What starship still needs from polyweave:
 Until it lands, starship keeps the per-second pass in `dev/pressure.gd`, named against
 this line.
 
-### §PW724 A level probed by its number, from the game's curve
-
-Found closing PW206 in Cottony (2026-11-23). Its design asks for "probing levels 21 to
-200 from the curve and reporting where they leave the set spec's bounds", since every
-level past the 20 shipped files is the game's fallback formula. `level.probe` refuses
-`data/levels/level_025.json` with `level.no-level` because no file is there, and a level
-with no file is exactly the level a fallback curve makes. The workaround was an empty
-`{}` file per sampled level in the work area, which Cottony's probe reads as "the curve
-decides every key".
-
-`level.probe` (and `level.curve` over a set) should take a level by its number where the
-project's probe can build it from its own curve: `[levels] curve_probe = true`, or a
-`number` argument, passing `level=<number>` to the probe instead of a path, and
-recording the probe against the curve's source file rather than a level file. A sampled
-tail (`numbers = [25, 40, 100, 200]`) is then one call, and its record says the curve
-moved when the source does.
-
 ### §PW728 A level search's best kept, not played again
 
 Split from PW723 (2026-11-23). A search ends by making its best sample again, so the

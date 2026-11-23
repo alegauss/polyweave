@@ -953,7 +953,9 @@ export interface LevelFieldsArgs {
 /** Play one level with the game's own probe and read back what it measured. */
 export interface LevelProbeArgs {
   /** the level file the probe plays, under the project */
-  level: string
+  level?: string
+  /** level numbers the game builds from its curve, in place of a file */
+  numbers?: unknown[]
   /** how many seeds, from 1; [levels] seeds where 0; from 0 to …; default 0 */
   seeds?: number
   /** the Godot project the probe is in; default "." */
@@ -3456,7 +3458,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.batch" | "picture.buy" | "picture.upscale" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "video.buy" | "voice.compare" | "voice.design" | "voice.find" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.compare_runs" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.replay_rates" | "game.test" | "kit.list" | "kit.prove" | "level.fields" | "level.probe" | "level.validate" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.batch" | "picture.buy" | "picture.upscale" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "video.buy" | "voice.compare" | "voice.design" | "voice.find" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [

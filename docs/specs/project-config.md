@@ -125,6 +125,8 @@ probe       = "res://tools/level_probe.gd"  # prints level: seed=N name=value a 
 seeds       = 100              # seeds 1 to N a level is played over
 probe_frames  = 0              # the probe's frame budget, 0 for [engine] frames
 probe_timeout = 0              # the probe's wall clock in seconds, 0 for [engine] timeout
+curve       = "scripts/level_set.gd"  # where a level past the files comes from: probed
+                               # by number= and recorded against it (PW724)
 percentiles = [10, 50, 90]     # each measure read at these and its mean
 measures    = { won = { unit = "0 or 1", direction = "higher" } }  # what it prints
 

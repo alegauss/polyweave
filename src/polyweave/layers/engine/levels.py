@@ -414,8 +414,13 @@ def sample(report: Any, *, out: str, rung: Any = None, root: str = ".",
 
 @operation("level.probe", kind="capture")
 def probe(
-    level: Annotated[str, Param("the level file the probe plays, under the project")],
+    level: Annotated[
+        str, Param("the level file the probe plays, under the project")
+    ] = "",
     *,
+    numbers: Annotated[
+        list, Param("level numbers the game builds from its curve, in place of a file")
+    ] = None,
     seeds: Annotated[
         int, Param("how many seeds, from 1; [levels] seeds where 0", lo=0)
     ] = 0,
@@ -428,9 +433,12 @@ def probe(
     `[levels.measures]` declared, and answers each measure at the declared percentiles
     and its mean. Written beside the level as `<level>.probe.json`, recorded, with how
     far each moved from the run before (§PW202).
-    """
-    from . import engine
 
+    `numbers` probes levels no file holds, as a game's curve past its shipped levels
+    makes them (§PW724): the probe is passed `number=<n>` in place of `level=`, each
+    is written as `levels/level_<n>.probe.json` in the work area, and its record names
+    `[levels] curve`, the curve's source, so a moved curve reads as one.
+    """
     config = load(root)
     here = config.root
     table = config.table("levels")
@@ -441,43 +449,93 @@ def probe(
             "polyweave.toml declares no [levels] probe to play a level",
             'write [levels] probe = "res://tools/level_probe.gd", a script of the '
             "game's that prints one level: line a seed")
-    measures = _measures(table.get("measures"))
-    count = int(seeds or table.get("seeds", 100))
-    percentiles = [float(p) for p in table.get("percentiles", [10, 50, 90])]
+    run = {"measures": _measures(table.get("measures")),
+           "count": int(seeds or table.get("seeds", 100)),
+           "percentiles": [float(p) for p in table.get("percentiles", [10, 50, 90])],
+           "probe": here / script.removeprefix("res://"), "table": table}
+    if numbers:
+        return _by_number(numbers, level, run, config)
     where = Path(level)
     where = where if where.is_absolute() else here / where
-    if not where.is_file():
+    if not level or not where.is_file():
         raise PolyweaveError(
-            "level.no-level", f"there is no level at {level}",
-            "name the level's file as a path under the project", given=level)
-    probe_path = here / script.removeprefix("res://")
+            "level.no-level", f"there is no level at {level or '(none named)'}",
+            "name the level's file as a path under the project, or pass numbers for "
+            "levels the game builds from its curve", given=level or None)
+    from . import engine
+
+    return _played(run, here, f"level={engine._as_res(where, here)}", level,
+                   where.with_name(where.stem + ".probe.json"),
+                   [provenance.source("level", where, root=here)],
+                   named={"level": provenance.relative(where, here)})
+
+
+def _by_number(numbers: list, level: str, run: dict, config: Any) -> dict:
+    """Levels no file holds, each probed by its number off the game's curve (§PW724)."""
+    here = config.root
+    if level or not all(isinstance(n, int) and not isinstance(n, bool) and n > 0
+                        for n in numbers):
+        raise PolyweaveError(
+            "level.bad-set",
+            f"numbers is {numbers!r}" + (" beside a level" if level else ""),
+            "give numbers as level numbers from 1, and no level beside them",
+            given="numbers")
+    curve = str(run["table"].get("curve") or "")
+    source = here / curve if curve else None
+    if source is not None and not source.is_file():
+        raise PolyweaveError(
+            "level.no-level", f"[levels] curve names {curve}, which is not there",
+            "name the script or data the game builds a level past its files from",
+            given=curve)
+    folder = config.path("paths.work") / "levels"
+    rows = [{"number": n,
+             **_played(run, here, f"number={n}", f"level {n}",
+                       folder / f"level_{n}.probe.json",
+                       [provenance.source("curve", source, root=here)] if source
+                       else [], named={"number": n})}
+            for n in dict.fromkeys(numbers)]
+    return {"numbers": rows, "seeds": run["count"],
+            **({"curve": curve} if curve else {}),
+            "says": f"{len(rows)} level(s) probed by number off the game's curve"
+            + ("" if curve else "; [levels] curve is unset, so no record says which "
+               "source made them")}
+
+
+def _played(run: dict, here: Path, arg: str, label: str, target: Path,
+            inputs: list, *, named: dict) -> dict:
+    """One level played over its seeds by the game's probe, written at `target` with
+    its record, and how far each measure moved from the run before."""
+    from . import engine
+
+    table, count = run["table"], run["count"]
     ran = engine.run(
-        probe_path, expect=r"^level:", root=here, headless=True,
+        run["probe"], expect=r"^level:", root=here, headless=True,
         frames=int(table.get("probe_frames") or 0) or None,
         timeout=float(table.get("probe_timeout") or 0) or None,
-        args=("--", f"level={engine._as_res(where, here)}", f"seeds={count}"))
+        args=("--", arg, f"seeds={count}"))
     log = Path(ran["log"])
     output = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
     if not ran["ok"]:
         raise PolyweaveError(
-            "level.probe-failed", f"the probe did not finish playing {level}: "
+            "level.probe-failed", f"the probe did not finish playing {label}: "
             f"{ran['why'] or ran['verdict']}",
             "read the log, and run the probe on the level by hand to see it fail",
             detail=ran["log"])
-    held = _aggregate(_read_lines(output, measures, count), percentiles)
-    target = where.with_name(where.stem + ".probe.json")
+    held = _aggregate(_read_lines(output, run["measures"], count), run["percentiles"])
     before = (json.loads(target.read_text(encoding="utf-8")).get("measured")
               if target.is_file() else None)
     version = VERSION.search(output)
-    written = {"level": provenance.relative(where, here), "seeds": count,
-               "percentiles": percentiles, "measures": measures, "measured": held}
+    written = {**named, "seeds": count, "percentiles": run["percentiles"],
+               "measures": run["measures"], "measured": held}
+    target.parent.mkdir(parents=True, exist_ok=True)
     write_atomic(target, json.dumps(written, indent=1) + "\n")
     provenance.write(provenance.build(
         "capture", target,
         engine={"name": "godot", **({"version": version[1]} if version else {})},
-        inputs=[provenance.source("level", where, root=here),
-                provenance.source("probe", probe_path, root=here)],
-        params={"seeds": count, "percentiles": percentiles, "measures": measures},
+        inputs=[*inputs, provenance.source("probe", run["probe"], root=here)],
+        params={"seeds": count, "percentiles": run["percentiles"],
+                "measures": run["measures"],
+                **({"number": named["number"]} if "number" in named else {})},
         root=here,
     ), root=here)
     shift = _moved(held, before)
@@ -486,7 +544,7 @@ def probe(
         "seeds": count,
         "measured": held,
         "moved": shift,
-        "says": f"{level} over {count} seeds: "
+        "says": f"{label} over {count} seeds: "
         + ", ".join(f"{name} median {one.get('p50', one['mean'])}"
                     for name, one in held.items())
         + (f"; moved since the last run: {', '.join(shift)}" if shift

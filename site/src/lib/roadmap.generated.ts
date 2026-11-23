@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 3 },
+  { block: "R", title: "Levels measured before a person plays them", open: 2 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -71,13 +71,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "level.trace reads traces already; Spinhold RK313 writes them from real play, then the declared curve and a spec over both follow.",
-    deps: [],
-  },
-  {
-    id: "PW724",
-    block: "R",
-    symptom: "level.probe refuses a level that has no file, so a game's fallback curve past its shipped levels cannot be probed",
-    why: "Cottony's endless tail is the formula alone, and checking it meant writing an empty level file per sampled number.",
     deps: [],
   },
   {

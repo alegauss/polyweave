@@ -503,6 +503,13 @@ Every bound of the shape (step, dip, region and rise) is compared within 1e-9, s
 pair sitting exactly on its bound holds it: 0.94 and 1.0 differ by 0.06000000000000005
 in floating point, which is the step of 0.06, not past it (§PW722).
 
+A level no file holds, as a game's curve makes the levels past its shipped ones, is probed
+by its number: `level.probe numbers=[25, 40, 100, 200]` passes the game's probe
+`number=<n>` in place of `level=<path>`, one run a number, each written as
+`levels/level_<n>.probe.json` in the work area. Its record names `[levels] curve`, the
+script or data the game builds such a level from, as its input with the role `curve`,
+so a moved curve reads as one; with no `curve` declared the answer says so (§PW724).
+
 Harder is read off the measure's declared direction: a measure where `higher` is better
 for the player (a win rate) makes a level harder as it falls. Each break is answered as
 the `pair` of levels with its `rule` (`step`, `region`, `dip`) and what it `said`, and

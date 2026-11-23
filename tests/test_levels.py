@@ -379,3 +379,37 @@ def test_a_pair_that_differs_by_exactly_its_step_holds_it(tmp_path):
     assert said["ok"] is True and said["findings"] == []
     past = levels.curve(_set(root, [0.94, 1.0], step=0.05), root=str(root))
     assert [one["rule"] for one in past["findings"]] == ["step"]
+
+def test_a_level_past_the_files_is_probed_by_its_number_off_the_curve(
+        tmp_path, monkeypatch):
+    """§PW724: Cottony's levels past its 20 files are its curve alone, and were probed
+    through an empty file written for each sampled number."""
+    from polyweave.layers.engine import engine
+
+    args = []
+
+    def ran(script, **how):
+        args.append(how["args"])
+        log = tmp_path / "probe.log"
+        lines = [f"level: seed={n} won=1 stars=2\n" for n in (1, 2, 3, 4)]
+        log.write_text("".join(lines), encoding="utf-8")
+        return {"ok": True, "log": str(log), "why": "", "verdict": "ok"}
+
+    monkeypatch.setattr(engine, "run", ran)
+    root = _project(tmp_path, DECLARED.replace(
+        "seeds = 4\n", 'seeds = 4\ncurve = "scripts/level_set.gd"\n'))
+    (root / "probe.gd").write_text("extends SceneTree\n", encoding="utf-8")
+    (root / "scripts").mkdir()
+    (root / "scripts" / "level_set.gd").write_text("# curve\n", encoding="utf-8")
+    said = levels.probe(numbers=[25, 200, 25], root=str(root))
+    assert [one["number"] for one in said["numbers"]] == [25, 200]
+    assert [a[1] for a in args] == ["number=25", "number=200"]
+    record = provenance.read(said["numbers"][0]["probe"], root=str(root))
+    assert {one["role"] for one in record["inputs"]} == {"curve", "probe"}
+    assert record["params"]["number"] == 25
+    with pytest.raises(PolyweaveError) as refused:
+        levels.probe("levels/one.json", numbers=[25], root=str(root))
+    assert refused.value.code == "level.bad-set"
+    with pytest.raises(PolyweaveError) as refused:
+        levels.probe(numbers=[0], root=str(root))
+    assert refused.value.code == "level.bad-set"

@@ -56,6 +56,9 @@ TABLES: dict[str, Any] = {
         # over many seeds needs more than a capture settles in (§PW206).
         "probe_frames": 0,
         "probe_timeout": 0,
+        # The game's own curve, where a level past its files comes from: a level probed
+        # by number is recorded against it (§PW724).
+        "curve": "",
         "seeds": 100,
         "percentiles": [10, 50, 90],
         "measures": {},
