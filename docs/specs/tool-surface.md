@@ -23,6 +23,13 @@ sweep  → { reaped, removed, orphans }            # collect what was abandoned
 - `stage` is a short vocabulary per operation kind (`queued`, `building`, `rendering`,
   `downloading`, `done`, `failed`, `cancelled`), so a caller branches on a word rather than
   parsing a message.
+- **A failure keeps where it got to.** A failed job's `poll` and `result` carry
+  `last_stage`, the stage it had reached, since `stage` then reads `failed` (§PW715).
+- **A call in the foreground can be watched too.** An operation that injects a report
+  takes `--progress` on the command line, which prints each stage, fraction and note to
+  stderr as one flushed JSON line with `elapsed_s`, and the answer on stdout is unchanged.
+  `video.cut` reports `building` while it reads and fetches and `rendering` with the
+  fraction of seconds ffmpeg says it has encoded (§PW715).
 - **State lives in a file**, `.polyweave/jobs/<job>.json`, so a handle survives the session
   that made it. A session that ends mid-render can be told what happened by the next one.
 - **A dead worker is a failure, not a hang.** A job carries the OS process id and a

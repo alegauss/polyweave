@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW715** (deps: —) **A long video cut exposes no stage progress while rendering or waiting** — Callers poll processes and output timestamps to distinguish slow work from a failed stage. → §PW715
 - 📋 **PW716** (deps: —) **Narrated claims cannot bind evidence, dates and human review to their spoken anchors** — Revisions repeat research and can mistake illustrative footage or stale statistics for evidence. → §PW716
 - 📋 **PW717** (deps: —) **voice.lines accepts a speed for eleven_v3, spends, and records it in the take's provenance although the model ignores it** — A narration paid for at a pace it never got looks current, and the recorded setting marks every other take stale for nothing. → §PW717
 - 📋 **PW718** (deps: —) **No operation brings a picture from Wikimedia Commons: stock.fetch takes only a Pixabay id** — Historical videos rely on public-domain photos, and each one is fetched and its licence recorded by hand. → §PW718
@@ -17,6 +16,7 @@
 - 📋 **PW721** (deps: —) (from: urdido) **capture.web cannot scroll to a sentence the page prints or draw a highlight over it** — A video that quotes a published page films it with a Playwright script of its own, outside the visit's record. → §PW721
 - 📋 **PW725** (deps: —) **A review window of a cut decodes and filters every clip before it, so a late window costs nearly a whole render** — Reviewing the end of a long cut is as slow as exporting it, which is the cost PW713 set out to remove. → §PW725
 - 📋 **PW726** (deps: —) **stock.find answers a hit a media library already rejected as if it were a new candidate** — A clip a person turned down is fetched and reviewed again before the library's refusal surfaces. → §PW726
+- 📋 **PW727** (deps: —) **Twenty-three operations offer --job but take no report, so the worker hands it to their first parameter** — search.sweep --job, the command line's own example, fails before it renders anything. → §PW727
 
 ## Block E — One world with the engine
 

@@ -8,23 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW715 Report video build stages as they run
-
-Marketing VM63 repeatedly polls a running `videomaker build` and file timestamps because
-long card renders, clips, joins and audio stages have no live progress. `polyweave
-describe video.cut --json` offers no progress option; the operation inventory offers no
-job/progress status operation. The project needs a thin progress adapter until this is
-available upstream.
-
-Expose flushed human and structured JSON events for validation, rasterization, source
-clips, joins, highlights, mix, mux and verification. Include stage, actionable take or
-asset, completed/total planned units, cache hit/miss, elapsed time and last successful
-stage on failure. Report active units while a subprocess runs, without process polling.
-Never expose credentials, command arguments or large encoder logs. Distinguish known
-planned counts from unknown future work; only show an ETA if supported by measured
-history. Preserve failure records and completed cache stages for resume. Marketing's
-adapter will live in video-maker/videomaker/progress.py.
-
 ### §PW716 Review narrated claims against declared evidence
 
 Marketing VM64 has source URLs on storyboard beats but no evidence mapping for spoken
@@ -188,6 +171,27 @@ ranges, and a hit whose every range is rejected or whose rights are refused as
 `rejected` with the first reason. It never drops the hit: hiding it is a decision the
 person did not make. Done when a hit a library rejected is answered marked, with who
 rejected it and why, and an uncatalogued one is answered as before.
+
+### §PW727 Only a target that takes a report is handed one
+
+Found shipping PW715 (2026-11-23). The job worker calls its target as `fn(report,
+**args)`, and `check_args` skips the first parameter as the report's. But an operation
+registers a `kind`, which is what offers `--job`, apart from whether it
+`injects=("report",)`. 23 operations have a kind and no report: calibrate.run,
+capture.again, capture.card, capture.movie, capture.run, capture.web, engine.cost,
+engine.perf, engine.preset_search, level.probe, panel.capture, port.run, render.in_game,
+search.sweep, shape.check, shape.silhouette, shape.turntable, stock.clip, stock.fetch,
+stock.find, vfx.preview, video.sheet and voice.choose. Each, started with `--job`,
+receives the report as its first argument, so `search.sweep --job` (the command line's
+own docstring example) fails with a TypeError or runs on a Report as its spec; video.cut
+did until PW715 gave it a report.
+
+The worker should pass the report only to a target whose registration injects one, and a
+test should start every operation that has a kind as a job with a fake target or a
+signature check, so a new one cannot regress. Where an operation is long and has stages,
+injecting a report is the better fix, as video.cut's; the worker's check is the floor.
+Done when every operation with a kind either injects a report or is called without one,
+and a test holds that for the whole registry.
 
 ## Block E — One world with the engine
 

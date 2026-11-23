@@ -96,6 +96,7 @@
 - ✅ **PW696** **picture.buy answers ok for a photo with fused hands, a missing thumb or pseudo-text, and nothing flags it** — picture.faults reads Shio's 24 photos with a local qwen2.5vl, sending them small and recovering a dropped answer, and flags a pseudo-text control (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW713** **A cut cannot render one selected interval with its production narration and callouts** — video.cut renders a review of one window, by seconds or named around="clip[n]|voice[n]", seeking the cut's own graph so the mix and cues stay exact.
 - ✅ **PW714** **Fetched media has no reusable catalogue of approved and rejected source ranges** — video.library keeps fetched files with the ranges people accepted or rejected, and a cut naming [video] library shows a clip only inside an accepted, cleared range.
+- ✅ **PW715** **A long video cut exposes no stage progress while rendering or waiting** — video.cut reports building and rendering with the fraction ffmpeg has encoded; --progress prints each as a JSON line, --job now runs it, and a failure keeps last_stage.
 
 ## Block E — One world with the engine
 

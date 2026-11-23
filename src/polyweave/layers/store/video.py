@@ -900,8 +900,9 @@ def _sheet(path: Path, target: Path, seconds: float, stills: int = 8) -> Path:
     return target
 
 
-@operation("video.cut", kind="capture")
+@operation("video.cut", kind="capture", injects=("report",))
 def cut(
+    report: Any,
     source: Annotated[str, Param("the *.cut.toml, as a path under the project")],
     *,
     out: Annotated[
@@ -932,12 +933,17 @@ def cut(
     time in the preview adds to be the cut's. `around` names the interval by what is
     in it: `clip[n]` is the n-th clip's seconds in the cut, `voice[n]` the n-th voice
     line's, from its `at` for as long as its file runs.
+
+    It reports `building` while it reads the cut and fetches its stock, then
+    `rendering` with the fraction of the seconds encoded, as ffmpeg says it, and a
+    note when it measures (§PW715): `--progress` prints each, `--job` keeps them.
     """
     from polyweave.kernel import provenance
     from polyweave.kernel.config import load
 
     here = load(root).root
     path = Path(source) if Path(source).is_absolute() else here / source
+    report.stage("building", note=f"reading {path.name}")
     declared = read(path, here)
     if around:
         interval = _around(around, declared)
@@ -962,14 +968,18 @@ def cut(
         # The same graph as the whole cut, its output held to the window: the mix, the
         # fades and every timed voice are the cut's own, never an excerpt's (§PW713).
         argv[-1:-1] = ["-ss", f"{window[0]:.3f}", "-to", f"{window[1]:.3f}"]
-    made = subprocess.run(argv, capture_output=True, text=True, check=False)
-    if made.returncode != 0 or not target.is_file():
+    seconds = (window[1] - window[0]) if window is not None else declared["seconds"]
+    report.stage("rendering", progress=0.0, note=f"encoding {seconds:g}s from "
+                 f"{len(declared['clips'])} clip(s)")
+    code, said = _encoded(argv, seconds, report)
+    if code != 0 or not target.is_file():
         raise PolyweaveError(
             "video.encode-failed",
             f"ffmpeg did not write {target.name}",
             "read the detail, which is what ffmpeg said",
-            detail=made.stderr.strip()[-800:],
+            detail=said.strip()[-800:],
         )
+    report.progress(1.0, note=f"measuring {target.name}")
     found = measured(target)
     sheet = _sheet(target, target.with_suffix(".sheet.png"), found["video_seconds"])
     inputs = [
@@ -1020,6 +1030,27 @@ def cut(
         f"{found['video_height']}, moving from {found['first_motion']:g}s; watch "
         f"{provenance.relative(target, here)}, or lay the sheet in a sitting",
     }
+
+
+def _encoded(argv: list[str], seconds: float, report: Any) -> tuple[int, str]:
+    """Run the encode, reporting the fraction of `seconds` written as ffmpeg's
+    `-progress` says it (§PW715); its exit code and what it said on stderr."""
+    import tempfile
+
+    argv = [argv[0], "-progress", "pipe:1", "-nostats", *argv[1:]]
+    with tempfile.TemporaryFile("w+", encoding="utf-8", errors="replace") as said:
+        # stderr to a file, so a long log never fills a pipe nobody is reading.
+        run = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=said, text=True,
+                               encoding="utf-8", errors="replace")
+        for line in run.stdout:
+            key, _, value = line.strip().partition("=")
+            if key == "out_time_us" and value.isdigit() and seconds > 0:
+                done = min(int(value) / 1e6, seconds)
+                report.progress(round(done / seconds, 3),
+                                note=f"encoded {done:.1f}s of {seconds:g}s")
+        code = run.wait()
+        said.seek(0)
+        return code, said.read()
 
 
 def _around(named: str, declared: dict) -> list[float]:

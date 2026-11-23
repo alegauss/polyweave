@@ -53,13 +53,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW715",
-    block: "D",
-    symptom: "A long video cut exposes no stage progress while rendering or waiting",
-    why: "Callers poll processes and output timestamps to distinguish slow work from a failed stage.",
-    deps: [],
-  },
-  {
     id: "PW716",
     block: "D",
     symptom: "Narrated claims cannot bind evidence, dates and human review to their spoken anchors",
@@ -113,6 +106,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "stock.find answers a hit a media library already rejected as if it were a new candidate",
     why: "A clip a person turned down is fetched and reviewed again before the library's refusal surfaces.",
+    deps: [],
+  },
+  {
+    id: "PW727",
+    block: "D",
+    symptom: "Twenty-three operations offer --job but take no report, so the worker hands it to their first parameter",
+    why: "search.sweep --job, the command line's own example, fails before it renders anything.",
     deps: [],
   },
   {

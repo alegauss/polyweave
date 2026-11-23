@@ -14,6 +14,9 @@ from PIL import Image
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.store import video
 from polyweave.loop import accept
+from polyweave.surface.commands import Quiet
+
+QUIET = Quiet()
 
 needs_ffmpeg = pytest.mark.skipif(
     not (shutil.which("ffmpeg") and shutil.which("ffprobe")), reason="needs ffmpeg"
@@ -88,7 +91,7 @@ def test_two_runs_crossfade_under_music_into_an_mp4_that_measures_what_it_is(tmp
         '[[clip]]\nfrom = "caps/b"\nstart = 0.0\nlength = 2.0\nfade_in = 0.5\n',
         encoding="utf-8",
     )
-    said = video.cut("teaser.cut.toml", root=str(here))
+    said = video.cut(QUIET, "teaser.cut.toml", root=str(here))
     assert said["file"] == "store/teaser.mp4"
     assert (said["video_width"], said["video_height"]) == (640, 360)
     assert said["video_seconds"] == pytest.approx(3.5, abs=0.1)
@@ -123,7 +126,7 @@ def test_a_clip_asking_more_than_its_run_holds_is_refused_before_ffmpeg_runs(tmp
         '[[clip]]\nfrom = "caps/a"\nstart = 0.5\nlength = 1.0\n', encoding="utf-8"
     )
     with pytest.raises(PolyweaveError) as refused:
-        video.cut("t.cut.toml", root=str(here))
+        video.cut(QUIET, "t.cut.toml", root=str(here))
     assert refused.value.code == "video.short-sequence"
 
 
@@ -171,7 +174,7 @@ def test_a_still_is_held_and_moved_and_a_video_file_is_cut_in(tmp_path):
         '[[clip]]\nvideo = "broll.mp4"\nstart = 0.5\nlength = 1.0\nfade_in = 0.25\n',
         encoding="utf-8",
     )
-    said = video.cut("story.cut.toml", root=str(here))
+    said = video.cut(QUIET, "story.cut.toml", root=str(here))
     assert said["video_seconds"] == pytest.approx(2.75, abs=0.1)
     # The held card does not move; the zoom does, from its first second on.
     assert said["first_motion"] == pytest.approx(1.0, abs=0.15)
@@ -218,7 +221,7 @@ def test_each_language_is_a_track_of_its_voices_over_the_music_with_subtitles(tm
         '[[subtitles]]\nfile = "en.srt"\nlanguage = "eng"\n',
         encoding="utf-8",
     )
-    said = video.cut("story.cut.toml", root=str(here))
+    said = video.cut(QUIET, "story.cut.toml", root=str(here))
     assert said["tracks"] == ["eng", "por"]
     assert (said["audio_tracks"], said["subtitle_tracks"]) == (2, 1)
     # The one-second bed loops under the whole cut.
@@ -555,7 +558,7 @@ def test_a_review_renders_only_the_interval_from_the_cut_s_own_graph(tmp_path):
         '[video]\nsize = [64, 36]\nfps = 10\n\n[[clip]]\nstill = "red.png"\n'
         'length = 2.0\n\n[[clip]]\nstill = "blue.png"\nlength = 2.0\n',
         encoding="utf-8")
-    said = video.cut("two.cut.toml", interval=[1.5, 2.5], root=str(here))
+    said = video.cut(QUIET, "two.cut.toml", interval=[1.5, 2.5], root=str(here))
     assert said["file"] == "two.preview-1.5-2.5.mp4"
     assert said["interval"] == {"asked": [1.5, 2.5], "rendered": [1.5, 2.5],
                                 "offset": 1.5}
@@ -570,11 +573,11 @@ def test_a_review_renders_only_the_interval_from_the_cut_s_own_graph(tmp_path):
 
     first, last = colour(0.1), colour(0.9)
     assert first[0] > first[1] and last[1] > last[0]
-    widened = video.cut("two.cut.toml", interval=[1.5, 2.5], context=1.0,
+    widened = video.cut(QUIET, "two.cut.toml", interval=[1.5, 2.5], context=1.0,
                         root=str(here))
     assert widened["interval"]["rendered"] == [0.5, 3.5]
     with pytest.raises(PolyweaveError) as refused:
-        video.cut("two.cut.toml", interval=[3.0, 9.0], root=str(here))
+        video.cut(QUIET, "two.cut.toml", interval=[3.0, 9.0], root=str(here))
     assert refused.value.code == "video.bad-cut"
 
 
@@ -587,11 +590,12 @@ def test_a_review_is_named_by_the_clip_it_shows(tmp_path):
         '[video]\nsize = [64, 36]\nfps = 10\n\n[[clip]]\nstill = "red.png"\n'
         'length = 2.0\n\n[[clip]]\nstill = "blue.png"\nlength = 2.0\n',
         encoding="utf-8")
-    said = video.cut("two.cut.toml", around="clip[2]", context=0.5, root=str(here))
+    said = video.cut(QUIET, "two.cut.toml", around="clip[2]", context=0.5,
+                     root=str(here))
     assert said["interval"]["asked"] == [2.0, 4.0]
     assert said["interval"]["rendered"] == [1.5, 4.0]
     with pytest.raises(PolyweaveError) as refused:
-        video.cut("two.cut.toml", around="voice[1]", root=str(here))
+        video.cut(QUIET, "two.cut.toml", around="voice[1]", root=str(here))
     assert refused.value.code == "video.bad-cut"
 
 
@@ -657,7 +661,7 @@ def test_a_cut_shows_only_accepted_ranges_and_names_who_accepted_them(tmp_path):
     (here / "ok.cut.toml").write_text(
         head + '[[clip]]\nvideo = "short.mp4"\nstart = 0.5\nlength = 1.0\n',
         encoding="utf-8")
-    said = video.cut("ok.cut.toml", root=str(here))
+    said = video.cut(QUIET, "ok.cut.toml", root=str(here))
     record = provenance.read(said["file"], root=str(here))
     assert record["params"]["approved"][0]["by"] == "Ana"
     assert record["params"]["approved"][0]["range"] == [0.0, 2.0]
@@ -666,7 +670,7 @@ def test_a_cut_shows_only_accepted_ranges_and_names_who_accepted_them(tmp_path):
         '[[clip]]\nvideo = "short.mp4"\nstart = 0.0\nlength = 1.0\n',
         encoding="utf-8")
     with pytest.raises(PolyweaveError) as raised:
-        video.cut("bad.cut.toml", root=str(here))
+        video.cut(QUIET, "bad.cut.toml", root=str(here))
     assert raised.value.code == "video.unapproved"
     assert "rejected" in raised.value.message
     found = video.check("bad.cut.toml", root=str(here))
@@ -690,3 +694,61 @@ def test_a_changed_or_uncatalogued_file_is_refused_by_a_cut(tmp_path):
     codes = {one["at"]: one["code"] for one in found["findings"]}
     assert codes == {"clip[1]": "video.unapproved",
                      "clip[2]": "video.library-changed"}
+
+# -- a cut says where it got to while it runs (§PW715) ---------------------------------
+
+
+class _Heard:
+    """A report that keeps what it was told, in order."""
+
+    def __init__(self):
+        self.said = []
+
+    def stage(self, stage, *, progress=None, note=None):
+        self.said.append(("stage", stage, progress, note))
+
+    def progress(self, value, *, note=None):
+        self.said.append(("progress", None, value, note))
+
+    def note(self, text):
+        self.said.append(("note", None, None, text))
+
+
+@needs_ffmpeg
+def test_a_cut_reports_its_stages_and_how_much_it_has_encoded(tmp_path):
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    (here / "ok.cut.toml").write_text(
+        '[video]\nsize = [320, 180]\n\n[[clip]]\nvideo = "short.mp4"\nstart = 0.0\n'
+        "length = 3.0\n", encoding="utf-8")
+    heard = _Heard()
+    video.cut(heard, "ok.cut.toml", root=str(here))
+    stages = [one[1] for one in heard.said if one[0] == "stage"]
+    assert stages == ["building", "rendering"]
+    fractions = [one[2] for one in heard.said if one[0] == "progress"]
+    assert fractions == sorted(fractions) and fractions[-1] == 1.0
+    assert any("encoded" in (one[3] or "") for one in heard.said)
+    assert "measuring" in heard.said[-1][3]
+
+
+def test_progress_prints_one_flushed_json_line_a_stage(capsys):
+    import json as _json
+
+    from polyweave.surface.commands import Spoken
+
+    told = Spoken()
+    told.stage("rendering", progress=0.0, note="encoding 3s")
+    told.progress(0.5, note="encoded 1.5s of 3s")
+    lines = [_json.loads(one) for one in capsys.readouterr().err.splitlines()]
+    assert [one["stage"] for one in lines] == ["rendering", "rendering"]
+    assert lines[1]["progress"] == 0.5 and "elapsed_s" in lines[1]
+
+
+def test_a_failed_job_keeps_the_stage_it_reached(tmp_path):
+    from polyweave.kernel.jobs.report import Report
+
+    state = {"job": "j1", "kind": "capture", "started_ts": 0.0, "stage": "queued"}
+    report = Report(tmp_path / "j1.json", state)
+    report.stage("rendering", progress=0.4)
+    report.finish("failed", error={"code": "video.encode-failed"})
+    assert state["stage"] == "failed" and state["last_stage"] == "rendering"

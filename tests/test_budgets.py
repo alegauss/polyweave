@@ -429,7 +429,8 @@ ERROR = 1_400
 #: at the engine's scale can frame (§PW79).
 #: 4,987 once a bool flag reads `--preview [BOOL]`: the bare flag is true, as `build
 #: --all` takes it, where geometry.build had refused it (§PW587).
-HELP_VERB = 5_100
+#: 5,107 once a verb that reports its stages takes --progress (§PW715, 2026-11-23).
+HELP_VERB = 5_200
 #: The top-level `--help`, naming every verb: 11,346. One more verb line is ~150.
 #: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
 #: 12,066 with motion.bake (§PW160), 12,216 with sound.measure (§PW113), 12,385

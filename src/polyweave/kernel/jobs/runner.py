@@ -410,6 +410,8 @@ class JobStore:
             "status": state["status"],
             "progress": state["progress"],
             "note": state["note"],
+            # Said only on a failure, where `stage` no longer says how far it got.
+            **({"last_stage": state["last_stage"]} if state.get("last_stage") else {}),
             "result": state["result"],
             "error": state["error"],
             "pid": pid,

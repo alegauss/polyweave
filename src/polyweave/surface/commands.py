@@ -58,6 +58,34 @@ class Quiet:
         return None
 
 
+class Spoken:
+    """The report `--progress` gets: one JSON line on stderr per stage, fraction or
+    note, flushed as it happens, so a caller tells slow work from stuck work without
+    polling processes or files (§PW715)."""
+
+    def __init__(self) -> None:
+        import time
+
+        self._started, self._stage = time.monotonic(), None
+
+    def _say(self, **said: Any) -> None:
+        import time
+
+        said = {k: v for k, v in said.items() if v is not None}
+        print(json.dumps({"stage": self._stage, **said, "elapsed_s": round(
+            time.monotonic() - self._started, 1)}), file=sys.stderr, flush=True)
+
+    def stage(self, stage, *, progress=None, note=None):
+        self._stage = stage
+        self._say(progress=progress, note=note)
+
+    def progress(self, value, *, note=None):
+        self._say(progress=value, note=note)
+
+    def note(self, text):
+        self._say(note=text)
+
+
 def parsed(text: str, declared: dict) -> Any:
     """One flag's value, read as the type its operation declared.
 
@@ -213,6 +241,9 @@ def add_operations(commands: Any) -> None:
             sub.add_argument(
                 "--job", action="store_true", help="start it as a job, print the handle"
             )
+        if "report" in getattr(D._REGISTRY.get(name), "injects", ()):
+            sub.add_argument("--progress", action="store_true",
+                             help="print each stage to stderr as a JSON line")
         sub.add_argument("--json", action="store_true", help="print the answer as data")
 
     capabilities = commands.add_parser("capabilities", help="what this machine can do")
@@ -316,7 +347,8 @@ def answer_for(stated: argparse.Namespace) -> Any:
 
         store = JobStore.for_project(args.get("root") or ".")
         return store.start(registered.target, kind=registered.kind, args=given)
-    injected = {name: Quiet() for name in registered.injects}
+    told = Spoken if getattr(stated, "progress", False) else Quiet
+    injected = {name: told() for name in registered.injects}
     return registered.fn(**injected, **args)
 
 

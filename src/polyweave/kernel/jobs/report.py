@@ -84,6 +84,10 @@ class Report:
         with self._lock:
             now = time.time()
             self._state.update(fields)
+            if status == "failed" and not is_terminal(self._state.get("stage")):
+                # Where it got to, which `stage` no longer says once it reads failed
+                # (§PW715): a render that died encoding is not one that never read.
+                self._state["last_stage"] = self._state.get("stage")
             self._state["stage"] = status
             self._state["status"] = status
             self._state["ended_ts"] = now
