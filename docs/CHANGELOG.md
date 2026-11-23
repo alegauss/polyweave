@@ -636,6 +636,7 @@
 - ✅ **PW666** **project.init proposes no sound layer or ElevenLabs service when only an ElevenLabs key is set** — project.init proposes a set ElevenLabs key's service with its price row and the sound layer, and no Godot paths outside a Godot project (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW678** **a file borrowed after sound.loop cut it records only its scratch path: no origin service, original or derivation step** — sound.loop records its track, and a borrowed file keeps its maker, original and step, which provenance.credits says as one chain (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW710** **A web capture cannot declare and reset the clean product instance it films** — capture.instance plans, resets and runs a declared Compose project only on call, and a visit naming it waits for it and records the containers it filmed (design recorded in `docs/specs/video.md`).
+- ✅ **PW711** **Recorded credits cannot be exported as a bounded video description with chapter times** — store.description writes a bounded description with chapters, keeping required credits whole, grouping the rest, and refusing rather than truncating (design recorded in `docs/specs/video.md`).
 
 ## Block U — A window on everything a project governs
 

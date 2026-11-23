@@ -51,8 +51,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW711** (deps: —) **Recorded credits cannot be exported as a bounded video description with chapter times** — Video-maker must group credits and preserve required attribution fields by hand to fit publishing limits. → §PW711
-
 ## Block U — A window on everything a project governs
 
 ## Block V — Parts every game repeats, installed already proved

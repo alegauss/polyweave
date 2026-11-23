@@ -86,6 +86,18 @@ CODES: dict[str, Code] = {
         doors=("name the .html under the project", "write out as a .png",
                "give viewport as [width, height]"),
     ),
+    "store.description-long": Code(
+        means="a description is longer than the platform allows",
+        when="store.description's text past its limit, required credits kept whole "
+        "(§PW711)",
+        doors=("shorten the summary or chapters", "use fewer files"),
+    ),
+    "store.bad-chapters": Code(
+        means="a description's chapters or files are not ones it can write",
+        when="no file named, chapters not {at, title}, the first not at 0, or times "
+        "not rising (§PW711)",
+        doors=("start chapters at 0 with rising times", "name the files used"),
+    ),
     "store.no-thumbnail": Code(
         means="the thumbnail to check is not there",
         when="store.thumbnail on a path with no file (§PW699)",

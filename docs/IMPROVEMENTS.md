@@ -365,20 +365,6 @@ this line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW711 Bounded publishing copy from credit records
-
-Marketing VM52 found a 15791-character WordPress description and a 5288-character Scion
-description. provenance.credits accepts root/out/check/all and exports JSON for a game's
-credits screen; it has no declared summary, chapter times, used-media subset or platform
-text budget. video-maker now formats declared publishing copy, shortens YouTube watch
-URLs, groups shared licence notices and stock service credits, keeps mandatory
-title/author/source/licence/change fields, archives full provenance, and refuses text
-that cannot fit without dropping required fields. Scion retains all 33 source credits.
-Add a bounded publishing-text export over declared credit records, with protected fields
-and explicit grouping policy. Do not infer a licence version, invent missing rights
-metadata or silently truncate mandatory credits. The reusable adapter currently lives in
-videomaker/publish/description.py.
-
 ## Block U — A window on everything a project governs
 
 ### §PW311 The window proved on Starship

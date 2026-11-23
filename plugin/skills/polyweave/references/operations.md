@@ -26,10 +26,10 @@
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
 | Music | `music.validate`, `music.to_midi`, `music.from_midi` (a MIDI as a score), `music.from_audio` (a recording as a score), `music.render`, `music.track`, `sound.synth`, `sound.loop`, `sound.stems` (a recorded track), `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build`, `vfx.preview`, `panel.build`, `panel.capture`, `picture.sew`, `icons.build` |
-| A teaser | `video.cut`, `capture.web` (page as clip), `capture.instance`, `capture.card` (HTML still), `video.buy` (paid), `video.measure`, `video.pauses`, `video.safe_area` (captions vs controls), `store.thumbnail`, `store.thumbnails`, `video.sheet`, `video.labels` |
+| A teaser | `video.cut`, `capture.web` (page as clip), `capture.instance`, `capture.card` (HTML still), `video.buy` (paid), `video.measure`, `video.pauses`, `video.safe_area` (captions vs controls), `store.thumbnail`, `store.thumbnails`, `video.sheet`, `video.labels`, `store.description` |
 | A project's look | `style.read`, `style.drift` (before a person looks), `style.train` |
 | Buy a drawing | `picture.buy`, `picture.batch`, `picture.gate`, `picture.letters`, `picture.describe`, `picture.vary`, `picture.upscale`, `picture.against_parent`, `picture.fit`, `picture.collect` |
-| A stock picture, with its licence | `stock.find`, `stock.fetch` (Pixabay, Pexels, Jamendo; free), `stock.clip` |
+| A stock picture, with its licence | `stock.find`, `stock.fetch` (free), `stock.clip` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `reference.register`, `reference.frames`, `reference.objects`, `reference.sample`, `reference.regions`, `reference.minimap`, `reference.events`, `reference.compare`, `reference.transcription`, `reference.transcribed`, `reference.draft`, `shape.check`, `shape.silhouette`, `shape.turntable` |
 | Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |

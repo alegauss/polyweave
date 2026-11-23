@@ -2600,6 +2600,22 @@ export interface StoreCapsulesArgs {
   root?: string
 }
 
+/** A bounded description: summary, chapters and the credits the used files owe. */
+export interface StoreDescriptionArgs {
+  /** the files the video uses, under the project */
+  files: unknown[]
+  /** what the video is, as its first paragraph */
+  summary?: string
+  /** each {at, title}, the first at 0 seconds */
+  chapters?: unknown[]
+  /** the platform's character limit; from 1 to …; default 5000 */
+  limit?: number
+  /** where the text is written, if anywhere */
+  out?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Hold a thumbnail to its title and to a feed's size, before it is published. */
 export interface StoreThumbnailArgs {
   /** the thumbnail, under the project */
@@ -3291,6 +3307,7 @@ export interface Operations {
   "stock.fetch": StockFetchArgs
   "stock.find": StockFindArgs
   "store.capsules": StoreCapsulesArgs
+  "store.description": StoreDescriptionArgs
   "store.thumbnail": StoreThumbnailArgs
   "store.thumbnails": StoreThumbnailsArgs
   "style.drift": StyleDriftArgs
@@ -3537,6 +3554,7 @@ export const OPERATIONS = [
   "stock.fetch",
   "stock.find",
   "store.capsules",
+  "store.description",
   "store.thumbnail",
   "store.thumbnails",
   "style.drift",

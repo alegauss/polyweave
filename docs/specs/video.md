@@ -395,3 +395,18 @@ ready, refuses one that is not (`web.instance-not-ready`), never resets it, and 
 image and state, with the fixture and the Compose file as inputs. A bad fixture is
 `web.bad-instance`, no docker is `web.no-docker`, and a failed docker call is
 `web.instance-failed` with what docker said.
+
+## A description from the credits
+
+A platform bounds a video's description (YouTube at 5,000 characters), and listing
+every credit whole ran one to 15,791 (§PW711). `store.description(files, summary=,
+chapters=, limit=5000, out=)` writes it from the records of the files the video uses:
+the summary, then the chapters as `M:SS Title` (`H:MM:SS` past an hour; the first at 0
+and each later one later, else `store.bad-chapters`), then `Credits:`. A file whose
+record carries a `credit`, an attribution its licence requires, has it kept whole; the
+others are grouped as `<service> (<licence>): <authors>`, each author once, the licence
+the record's or the one `provenance.credits` resolves through what the file was made
+from. YouTube watch URLs become `youtu.be` links. A file whose licence nothing states is
+named in `unstated` and left out, never given one, and a file with no record is in
+`unrecorded`. A text past `limit` is `store.description-long`, saying how much of it is
+required credit; nothing is cut. With `out` the text is written there.

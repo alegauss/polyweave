@@ -9,6 +9,7 @@ LAYER = Layer(
     modules=(
         "polyweave.layers.store.card",
         "polyweave.layers.store.compose",
+        "polyweave.layers.store.description",
         "polyweave.layers.store.footage",
         "polyweave.layers.store.instance",
         "polyweave.layers.store.labels",
@@ -39,7 +40,8 @@ LAYER = Layer(
     # 11,263 with video.pauses, a recording's longest pause against a budget (§PW707).
     # 11,897 with video.sheet, one labelled still per beat (§PW708).
     # 12,908 with capture.instance, the product instance a visit films (§PW710).
-    tools=13_600,
+    # 13,717 with store.description, a bounded description from credits (§PW711).
+    tools=14_400,
     census={
         "polyweave.layers.store.video:measured": (
             "internal", "what a video bound reads, off the MP4"),
