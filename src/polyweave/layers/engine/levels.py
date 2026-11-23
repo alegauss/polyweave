@@ -216,6 +216,11 @@ def _curve_rules(spec: dict, count: int) -> tuple[float, list, list]:
     return float(step), regions, dips
 
 
+#: How far apart two figures may be and still be read as one (§PW722): 0.94 and 1.0
+#: differ by 0.06000000000000005 in floating point, which is the step of 0.06.
+_SAME = 1e-9
+
+
 def _curve_findings(names: list[str], hard: list[float], step: float, regions: list,
                    dips: list) -> list[dict]:
     """Each place a set's difficulty breaks its declared shape, as the pair of levels
@@ -225,16 +230,16 @@ def _curve_findings(names: list[str], hard: list[float], step: float, regions: l
     for i in range(len(hard) - 1):
         fell = hard[i] - hard[i + 1]
         if i + 1 in dipped:
-            if fell <= 0:
+            if fell <= _SAME:
                 found.append({"rule": "dip", "pair": [names[i], names[i + 1]],
                               "said": f"{names[i + 1]} is no easier than "
                               f"{names[i]}, after which the set dips"})
-        elif fell > step:
+        elif fell > step + _SAME:
             found.append({"rule": "step", "pair": [names[i], names[i + 1]],
                           "said": f"{names[i + 1]} is easier than {names[i]} by "
                           f"{round(fell, 4)}, past the step of {step}"})
     for first, last in regions:
-        if hard[last - 1] <= hard[first - 1]:
+        if hard[last - 1] <= hard[first - 1] + _SAME:
             found.append({"rule": "region", "pair": [names[first - 1], names[last - 1]],
                           "said": f"{names[last - 1]} is no harder than "
                           f"{names[first - 1]}, though the region rises"})
@@ -261,7 +266,7 @@ def _rises(spec: dict, names: list[str], values: list[float], direction: str,
             given=probed)
     found = []
     for i in range(len(values) - 1):
-        if values[i + 1] > most * values[i] + 1e-9:
+        if values[i + 1] > most * values[i] + _SAME:
             found.append({"rule": "rise", "pair": [names[i], names[i + 1]],
                           "said": f"{names[i + 1]} is {values[i + 1] / values[i]:.2f} "
                           f"times {names[i]}, past the most rise of {most}"})

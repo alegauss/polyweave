@@ -369,3 +369,13 @@ def test_the_game_s_probe_plays_a_level_and_a_change_is_reported(tmp_path):
     assert again["moved"]["stars"]["p90"] == {"was": 2.0, "now": 3.0}
     written = json.loads((root / "levels" / "one.probe.json").read_text("utf-8"))
     assert written["seeds"] == 4 and written["measures"]["won"]["unit"] == "0 or 1"
+
+
+def test_a_pair_that_differs_by_exactly_its_step_holds_it(tmp_path):
+    """§PW722: Cottony's levels 10 and 11 probed 0.94 and 1.0, which differ by
+    0.06000000000000005 in floating point, and were refused past a step of 0.06."""
+    root = _project(tmp_path, DECLARED)
+    said = levels.curve(_set(root, [0.94, 1.0], step=0.06), root=str(root))
+    assert said["ok"] is True and said["findings"] == []
+    past = levels.curve(_set(root, [0.94, 1.0], step=0.05), root=str(root))
+    assert [one["rule"] for one in past["findings"]] == ["step"]

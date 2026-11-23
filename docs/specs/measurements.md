@@ -499,6 +499,10 @@ peak to at most 1.5 times the phase before; a break is the pair with rule `rise`
 ratio is read only off a measure that grows harder (its direction `lower`) and stays
 above zero; any other, or a `most_rise` under 1, is `level.bad-set`.
 
+Every bound of the shape (step, dip, region and rise) is compared within 1e-9, so a
+pair sitting exactly on its bound holds it: 0.94 and 1.0 differ by 0.06000000000000005
+in floating point, which is the step of 0.06, not past it (§PW722).
+
 Harder is read off the measure's declared direction: a measure where `higher` is better
 for the player (a win rate) makes a level harder as it falls. Each break is answered as
 the `pair` of levels with its `rule` (`step`, `region`, `dip`) and what it `said`, and

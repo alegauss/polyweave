@@ -121,19 +121,6 @@ What starship still needs from polyweave:
 Until it lands, starship keeps the per-second pass in `dev/pressure.gd`, named against
 this line.
 
-### §PW722 A step held in the probe's own precision
-
-Found holding Cottony's 20 levels to curve A (PW206, 2026-11-23). `level.curve` with
-`step = 0.06` refused level 10 to 11: "level_011 is easier than level_010 by 0.06, past
-the step of 0.06". The probe recorded 0.94 and 1.0; their difference in floating point
-is 0.06000000000000005, and the comparison takes it as past the bound, so a set sitting
-on its declared step is reported broken.
-
-Compare the step, the region and the rise in the probe's own precision: round each
-difference to the places the probe records (or compare within a small epsilon such as
-1e-9) before holding it to its bound, and say the rounded figure in the finding. A test
-holds a pair whose difference equals the step exactly as within it.
-
 ### §PW723 A level search keeps an integer whole
 
 Found tuning Cottony's level 18 toward curve A (PW206, 2026-11-23):

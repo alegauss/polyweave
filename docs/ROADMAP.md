@@ -40,7 +40,6 @@
 ## Block R — Levels measured before a person plays them
 
 - 📋 **PW327** (deps: PW205 ✅, Spinhold RK313) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — level.trace reads traces already; Spinhold RK313 writes them from real play, then the declared curve and a spec over both follow. → §PW327
-- 📋 **PW722** (deps: —) **level.curve refuses a pair whose difference equals its step, by floating-point rounding** — A set sitting exactly on its declared step reads as broken, as Cottony's levels 10 and 11 did at 0.06. → §PW722
 - 📋 **PW723** (deps: —) **A level search samples a fraction for an integer key and probes a value it already measured** — Each wasted candidate is 50 games in Godot, and a trace naming 22.5 moves reads as a level that cannot exist. → §PW723
 - 📋 **PW724** (deps: —) **level.probe refuses a level that has no file, so a game's fallback curve past its shipped levels cannot be probed** — Cottony's endless tail is the formula alone, and checking it meant writing an empty level file per sampled number. → §PW724
 

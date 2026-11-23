@@ -591,6 +591,7 @@
 - ✅ **PW609** **an accepted reference transcription cannot become a draft level, so its rows are retyped into the level file by hand** — reference.draft turns a transcription a person accepted into a draft level by the project's mapping, recorded and held to its schema (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW681** **a level set's curve cannot bound how much harder a level may get as a ratio, so Spinhold's peak_step stays in check.gd** — A level set's most_rise bounds each level to a ratio of the one before; Spinhold's phases hold its owner's 1.5 there (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW683** **a level field's help reaches a game's editor in the schema's language only, outside the string table** — Each level field's help has a key from its path, and level.fields appends missing ones to the string table untranslated, naming changed ones (design recorded in `docs/specs/engine.md`).
+- ✅ **PW722** **level.curve refuses a pair whose difference equals its step, by floating-point rounding** — level.curve compares step, dip, region and rise within 1e-9, so a pair exactly on its bound holds it, as Cottony's 0.94 and 1.0 at a step of 0.06 now do.
 
 ## Block S — Playing the game, not only rendering it
 
