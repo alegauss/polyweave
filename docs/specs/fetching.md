@@ -1037,3 +1037,14 @@ the first, is in `unchecked` with why, never passed, and the rest of the set is 
 On Shio's 24 marketplace photos (2026-11-23, `qwen2.5vl:7b`) the current set read clean,
 and a control with garbled lettering read `pseudo-text` where it was; the photos the
 owner rejected had been overwritten by their re-buys, so they could not be read again.
+
+## A delivery setting a model ignores (§PW717)
+
+`sound.speak` and `voice.lines` send `stability`, `similarity`, `style` and `speed` as
+`voice_settings`, and the service answers a setting its model does not apply without an
+error. Which ones a model ignores is kept in `sound_buy.IGNORED` (today eleven_v3's
+`speed`, measured on three takes of one line). Asking for one is
+`sound.setting-ignored` before anything is priced, planned or bought, in a plan as in a
+spend; a world entity's own setting for another model is dropped rather than refused.
+A take recorded with an ignored setting is compared without it, so dropping the setting
+from a script leaves the takes already bought current.

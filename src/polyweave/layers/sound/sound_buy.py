@@ -101,6 +101,33 @@ DELIVERY = {
     "speed": "speed",
 }
 
+#: The delivery settings a model takes and never applies (§PW717): eleven_v3 answers a
+#: `speed` without error and speaks at its own pace, measured on three takes of one line
+#: in viglet/marketing at none, 1.12 and 1.2 (14.28s, 13.30s, 14.04s).
+IGNORED: dict[str, tuple[str, ...]] = {"eleven_v3": ("speed",)}
+
+
+def _applied(model: str, delivery: dict) -> None:
+    """Refuse a delivery setting `model` ignores, before anything is priced or bought,
+    so a take is never paid for and recorded at a setting it never got (§PW717)."""
+    ignored = [k for k in IGNORED.get(model, ()) if DELIVERY[k] in delivery]
+    if ignored:
+        raise PolyweaveError(
+            "sound.setting-ignored",
+            f"{model} ignores {', '.join(ignored)}: a take would be bought and "
+            "recorded at a setting it never got",
+            f"drop {', '.join(ignored)}; to change the pace, stretch the take after, "
+            "or speak it on a model that applies it; nothing was bought",
+            given=ignored[0], allowed=[k for k in DELIVERY if k not in ignored])
+
+
+def _heeded(model: str, delivery: dict) -> dict:
+    """A recorded delivery as the model applied it: what it ignores never made a take
+    differ, so it never makes one stale (§PW717)."""
+    return {k: v for k, v in (delivery or {}).items()
+            if k not in {DELIVERY[n] for n in IGNORED.get(model, ())}}
+
+
 #: The models the service lets a call hold to one language, by `language_code`; any
 #: other answers the field with an error (§PW412).
 LANGUAGE_HELD = ("eleven_v3", "eleven_turbo_v2_5", "eleven_flash_v2_5")
@@ -189,6 +216,10 @@ def speak(
         for name in DELIVERY
         if called[name] is not None or own.get(name) is not None
     }
+    # One the call asked for is refused; an entity's own, set for another model, is
+    # dropped.
+    _applied(model, {DELIVERY[k]: v for k, v in called.items() if v is not None})
+    delivery = _heeded(model, delivery)
     request: dict = {"text": text, "model_id": model}
     if delivery:
         request["voice_settings"] = delivery
@@ -903,6 +934,7 @@ def _scripted(report, script: str, *, locale, keys, spend, out, model, service,
     voice = str(said["voice"]).strip()
     delivery = {DELIVERY[k]: float(said[k]) for k in DELIVERY
                 if said.get(k) is not None}
+    _applied(model, delivery)
     name = config.service(service, model=model)
     prices = config.services()[name].get("prices") or {}
     plan, current, adoptable = [], [], []
@@ -1018,7 +1050,8 @@ def _take(where: Path, voice: str | None, model: str, here: Path,
         return None
     details = record.get("details") or {}
     spoken_by = (
-        (details.get("voice"), details.get("delivery") or {}) == said_by
+        (details.get("voice"), _heeded(model, details.get("delivery"))) == (
+            said_by[0], _heeded(model, said_by[1]))
         if said_by is not None
         else (details.get("entity") or {}).get("sha256") == voice
     )

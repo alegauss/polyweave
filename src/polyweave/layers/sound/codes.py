@@ -28,6 +28,13 @@ CODES: dict[str, Code] = {
         "file that is not JSON or TOML",
         doors=("fix the field the message names",),
     ),
+    "sound.setting-ignored": Code(
+        means="a delivery setting was asked of a model that never applies it",
+        when="sound.speak or voice.lines asked speed of eleven_v3, which speaks at its "
+        "own pace whatever the request says (§PW717)",
+        doors=("drop the setting", "stretch the take after it is bought",
+               "speak it on a model that applies the setting"),
+    ),
     "sound.opening-late": Code(
         means="a script's first proof comes later than its [opening] allows (§PW706)",
         when="the words before the declared proof, at the locale's pace, run past "

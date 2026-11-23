@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 8 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 7 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW717",
-    block: "D",
-    symptom: "voice.lines accepts a speed for eleven_v3, spends, and records it in the take's provenance although the model ignores it",
-    why: "A narration paid for at a pace it never got looks current, and the recorded setting marks every other take stale for nothing.",
-    deps: [],
-  },
   {
     id: "PW718",
     block: "D",

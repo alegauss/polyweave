@@ -8,27 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW717 A delivery setting the model ignores is recorded as applied
-
-Where it happened: viglet/marketing, `japode/wordpress2`, on 2026-11-16. The call was
-`python -m polyweave voice.lines --script narration/lines.json --keys intro --spend true
---root japode/wordpress2 --json`, with `"model": "eleven_v3"` and `"speed": 1.12` (then
-`1.2`) at the top of the lines file.
-
-What came back: `spent: true`, a take, and a provenance whose `details.delivery.speed`
-records the value. Nothing said the model ignored it. Three takes of the same line
-measured 14.28 s of talking with no speed, 13.30 s at 1.12 and 14.04 s at 1.2:
-take-to-take variation only. eleven_v3 does not apply `voice_settings.speed`.
-
-Expected: a delivery setting the model does not apply should be refused before any
-spending, or at least come back as a warning in the plan (`ignored: ["speed"]`). It
-should not be recorded in the take's provenance as if it shaped the take. The record
-also makes every other take look stale for a change that alters nothing, which pushes a
-re-purchase of the whole narration.
-
-Workaround: viglet/marketing VM72 stretches the bought take with ffmpeg `atempo` inside
-video-maker (`[narration] tempo`), and the `speed` key was dropped from the script.
-
 ### §PW718 Wikimedia Commons pictures are fetched by hand
 
 Where it happened: viglet/marketing, the standalone Japode Short about the first

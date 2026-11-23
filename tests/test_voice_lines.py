@@ -369,3 +369,52 @@ def test_a_declared_preamble_is_refused_and_a_missing_translation_named(
         sound_buy.lines(script="script.toml", root=str(tmp_path))
     assert refused.value.code == "sound.opening-late"
     assert "pt_BR" in refused.value.message
+
+
+# -- a delivery setting the model ignores (§PW717) ------------------------------------
+
+
+def _on_v3(tmp_path):
+    (tmp_path / "polyweave.toml").write_text(VOICED.replace(
+        '"eleven_multilingual_v2" = { per = "character", rate = 0.001 }',
+        '"eleven_multilingual_v2" = { per = "character", rate = 0.001 }, '
+        '"eleven_v3" = { per = "character", rate = 0.001 }'), encoding="utf-8")
+    script = tmp_path / "demo" / "script.json"
+    script.parent.mkdir(exist_ok=True)
+    return script
+
+
+def test_a_speed_eleven_v3_ignores_is_refused_before_anything_is_bought(
+    tmp_path, project
+):
+    """viglet/marketing paid for three takes at speeds eleven_v3 never applied."""
+    script = _on_v3(tmp_path)
+    script.write_text(SCRIPT.replace('"speed": 0.95', '"speed": 1.12, "model": '
+                                     '"eleven_v3"'), encoding="utf-8")
+    for spend in (False, True):
+        with pytest.raises(PolyweaveError) as refused:
+            sound_buy.lines(script="demo/script.json", spend=spend, root=str(tmp_path))
+        assert refused.value.code == "sound.setting-ignored"
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.speak(text="Hold fast", voice="v", model="eleven_v3", speed=1.1,
+                        out="vo/a.mp3", root=str(tmp_path))
+    assert refused.value.code == "sound.setting-ignored"
+    assert project.sent == []
+
+
+def test_a_take_recorded_with_an_ignored_speed_is_still_current_without_it(
+    tmp_path, project
+):
+    from polyweave.kernel import provenance
+
+    script = _on_v3(tmp_path)
+    script.write_text(SCRIPT.replace('"speed": 0.95', '"model": "eleven_v3"'),
+                      encoding="utf-8")
+    sound_buy.lines(script="demo/script.json", locale="en", spend=True,
+                    root=str(tmp_path))
+    take = tmp_path / "demo" / "narration" / "en" / "chapter-1.mp3"
+    record = provenance.read(str(take), root=str(tmp_path))
+    record["details"]["delivery"] = {"speed": 1.12}  # as a take bought before §PW717
+    provenance.write(record, root=str(tmp_path))
+    again = sound_buy.lines(script="demo/script.json", root=str(tmp_path))
+    assert [one["locale"] for one in again["current"]] == ["en"]
