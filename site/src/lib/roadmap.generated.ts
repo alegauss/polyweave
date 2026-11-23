@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 11 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 10 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -64,13 +64,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "Frame contact sheets cannot pair exact shot midpoints with overlapping narration and editorial labels",
     why: "Video reviews need custom frame extraction and labelled HTML to catch mismatched shots before a full export.",
-    deps: [],
-  },
-  {
-    id: "PW705",
-    block: "D",
-    symptom: "stock.find and stock.fetch cannot search or fetch music, so a licensed bed arrives by hand with no record",
-    why: "A video's music is downloaded with curl and its licence and credit live only in the project's prose.",
     deps: [],
   },
   {

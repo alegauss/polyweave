@@ -430,6 +430,20 @@ credit. A project that ships only some licences lists them as `[service.<name>]
 licences`, and `stock.fetch` refuses any other with `stock.licence-refused` before
 anything is downloaded; an empty list takes any.
 
+**Music comes from stock with its own licence** (§PW705). `kind = "music"` is sold by
+Jamendo (`service = "jamendo"`, its client id read from `JAMENDO_CLIENT_ID` unless
+`[service.jamendo] key_env` names another), whose every track carries a Creative Commons
+licence URL. `stock.find` asks `tracks/` with the words as `search` and only tracks
+whose owner allows a download, takes the filters `tags`, `fuzzytags`,
+`vocalinstrumental`, `speed`, `durationbetween` (as `120_600` seconds), `order` and
+`lang`, and answers each hit's id, title, duration, tags, author, page and `licence`,
+named from its URL (`.../licenses/by-nc-sa/3.0/` is `CC BY-NC-SA 3.0`). `stock.fetch`
+downloads the track, holds its licence to `[service.jamendo] licences` where the project
+lists them, and records the licence, its URL, the title, the length in `seconds` and a
+`credit` with the title, artist, page and licence, so `provenance.credits` owes the
+attribution. A track naming no licence is `stock.licence-refused`; music from Pixabay or
+Pexels, or a picture or video from Jamendo, is `stock.bad-kind`.
+
 **A public video is taken only under a reuse licence** (§PW701). A history's real
 people are in their own public videos, which are not stock because they are public.
 `stock.clip(url, out, start=0, end=)` reads the video's metadata with `yt-dlp -J`

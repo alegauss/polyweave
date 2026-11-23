@@ -50,6 +50,14 @@ SERVICES = {
                     "video": ("orientation", "size", "locale", "min_width",
                               "min_height", "min_duration", "max_duration")},
     },
+    # Music (§PW705): every track carries its own Creative Commons licence, read off
+    # the answer, so `licence` here is only what a track that names none comes under.
+    "jamendo": {
+        "base": "https://api.jamendo.com/v3.0/", "key_env": "JAMENDO_CLIENT_ID",
+        "licence": "",
+        "filters": {"music": ("tags", "fuzzytags", "vocalinstrumental", "speed",
+                              "durationbetween", "order", "lang")},
+    },
 }
 
 #: How long a search answer is kept before it is asked again, as the terms ask.
@@ -61,7 +69,33 @@ WAIT_MOST = 65
 #: A video's renditions, largest first (§PW674).
 RENDITIONS = ("large", "medium", "small", "tiny")
 
-KINDS = ("picture", "video")
+KINDS = ("picture", "video", "music")
+
+
+def _kind_of(service: str, kind: str) -> None:
+    """Refuse a kind the service does not sell, naming the ones that do."""
+    if kind not in SERVICES[service]["filters"]:
+        selling = sorted(name for name, one in SERVICES.items()
+                         if kind in one["filters"])
+        raise PolyweaveError(
+            "stock.bad-kind", f"{service} has no {kind}",
+            f"ask {' or '.join(selling)} for {kind}, or {service} for "
+            f"{' or '.join(SERVICES[service]['filters'])}",
+            given=kind, allowed=selling)
+
+
+def _cc(url: str) -> str:
+    """A Creative Commons licence by name, as its URL spells it:
+    `.../licenses/by-nc-sa/3.0/` is `CC BY-NC-SA 3.0`."""
+    parts = [one for one in str(url).split("/") if one]
+    if "licenses" in parts:
+        at = parts.index("licenses")
+        terms = parts[at + 1:at + 3]
+        if terms:
+            return "CC " + terms[0].upper() + (f" {terms[1]}" if len(terms) > 1 else "")
+    if "publicdomain" in parts:
+        return "CC0 1.0"
+    return url
 
 
 def _reached(config, service: str) -> tuple[str, str]:
@@ -78,10 +112,13 @@ def _asked(service: str, route: str, query: dict, key: str, config) -> dict:
         hashlib.sha256(json.dumps([route, shown]).encode()).hexdigest()[:20] + ".json")
     if kept.is_file() and time.time() - kept.stat().st_mtime < KEPT:
         return json.loads(kept.read_text(encoding="utf-8"))
-    # Pixabay takes the key in the query, Pexels in a header (§PW672).
-    sent = {"key": key, **dict(shown)} if service == "pixabay" else dict(shown)
+    # Pixabay takes the key in the query, Jamendo as its client id, Pexels in a header
+    # (§PW672, §PW705).
+    in_query = {"pixabay": "key", "jamendo": "client_id"}
+    sent = ({in_query[service]: key, **dict(shown)} if service in in_query
+            else dict(shown))
     url = route + (f"?{urllib.parse.urlencode(sent)}" if sent else "")
-    headers = {} if service == "pixabay" else {"Authorization": key}
+    headers = {} if service in in_query else {"Authorization": key}
     answer = client.send(url, headers=headers, timeout=client.TIMEOUT)
     if answer.status == 429:
         # Waited out rather than refused: the window the service names reopens. Pexels
@@ -112,6 +149,8 @@ def _asked(service: str, route: str, query: dict, key: str, config) -> dict:
 def _route(service: str, kind: str, base: str, id: int | None = None) -> str:  # noqa: A002
     """Where a search, or one file by its id, is asked."""
     base = base.rstrip("/") + "/"
+    if service == "jamendo":
+        return base + "tracks/"
     if service == "pixabay":
         # Videos are searched at their own route beside the pictures' (§PW674).
         return base + ("videos/" if kind == "video" else "")
@@ -124,6 +163,8 @@ def _hits(service: str, found: dict) -> list[dict]:
     """A service's answer as the hits it holds, read into one shape."""
     if service == "pixabay":
         return [_pixabay(one) for one in found.get("hits") or ()]
+    if service == "jamendo":
+        return [_jamendo(one) for one in found.get("results") or ()]
     listed = found.get("photos") or found.get("videos")
     if listed is None and found.get("id"):
         listed = [found]
@@ -174,7 +215,29 @@ def _pexels(one: dict) -> dict:
     }
 
 
+def _jamendo(one: dict) -> dict:
+    tags = ((one.get("musicinfo") or {}).get("tags") or {})
+    url = one.get("license_ccurl") or ""
+    return {
+        "id": one.get("id"), "page": one.get("shareurl", ""),
+        "title": one.get("name", ""),
+        "author": one.get("artist_name", ""),
+        "author_page": f"https://www.jamendo.com/artist/{one.get('artist_id', '')}",
+        "tags": ", ".join([*tags.get("genres", ()), *tags.get("vartags", ())]),
+        "duration": one.get("duration"), "width": None, "height": None,
+        "preview": one.get("audio", ""),
+        # A track whose owner allows no download has no file to bring in.
+        "link": one.get("audiodownload") if one.get("audiodownload_allowed", True)
+        else None,
+        "licence": _cc(url) if url else "", "licence_url": url,
+        "renditions": {},
+    }
+
+
 def _shown(hit: dict, kind: str) -> dict:
+    if kind == "music":
+        return {k: hit[k] for k in ("id", "title", "duration", "tags", "author",
+                                    "page", "licence")}
     if kind == "video":
         # Every rendition the service holds, so a caller picks by length and height
         # without a download (§PW674).
@@ -232,6 +295,7 @@ def find(
     duration and each rendition's size and bytes (§PW674). A search is kept a day.
     """
     config = load(root)
+    _kind_of(service, kind)
     taken = SERVICES[service]["filters"][kind]
     stray = sorted(set(filters or {}) - set(taken))
     if stray:
@@ -243,20 +307,25 @@ def find(
             allowed=taken,
         )
     base, key = _reached(config, service)
-    asked = ({"q": words, "safesearch": "true", "per_page": count}
-             if service == "pixabay" else {"query": words, "per_page": count})
+    asked = (
+        {"q": words, "safesearch": "true", "per_page": count} if service == "pixabay"
+        else {"search": words, "limit": count, "format": "json", "include": "musicinfo",
+              "audiodownload_allowed": "true"} if service == "jamendo"
+        else {"query": words, "per_page": count})
     found = _asked(service, _route(service, kind, base), {**asked, **(filters or {})},
                    key, config)
     return {"words": words, "service": service,
-            "total": found.get("totalHits", found.get("total_results", 0)),
+            "total": found.get("totalHits", found.get("total_results", (
+                found.get("headers") or {}).get("results_count", 0))),
             "hits": [_shown(hit, kind) for hit in _hits(service, found)],
             "says": "take one with stock.fetch id=<id> out=<path>"}
 
 
-def _allowed(config, service: str) -> str:
-    """The service's licence, refused where the project lists the ones it ships under
-    and this is not among them (§PW672)."""
-    licence = SERVICES[service]["licence"]
+def _allowed(config, service: str, licence: str | None = None) -> str:
+    """The service's licence, or the file's own where it carries one (§PW705), refused
+    where the project lists the ones it ships under and this is not among them
+    (§PW672)."""
+    licence = licence if licence is not None else SERVICES[service]["licence"]
     allowed = (config.services().get(service) or {}).get("licences") or []
     if allowed and licence not in allowed:
         raise PolyweaveError(
@@ -391,17 +460,23 @@ def fetch(
     ] = None,
     root: Annotated[str, Param("the project it is brought into")] = ".",
 ) -> dict:
-    """Bring one stock picture or video in, recorded with its page and licence.
+    """Bring one stock picture, video or piece of music in, recorded with its page and
+    licence.
 
     A video is the `rendition` named, or the smallest `height` tall; an empty one falls
     to the next, with `fell` saying so (§PW674). The record names the page, the author
-    and the licence, at no cost.
+    and the licence, at no cost. A piece of music carries its own Creative Commons
+    licence, held to `[service.jamendo] licences` where the project lists them, and the
+    attribution it asks is its `credit`, which `provenance.credits` owes (§PW705).
     """
     config = load(root)
     here = config.root
-    licence = _allowed(config, service)
+    _kind_of(service, kind)
+    licence = _allowed(config, service) if kind != "music" else ""
     base, key = _reached(config, service)
-    by_id = {"id": int(id)} if service == "pixabay" else {}
+    by_id = ({"id": int(id)} if service == "pixabay"
+             else {"id": int(id), "format": "json", "include": "musicinfo"}
+             if service == "jamendo" else {})
     route = _route(service, kind, base, None if by_id else int(id))
     hits = _hits(service, _asked(service, route, by_id, key, config))
     if not hits:
@@ -412,6 +487,16 @@ def fetch(
             given=str(id),
         )
     hit = hits[0]
+    credit = ""
+    if kind == "music":
+        if not hit["licence"]:
+            raise PolyweaveError(
+                "stock.licence-refused", f"{service} names no licence for track {id}",
+                "take a track whose licence the service states", given=str(id))
+        licence = _allowed(config, service, hit["licence"])
+        # The attribution a CC licence asks: title, author, source and licence.
+        credit = (f"“{hit['title']}” by {hit['author']} ({hit['page']}), licensed "
+                  f"under {licence} ({hit['licence_url']})")
     fell, chosen = None, None
     if kind == "video":
         chosen, fell = _rendition(hit, rendition, height)
@@ -434,6 +519,8 @@ def fetch(
         from polyweave.layers.reference.reference_register import _probe
 
         probed = _probe(target)
+    elif kind == "music":
+        probed = {"seconds": hit["duration"]}
     record = provenance.write(provenance.build(
         "fetch", target,
         engine={"name": service},
@@ -441,12 +528,16 @@ def fetch(
                 "rendition": chosen or link.rsplit("/", 1)[-1].split("?")[0]},
         measurements=probed,
         extra={"task_id": f"{service}:{id}", "credits": 0.0, "licence": licence,
-               "credit": "", "source_page": hit["page"], "author": hit["author"],
-               "author_page": hit["author_page"], "tags": hit["tags"]},
+               "credit": credit, "source_page": hit["page"], "author": hit["author"],
+               "author_page": hit["author_page"], "tags": hit["tags"],
+               **({"title": hit["title"], "licence_url": hit["licence_url"]}
+                  if kind == "music" else {})},
         root=here,
     ), root=here)
     return {"file": provenance.relative(target, here), "id": int(id),
             "author": hit["author"], "page": hit["page"], "licence": licence,
             "record": provenance.relative(Path(record), here),
             **({"rendition": chosen, **probed} if kind == "video" else {}),
+            **({"title": hit["title"], "credit": credit, **probed}
+               if kind == "music" else {}),
             **({"fell": fell} if fell else {})}

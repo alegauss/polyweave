@@ -2538,16 +2538,16 @@ export interface StockClipArgs {
   root?: string
 }
 
-/** Bring one stock picture or video in, recorded with its page and licence. */
+/** Bring one stock picture, video or piece of music in, recorded with its page and licence. */
 export interface StockFetchArgs {
   /** the hit's id, as stock.find answered it */
   id: number
   /** where it is written, under the project */
   out: string
   /** a picture or a video; default "picture" */
-  kind?: "picture" | "video"
+  kind?: "picture" | "video" | "music"
   /** the stock service; default "pixabay" */
-  service?: "pixabay" | "pexels"
+  service?: "pixabay" | "pexels" | "jamendo"
   /** a video's rendition; large if neither this nor height */
   rendition?: "large" | "medium" | "small" | "tiny"
   /** a video's smallest rendition at least this tall, in px */
@@ -2561,9 +2561,9 @@ export interface StockFindArgs {
   /** what it shows: a quiet harbour at dawn */
   words: string
   /** a picture or a video; default "picture" */
-  kind?: "picture" | "video"
+  kind?: "picture" | "video" | "music"
   /** the stock service; default "pixabay" */
-  service?: "pixabay" | "pexels"
+  service?: "pixabay" | "pexels" | "jamendo"
   /** the service's own filters, as it spells them */
   filters?: Record<string, unknown>
   /** how many hits, 3 to 80; from 3 to 80; default 20 */

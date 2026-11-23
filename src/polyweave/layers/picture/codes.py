@@ -73,6 +73,12 @@ CODES: dict[str, Code] = {
         doors=("choose another shot with stock.find",
                "put the file back where [stock] dir keeps it"),
     ),
+    "stock.bad-kind": Code(
+        means="a stock service was asked for a kind it does not sell",
+        when="music from Pixabay or Pexels, or a picture or video from Jamendo "
+        "(§PW705)",
+        doors=("ask the service the refusal names for that kind",),
+    ),
     "stock.no-yt-dlp": Code(
         means="yt-dlp is not on PATH, and stock.clip reads and fetches with it",
         when="stock.clip on a machine without yt-dlp (§PW701)",
