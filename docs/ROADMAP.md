@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 🛠 **PW712** (deps: —) **A cut has no read-only complete preflight before expensive rendering** — No declared repetition budget bounds a cut's reuse of one source: overlap, screen time, adjacency and gap, with reasoned exceptions. → §PW712
 - 📋 **PW713** (deps: —) **A cut cannot render one selected interval with its production narration and callouts** — Reviewing one action requires another full export, and still sheets cannot show motion or its ending. → §PW713
 - 📋 **PW714** (deps: —) **Fetched media has no reusable catalogue of approved and rejected source ranges** — Rejected or misidentified footage is rediscovered, and selected shots require manual provenance copying. → §PW714
 - 📋 **PW715** (deps: —) **A long video cut exposes no stage progress while rendering or waiting** — Callers poll processes and output timestamps to distinguish slow work from a failed stage. → §PW715
@@ -98,13 +97,6 @@
   Spinhold's runs write the event trace, the probe gives the declared pressure per
   second, level.trace lays the two together, and accept.check holds bounds a person set
   (alive never above N, a peak above the phase before), naming the rule broken.
-
-## Done when — PW712
-
-- **A cut's reuse of one source is held to declared repetition limits** Clips taken from
-  the same source bytes, aliases included, are checked for overlapping intervals, total
-  screen time, adjacency and the gap between uses against declared limits, naming the
-  clips, with reasoned exceptions allowed; footage is never replaced.
 
 ## Non-goals
 

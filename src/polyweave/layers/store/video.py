@@ -101,7 +101,13 @@ _VIDEO_KEYS = {
 _TRACK_KEYS = {"language", "title"}
 _VOICE_KEYS = {"file", "at", "track", "gain"}
 _SUBTITLE_KEYS = {"file", "language"}
-_TABLES = {"video", "clip", "track", "voice", "subtitles"}
+_TABLES = {"video", "clip", "track", "voice", "subtitles", "repetition"}
+
+#: What `[repetition]` bounds (§PW712), each off where unset: seconds two uses of one
+#: source's footage may share, seconds one source may hold the screen, the least
+#: seconds between its uses, whether two of its clips may run back to back, and the
+#: sources excused, each with why.
+_REPETITION_KEYS = {"max_overlap", "max_screen", "min_gap", "adjacent", "exceptions"}
 _CLIP_KEYS = {"from", "still", "video", "stock", "motion", "start", "length",
               "fade_in"}
 _STOCK_KEYS = {"service", "id", "kind", "rendition", "height"}
@@ -1305,6 +1311,82 @@ def check(
         _spoken(declared, here, total or 1e9)
     except PolyweaveError as error:
         failed(error, "voice")
+    for error in _repeated(declared.get("repetition") or {}, clips, here):
+        failed(error, "repetition")
     return {"source": source, "clips": len(declared.get("clip", [])),
             "seconds": round(total, 3), "findings": findings,
             "passed": not findings}
+
+
+def _repeated(limits: dict, clips: list[dict], here: Path) -> list[PolyweaveError]:
+    """Each declared repetition limit a source's reuse passes (§PW712).
+
+    Clips are one source where their files hash alike, so a copy under another name is
+    the same footage. Each clip's place in the cut follows the ones before it, less
+    their fades. Nothing is replaced; a source in `exceptions` is excused, with why.
+    """
+    from polyweave.kernel import provenance
+
+    if not limits:
+        return []
+    stray = sorted(set(limits) - _REPETITION_KEYS)
+    if stray:
+        return [_bad(f"[repetition] has {stray[0]!r}",
+                     f"use only {', '.join(sorted(_REPETITION_KEYS))}", given=stray[0])]
+    excused = {str(one.get("source")): str(one.get("why") or "")
+               for one in limits.get("exceptions") or () if isinstance(one, dict)}
+    unexplained = [name for name, why in excused.items() if not why.strip()]
+    if unexplained:
+        return [_bad(f"[repetition] excuses {unexplained[0]} with no why",
+                     "give every exception a why", given=unexplained[0])]
+    excused_bytes = {provenance.sha256_of(here / name)[0] for name in excused
+                     if (here / name).is_file()}
+    uses: dict[str, list[dict]] = {}
+    at = 0.0
+    for n, clip in enumerate(clips, 1):
+        at -= clip.get("fade_in", 0.0)
+        source = clip.get("file") or clip.get("manifest")
+        if source is not None:
+            digest = provenance.sha256_of(Path(source))[0]
+            uses.setdefault(digest, []).append({
+                "clip": f"clip[{n}]", "n": n, "file": Path(source).name,
+                "from": clip.get("start", 0.0),
+                "to": clip.get("start", 0.0) + clip["length"],
+                "cut": (at, at + clip["length"])})
+        at += clip["length"]
+    found = []
+    for digest, used in uses.items():
+        if len(used) < 2 or digest in excused_bytes:
+            continue
+        names = ", ".join(one["clip"] for one in used)
+        screen = sum(one["to"] - one["from"] for one in used)
+        cap = limits.get("max_screen")
+        if cap is not None and screen > float(cap):
+            found.append(PolyweaveError(
+                "video.repeated", f"{used[0]['file']} holds the screen {screen:g}s "
+                f"over {names}, past max_screen {float(limits['max_screen']):g}",
+                "use another source for one of them, or excuse it with why",
+                given=used[0]["file"]))
+        for a, b in zip(used, used[1:], strict=False):
+            shared = min(a["to"], b["to"]) - max(a["from"], b["from"])
+            gap = b["cut"][0] - a["cut"][1]
+            if limits.get("max_overlap") is not None and shared > float(
+                    limits["max_overlap"]):
+                found.append(PolyweaveError(
+                    "video.repeated", f"{a['clip']} and {b['clip']} show the same "
+                    f"{shared:g}s of {a['file']}, past max_overlap "
+                    f"{float(limits['max_overlap']):g}",
+                    "take a different stretch, or excuse it with why",
+                    given=a["file"]))
+            if limits.get("adjacent") is False and b["n"] == a["n"] + 1:
+                found.append(PolyweaveError(
+                    "video.repeated", f"{a['clip']} and {b['clip']} run {a['file']} "
+                    "back to back", "put another shot between them, or excuse it",
+                    given=a["file"]))
+            if limits.get("min_gap") is not None and 0 <= gap < float(
+                    limits["min_gap"]):
+                found.append(PolyweaveError(
+                    "video.repeated", f"{b['clip']} shows {a['file']} {gap:g}s after "
+                    f"{a['clip']}, under min_gap {float(limits['min_gap']):g}",
+                    "move the reuse later, or excuse it with why", given=a["file"]))
+    return found

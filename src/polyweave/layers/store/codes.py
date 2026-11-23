@@ -143,6 +143,12 @@ CODES: dict[str, Code] = {
         "at not seconds from 0, or a kind not source or output (§PW708)",
         doors=("fix the sample the refusal names",),
     ),
+    "video.repeated": Code(
+        means="a cut reuses one source's footage past a declared [repetition] limit",
+        when="video.check: overlap, screen time, back-to-back use or the gap between "
+        "uses of the same bytes past [repetition] (§PW712)",
+        doors=("use another source or stretch", "excuse the source with why"),
+    ),
     "video.unfetched": Code(
         means="a stock clip has no copy yet, and a preflight never fetches",
         when="video.check on a cut naming stock with no copy under [stock] dir "

@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 11 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 10 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW712",
-    block: "D",
-    symptom: "A cut has no read-only complete preflight before expensive rendering",
-    why: "No declared repetition budget bounds a cut's reuse of one source: overlap, screen time, adjacency and gap, with reasoned exceptions.",
-    deps: [],
-  },
   {
     id: "PW713",
     block: "D",

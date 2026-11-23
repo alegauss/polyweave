@@ -32,30 +32,6 @@ avoid people touching).
 **Done when.** The check over the 24 Shio photos flags the two the owner rejected and
 the pseudo-text ones, naming each fault.
 
-### §PW712 Validate an authored cut before rendering
-
-In viglet/marketing VM56, `python -m polyweave describe video.cut --json` offers source,
-out and root, but no read-only validation result. The illustrated assembly draws all
-cards before it discovers a missing spoken highlight anchor; one omitted article in the
-WordPress outro wastes that render. The caller must validate narration provenance and
-transcript hashes, word anchors, translation coverage, source references, media bounds
-and required fonts in video-maker/preflight.py before drawing or encoding.
-
-Offer a read-only cut preflight that returns all independent actionable findings with
-source file, field, take and beat, using the same resolution as the production cut.
-Probe existing media without rendering or buying anything. A stale transcript or missing
-anchor must fail before any rendering subprocess, for both a dry plan and a real build.
-Do not invent word alignment or regenerate voice. PW706 covers opening-proof estimates
-before purchase; this gap covers a complete already-authored cut before rendering.
-
-VM59 also needs declared repetition budgets before export: overlap between selected
-source intervals, total screen time, adjacency and minimum reuse gap, plus optional
-editorial category concentration across distinct files. Tie aliases to the same source
-bytes, name affected beats, and allow explicit reasoned exceptions for continuous
-tutorials or navigation. Warn or refuse according to declared limits, without replacing
-footage or inferring activities from filenames. The marketing checker lives in
-video-maker/repetition.py and shares the production beat timing.
-
 ### §PW713 Review a production interval with motion and audio
 
 In viglet/marketing VM57, `python -m polyweave describe video.cut --json` offers a whole

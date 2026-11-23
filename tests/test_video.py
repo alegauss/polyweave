@@ -517,3 +517,25 @@ def test_a_sound_cut_passes_its_preflight(tmp_path):
         "length = 2.0\n", encoding="utf-8")
     said = video.check("ok.cut.toml", root=str(here))
     assert said["passed"] is True and said["seconds"] == 2.0
+
+
+@needs_ffmpeg
+def test_a_source_reused_past_its_declared_limits_is_named_with_its_clips(tmp_path):
+    here = _project(tmp_path)
+    _short(here / "short.mp4")
+    (here / "alias.mp4").write_bytes((here / "short.mp4").read_bytes())
+    cut = ('[video]\nsize = [320, 180]\n\n'
+           '[repetition]\nmax_overlap = 0.5\nmin_gap = 5\nadjacent = false\n\n'
+           '[[clip]]\nvideo = "short.mp4"\nstart = 0.0\nlength = 2.0\n\n'
+           '[[clip]]\nvideo = "alias.mp4"\nstart = 1.0\nlength = 2.0\n')
+    (here / "rep.cut.toml").write_text(cut, encoding="utf-8")
+    said = video.check("rep.cut.toml", root=str(here))
+    repeated = [one for one in said["findings"] if one["code"] == "video.repeated"]
+    messages = " ".join(one["message"] for one in repeated)
+    assert "same 1s" in messages and "back to back" in messages
+    assert "under min_gap" in messages
+    (here / "rep.cut.toml").write_text(
+        cut.replace("adjacent = false\n", 'adjacent = false\nexceptions = '
+                    '[{ source = "short.mp4", why = "a continuous tutorial" }]\n'),
+        encoding="utf-8")
+    assert video.check("rep.cut.toml", root=str(here))["passed"] is True

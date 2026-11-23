@@ -422,3 +422,14 @@ voices and subtitles. Each finding has its `code`, `message`, `remedy` and `at`
 (`video`, `clip[n]`, `voice`); a failing part never stops the next from being read.
 Nothing renders, is fetched or is bought: a stock clip with no copy under `[stock] dir`
 is `video.unfetched`, where a build would fetch it. `passed` is true with no finding.
+
+**A source's reuse is held to declared limits** (§PW712). A cut may declare
+`[repetition]`: `max_overlap` (seconds two uses of one source may share), `max_screen`
+(seconds one source may hold the screen), `min_gap` (the least seconds between its
+uses in the cut), `adjacent = false` (no two of its clips back to back), and
+`exceptions`, each `{source, why}`, a why required, for a continuous tutorial or
+navigation. Clips are one source where their files hash alike, so a copy under another
+name is the same footage; a clip's place in the cut follows the ones before it, less
+their fades. `video.check` reports each limit passed as `video.repeated`, naming the
+clips and the file, and never replaces footage or reads an activity from a filename.
+Every limit is off where unset.
