@@ -31,8 +31,6 @@ import shutil
 import subprocess
 import time
 import tomllib
-import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -111,13 +109,13 @@ def _docker(argv: list[str]) -> str:
 
 
 def _answers(url: str) -> bool:
-    """Whether the instance's ready URL answers below 500."""
+    """Whether the instance's ready URL answers below 500, through the one client
+    every layer reaches the network by."""
+    from polyweave.services import client
+
     try:
-        with urllib.request.urlopen(url, timeout=5) as answer:  # noqa: S310
-            return answer.status < 500
-    except urllib.error.HTTPError as error:
-        return error.code < 500
-    except (urllib.error.URLError, OSError):
+        return client.send(url, timeout=5).status < 500
+    except client.Unreached:
         return False
 
 
