@@ -47,8 +47,10 @@
 
 ## Block R — Levels measured before a person plays them
 
-- 📋 **PW206** (deps: PW204 ✅, PW205 ✅) **Cottony's levels are still tuned by a curve nobody measured** — No curve the owner agreed holds the 20 yet, so no accept specs, and make_levels.py and the fallback curve stay until then. → §PW206
+- 🛠 **PW206** (deps: PW204 ✅, PW205 ✅) **Cottony's levels are still tuned by a curve nobody measured** — make_levels.py stays, and the runtime curve for levels past 20 is still typed rather than fitted from the accepted levels. → §PW206
 - 📋 **PW327** (deps: PW205 ✅, Spinhold RK313) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — level.trace reads traces already; Spinhold RK313 writes them from real play, then the declared curve and a spec over both follow. → §PW327
+- 📋 **PW722** (deps: —) **level.curve refuses a pair whose difference equals its step, by floating-point rounding** — A set sitting exactly on its declared step reads as broken, as Cottony's levels 10 and 11 did at 0.06. → §PW722
+- 📋 **PW723** (deps: —) **A level search samples a fraction for an integer key and probes a value it already measured** — Each wasted candidate is 50 games in Godot, and a trace naming 22.5 moves reads as a level that cannot exist. → §PW723
 
 ## Block S — Playing the game, not only rendering it
 

@@ -316,6 +316,34 @@ What starship still needs from polyweave:
 Until it lands, starship keeps the per-second pass in `dev/pressure.gd`, named against
 this line.
 
+### §PW722 A step held in the probe's own precision
+
+Found holding Cottony's 20 levels to curve A (PW206, 2026-11-23). `level.curve` with
+`step = 0.06` refused level 10 to 11: "level_011 is easier than level_010 by 0.06, past
+the step of 0.06". The probe recorded 0.94 and 1.0; their difference in floating point
+is 0.06000000000000005, and the comparison takes it as past the bound, so a set sitting
+on its declared step is reported broken.
+
+Compare the step, the region and the rise in the probe's own precision: round each
+difference to the places the probe records (or compare within a small epsilon such as
+1e-9) before holding it to its bound, and say the rounded figure in the finding. A test
+holds a pair whose difference equals the step exactly as within it.
+
+### §PW723 A level search keeps an integer whole
+
+Found tuning Cottony's level 18 toward curve A (PW206, 2026-11-23):
+`search.sweep(producer="level")` over `[search.moves] min = 20, max = 25`, where `moves`
+is a whole number in the level, sampled 20, 21, 22, 22.5, 23 and 24. The candidate with
+22.5 was written into the level and probed; Cottony's probe read it as 22, so one of six
+probes, each 50 seeded games in Godot, measured a candidate it had already measured, and
+the trace lists 22.5 as if it were a level that can exist.
+
+The measurements spec says a level search keeps an integer an integer. Where the key's
+value in the fixed level is an integer, every sample is rounded before it is written, a
+value already measured is not measured again, and the trace never names a fraction for
+it. A test sweeps an integer key with a budget past its range and finds each candidate
+whole and unique.
+
 ## Block S — Playing the game, not only rendering it
 
 ## Block T — Adopting polyweave in a project

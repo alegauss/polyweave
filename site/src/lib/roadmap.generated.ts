@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 2 },
+  { block: "R", title: "Levels measured before a person plays them", open: 4 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
@@ -126,7 +126,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW206",
     block: "R",
     symptom: "Cottony's levels are still tuned by a curve nobody measured",
-    why: "No curve the owner agreed holds the 20 yet, so no accept specs, and make_levels.py and the fallback curve stay until then.",
+    why: "make_levels.py stays, and the runtime curve for levels past 20 is still typed rather than fitted from the accepted levels.",
     deps: [],
   },
   {
@@ -134,6 +134,20 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "level.trace reads traces already; Spinhold RK313 writes them from real play, then the declared curve and a spec over both follow.",
+    deps: [],
+  },
+  {
+    id: "PW722",
+    block: "R",
+    symptom: "level.curve refuses a pair whose difference equals its step, by floating-point rounding",
+    why: "A set sitting exactly on its declared step reads as broken, as Cottony's levels 10 and 11 did at 0.06.",
+    deps: [],
+  },
+  {
+    id: "PW723",
+    block: "R",
+    symptom: "A level search samples a fraction for an integer key and probes a value it already measured",
+    why: "Each wasted candidate is 50 games in Godot, and a trace naming 22.5 moves reads as a level that cannot exist.",
     deps: [],
   },
 ];
