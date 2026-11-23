@@ -11,7 +11,7 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW704** (deps: —) **capture.web films no pointer, jumps a scroll in one frame and fills typed text at once** — A product scene filmed from a declared visit never shows what was clicked, so a video cuts around every jump or films with a script. → §PW704
+- 🛠 **PW704** (deps: —) **capture.web films no pointer, jumps a scroll in one frame and fills typed text at once** — A product scene filmed from a declared visit never shows what was clicked, so a video cuts around every jump or films with a script. → §PW704
 - 📋 **PW705** (deps: —) **stock.find and stock.fetch cannot search or fetch music, so a licensed bed arrives by hand with no record** — A video's music is downloaded with curl and its licence and credit live only in the project's prose. → §PW705
 - 📋 **PW712** (deps: —) **A cut has no read-only complete preflight before expensive rendering** — Missing anchors and invalid sources force another full build before the caller learns every error. → §PW712
 - 📋 **PW713** (deps: —) **A cut cannot render one selected interval with its production narration and callouts** — Reviewing one action requires another full export, and still sheets cannot show motion or its ending. → §PW713
@@ -22,6 +22,7 @@
 - 📋 **PW718** (deps: —) **No operation brings a picture from Wikimedia Commons: stock.fetch takes only a Pixabay id** — Historical videos rely on public-domain photos, and each one is fetched and its licence recorded by hand. → §PW718
 - 📋 **PW719** (deps: —) **No operation searches the ElevenLabs voice library, nor speaks one line in several voices to compare** — Choosing a narrator for a new audience meant raw API calls and one lines file per candidate voice. → §PW719
 - 📋 **PW720** (deps: —) **voice.lines cannot buy a current take again when its words, voice and model are unchanged** — A take whose accent or delivery drifted can only be re-rolled by rewording a line that was already right or moving files by hand. → §PW720
+- 📋 **PW721** (deps: —) (from: urdido) **capture.web cannot scroll to a sentence the page prints or draw a highlight over it** — A video that quotes a published page films it with a Playwright script of its own, outside the visit's record. → §PW721
 
 ## Block E — One world with the engine
 
