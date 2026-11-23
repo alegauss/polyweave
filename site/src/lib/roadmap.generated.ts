@@ -116,13 +116,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW206",
-    block: "R",
-    symptom: "Cottony's levels are still tuned by a curve nobody measured",
-    why: "make_levels.py stays, and the runtime curve for levels past 20 is still typed rather than fitted from the accepted levels.",
-    deps: [],
-  },
-  {
     id: "PW327",
     block: "R",
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
@@ -141,6 +134,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "A level search samples a fraction for an integer key and probes a value it already measured",
     why: "Each wasted candidate is 50 games in Godot, and a trace naming 22.5 moves reads as a level that cannot exist.",
+    deps: [],
+  },
+  {
+    id: "PW724",
+    block: "R",
+    symptom: "level.probe refuses a level that has no file, so a game's fallback curve past its shipped levels cannot be probed",
+    why: "Cottony's endless tail is the formula alone, and checking it meant writing an empty level file per sampled number.",
     deps: [],
   },
 ];

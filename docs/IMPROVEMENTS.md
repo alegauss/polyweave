@@ -242,27 +242,6 @@ verdict, and each gap it met is a filed line.
 
 ## Block R — Levels measured before a person plays them
 
-### §PW206 Cottony's levels made through polyweave
-
-Cottony is where the level loop pays for itself first. Its 20 shipped levels are JSON
-files generated from curve constants that `make_levels.py` reads out of `level_set.gd`
-with a regular expression. Any level without a file falls back to that same curve at
-runtime, so level 900 is only as good as a curve nobody has measured.
-
-Adoption is done when:
-- Each of the 20 levels is a `*.level.toml` under a schema Cottony declares, and `level.compile` writes the JSON the game already loads.
-- The match-3 probe from PW201 is Cottony's declared `[levels] probe`, and every level carries a probe record.
-- A set spec holds the 20 levels to the curve a person agreed on the verdict page, and `accept.check` passes on all of them.
-- `make_levels.py` is deleted, and the runtime fallback curve is fitted from the accepted levels rather than typed.
-
-The census from Block H counts which of Cottony's levels are made this way. The fallback
-curve is the part to watch: it is still a formula for levels nobody declared, and the
-probe can at least sample it. Probing levels 21 to 200 from the curve and reporting
-where they leave the set spec's bounds says whether the endless tail keeps the promise
-the first twenty make. Cottony's RK150 (2026-10-16) set that bar by hand: the careless
-spike bot, swept with engine.sweep, put level 20 at 64 to 66% wins, against the owner's
-60%.
-
 ### §PW327 Playtest traces measured beside the declared curve
 
 Found in starship while planning its Block V (RK176, RK177): the owner finds the waves
@@ -319,6 +298,23 @@ value in the fixed level is an integer, every sample is rounded before it is wri
 value already measured is not measured again, and the trace never names a fraction for
 it. A test sweeps an integer key with a budget past its range and finds each candidate
 whole and unique.
+
+### §PW724 A level probed by its number, from the game's curve
+
+Found closing PW206 in Cottony (2026-11-23). Its design asks for "probing levels 21 to
+200 from the curve and reporting where they leave the set spec's bounds", since every
+level past the 20 shipped files is the game's fallback formula. `level.probe` refuses
+`data/levels/level_025.json` with `level.no-level` because no file is there, and a level
+with no file is exactly the level a fallback curve makes. The workaround was an empty
+`{}` file per sampled level in the work area, which Cottony's probe reads as "the curve
+decides every key".
+
+`level.probe` (and `level.curve` over a set) should take a level by its number where the
+project's probe can build it from its own curve: `[levels] curve_probe = true`, or a
+`number` argument, passing `level=<number>` to the probe instead of a path, and
+recording the probe against the curve's source file rather than a level file. A sampled
+tail (`numbers = [25, 40, 100, 200]`) is then one call, and its record says the curve
+moved when the source does.
 
 ## Block S — Playing the game, not only rendering it
 
