@@ -35,6 +35,7 @@ and who accepted it. A captured run is the game's own and is not catalogued.
 
 from __future__ import annotations
 
+import contextlib
 import datetime as _dt
 import json
 import tomllib
@@ -258,7 +259,7 @@ def library(
 
 def _added(target: Path, file: Path, here: Path) -> dict:
     """Append one unreviewed source, with what the file's record says of it."""
-    from polyweave.layers.reference.reference_register import _probe
+    from polyweave.layers.store.video import _seconds
 
     named = provenance.relative(file, here)
     try:
@@ -266,9 +267,10 @@ def _added(target: Path, file: Path, here: Path) -> dict:
     except PolyweaveError:
         record = {}
     entry: dict[str, Any] = {"file": named, "sha256": provenance.sha256_of(file)[0]}
-    seconds = _probe(file).get("duration")
-    if seconds:
-        entry["seconds"] = seconds
+    # The store's own probe: a layer reads only the layers it declares it uses. A
+    # still, or no ffprobe, leaves a source with no length, still catalogued.
+    with contextlib.suppress(PolyweaveError):
+        entry["seconds"] = round(_seconds(file), 3)
     for key, said in (("licence", "licence"), ("page", "source_page"),
                       ("author", "author")):
         if record.get(said):
